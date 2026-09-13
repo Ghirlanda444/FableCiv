@@ -31,7 +31,7 @@ const TURNS = +process.argv[2] || 200;
     });
     if (done) break;
     await page.click('#btn-end');
-    await page.waitForFunction(() => !AU.App.busy);
+    await page.waitForFunction(() => !AU.App.busy); await page.evaluate(() => { while (AU.App.g.quoteQueue && AU.App.g.quoteQueue.length) AU.App.g.quoteQueue.shift(); document.getElementById('quote').hidden = true; });
     if (i % 25 === 24) {
       // render every panel and every own settlement's city panel; tap around the map
       await page.evaluate(() => {

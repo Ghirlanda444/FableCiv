@@ -124,3 +124,11 @@ button.turn { min-width: 118px; padding: 12px 10px; font-weight: 600; font-size:
 .cityview-hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,.8); text-shadow: 0 1px 3px #000; pointer-events: none; }
 .portrait { float: right; width: 72px; height: 90px; object-fit: cover; border-radius: 8px; margin: 0 0 6px 8px; border: 1px solid var(--line); }
 .portrait-sm { width: 44px; height: 54px; object-fit: cover; border-radius: 6px; }
+
+/* Quote card */
+.quote-box { background: linear-gradient(180deg, #1c2230, #12161f); border: 1px solid var(--gold); border-radius: 16px; padding: 22px 22px 16px; max-width: 460px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.quote-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+.quote-box h2 { margin: 4px 0 12px; color: var(--gold); font-size: 22px; }
+.quote-box p { font-size: 17px; line-height: 1.5; font-style: italic; margin: 0 0 8px; color: #f1eee6; }
+.quote-by { font-size: 13px; color: var(--muted); text-align: right; margin-bottom: 12px; }
+.pquote { margin: 10px 0 0; padding: 10px 14px; border-left: 3px solid var(--gold); background: rgba(255,255,255,.04); font-style: italic; }

@@ -38,6 +38,7 @@
     save: function (silent) { try { localStorage.setItem(SAVE_KEY, G.serialize(this.g)); if (!silent) this.toast('Game saved.'); return true; } catch (e) { if (!silent) this.toast('Could not save: ' + e.message); return false; } },
     load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; this.startGameState(G.deserialize(j)); return true; } catch (e) { this.toast('Could not load save: ' + e.message); return false; } },
     back: function () {
+      if (!$('quote').hidden) { $('quote-ok').click(); return true; }
       if (!$('confirm').hidden) { $('confirm').hidden = true; return true; }
       if (this.panel) { this.closePanel(); return true; }
       if (!$('game').hidden && (this.sel.unit || this.sel.settlement || this.mode !== 'normal')) { this.deselect(); return true; }
@@ -174,6 +175,13 @@
       else if (n.unit && this.g.units[n.unit]) { this.selectUnit(this.g.units[n.unit]); this.renderer.centerOn(this.g, n.tile); }
       else if (n.tile != null) { this.renderer.centerOn(this.g, n.tile); this.sel.tile = n.tile; }
       this.refreshHud(); this.invalidate();
+    },
+    showQuotes: function () {
+      var g = this.g; if (!g || !g.quoteQueue || !g.quoteQueue.length) return;
+      var q = g.quoteQueue.shift(), box = $('quote'), self = this;
+      $('quote-kicker').textContent = q.kicker || ''; $('quote-title').textContent = q.title; $('quote-text').textContent = '“' + q.text + '”'; $('quote-by').textContent = '— ' + q.by;
+      box.hidden = false;
+      $('quote-ok').onclick = function () { box.hidden = true; setTimeout(function () { self.showQuotes(); }, 120); };
     },
     confirm: function (msg, onYes) {
       var box = $('confirm'); $('confirm-text').textContent = msg; box.hidden = false;
@@ -373,6 +381,7 @@
         self.pendingAttack = null;
         if (self.sel.unit && !g.units[self.sel.unit]) self.deselect(); else if (self.sel.unit) self.updateUnitHighlights();
         self.refreshHud(); self.invalidate();
+        self.showQuotes();
         if (g.victory) self.openPanel('victory');
         else { var list = self.unitsNeedingOrders(); if (list.length && !self.sel.unit) { self.selectUnit(list[0]); self.renderer.centerOn(g, list[0].tile); } }
         if (!p.alive) self.openPanel('victory');

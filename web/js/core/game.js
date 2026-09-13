@@ -91,6 +91,7 @@
   G.rngInt = function (g, n) { return Math.floor(G.rng(g) * n); };
   G.log = function (g, msg, civIdx) { g.log.push({ turn: g.turn, msg: msg, civ: civIdx }); if (g.log.length > 300) g.log.shift(); };
   G.notify = function (g, civ, n) { if (!civ.isPlayer) return; n.turn = g.turn; g.notifications.push(n); };
+  G.quote = function (g, civ, cat, id, title, kicker) { if (!civ.isPlayer) return; var q = AU.QUOTES && AU.QUOTES[cat] && AU.QUOTES[cat][id]; if (!q) return; g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: kicker, title: title, text: q.text, by: q.by }); };
   G.civData = function (civ) { return AU.CIV_BY_ID[civ.civId]; };
   G.civColor = function (civ) { return civ.color || AU.CIV_BY_ID[civ.civId].color; };
   // Make sure no two civilizations in the same game share a near-identical banner colour.
@@ -216,6 +217,7 @@
     var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
     civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
     G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Science and Culture.', tile: t.i });
+    G.quote(g, civ, 'natural', t.natural, NW.name, 'Natural wonder discovered');
     G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };
   G.refreshVisibility = function (g, civ) {
@@ -590,6 +592,7 @@
       if (w.fx.instantGold) civ.gold += w.fx.instantGold;
       if (id === 'terracotta_army') G.civUnits(g, civ.idx).forEach(function (u) { var c = AU.UNITS[u.type].cls; if (c !== 'naval' && c !== 'navalRanged' && c !== 'civilian') u.bonusStr += 3; });
       G.log(g, G.civData(civ).name + ' completed the ' + w.name + ' in ' + s.name + '.', civ.idx);
+      G.quote(g, civ, 'wonder', id, w.name, 'Wonder completed in ' + s.name);
       g.civs.forEach(function (c) { G.notify(g, c, { kind: 'wonder', text: (c === civ ? 'You' : G.civData(civ).name) + ' completed the ' + w.name + (c === civ ? ' in ' + s.name : '') + '.', tile: s.tile, settlement: s.id }); });
     } else if (kind === 'national') {
       if (!G.canBuildNational(g, s, id)) { civ.gold += Math.round(s.progress['national:' + id] || 0); return false; }
@@ -597,6 +600,7 @@
       var nw = AU.NATIONAL[id];
       if (nw.fx && nw.fx.freeTech) G.grantFreeTech(g, civ);
       G.notify(g, civ, { kind: 'wonder', text: s.name + ' completed the ' + nw.name + '.', tile: s.tile, settlement: s.id });
+      G.quote(g, civ, 'national', id, nw.name, 'National wonder completed in ' + s.name);
       G.log(g, G.civData(civ).name + ' completed the ' + nw.name + '.', civ.idx);
     } else if (kind === 'project') {
       civ.projects = civ.projects || {}; civ.projects[id] = g.turn;
@@ -664,6 +668,7 @@
     if (fx.techCulture) civ.bonusCulture = (civ.bonusCulture || 0) + fx.techCulture;
     if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (fx.freeBuildingWithTech[fb] === id) G.civSettlements(g, civ.idx).forEach(function (s) { G.addBuilding(g, s, fb); });
     G.notify(g, civ, { kind: 'tech', text: 'Research complete: ' + AU.TECH_BY_ID[id].name + '.', panel: 'tech' });
+    G.quote(g, civ, 'tech', id, AU.TECH_BY_ID[id].name, 'Technology discovered');
   };
   G.learnCivic = function (g, civ, id) {
     civ.civics[id] = g.turn; delete civ.civicProgress[id];
@@ -672,6 +677,7 @@
     civ._fx = null;
     var c = AU.CIVIC_BY_ID[id];
     G.notify(g, civ, { kind: 'civic', text: 'Civic adopted: ' + c.name + (c.unlocks ? ' (unlocks ' + c.unlocks + ')' : '') + '.', panel: 'civics' });
+    G.quote(g, civ, 'civic', id, c.name, 'Civic adopted');
   };
   G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
   G.grantFreeCivic = function (g, civ) { var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };

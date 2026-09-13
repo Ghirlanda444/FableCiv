@@ -55,7 +55,7 @@ require('fs').mkdirSync(out, { recursive: true });
   // run 30 turns through the End Turn button
   for (let i = 0; i < 30; i++) {
     await page.click('#btn-end');
-    await page.waitForFunction(() => !AU.App.busy);
+    await page.waitForFunction(() => !AU.App.busy); await page.evaluate(() => { while (AU.App.g.quoteQueue && AU.App.g.quoteQueue.length) AU.App.g.quoteQueue.shift(); document.getElementById('quote').hidden = true; });
   }
   await page.waitForTimeout(200);
   await page.screenshot({ path: out + '/08-turn30.png' });
