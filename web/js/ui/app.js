@@ -123,6 +123,7 @@
       this.refreshHud(); this.invalidate();
       if (g.victory) this.openPanel('victory');
       if (settler && g.turn === 1) { this.selectUnit(settler); this.toast('Tap "Found Capital" to settle, or tap a tile to move first.'); }
+      var self2 = this; setTimeout(function () { self2.showQuotes(); }, 400);
     },
 
     // ---------- HUD ----------
