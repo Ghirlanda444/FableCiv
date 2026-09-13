@@ -166,6 +166,25 @@
     bushList.forEach(function (e, k) { place(bushes, k, e[1], e[2] + R * 0.14 * e[4], e[3], e[4], e[4] * 0.85, e[4], k); });
     reedList.forEach(function (e, k) { place(reeds, k, e[1], e[2] + R * 0.15, e[3], 1, 1, 1); });
     [land, water, hills, mts, snow, trees, trunks, bushes, reeds].forEach(function (m) { m.instanceMatrix.needsUpdate = true; m.userData.base = m.instanceMatrix.array.slice(); group.add(m); });
+    // natural wonders: one landmark mesh + a label, per style
+    var natGroup = new T.Group(); group.add(natGroup); var self2 = this;
+    g.tiles.forEach(function (t) {
+      if (!t.natural) return;
+      var NW = AU.NATURAL_WONDERS[t.natural], p = tileXZ(t), top = self2.tileTop(t), grp2 = new T.Group(); grp2.position.set(p[0], top, p[1]);
+      function add(geo, mat, x, y, z, sx, sy, sz) { var m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.castShadow = true; grp2.add(m); return m; }
+      var gold = new T.MeshLambertMaterial({ color: 0xd9b45a, emissive: 0x2a1e05 });
+      switch (NW.style) {
+        case 'peak': add(self2.geo.cone, self2.mat.mountain, 0, R * 0.8, 0, 1.3, 1.6, 1.3); add(self2.geo.snow, self2.mat.snow, 0, R * 1.35, 0, 1.4, 1.4, 1.4); break;
+        case 'volcano': add(self2.geo.cone, new T.MeshLambertMaterial({ color: 0x4a3a34 }), 0, R * 0.7, 0, 1.3, 1.4, 1.3); add(self2.geo.snow, new T.MeshLambertMaterial({ color: 0xff5a2a, emissive: 0x7a1a00 }), 0, R * 1.2, 0, 1.0, 0.8, 1.0); break;
+        case 'monolith': add(self2.geo.box, new T.MeshLambertMaterial({ color: 0xb5452b }), 0, R * 0.22, 0, R * 1.1, R * 0.44, R * 0.55); break;
+        case 'lake': add(self2.geo.disc, new T.MeshPhongMaterial({ color: 0x2f9be0, shininess: 90 }), 0, 1.2, 0, 2.6, 1, 2.6); add(self2.geo.dome, self2.mat.mountain, R * 0.6, 0, R * 0.3, 1.2, 1.4, 1.2); add(self2.geo.dome, self2.mat.mountain, -R * 0.6, 0, -R * 0.2, 1.1, 1.2, 1.1); break;
+        case 'cliffs': for (var k = 0; k < 4; k++) add(self2.geo.box, new T.MeshLambertMaterial({ color: k % 2 ? 0xe9e2d0 : 0xd6c9a8 }), (k - 1.5) * R * 0.4, R * (0.2 + k * 0.08), 0, R * 0.38, R * (0.4 + k * 0.16), R * 0.6); break;
+        case 'reef': for (var q = 0; q < 6; q++) { var a = q * Math.PI / 3; add(self2.geo.bush, new T.MeshLambertMaterial({ color: q % 2 ? 0x2ee6c8 : 0xff8a5b }), Math.cos(a) * R * 0.5, 2, Math.sin(a) * R * 0.5, 0.9, 0.5, 0.9); } break;
+        case 'wetland': for (var w2 = 0; w2 < 5; w2++) add(self2.geo.disc, new T.MeshPhongMaterial({ color: 0x3b8fd0 }), (w2 % 3 - 1) * R * 0.45, 1.2, (w2 % 2 - 0.5) * R * 0.6, 1.1, 1, 1.1); for (var r2 = 0; r2 < 10; r2++) add(self2.geo.reed, self2.mat.reed, (Math.random() - 0.5) * R * 1.3, R * 0.15, (Math.random() - 0.5) * R * 1.3, 1, 1, 1); break;
+      }
+      var label = self2.textSprite(NW.icon + ' ' + NW.name, '#e3b84a', null); label.position.set(0, R * 1.9, 0); grp2.add(label); grp2.userData.label = label;
+      natGroup.add(grp2); grp2.userData.tile = t.i;
+    });
     this.world = { g: g, group: group, land: land, water: water, hills: hills, mts: mts, snow: snow, trees: trees, trunks: trunks, bushes: bushes, reeds: reeds,
       landIdx: landIdx, waterIdx: waterIdx, hillIdx: hillIdx, mtIdx: mtIdx, treeList: treeList, bushList: bushList, reedList: reedList,
       fogSig: '', borderSig: '', riverSig: -1, rivers: null, borders: null, camps: null, campSig: -1 };
@@ -417,7 +436,8 @@
     this.syncHighlights(g, app);
     this.updateCamera();
     // labels and badges keep a readable, roughly constant screen size
-    var f = 1 / Math.max(1, this.cam.zoom * 0.8), k, n;
+    var f = 1 / Math.max(1, this.cam.zoom * 0.8), k, n, explored2 = G.player(g).explored;
+    this.world.group.children.forEach(function (grp) { if (grp.isGroup) grp.children.forEach(function (c) { if (c.userData.tile !== undefined) { c.visible = !!explored2[c.userData.tile]; var lb = c.userData.label; if (lb) lb.scale.set(lb.userData.baseScale[0] * f, lb.userData.baseScale[1] * f, 1); } }); });
     for (k in this.settlementNodes) { var b = this.settlementNodes[k].banner; b.scale.set(b.userData.baseScale[0] * f, b.userData.baseScale[1] * f, 1); }
     for (n in this.unitNodes) this.unitNodes[n].group.children.forEach(function (c) { if (c.userData.baseScale) c.scale.set(c.userData.baseScale[0] * f, c.userData.baseScale[1] * f, 1); });
     this.three.render(this.scene, this.camera);

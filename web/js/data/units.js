@@ -16,19 +16,23 @@
     knight:      { name: 'Knight',      cls: 'cavalry',  cost: 220, moves: 4, strength: 48, tech: 'stirrups', resource: 'horses', icon: '🐴', upgradesTo: 'cavalry' },
     musketman:   { name: 'Musketman',   cls: 'melee',    cost: 240, moves: 2, strength: 55, tech: 'gunpowder', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
     bombard:     { name: 'Bombard',     cls: 'siege',    cost: 280, moves: 2, strength: 35, ranged: 45, range: 2, tech: 'metal_casting', resource: 'niter', icon: '💣', upgradesTo: 'artillery' },
-    caravel:     { name: 'Caravel',     cls: 'naval',    cost: 240, moves: 4, strength: 45, tech: 'cartography', icon: '⛵', upgradesTo: 'ironclad' },
+    caravel:     { name: 'Caravel',     cls: 'naval',    cost: 240, moves: 4, strength: 45, tech: 'cartography', icon: '⛵', ocean: true, upgradesTo: 'ironclad' },
     field_cannon:{ name: 'Field Cannon',cls: 'ranged',   cost: 330, moves: 2, strength: 45, ranged: 60, range: 2, tech: 'ballistics', resource: 'niter', icon: '🎯', upgradesTo: 'machine_gun' },
     cavalry:     { name: 'Cavalry',     cls: 'cavalry',  cost: 330, moves: 5, strength: 62, tech: 'military_science', resource: 'horses', icon: '🐎', upgradesTo: 'tank' },
     rifleman:    { name: 'Rifleman',    cls: 'antcav',   cost: 360, moves: 2, strength: 65, tech: 'rifling', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
-    ironclad:    { name: 'Ironclad',    cls: 'naval',    cost: 380, moves: 4, strength: 55, tech: 'steam_power', resource: 'coal', icon: '🚢', upgradesTo: 'battleship' },
+    ironclad:    { name: 'Ironclad',    cls: 'naval',    cost: 380, moves: 4, strength: 55, tech: 'steam_power', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'submarine' },
     artillery:   { name: 'Artillery',   cls: 'siege',    cost: 430, moves: 2, strength: 50, ranged: 70, range: 2, tech: 'steel', resource: 'coal', icon: '🎇' },
-    infantry:    { name: 'Infantry',    cls: 'melee',    cost: 430, moves: 2, strength: 70, tech: 'replaceable_parts', icon: '🪖' },
+    infantry:    { name: 'Infantry',    cls: 'melee',    cost: 430, moves: 2, strength: 70, tech: 'replaceable_parts', icon: '🪖', upgradesTo: 'mech_infantry' },
     machine_gun: { name: 'Machine Gun', cls: 'ranged',   cost: 450, moves: 2, strength: 60, ranged: 75, range: 2, tech: 'replaceable_parts', icon: '🔩' },
-    battleship:  { name: 'Battleship',  cls: 'navalRanged', cost: 480, moves: 5, strength: 60, ranged: 70, range: 3, tech: 'steel', resource: 'coal', icon: '🚢' },
-    tank:        { name: 'Tank',        cls: 'cavalry',  cost: 480, moves: 4, strength: 80, tech: 'combustion', resource: 'oil', icon: '🛡️' },
+    battleship:  { name: 'Battleship',  cls: 'navalRanged', cost: 480, moves: 5, strength: 60, ranged: 70, range: 3, tech: 'steel', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'destroyer' },
+    tank:        { name: 'Tank',        cls: 'cavalry',  cost: 480, moves: 4, strength: 80, tech: 'combustion', resource: 'oil', icon: '🛡️', upgradesTo: 'modern_armor' },
     mech_infantry:{ name: 'Mechanized Infantry', cls: 'melee', cost: 560, moves: 3, strength: 90, tech: 'plastics', resource: 'oil', icon: '🚛' },
-    rocket_artillery: { name: 'Rocket Artillery', cls: 'siege', cost: 580, moves: 3, strength: 60, ranged: 95, range: 2, tech: 'rocketry', resource: 'oil', icon: '🚀' }
+    rocket_artillery: { name: 'Rocket Artillery', cls: 'siege', cost: 580, moves: 3, strength: 60, ranged: 95, range: 2, tech: 'rocketry', resource: 'oil', icon: '🚀' },
+    destroyer:   { name: 'Destroyer',   cls: 'navalRanged', cost: 520, moves: 6, strength: 70, ranged: 75, range: 2, tech: 'combustion', resource: 'oil', icon: '⚓', ocean: true },
+    submarine:   { name: 'Submarine',   cls: 'naval',    cost: 560, moves: 5, strength: 85, tech: 'radar', resource: 'oil', icon: '🛥️', ocean: true },
+    modern_armor:{ name: 'Modern Armor', cls: 'cavalry', cost: 700, moves: 5, strength: 100, tech: 'composites', resource: 'oil', icon: '🛡️' },
+    special_forces:{ name: 'Special Forces', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' }
   };
   // The barbarian roster by era index
-  AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank']];
+  AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank'], ['mech_infantry', 'modern_armor']];
 })(globalThis.AU = globalThis.AU || {});

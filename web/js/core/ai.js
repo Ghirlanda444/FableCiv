@@ -8,6 +8,7 @@
       AI.diplomacy(g, civ);
       AI.chooseResearch(g, civ);
       AI.chooseGovernment(g, civ);
+      AI.choosePolicies(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
     } catch (e) { G.log(g, 'AI error for ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
@@ -28,6 +29,7 @@
       }
       // attitude drift
       if (rel.attitude < 0) rel.attitude += 0.5; else if (rel.attitude > 0) rel.attitude -= 0.2;
+      var drift = G.civFx(g, o).attitudeDrift || 0; if (drift && rel.attitude < 30) rel.attitude += drift * 0.3;
       var myS = G.militaryStrength(g, civ.idx), theirS = G.militaryStrength(g, o.idx);
       var nearby = AI.borderTension(g, civ, o);
       if (nearby) rel.attitude -= 0.4;
@@ -53,6 +55,8 @@
           var sc = -t.cost / 10;
           for (var u in AU.UNITS) if (AU.UNITS[u].tech === t.id) sc += 30 * tr.aggression;
           for (var b in AU.BUILDINGS) if (AU.BUILDINGS[b].tech === t.id) sc += 20 * (tr.science + tr.culture) / 2 + 10;
+          if (t.fx) sc += 12;
+          if (civ.boosts && civ.boosts[t.id]) sc += 25;
           for (var r in AU.RESOURCES) if (AU.RESOURCES[r].revealTech === t.id) sc += 15;
           if (t.id === 'sailing' || t.id === 'pottery' || t.id === 'writing' || t.id === 'currency') sc += 15;
           t._sc = sc + G.rng(g) * 10;
@@ -63,8 +67,26 @@
     }
     if (!civ.currentCivic) {
       var ac = G.availableCivics(civ);
-      if (ac.length) { ac.sort(function (a, b) { return a.cost - b.cost + (G.rng(g) - 0.5) * 30; }); civ.currentCivic = ac[0].id; }
+      if (ac.length) { ac.sort(function (a, b) { return (a.cost - (civ.boosts && civ.boosts['c:' + a.id] ? a.cost * 0.4 : 0)) - (b.cost - (civ.boosts && civ.boosts['c:' + b.id] ? b.cost * 0.4 : 0)) + (G.rng(g) - 0.5) * 30; }); civ.currentCivic = ac[0].id; }
     }
+  };
+  AI.choosePolicies = function (g, civ) {
+    var tr = civ.ai, avail = G.availablePolicies(civ), free = G.freeSlots(civ);
+    var total = 0; for (var k in free) total += free[k];
+    if (!avail.length || (total === 0 && g.turn % 25 !== 0)) return;
+    function score(id) {
+      var pc = AU.POLICIES[id], sc = 1;
+      if (pc.type === 'military') sc += tr.aggression * 3 + (AI.threatened(g, civ) ? 2 : 0);
+      if (pc.type === 'economic') sc += 2 + tr.expansion;
+      if (pc.type === 'diplomatic') sc += 1 + tr.culture;
+      if (pc.type === 'wildcard') sc += tr.science + tr.culture;
+      if (pc.fx.yieldMult) for (var y in pc.fx.yieldMult) sc += (pc.fx.yieldMult[y] - 1) * 10 * (y === 'science' ? tr.science + 0.5 : y === 'culture' ? tr.culture + 0.5 : 1);
+      if (pc.fx.happinessBonus) sc += pc.fx.happinessBonus * 1.5;
+      if (pc.fx.wonderCostMult) sc += tr.culture * 2;
+      return sc + G.rng(g) * 0.5;
+    }
+    var ranked = avail.slice().sort(function (a, b) { return score(b) - score(a); });
+    G.setPolicies(g, civ, ranked);
   };
   AI.chooseGovernment = function (g, civ) {
     var tr = civ.ai, avail = G.availableGovernments(civ);
@@ -120,6 +142,7 @@
           else if (s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 2) pick = { kind: 'unit', id: 'settler' };
           else if (AI.wantsMilitary(g, civ)) { var wantRanged = G.civUnits(g, civ.idx).filter(function (u) { return U.isRanged(u); }).length < G.civUnits(g, civ.idx).filter(G.isMilitary).length / 3; var bu = AI.bestUnitToBuild(g, s, wantRanged); if (bu) pick = { kind: 'unit', id: bu }; }
           if (!pick && !s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 3) pick = { kind: 'unit', id: 'settler' };
+          if (!pick && opts.national.length && s.pop >= 4 && G.rng(g) < 0.5) pick = { kind: 'national', id: opts.national[0] };
           if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 && s.pop >= 4) { var w = opts.wonders.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; pick = { kind: 'wonder', id: w }; }
           if (!pick && opts.buildings.length) { var bs = opts.buildings.slice().sort(function (a, b) { return AI.buildingScore(g, civ, s, b) - AI.buildingScore(g, civ, s, a); }); pick = { kind: 'building', id: bs[0] }; }
           if (!pick) { var bu2 = AI.bestUnitToBuild(g, s, false); if (bu2 && G.civUnits(g, civ.idx).length < sets.length * 4) pick = { kind: 'unit', id: bu2 }; }

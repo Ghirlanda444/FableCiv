@@ -8,7 +8,7 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
-    settings: { graphics: '3d' },
+    settings: { graphics: '3d' }, pediaState: { cat: 'concepts' },
     loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); Object.assign(this.settings, s); } catch (e) {} },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
@@ -132,6 +132,7 @@
       $('context').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
       $('notifs').addEventListener('click', function (e) { var n = e.target.closest('.notif'); if (n) App.onNotif(+n.dataset.i); });
       $('panel-body').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
+      $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
     refreshHud: function () {
       var g = this.g, p = G.player(g); if (!g) return;
@@ -382,7 +383,7 @@
       AU.Panels.render(this, name, this.panelData);
       $('panel-body').scrollTop = 0;
     },
-    closePanel: function () { this.panel = null; $('panel').hidden = true; if (this.g) { this.refreshHud(); this.invalidate(); } else this.showTitle(); },
+    closePanel: function () { if (AU.CityView) AU.CityView.close(); this.panel = null; $('panel').hidden = true; if (this.g) { this.refreshHud(); this.invalidate(); } else this.showTitle(); },
     refreshPanel: function () { if (this.panel) AU.Panels.render(this, this.panel, this.panelData); },
 
     // ---------- Input ----------

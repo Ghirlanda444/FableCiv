@@ -1,0 +1,103 @@
+// Civilopedia: every game object, generated from the data files, with cross-links and search.
+(function (AU) {
+  var G = AU.G, P = AU.Panels;
+  var $ = function (id) { return document.getElementById(id); };
+  function y(o, plus) { if (!o) return ''; var map = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', happiness: '😊' }; return AU.YIELD_KEYS.filter(function (k) { return o[k]; }).map(function (k) { return map[k] + (plus && o[k] > 0 ? '+' : '') + o[k]; }).join(' '); }
+  function link(cat, id, text) { return '<a class="plink" data-action="pedia" data-cat="' + cat + '" data-id="' + id + '">' + text + '</a>'; }
+  function fxText(fx) { return AU.civicFxText({ fx: fx }) || ''; }
+
+  var CATS = [
+    ['concepts', 'Concepts'], ['civs', 'Civilizations'], ['leaders', 'Leaders'], ['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'],
+    ['natural', 'Natural Wonders'], ['techs', 'Technologies'], ['civics', 'Civics'], ['governments', 'Governments'], ['policies', 'Policy Cards'], ['terrain', 'Terrain & Features'], ['resources', 'Resources'], ['improvements', 'Improvements'], ['specializations', 'Town Specializations']
+  ];
+  var CONCEPTS = {
+    towns_cities: ['Towns and Cities', 'Your capital is a City. Every other settlement you found is a Town. Towns have no production queue: their production is converted to Gold and you purchase buildings and units in them. Towns grow on their own and, from 5 population, can be specialized (Farming, Mining, Trade Outpost, Fort, Urban Center). A specialized Town stops growing and sends its surplus food to your nearest City. Pay Gold to upgrade a Town into a City with a real production queue; the price rises with each City you own.'],
+    growth: ['Growth and tiles', 'Each settlement starts with its centre and the six tiles around it. Every time it grows, the new citizen claims and works one tile within three rings (four with some abilities), and that tile is improved automatically: farm, mine, pasture, plantation, quarry, camp, woodcutter or fishing boats depending on the terrain. Food beyond 2 per citizen fills the growth bar; starvation shrinks a settlement. Once all tiles are claimed, new citizens become specialists worth Science and Culture.'],
+    happiness: ['Happiness', 'Each settlement starts with 3 Happiness and loses 1 per 2 population. Buildings, worked Luxury resources (up to 4, empire-wide), governments, civics, policies and wonders add to it; war weariness subtracts. Below 0 the settlement produces 15% less (30% below -5) and grows at half speed.'],
+    research: ['Research, eurekas and inspirations', 'Science fills the technology you are researching; Culture fills the civic. Every technology has a Eureka and every civic an Inspiration: an in-game condition (work a mine, meet a civilization, kill a unit with a slinger…) that instantly grants 40% of the cost the moment you meet it, even before you start researching it. One continuous tree of 104 technologies and 60 civics spans eight eras with no resets.'],
+    government: ['Governments and policies', 'Civics unlock governments. Each government has a bonus and a set of card slots: military, economic, diplomatic and wildcard. Policy cards are unlocked by civics and can be swapped at any time from the Civics panel. Wildcard slots take any card.'],
+    combat: ['Combat', 'Damage is 30 × e^(0.04 × strength difference), with ±20% variance. Ranged units strike without taking damage; melee attackers take damage back. Hills and forests give +3 defence, fortifying up to +6. Units lose strength as they are wounded. Units heal when they do not act; faster inside your borders and in settlements. Experience earns levels worth +3 Strength each. One military and one civilian unit per tile.'],
+    settlements_war: ['Sieging settlements', 'A settlement has 100 HP (+100 with Walls, +100 more with a Castle) and a defence value based on the best unit its owner can build plus walls, hills and garrison. Walls let it fire at adjacent enemies every turn. Ranged non-siege units deal half damage to settlements. When its HP reaches 0, a melee, anti-cavalry, cavalry or recon unit can move in and capture it; capturing a capital moves the palace to the victim\'s largest remaining settlement. A civilization with no settlements is destroyed.'],
+    independents: ['Independent peoples', 'Camps (🏕️) are spawned across the wilderness and periodically release raiders that attack nearby units and settlements. Move a unit onto a camp to disperse it for Gold. The raiders grow stronger as the world advances through the eras.'],
+    diplomacy: ['Diplomacy', 'Every leader keeps an attitude toward you, moved by wars, border tension, your abilities and time. Declare war from the Diplomacy panel; the AI proposes peace when a war goes badly for it and accepts peace after at least 8 turns of war when it is losing or not hostile. Peace treaties last 10 turns.'],
+    wonders: ['Wonders', 'World Wonders can be built once in the whole world, only in Cities, and often need a specific site (coast, river, desert, hills). National Wonders can be built once per civilization and usually require several copies of a building across your settlements. Natural Wonders are placed by the map: working or neighbouring them yields strong bonuses and discovering one grants Science and Culture (double for the first civilization to find it).'],
+    victory: ['Victory', 'Domination: hold every rival\'s original capital. Science: research Spaceflight, build a Spaceport and complete Launch Earth Satellite, Moon Landing and Launch Colony Ship in your capital. Score: the highest score when the turn limit of the chosen game speed is reached.'],
+    speeds: ['Game speeds', 'Quick (×0.67 costs, 330 turns), Standard (×1, 500 turns), Epic (×1.5, 750 turns) and Marathon (×3, 1500 turns) scale research, production, growth, upgrade costs and the turn limit.']
+  };
+
+  function entries(cat) {
+    var out = [];
+    switch (cat) {
+      case 'concepts': for (var c in CONCEPTS) out.push({ id: c, name: CONCEPTS[c][0] }); break;
+      case 'civs': AU.CIVS.forEach(function (c) { out.push({ id: c.id, name: c.name }); }); break;
+      case 'leaders': AU.CIVS.forEach(function (c) { c.leaders.forEach(function (l) { out.push({ id: l.id, name: l.name + ' (' + c.name + ')' }); }); }); break;
+      case 'units': for (var u in AU.UNITS) out.push({ id: u, name: AU.UNITS[u].name }); break;
+      case 'buildings': for (var b in AU.BUILDINGS) if (!AU.BUILDINGS[b].noBuild) out.push({ id: b, name: AU.BUILDINGS[b].name }); break;
+      case 'wonders': for (var w in AU.WONDERS) out.push({ id: w, name: AU.WONDERS[w].name }); break;
+      case 'national': for (var n in AU.NATIONAL) out.push({ id: n, name: AU.NATIONAL[n].name }); break;
+      case 'natural': for (var nw in AU.NATURAL_WONDERS) out.push({ id: nw, name: AU.NATURAL_WONDERS[nw].name }); break;
+      case 'techs': AU.TECHS.forEach(function (t) { out.push({ id: t.id, name: t.name, sub: AU.ERAS[t.era] }); }); break;
+      case 'civics': AU.CIVICS.forEach(function (t) { out.push({ id: t.id, name: t.name, sub: AU.ERAS[t.era] }); }); break;
+      case 'governments': for (var gv in AU.GOVERNMENTS) out.push({ id: gv, name: AU.GOVERNMENTS[gv].name }); break;
+      case 'policies': for (var pc in AU.POLICIES) out.push({ id: pc, name: AU.POLICIES[pc].name, sub: AU.POLICIES[pc].type }); break;
+      case 'terrain': for (var t in AU.TERRAIN) out.push({ id: 't:' + t, name: AU.TERRAIN[t].name }); out.push({ id: 'hills', name: 'Hills' }); out.push({ id: 'river', name: 'River' }); for (var f in AU.FEATURES) out.push({ id: 'f:' + f, name: AU.FEATURES[f].name }); break;
+      case 'resources': for (var r in AU.RESOURCES) out.push({ id: r, name: AU.RESOURCES[r].name, sub: AU.RESOURCES[r].kind }); break;
+      case 'improvements': for (var im in AU.IMPROVEMENTS) out.push({ id: im, name: AU.IMPROVEMENTS[im].name }); break;
+      case 'specializations': for (var sp in AU.SPECIALIZATIONS) out.push({ id: sp, name: AU.SPECIALIZATIONS[sp].name }); break;
+    }
+    return out;
+  }
+  function techsUnlocking(pred) { var out = []; AU.TECHS.forEach(function (t) { if (pred(t)) out.push(link('techs', t.id, t.name)); }); return out; }
+  function unitReq(d) { return (d.tech ? 'Requires ' + link('techs', d.tech, AU.TECH_BY_ID[d.tech].name) : 'Available from the start') + (d.resource ? ' and ' + link('resources', d.resource, AU.RESOURCES[d.resource].name) : ''); }
+  function entry(cat, id) {
+    var h = '';
+    switch (cat) {
+      case 'concepts': { var c = CONCEPTS[id]; if (!c) return ''; h = '<h3>' + c[0] + '</h3><p>' + c[1] + '</p>'; break; }
+      case 'civs': { var cv = AU.CIV_BY_ID[id]; if (!cv) return ''; h = '<h3><span class="swatch" style="display:inline-block;width:14px;height:14px;background:' + cv.color + ';border:2px solid ' + cv.color2 + ';border-radius:3px"></span> ' + cv.name + '</h3><p><b>' + cv.ability.name + ':</b> ' + cv.ability.desc + '</p><p><b>Unique unit:</b> ' + link('units', cv.uu.replaces, cv.uu.name) + ' (replaces ' + AU.UNITS[cv.uu.replaces].name + ', ' + cv.uu.desc + ').</p><p><b>Unique building:</b> ' + link('buildings', cv.ub.replaces, cv.ub.name) + ' (replaces ' + AU.BUILDINGS[cv.ub.replaces].name + ', ' + cv.ub.desc + ').</p><p><b>Leaders:</b> ' + cv.leaders.map(function (l) { return link('leaders', l.id, l.name); }).join(', ') + '</p><p><b>Settlement names:</b> ' + cv.cities.join(', ') + '</p>'; break; }
+      case 'leaders': { var l = AU.LEADER_BY_ID[id]; if (!l) return ''; var lc = AU.CIV_BY_ID[l.civId]; h = '<h3>' + l.name + '</h3><p>' + l.title + ' of ' + link('civs', lc.id, lc.name) + '. A leader can only rule their own civilization.</p><p><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</p><p><b>Civilization ability, ' + lc.ability.name + ':</b> ' + lc.ability.desc + '</p><p class="stat">AI personality: aggression ' + Math.round(l.ai.aggression * 100) + '%, expansion ' + Math.round(l.ai.expansion * 100) + '%, science ' + Math.round(l.ai.science * 100) + '%, culture ' + Math.round(l.ai.culture * 100) + '%.</p>'; break; }
+      case 'units': { var u = AU.UNITS[id]; if (!u) return ''; h = '<h3>' + u.icon + ' ' + u.name + '</h3><p>Class ' + u.cls + ' · Cost ' + u.cost + ' ⚙️ · Moves ' + u.moves + (u.strength ? ' · Strength ' + u.strength : '') + (u.ranged ? ' · Ranged ' + u.ranged + ' (range ' + u.range + ')' : '') + (u.sight ? ' · Sight ' + u.sight : '') + '</p><p>' + unitReq(u) + '.' + (u.upgradesTo ? ' Upgrades to ' + link('units', u.upgradesTo, AU.UNITS[u.upgradesTo].name) + '.' : '') + (u.desc ? ' ' + u.desc : '') + '</p>';
+        var uniques = AU.CIVS.filter(function (cc) { return cc.uu.replaces === id; }); if (uniques.length) h += '<p><b>Unique versions:</b> ' + uniques.map(function (cc) { return cc.uu.name + ' (' + link('civs', cc.id, cc.name) + ': ' + cc.uu.desc + ')'; }).join('; ') + '</p>'; break; }
+      case 'buildings': { var b = AU.BUILDINGS[id]; if (!b) return ''; h = '<h3>' + b.name + '</h3><p>' + y(b.yields, true) + ' · Cost ' + b.cost + ' ⚙️</p><p>' + (b.tech ? 'Requires ' + link('techs', b.tech, AU.TECH_BY_ID[b.tech].name) : b.civic ? 'Requires civic ' + link('civics', b.civic, AU.CIVIC_BY_ID[b.civic].name) : 'Available from the start') + (b.requires ? ', needs ' + link('buildings', b.requires, AU.BUILDINGS[b.requires].name) : '') + (b.needs ? ', settlement must have ' + b.needs : '') + (b.resource ? ', needs ' + link('resources', b.resource, AU.RESOURCES[b.resource].name) : '') + '.</p>' + (b.desc ? '<p>' + b.desc + '</p>' : '') + (b.perPop ? '<p>+' + b.perPop.science + ' Science per population.</p>' : '') + (b.pct ? '<p>+' + Object.values(b.pct)[0] + '% ' + Object.keys(b.pct)[0] + '.</p>' : '');
+        var ubs = AU.CIVS.filter(function (cc) { return cc.ub.replaces === id; }); if (ubs.length) h += '<p><b>Unique versions:</b> ' + ubs.map(function (cc) { return cc.ub.name + ' (' + link('civs', cc.id, cc.name) + ': ' + cc.ub.desc + ')'; }).join('; ') + '</p>';
+        var nat = Object.keys(AU.NATIONAL).filter(function (n) { return AU.NATIONAL[n].requiresCount && AU.NATIONAL[n].requiresCount[0] === id; }); if (nat.length) h += '<p>Counts toward ' + nat.map(function (n) { return link('national', n, AU.NATIONAL[n].name); }).join(', ') + '.</p>'; break; }
+      case 'wonders': { var w = AU.WONDERS[id]; if (!w) return ''; h = '<h3>🏛️ ' + w.name + '</h3><p>' + y(w.yields, true) + ' · Cost ' + w.cost + ' ⚙️ · ' + (w.tech ? 'Requires ' + link('techs', w.tech, AU.TECH_BY_ID[w.tech].name) : 'Requires civic ' + link('civics', w.civic, AU.CIVIC_BY_ID[w.civic].name)) + (w.needs ? ' · Needs ' + w.needs : '') + '</p><p>' + w.desc + '</p><p class="stat">World wonder: only one can exist in the whole world.</p>'; break; }
+      case 'national': { var nw = AU.NATIONAL[id]; if (!nw) return ''; h = '<h3>🏯 ' + nw.name + '</h3><p>' + y(nw.yields, true) + ' · Cost ' + nw.cost + ' ⚙️ · ' + (nw.tech ? 'Requires ' + link('techs', nw.tech, AU.TECH_BY_ID[nw.tech].name) : 'Requires civic ' + link('civics', nw.civic, AU.CIVIC_BY_ID[nw.civic].name)) + (nw.requiresCount ? ' · Needs ' + nw.requiresCount[1] + '× ' + link('buildings', nw.requiresCount[0], AU.BUILDINGS[nw.requiresCount[0]].name) : '') + '</p><p>' + nw.desc + '</p><p class="stat">National wonder: one per civilization, Cities only.</p>'; break; }
+      case 'natural': { var nn = AU.NATURAL_WONDERS[id]; if (!nn) return ''; h = '<h3>' + nn.icon + ' ' + nn.name + '</h3><p>Found on ' + nn.terrain + (nn.hills ? ' hills' : '') + ' · Tile yields ' + y(nn.yields) + ' · Adjacent worked tiles ' + y(nn.adjacent, true) + '</p><p>' + nn.desc + '</p><p class="stat">Discovering it grants Science and Culture (double for the first civilization).</p>'; break; }
+      case 'techs': { var t = AU.TECH_BY_ID[id]; if (!t) return ''; var leads = AU.TECHS.filter(function (x) { return x.pre.indexOf(id) >= 0; }); h = '<h3>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span></h3><p>Base cost ' + t.cost + ' 🔬' + (t.pre.length ? ' · Requires ' + t.pre.map(function (x) { return link('techs', x, AU.TECH_BY_ID[x].name); }).join(', ') : '') + '</p><p><b>Unlocks:</b> ' + (AU.unlocksOfTech(id).join(', ') || 'further technologies') + '</p>' + (t.eureka ? '<p><b>💡 Eureka:</b> ' + t.eureka.desc + '</p>' : '') + (leads.length ? '<p><b>Leads to:</b> ' + leads.map(function (x) { return link('techs', x.id, x.name); }).join(', ') + '</p>' : ''); break; }
+      case 'civics': { var cc2 = AU.CIVIC_BY_ID[id]; if (!cc2) return ''; var leads2 = AU.CIVICS.filter(function (x) { return x.pre.indexOf(id) >= 0; }); h = '<h3>' + cc2.name + ' <span class="pill">' + AU.ERAS[cc2.era] + '</span></h3><p>Base cost ' + cc2.cost + ' 🎭' + (cc2.pre.length ? ' · Requires ' + cc2.pre.map(function (x) { return link('civics', x, AU.CIVIC_BY_ID[x].name); }).join(', ') : '') + '</p><p><b>Effect:</b> ' + (AU.civicFxText(cc2) || '—') + '</p><p><b>Unlocks:</b> ' + (AU.unlocksOfCivic(id).join(', ') || '—') + '</p>' + (cc2.inspiration ? '<p><b>💡 Inspiration:</b> ' + cc2.inspiration.desc + '</p>' : '') + (leads2.length ? '<p><b>Leads to:</b> ' + leads2.map(function (x) { return link('civics', x.id, x.name); }).join(', ') + '</p>' : ''); break; }
+      case 'governments': { var gv = AU.GOVERNMENTS[id]; if (!gv) return ''; h = '<h3>' + gv.name + '</h3><p>' + gv.desc + '</p><p><b>Slots:</b> ' + Object.keys(gv.slots).filter(function (k) { return gv.slots[k]; }).map(function (k) { return gv.slots[k] + ' ' + k; }).join(', ') + '</p><p>' + (gv.civic ? 'Unlocked by ' + link('civics', gv.civic, AU.CIVIC_BY_ID[gv.civic].name) : 'Starting government') + '.</p>'; break; }
+      case 'policies': { var pc = AU.POLICIES[id]; if (!pc) return ''; var from = AU.CIVICS.filter(function (x) { return (x.cards || []).indexOf(id) >= 0; }); h = '<h3>' + pc.name + ' <span class="pill">' + pc.type + '</span></h3><p>' + pc.desc + '</p><p>Unlocked by ' + from.map(function (x) { return link('civics', x.id, x.name); }).join(', ') + '.</p>'; break; }
+      case 'terrain': {
+        if (id === 'hills') h = '<h3>Hills</h3><p>+1 Production, costs 2 movement, +3 defence. Mines are the default improvement. Some abilities improve hills further.</p>';
+        else if (id === 'river') h = '<h3>River</h3><p>+1 Food on land tiles. Enables the Water Mill and several wonders. Settlements on rivers benefit from Egyptian and Shawnee abilities.</p>';
+        else if (id.charAt(0) === 't') { var tt = AU.TERRAIN[id.slice(2)]; h = '<h3>' + tt.name + '</h3><p>' + (y(tt.yields) || 'No yields') + (tt.impassable ? ' · Impassable (except for some abilities)' : ' · Movement cost ' + tt.move) + (tt.water ? ' · Water' : '') + '</p>'; }
+        else { var ff = AU.FEATURES[id.slice(2)]; h = '<h3>' + ff.icon + ' ' + ff.name + '</h3><p>' + (y(ff.yields) || 'No yields') + ' · Movement cost ' + ff.move + (ff.defense ? ' · +' + ff.defense + ' defence' : '') + '</p>'; }
+        break; }
+      case 'resources': { var r = AU.RESOURCES[id]; if (!r) return ''; h = '<h3>' + r.icon + ' ' + r.name + ' <span class="pill">' + r.kind + '</span></h3><p>' + y(r.yields, true) + ' · Improvement: ' + link('improvements', r.improvement, AU.IMPROVEMENTS[r.improvement].name) + ' · Terrain: ' + r.terrain.join(', ') + (r.revealTech ? ' · Revealed by ' + link('techs', r.revealTech, AU.TECH_BY_ID[r.revealTech].name) : '') + '</p>' + (r.kind === 'luxury' ? '<p>Each distinct worked Luxury gives +1 Happiness in every settlement (up to 4).</p>' : r.kind === 'strategic' ? '<p><b>Needed by:</b> ' + Object.keys(AU.UNITS).filter(function (u) { return AU.UNITS[u].resource === id; }).map(function (u) { return link('units', u, AU.UNITS[u].name); }).join(', ') + '</p>' : ''); break; }
+      case 'improvements': { var im = AU.IMPROVEMENTS[id]; if (!im) return ''; h = '<h3>' + im.icon + ' ' + im.name + '</h3><p>' + y(im.yields, true) + '. Built automatically when a citizen claims a matching tile.</p>'; break; }
+      case 'specializations': { var sp = AU.SPECIALIZATIONS[id]; if (!sp) return ''; h = '<h3>' + sp.icon + ' ' + sp.name + '</h3><p>' + sp.desc + ' Requires population ' + sp.minPop + '. A specialized Town stops growing and sends surplus food to your nearest City.</p>'; break; }
+    }
+    return h;
+  }
+
+  P.render_pedia = function (app, g, data) {
+    var st = app.pediaState; if (data.cat) st.cat = data.cat; if (data.id !== undefined) st.id = data.id;
+    var html = '<div class="tabs">' + CATS.map(function (c) { return '<button class="small ' + (st.cat === c[0] ? 'on' : '') + '" data-action="pedia" data-cat="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div>';
+    html += '<input id="pedia-search" placeholder="Search…" value="' + (st.q || '').replace(/"/g, '') + '" style="width:100%;margin-bottom:10px">';
+    html += '<div id="pedia-list"></div><div id="pedia-entry" class="pedia-entry"></div>';
+    setTimeout(function () { P.renderPediaList(app); }, 0);
+    return { title: 'Civilopedia', html: html };
+  };
+  P.renderPediaList = function (app) {
+    var st = app.pediaState, list = $('pedia-list'), ent = $('pedia-entry'); if (!list) return;
+    var q = (st.q || '').toLowerCase();
+    var items = q ? CATS.reduce(function (acc, c) { return acc.concat(entries(c[0]).filter(function (e) { return e.name.toLowerCase().indexOf(q) >= 0; }).map(function (e) { e.cat = c[0]; return e; })); }, []) : entries(st.cat).map(function (e) { e.cat = st.cat; return e; });
+    if (!st.id || (!q && !entries(st.cat).some(function (e) { return e.id === st.id; }))) st.id = items.length ? items[0].id : null;
+    if (st.id && !q) st.cat = st.cat; 
+    var cur = items.filter(function (e) { return e.id === st.id; })[0];
+    if (!cur && items.length) { cur = items[0]; st.id = cur.id; }
+    list.innerHTML = '<div class="pedia-list">' + items.slice(0, 200).map(function (e) { return '<button class="small ' + (e.id === st.id && e.cat === (cur ? cur.cat : st.cat) ? 'on' : '') + '" data-action="pedia" data-cat="' + e.cat + '" data-id="' + e.id + '">' + e.name + (e.sub ? ' <small class="stat">' + e.sub + '</small>' : '') + '</button>'; }).join('') + '</div>';
+    ent.innerHTML = cur ? entry(cur.cat, cur.id) : '<p class="stat">Nothing found.</p>';
+  };
+  AU.Pedia = { entries: entries, entry: entry, CONCEPTS: CONCEPTS };
+})(globalThis.AU = globalThis.AU || {});

@@ -112,3 +112,13 @@ button.turn { min-width: 118px; padding: 12px 10px; font-weight: 600; font-size:
 .leader-card { border: 2px solid var(--line); border-radius: 10px; padding: 10px; background: var(--panel2); cursor: pointer; font-size: 13px; }
 .leader-card.selected { border-color: var(--gold); background: #2a2415; }
 .leader-card > b { font-size: 15px; }
+
+/* Civilopedia & city view */
+.plink { color: var(--sci); text-decoration: underline; cursor: pointer; }
+.pedia-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; max-height: 32vh; overflow-y: auto; }
+.pedia-entry { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; line-height: 1.5; font-size: 14px; }
+.pedia-entry h3 { margin: 0 0 8px; color: var(--gold); font-size: 18px; }
+.pedia-entry p { margin: 6px 0; }
+.cityview-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 12px; touch-action: none; }
+#cityview-canvas { display: block; width: 100%; }
+.cityview-hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,.8); text-shadow: 0 1px 3px #000; pointer-events: none; }

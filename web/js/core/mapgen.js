@@ -26,7 +26,7 @@
   }
 
   function makeTile(i, col, row) {
-    return { i: i, col: col, row: row, terrain: 'ocean', hills: false, feature: null, river: false, resource: null,
+    return { i: i, col: col, row: row, terrain: 'ocean', hills: false, feature: null, river: false, resource: null, natural: null,
       owner: -1, worked: false, camp: false, continent: -1, elev: 0 };
   }
 
@@ -202,12 +202,35 @@
       t4.resource = rng.pick(weighted);
     }
 
+    // Natural wonders: a few per map, on matching terrain, apart from each other
+    var naturals = [], wantNat = Math.max(2, Math.round(landCount / 220));
+    var natIds = rng.shuffle(Object.keys(AU.NATURAL_WONDERS));
+    natIds.forEach(function (nid) {
+      if (naturals.length >= wantNat) return;
+      var NW = AU.NATURAL_WONDERS[nid], cands = [];
+      for (var q = 0; q < tiles.length; q++) {
+        var tq = tiles[q];
+        if (tq.terrain !== NW.terrain) continue;
+        if (NW.flat && tq.hills) continue; if (NW.hills && !tq.hills) continue;
+        if (tq.resource || tq.natural) continue;
+        if (NW.terrain === 'coast') { var hasLand = Hex.neighborsOf(tq.col, tq.row, W, H).some(function (n) { return !AU.TERRAIN[tiles[n].terrain].water; }); if (!hasLand) continue; }
+        cands.push(tq);
+      }
+      rng.shuffle(cands);
+      for (var ci = 0; ci < cands.length; ci++) {
+        var ct = cands[ci], far = naturals.every(function (o) { return Hex.distance(ct.col, ct.row, tiles[o].col, tiles[o].row) >= 8; });
+        if (!far) continue;
+        ct.natural = nid; ct.feature = null; if (NW.terrain !== 'mountain' && NW.style === 'lake') ct.river = false;
+        naturals.push(ct.i); break;
+      }
+    });
+
     // Start positions
     var nStarts = opts.numCivs;
     var landTiles = [], landTilesAll = [];
     for (i = 0; i < tiles.length; i++) {
       var t5 = tiles[i];
-      if (AU.TERRAIN[t5.terrain].water || t5.terrain === 'mountain' || t5.terrain === 'snow') continue;
+      if (AU.TERRAIN[t5.terrain].water || t5.terrain === 'mountain' || t5.terrain === 'snow' || t5.natural) continue;
       if (t5.continent >= 0 && continentSizes[t5.continent] < TYPE.minStart) continue;
       landTilesAll.push(t5);
       if (type === 'terra' && t5.col > W * 0.47) continue; // the new world is settled later
@@ -272,7 +295,7 @@
       if (far) { camps.push(cc.i); cc.camp = true; }
     }
     landTilesAll.forEach(function (t) { delete t._score; });
-    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths, mapType: type };
+    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths, mapType: type, naturals: naturals };
   };
 
   // Base yields of a tile: terrain + hills + feature + resource (resource only if visible to viewer civ, if given)
@@ -283,6 +306,7 @@
     if (t.hills) y.production += 1;
     if (t.feature) add(y, AU.FEATURES[t.feature].yields);
     if (t.river && !T.water) y.food += 1;
+    if (t.natural) add(y, AU.NATURAL_WONDERS[t.natural].yields);
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];
       if (!R.revealTech || !civ || civ.techs[R.revealTech]) add(y, R.yields);

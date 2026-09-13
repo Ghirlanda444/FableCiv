@@ -18,9 +18,19 @@
     for (var w in AU.WONDERS) if (AU.WONDERS[w].tech === id) out.push(AU.WONDERS[w].name + ' (wonder)');
     for (var p in AU.PROJECTS) if (AU.PROJECTS[p].tech === id) out.push(AU.PROJECTS[p].name);
     for (var r in AU.RESOURCES) if (AU.RESOURCES[r].revealTech === id) out.push('reveals ' + AU.RESOURCES[r].name);
-    var t = AU.TECH_BY_ID[id]; if (t.embark) out.push('units can embark on Coast'); if (t.ocean) out.push('Ocean travel');
+    for (var nw in AU.NATIONAL) if (AU.NATIONAL[nw].tech === id) out.push(AU.NATIONAL[nw].name + ' (national)');
+    var t = AU.TECH_BY_ID[id]; if (t.embark) out.push('units can embark on Coast'); if (t.ocean) out.push('Ocean travel'); if (t.desc) out.push(t.desc);
     return out;
   }
+  function unlocksOfCivic(id) {
+    var out = [], c = AU.CIVIC_BY_ID[id];
+    for (var b in AU.BUILDINGS) if (AU.BUILDINGS[b].civic === id) out.push(AU.BUILDINGS[b].name);
+    for (var w in AU.WONDERS) if (AU.WONDERS[w].civic === id) out.push(AU.WONDERS[w].name + ' (wonder)');
+    for (var n in AU.NATIONAL) if (AU.NATIONAL[n].civic === id) out.push(AU.NATIONAL[n].name + ' (national)');
+    (c.cards || []).forEach(function (k) { out.push('policy: ' + AU.POLICIES[k].name); });
+    return out;
+  }
+  AU.unlocksOfTech = unlocksOfTech; AU.unlocksOfCivic = unlocksOfCivic; AU.civicFxText = civicFxText;
   function civicFxText(c) {
     var out = [];
     if (c.unlocks) out.push('Government: ' + c.unlocks);
@@ -90,34 +100,39 @@
     // build / buy options
     var opts = G.buildOptions(g, s), tab = data.tab || 'units';
     html += '<div class="section"><h3>' + (s.isCity ? 'Build or buy' : 'Purchase with gold') + '</h3><div class="tabs">';
-    [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'Wonders'], ['projects', 'Projects']].forEach(function (t) { if (!s.isCity && (t[0] === 'wonders' || t[0] === 'projects')) return; html += '<button class="small ' + (tab === t[0] ? 'on' : '') + '" data-action="citytab" data-id="' + s.id + '" data-tab="' + t[0] + '">' + t[1] + ' (' + opts[t[0]].length + ')</button>'; });
+    [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'Wonders'], ['national', 'National'], ['projects', 'Projects']].forEach(function (t) { if (!s.isCity && (t[0] === 'wonders' || t[0] === 'projects' || t[0] === 'national')) return; html += '<button class="small ' + (tab === t[0] ? 'on' : '') + '" data-action="citytab" data-id="' + s.id + '" data-tab="' + t[0] + '">' + t[1] + ' (' + opts[t[0]].length + ')</button>'; });
     html += '</div>';
-    var kind = { units: 'unit', buildings: 'building', wonders: 'wonder', projects: 'project' }[tab];
+    var kind = { units: 'unit', buildings: 'building', wonders: 'wonder', national: 'national', projects: 'project' }[tab];
+    if (tab === 'national' && !opts.national.length) html += '<p class="stat">National wonders need several copies of a building across your settlements (for example three Libraries for the Royal Library). Each can be built once per civilization.</p>';
     if (!opts[tab].length) html += '<p class="stat">Nothing available yet. Research new technologies.</p>';
     opts[tab].forEach(function (id) {
       var cost = G.itemCost(g, civ, kind, id, s), buyCost = G.purchaseCost(g, civ, kind, id, s), name, desc;
       if (kind === 'unit') { var d = G.unitType(g, civ, id); name = AU.UNITS[id].icon + ' ' + d.name + (d.unique ? ' ★' : ''); desc = (d.cls === 'civilian' ? 'Founds a new Town.' : 'Str ' + d.strength + (d.ranged ? ' · Ranged ' + d.ranged + ' (range ' + d.range + ')' : '') + ' · Moves ' + G.maxMoves(g, civ.idx, id)) + (d.resource ? ' · needs ' + AU.RESOURCES[d.resource].name : ''); }
       else if (kind === 'building') { var b = G.buildingDef(g, civ, id); name = b.name + (b.unique ? ' ★' : ''); desc = yieldsHtml(b.yields, { plus: true }) + (b.desc ? ' · ' + b.desc : '') + (b.perPop ? ' · +' + b.perPop.science + ' 🔬 per pop' : '') + (b.pct ? ' · +' + (b.pct.production || b.pct.science || b.pct.unitProduction) + '% ' + Object.keys(b.pct)[0] : ''); }
       else if (kind === 'wonder') { var w = AU.WONDERS[id]; name = '🏛️ ' + w.name; desc = yieldsHtml(w.yields, { plus: true }) + ' · ' + w.desc; }
+      else if (kind === 'national') { var nw = AU.NATIONAL[id]; name = '🏯 ' + nw.name; desc = yieldsHtml(nw.yields, { plus: true }) + ' · ' + nw.desc; }
       else { var pr = AU.PROJECTS[id]; name = '🚀 ' + pr.name; desc = pr.desc; }
       var inQ = G.inQueue(s, kind, id);
       html += '<div class="row"><div class="grow"><b>' + name + '</b><small>' + desc + '</small><small>' + cost + ' ⚙️' + (s.isCity ? ' (' + turns(cost, s.progress[kind + ':' + id] || 0, y.production) + ')' : '') + '</small></div>' +
         (s.isCity ? '<button class="small primary" data-action="enqueue" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (inQ && kind !== 'unit' ? 'disabled' : '') + '>' + (inQ && kind !== 'unit' ? 'Queued' : 'Build') + '</button>' : '') +
-        (kind !== 'wonder' && kind !== 'project' ? '<button class="small" data-action="buy" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (civ.gold >= buyCost ? '' : 'disabled') + '>' + buyCost + ' 💰</button>' : '') + '</div>';
+        (kind !== 'wonder' && kind !== 'project' && kind !== 'national' ? '<button class="small" data-action="buy" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (civ.gold >= buyCost ? '' : 'disabled') + '>' + buyCost + ' 💰</button>' : '') + '</div>';
     });
     html += '</div>';
     // buildings owned
     html += '<div class="section"><h3>Buildings (' + s.buildings.length + ')</h3><div class="yields">' + (s.buildings.map(function (b) { var d = G.buildingDef(g, civ, b); return '<span>' + (AU.WONDERS[b] ? '🏛️ ' : '') + d.name + '</span>'; }).join(' ') || '<span class="stat">none</span>') + '</div></div>';
     // tiles
     var worked = s.tiles.filter(function (i) { return g.tiles[i].worked && i !== s.tile; }).length;
+    var nats = s.tiles.filter(function (i) { return g.tiles[i].natural; }).map(function (i) { return AU.NATURAL_WONDERS[g.tiles[i].natural].name; });
+    if (nats.length) html += '<div class="section"><h3>Natural wonders</h3><p class="stat">' + nats.join(', ') + '</p></div>';
     html += '<div class="section"><h3>Territory</h3><p class="stat">' + s.tiles.length + ' tiles owned, ' + worked + ' worked by citizens. Founded turn ' + s.founded + '.</p>';
-    html += '<button class="small" data-action="center" data-tile="' + s.tile + '">Show on map</button></div>';
+    html += '<button class="small" data-action="center" data-tile="' + s.tile + '">Show on map</button> <button class="small primary" data-action="cityview" data-id="' + s.id + '">🏙️ View city</button></div>';
     return { title: (s.isCapital ? '★ ' : '') + s.name + ' — ' + (s.isCity ? 'City' : 'Town'), html: html };
   };
   P.itemName = function (g, civ, q) {
     if (q.kind === 'unit') return G.unitType(g, civ, q.id).name;
     if (q.kind === 'building') return G.buildingDef(g, civ, q.id).name;
     if (q.kind === 'wonder') return AU.WONDERS[q.id].name;
+    if (q.kind === 'national') return AU.NATIONAL[q.id].name;
     return AU.PROJECTS[q.id].name;
   };
 
@@ -129,7 +144,8 @@
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
       var cost = G.techCost(g, p, t), prog = p.techProgress[t.id] || 0, cur = p.currentTech === t.id;
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '"><div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span></b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small><small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
+      var boosted = p.boosts && p.boosts[t.id];
+      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '"><div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">Eureka ✓</span>' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small>' + (t.eureka && !boosted ? '<small>💡 Eureka: ' + t.eureka.desc + '</small>' : '') + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
@@ -138,7 +154,7 @@
       html += '<div class="section"><h3>' + era + ' Era</h3>';
       list.forEach(function (t) {
         var done = !!p.techs[t.id];
-        html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + t.name + '</b><small>' + (unlocksOfTech(t.id).join(', ') || '—') + '</small>' + (!done && t.pre.length ? '<small>Requires: ' + t.pre.map(function (x) { return AU.TECH_BY_ID[x].name; }).join(', ') + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + t.cost + '</span>') + '</div>';
+        html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + t.name + (p.boosts && p.boosts[t.id] && !done ? ' 💡' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || '—') + '</small>' + (!done && t.pre.length ? '<small>Requires: ' + t.pre.map(function (x) { return AU.TECH_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && t.eureka ? '<small>💡 ' + t.eureka.desc + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.techCost(g, p, t) + '</span>') + '</div>';
       });
       html += '</div>';
     });
@@ -151,21 +167,29 @@
     var govs = G.availableGovernments(p);
     for (var id in AU.GOVERNMENTS) {
       var gv = AU.GOVERNMENTS[id], ok = govs.indexOf(id) >= 0, cur = p.government === id;
-      html += '<div class="row ' + (cur ? 'active' : ok ? '' : 'locked') + '"><div class="grow"><b>' + gv.name + '</b><small>' + gv.desc + '</small>' + (!ok ? '<small>Requires civic: ' + AU.CIVIC_BY_ID[gv.civic].name + '</small>' : '') + '</div>' + (cur ? '<span class="pill">current</span>' : ok ? '<button class="small" data-action="government" data-id="' + id + '">Adopt</button>' : '') + '</div>';
+      html += '<div class="row ' + (cur ? 'active' : ok ? '' : 'locked') + '"><div class="grow"><b>' + gv.name + '</b><small>' + gv.desc + '</small><small>Slots: ' + Object.keys(gv.slots).filter(function (k) { return gv.slots[k]; }).map(function (k) { return gv.slots[k] + ' ' + k; }).join(', ') + '</small>' + (!ok ? '<small>Requires civic: ' + AU.CIVIC_BY_ID[gv.civic].name + '</small>' : '') + '</div>' + (cur ? '<span class="pill">current</span>' : ok ? '<button class="small" data-action="government" data-id="' + id + '">Adopt</button>' : '') + '</div>';
     }
+    html += '</div>';
+    // policy cards
+    var slots = G.policySlots(p), free = G.freeSlots(p), availCards = G.availablePolicies(p), active = p.policies || [];
+    html += '<div class="section"><h3>Policy cards</h3><p class="stat">Slots: ' + ['military', 'economic', 'diplomatic', 'wildcard'].map(function (k) { return k + ' ' + (slots[k] - free[k]) + '/' + slots[k]; }).join(' · ') + '. Cards come from civics; wildcard slots accept any card.</p>';
+    if (!active.length) html += '<p class="stat">No cards slotted.</p>';
+    active.forEach(function (id) { var pc = AU.POLICIES[id]; html += '<div class="row active"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small" data-action="policyremove" data-id="' + id + '">Remove</button></div>'; });
+    var others = availCards.filter(function (id) { return active.indexOf(id) < 0; });
+    if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
     html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics.</p>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
-      var cost = G.civicCost(g, p, c), prog = p.civicProgress[c.id] || 0, cur = p.currentCivic === c.id;
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="civic" data-id="' + c.id + '"><div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span></b><small>' + (civicFxText(c) || 'Leads to further civics') + '</small><small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
+      var cost = G.civicCost(g, p, c), prog = p.civicProgress[c.id] || 0, cur = p.currentCivic === c.id, boosted = p.boosts && p.boosts['c:' + c.id];
+      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="civic" data-id="' + c.id + '"><div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#3a2a4a;color:#e6c8ff">Inspired ✓</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || 'Leads to further civics') + '</small>' + (c.inspiration && !boosted ? '<small>💡 Inspiration: ' + c.inspiration.desc + '</small>' : '') + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
       var list = AU.CIVICS.filter(function (t) { return t.era === ei && avail.indexOf(t) < 0; });
       if (!list.length) return;
       html += '<div class="section"><h3>' + era + ' Era</h3>';
-      list.forEach(function (c) { var done = !!p.civics[c.id]; html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + c.name + '</b><small>' + (civicFxText(c) || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + c.cost + '</span>') + '</div>'; });
+      list.forEach(function (c) { var done = !!p.civics[c.id]; html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + c.name + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && c.inspiration ? '<small>💡 ' + c.inspiration.desc + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.civicCost(g, p, c) + '</span>') + '</div>'; });
       html += '</div>';
     });
     return { title: 'Civics & Government', html: html };
@@ -226,7 +250,7 @@
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
     html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D classic') + ' (switch)</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br>' + (app.renderer.is3D ? '' : '<button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>');
-    html += '<button class="big ghost" data-action="help">How to play</button><br><br>';
+    html += '<button class="big ghost" data-action="pedia">📖 Civilopedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
     html += '</div><p class="stat">Ages Unbroken v0.2. Autosaves at the end of every turn.</p>';
     return { title: 'Menu', html: html };
@@ -272,6 +296,11 @@
       case 'newgame': app.closePanel(); app.g = null; app.showSetup(); break;
       case 'quit': app.confirm('Quit to the title screen? Your game is saved.', function () { app.save(true); app.panel = null; $('panel').hidden = true; app.g = null; app.showTitle(); }); break;
       case 'help': app.openPanel('help'); break;
+      case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
+      case 'pediasearch': break;
+      case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.refreshPanel(); app.refreshHud(); break;
+      case 'policyremove': G.setPolicies(g, p, (p.policies || []).filter(function (x) { return x !== d.id; })); app.refreshPanel(); app.refreshHud(); break;
+      case 'cityview': app.openPanel('cityview', { id: +d.id }); break;
       case 'log': app.openPanel('log'); break;
       case 'togglegrid': app.renderer.showGrid = !app.renderer.showGrid; app.invalidate(); app.refreshPanel(); break;
       case 'togglegraphics': app.settings.graphics = app.settings.graphics === '3d' ? '2d' : '3d'; app.saveSettings(); app.makeRenderer(); app.refreshPanel(); break;

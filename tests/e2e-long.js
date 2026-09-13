@@ -15,8 +15,8 @@ const TURNS = +process.argv[2] || 200;
   await page.click('#btn-new');
   await page.click('.civ-card[data-civ="mongolia"]');
   await page.selectOption('#opt-size', 'small');
-  await page.selectOption('#opt-diff', 'king');
-  await page.fill('#opt-seed', '99');
+  await page.selectOption('#opt-diff', 'prince');
+  await page.fill('#opt-seed', '7');
   await page.click('#btn-start');
   await page.waitForFunction(() => window.AU.App.g && !document.getElementById('game').hidden);
   await page.evaluate(() => { const p = AU.G.player(AU.App.g); p.ai = Object.assign({}, AU.G.leaderData(p).ai); });
@@ -37,6 +37,9 @@ const TURNS = +process.argv[2] || 200;
       await page.evaluate(() => {
         const app = AU.App, g = app.g, p = AU.G.player(g);
         for (const name of ['tech', 'civics', 'diplomacy', 'empire', 'log', 'menu']) app.openPanel(name);
+        for (const cat of Object.keys(AU.MAP_TYPES).length ? ['concepts', 'civs', 'leaders', 'units', 'buildings', 'wonders', 'national', 'natural', 'techs', 'civics', 'governments', 'policies', 'terrain', 'resources', 'improvements', 'specializations'] : []) { app.openPanel('pedia', { cat }); AU.Panels.renderPediaList(app); for (const e of AU.Pedia.entries(cat)) { app.pediaState.id = e.id; AU.Panels.renderPediaList(app); } }
+        const first = AU.G.civSettlements(g, p.idx)[0]; if (first) { app.openPanel('cityview', { id: first.id }); }
+        const cards = AU.G.availablePolicies(p); if (cards.length) AU.G.setPolicies(g, p, cards);
         for (const s of AU.G.civSettlements(g, p.idx)) { app.openPanel('city', { id: s.id }); for (const tab of ['units', 'buildings', 'wonders', 'projects']) { app.panelData.tab = tab; app.refreshPanel(); } }
         app.closePanel();
         for (const u of AU.G.civUnits(g, p.idx)) { app.selectUnit(u); app.refreshHud(); }
@@ -47,6 +50,7 @@ const TURNS = +process.argv[2] || 200;
       const st = await page.evaluate(() => { const g = AU.App.g, p = AU.G.player(g); return { turn: g.turn, era: AU.ERAS[p.era], sets: AU.G.civSettlements(g, p.idx).length, cities: AU.G.civSettlements(g, p.idx).filter(s => s.isCity).length, units: AU.G.civUnits(g, p.idx).length, techs: Object.keys(p.techs).length, gold: Math.round(p.gold), wonders: Object.keys(g.wonders).length, alive: g.civs.filter(c => c.alive).length, victory: g.victory }; });
       console.log(JSON.stringify(st));
       await page.screenshot({ path: out + `/long-${st.turn}.png` });
+      if (st.turn > 40 && !global.shotPedia) { global.shotPedia = true; await page.evaluate(() => { AU.App.openPanel('pedia', { cat: 'natural' }); AU.Panels.renderPediaList(AU.App); }); await page.waitForTimeout(100); await page.screenshot({ path: out + '/long-pedia.png' }); await page.evaluate(() => { const g = AU.App.g, p = AU.G.player(g); const best = Object.values(g.settlements).sort((a, b) => b.buildings.length - a.buildings.length)[0]; AU.App.openPanel('cityview', { id: best.id }); }); await page.waitForTimeout(600); await page.screenshot({ path: out + '/long-cityview.png' }); await page.evaluate(() => { AU.App.openPanel('civics'); }); await page.waitForTimeout(100); await page.screenshot({ path: out + '/long-civics.png' }); await page.evaluate(() => AU.App.closePanel()); }
     }
   }
   await page.evaluate(() => { const app = AU.App, g = app.g, p = AU.G.player(g); app.closePanel(); app.deselect(); p.explored.fill(1); p.visible = null; const best = Object.values(g.settlements).sort((a, b) => b.buildings.length - a.buildings.length)[0]; if (best) { app.renderer.centerOn(g, best.tile); app.renderer.cam.zoom = 5; app.invalidate(); console.log('zoom target', best.name, best.buildings.join(',')); } });

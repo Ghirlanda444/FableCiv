@@ -11,14 +11,14 @@
     water_mill:   { name: 'Water Mill',    cost: 80,  yields: { food: 1, production: 1 }, tech: 'wheel', needs: 'river' },
     market:       { name: 'Market',        cost: 120, yields: { gold: 3 }, tech: 'currency' },
     lighthouse:   { name: 'Lighthouse',    cost: 120, yields: { food: 1, gold: 1 }, tech: 'sailing', needs: 'coast', waterFood: 1 },
-    amphitheater: { name: 'Amphitheater',  cost: 150, yields: { culture: 3 }, tech: 'drama_poetry', requires: 'monument' },
+    amphitheater: { name: 'Amphitheater',  cost: 150, yields: { culture: 3 }, civic: 'drama_poetry', requires: 'monument' },
     aqueduct:     { name: 'Aqueduct',      cost: 150, yields: { food: 2, happiness: 1 }, tech: 'engineering' },
     university:   { name: 'University',    cost: 250, yields: { science: 4 }, tech: 'education', requires: 'library', perPop: { science: 0.25 } },
     workshop:     { name: 'Workshop',      cost: 200, yields: { production: 3 }, tech: 'apprenticeship' },
     harbor:       { name: 'Harbor',        cost: 220, yields: { gold: 3, production: 1 }, tech: 'celestial_navigation', requires: 'lighthouse', needs: 'coast' },
     castle:       { name: 'Castle',        cost: 260, yields: { culture: 1 }, tech: 'castles', requires: 'walls', defense: 8, hp: 100, desc: 'City +8 defense, +100 HP' },
     bank:         { name: 'Bank',          cost: 300, yields: { gold: 5 }, tech: 'banking', requires: 'market' },
-    museum:       { name: 'Museum',        cost: 320, yields: { culture: 5 }, tech: 'humanism', requires: 'amphitheater' },
+    museum:       { name: 'Museum',        cost: 320, yields: { culture: 5 }, civic: 'humanism', requires: 'amphitheater' },
     printing_house:{ name: 'Printing House', cost: 300, yields: { science: 3, culture: 2 }, tech: 'printing', requires: 'library' },
     factory:      { name: 'Factory',       cost: 400, yields: { production: 6 }, tech: 'industrialization', requires: 'workshop', pct: { production: 10 } },
     hospital:     { name: 'Hospital',      cost: 380, yields: { food: 3, happiness: 2 }, tech: 'sanitation', requires: 'aqueduct' },
@@ -27,9 +27,33 @@
     research_lab: { name: 'Research Lab',  cost: 520, yields: { science: 8 }, tech: 'chemistry', requires: 'university', perPop: { science: 0.5 } },
     power_plant:  { name: 'Power Plant',   cost: 520, yields: { production: 4 }, tech: 'electricity', requires: 'factory', pct: { production: 15 }, resource: 'coal' },
     broadcast_tower:{ name: 'Broadcast Tower', cost: 520, yields: { culture: 8 }, tech: 'radio', requires: 'museum' },
-    stadium:      { name: 'Stadium',       cost: 540, yields: { happiness: 4, culture: 2 }, tech: 'mass_media' },
+    stadium:      { name: 'Stadium',       cost: 540, yields: { happiness: 4, culture: 2 }, civic: 'professional_sports' },
     airport:      { name: 'Airport',       cost: 600, yields: { gold: 4, production: 2 }, tech: 'flight' },
-    computer_center:{ name: 'Computer Center', cost: 700, yields: { science: 10, gold: 3 }, tech: 'computers', requires: 'research_lab', pct: { science: 15 } }
+    computer_center:{ name: 'Computer Center', cost: 700, yields: { science: 10, gold: 3 }, tech: 'computers', requires: 'research_lab', pct: { science: 15 } },
+    sewer:        { name: 'Sewer',         cost: 300, yields: { food: 1, happiness: 2 }, tech: 'sanitation', requires: 'aqueduct' },
+    shipyard:     { name: 'Shipyard',      cost: 260, yields: { production: 2, gold: 1 }, tech: 'mass_production', requires: 'harbor', needs: 'coast', pct: { unitProduction: 15 } },
+    astronomical_observatory: { name: 'Observatory', cost: 280, yields: { science: 3 }, tech: 'astronomy', requires: 'library', needs: 'hills' },
+    railway_station: { name: 'Railway Station', cost: 420, yields: { production: 3, gold: 2 }, tech: 'railroad', requires: 'workshop' },
+    telegraph_office: { name: 'Telegraph Office', cost: 380, yields: { science: 2, gold: 2 }, tech: 'telegraph', requires: 'market' },
+    nuclear_plant: { name: 'Nuclear Plant',  cost: 800, yields: { production: 8 }, tech: 'nuclear_power', requires: 'power_plant', pct: { production: 20 } },
+    data_center:  { name: 'Data Center',   cost: 850, yields: { science: 12, gold: 4 }, tech: 'the_internet', requires: 'computer_center', pct: { science: 10 } },
+    spaceport:    { name: 'Spaceport',     cost: 900, yields: { science: 4 }, tech: 'rocketry', requires: 'airport', desc: 'Required for space projects.' }
+  };
+
+  // National wonders: each civilization can build one of each, usually after owning several of a building.
+  AU.NATIONAL = {
+    national_epic:   { name: 'National Epic',      cost: 200, civic: 'drama_poetry', requiresCount: ['monument', 2], yields: { culture: 4 }, desc: 'Units built here start with a level of experience.', fx: { unitStrength: 2 } },
+    heroic_epic:     { name: 'Heroic Epic',        cost: 260, civic: 'military_training', requiresCount: ['barracks', 2], yields: { culture: 2, production: 2 }, desc: '+15% unit production here; all units +1 Strength.', fx: { pctUnitProduction: 15, empireLandBonus: 1 } },
+    royal_library:   { name: 'Royal Library',      cost: 320, tech: 'education', requiresCount: ['library', 3], yields: { science: 6, culture: 2 }, desc: '+6 Science; +1 Science per Library you own.', fx: { sciencePerBuilding: 'library' } },
+    ironworks:       { name: 'Ironworks',          cost: 380, tech: 'metal_casting', requiresCount: ['workshop', 2], yields: { production: 6 }, desc: '+6 Production; +1 Production per worked Mine here.', fx: { productionPerMine: 1 } },
+    national_treasury:{ name: 'National Treasury', cost: 380, tech: 'banking', requiresCount: ['market', 3], yields: { gold: 8 }, desc: '+8 Gold; +10% Gold empire-wide.', fx: { yieldMult: { gold: 1.1 } } },
+    grand_temple:    { name: 'Grand Temple',       cost: 300, civic: 'mysticism_civic', requiresCount: ['shrine', 3], yields: { culture: 4, happiness: 3 }, desc: '+3 Happiness here, +1 Happiness in every settlement.', fx: { empireHappiness: 1 } },
+    national_university:{ name: 'National University', cost: 520, tech: 'scientific_method', requiresCount: ['university', 3], yields: { science: 10 }, desc: '+10 Science and a free technology.', fx: { freeTech: 1 } },
+    grand_arsenal:   { name: 'Grand Arsenal',      cost: 520, tech: 'military_science', requiresCount: ['barracks', 3], yields: { production: 3 }, desc: 'Units built here +3 Strength; unit upkeep: 4 extra free units.', fx: { unitStrength: 3, freeUpkeep: 4 } },
+    national_museum: { name: 'National Museum',    cost: 560, civic: 'the_arts', requiresCount: ['museum', 2], yields: { culture: 10 }, desc: '+10 Culture; +2 Culture per wonder you own.', fx: { culturePerWonder: 2 } },
+    central_bank:    { name: 'Central Bank',       cost: 700, tech: 'economics', requiresCount: ['bank', 3], yields: { gold: 12 }, desc: '+12 Gold; purchases cost 10% less.', fx: { purchaseMult: 0.9 } },
+    national_park:   { name: 'National Park',      cost: 600, civic: 'conservation', requiresCount: ['monument', 4], yields: { culture: 6, happiness: 2 }, desc: '+2 Happiness in every settlement.', fx: { empireHappiness: 2 } },
+    space_agency:    { name: 'Space Agency',       cost: 900, tech: 'satellites', requiresCount: ['research_lab', 2], yields: { science: 8 }, desc: 'Space projects cost 20% less.', fx: { projectCostMult: 0.8 } }
   };
 
   AU.WONDERS = {
@@ -48,7 +72,7 @@
     alhambra:        { name: 'Alhambra',          cost: 480, tech: 'castles',      yields: { culture: 3 }, desc: '+8 city defense here; units built here +2 Strength.', fx: { defense: 8, unitStrength: 2 }, needs: 'hills' },
     notre_dame:      { name: 'Notre Dame',        cost: 520, tech: 'education',    yields: { culture: 6, happiness: 2 }, desc: '+6 Culture, +2 Happiness.', fx: {} },
     forbidden_city:  { name: 'Forbidden City',    cost: 620, tech: 'printing',     yields: { culture: 5 }, desc: '+10% Culture and +10% Gold empire-wide.', fx: { yieldMult: { culture: 1.1, gold: 1.1 } } },
-    taj_mahal:       { name: 'Taj Mahal',         cost: 680, tech: 'humanism',     yields: { culture: 6, happiness: 3 }, desc: '+3 Happiness here; +1 Happiness in all settlements.', fx: { empireHappiness: 1 } },
+    taj_mahal:       { name: 'Taj Mahal',         cost: 680, civic: 'humanism',     yields: { culture: 6, happiness: 3 }, desc: '+3 Happiness here; +1 Happiness in all settlements.', fx: { empireHappiness: 1 } },
     big_ben:         { name: 'Big Ben',           cost: 800, tech: 'economics',    yields: { gold: 6 }, desc: '+20% Gold empire-wide; +250 Gold instantly.', fx: { yieldMult: { gold: 1.2 }, instantGold: 250 }, needs: 'river' },
     eiffel_tower:    { name: 'Eiffel Tower',      cost: 900, tech: 'steel',        yields: { culture: 8 }, desc: '+2 Culture in every settlement.', fx: { empireCulture: 2 } },
     statue_of_liberty:{ name: 'Statue of Liberty', cost: 900, tech: 'ideology_tech', yields: { culture: 4, happiness: 2 }, desc: '+2 Happiness and +2 Gold in every settlement.', fx: { empireHappiness: 2, empireGold: 2 }, needs: 'coast' },
@@ -56,7 +80,7 @@
   };
 
   AU.PROJECTS = {
-    launch_satellite: { name: 'Launch Earth Satellite', cost: 800, tech: 'satellites', desc: 'Step 1 of the Science Victory. Reveals the whole map.' },
+    launch_satellite: { name: 'Launch Earth Satellite', cost: 800, tech: 'satellites', requiresBuilding: 'spaceport', desc: 'Step 1 of the Science Victory. Reveals the whole map. Needs a Spaceport.' },
     moon_landing:     { name: 'Moon Landing',           cost: 1200, tech: 'satellites', requiresProject: 'launch_satellite', desc: 'Step 2 of the Science Victory.' },
     colony_ship:      { name: 'Launch Colony Ship',     cost: 1800, tech: 'spaceflight', requiresProject: 'moon_landing', desc: 'Final step: win a Science Victory.' }
   };

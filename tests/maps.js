@@ -19,6 +19,10 @@ require('fs').mkdirSync(out, { recursive: true });
     await page.waitForTimeout(150);
     await page.screenshot({ path: out + `/map-${type}.png` });
   }
+  // natural wonder close-up
+  await page.evaluate(() => { const app = AU.App, g = app.g; const nt = g.tiles.find(t => t.natural); if (nt) { app.renderer.centerOn(g, nt.i); app.renderer.cam.zoom = 2.2; app.invalidate(); } });
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: out + '/map-natural.png' });
   // close-up of the art at zoom 1.6
   await page.evaluate(() => { const app = AU.App, g = app.g, p = AU.G.player(g); app.renderer.cam.zoom = 1.5; app.renderer.centerOn(g, g.settlements[p.capital] ? g.settlements[p.capital].tile : AU.G.civUnits(g, 0)[0].tile); app.invalidate(); });
   await page.waitForTimeout(150);

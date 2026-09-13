@@ -262,6 +262,13 @@
           if (imp) this.drawGlyph(ctx, AU.IMPROVEMENTS[imp].icon, cc[0] - rzs * 0.42, cc[1] + rzs * 0.42, rzs * 0.36);
         }
         if (t.camp) this.drawGlyph(ctx, '🏕️', cc[0], cc[1] - rzs * 0.1, rzs * 0.8);
+        if (t.natural) {
+          var NW = AU.NATURAL_WONDERS[t.natural];
+          ctx.fillStyle = 'rgba(255,215,90,0.35)'; hexPath(ctx, cc[0], cc[1], rzs - 1); ctx.fill();
+          this.drawGlyph(ctx, NW.icon, cc[0], cc[1] - rzs * 0.15, rzs * 1.1);
+          var fs2 = Math.max(7, Math.round(rzs * 0.3)); ctx.font = 'bold ' + fs2 + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          var tw2 = ctx.measureText(NW.name).width + 8; ctx.fillStyle = 'rgba(40,30,0,0.75)'; ctx.fillRect(cc[0] - tw2 / 2, cc[1] + rzs * 0.45, tw2, fs2 * 1.3); ctx.fillStyle = '#ffe08a'; ctx.fillText(NW.name, cc[0], cc[1] + rzs * 0.45 + fs2 * 0.65);
+        }
       }
     }
     // pass 5: highlights

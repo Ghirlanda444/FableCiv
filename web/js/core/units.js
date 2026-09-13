@@ -111,6 +111,7 @@
   U.clearCamp = function (g, u, t) {
     t.camp = false; g.camps = g.camps.filter(function (c) { return c.tile !== t.i; });
     var civ = U.civ(g, u); if (!civ) return;
+    civ.flags['ev:camp'] = g.turn;
     var gold = Math.round((40 + G.rngInt(g, 40) + Object.keys(civ.techs).length * 2) * (G.civFx(g, civ).campGoldMult || 1));
     civ.gold += gold;
     // remove barbarian units on the camp
@@ -276,7 +277,7 @@
       if (!ranged) { var back2 = U.damage(g, defStr - attackStr); if (!G.isMilitary(v)) back2 = 0; u.hp -= back2; result.attackerDamage = back2; }
       if (v.hp <= 0) {
         result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1);
-        if (civ) { civ.stats.kills++; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
+        if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
         if (!G.isMilitary(v) && !ranged && U.canCapture(u)) { // capture civilian: convert
@@ -307,7 +308,7 @@
     if (!fx.captureKeepBuildings) s.buildings = s.buildings.filter(function (b) { return AU.WONDERS[b] || G.rng(g) < 0.7; });
     var wasCapital = s.isCapital; s.isCapital = false;
     oldCiv.lostSettlements = (oldCiv.lostSettlements || 0) + 1;
-    newCiv.stats.captures++;
+    newCiv.stats.captures++; newCiv.flags['ev:capture'] = g.turn;
     if (fx.captureGold) newCiv.gold += fx.captureGold;
     if (fx.captureCapitalGold && wasCapital) newCiv.gold += fx.captureCapitalGold;
     if (fx.captureCulture) newCiv.bonusCulture = (newCiv.bonusCulture || 0) + fx.captureCulture;

@@ -48,7 +48,7 @@
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
-      wonders: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
+      wonders: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
       playerIdx: 0, rngState: rng.s, speed: speed, mapType: opts.mapType || 'continents'
     };
     // pick civs: player's chosen one first, then random others
@@ -149,11 +149,14 @@
     if (fx.monarchHappiness && (civ.government === 'monarchy' || civ.government === 'theocracy')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.monarchHappiness;
     if (fx.despotCombat && (civ.government === 'oligarchy' || civ.government === 'autocracy')) fx.combatBonus = (fx.combatBonus || 0) + fx.despotCombat;
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
+    for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
+    (civ.policies || []).forEach(function (pid) { var pc = AU.POLICIES[pid]; if (pc) mergeFx(fx, pc.fx); });
+    G.civSettlements(g, civ.idx).forEach(function (st) { st.buildings.forEach(function (b) { var nw = AU.NATIONAL[b]; if (!nw || !nw.fx) return; var nf = {}; for (var k in nw.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'freeUpkeep' || k === 'culturePerWonder' || k === 'purchaseMult' || k === 'projectCostMult') nf[k] = nw.fx[k]; if (nw.fx.empireLandBonus) nf.landBonus = nw.fx.empireLandBonus; mergeFx(fx, nf); }); });
     for (var wid in g.wonders) { var s = g.settlements[g.wonders[wid]]; if (s && s.civ === civ.idx) { var w = AU.WONDERS[wid]; var wf = {}; for (var k in w.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'empireCulture' || k === 'empireGold' || k === 'growthMult' || k === 'navalMoves' || k === 'landBonus' || k === 'freeExpansion') wf[k] = w.fx[k]; mergeFx(fx, wf); } }
     civ._fx = fx; civ._fxTurn = g.turn; civ._fxKey = G.fxKey(g, civ);
     return fx;
   };
-  G.fxKey = function (g, civ) { return civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(g.wonders).length; };
+  G.fxKey = function (g, civ) { return civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(civ.techs).length + '|' + Object.keys(g.wonders).length + '|' + (civ.policies || []).join(',') + '|' + (civ.nationalCount || 0); };
 
   // ---------- Units (creation; movement/combat live in units.js) ----------
   G.unitType = function (g, civ, typeId) {
@@ -196,7 +199,7 @@
     if (fx.classMoves && fx.classMoves[def.cls]) m += fx.classMoves[def.cls];
     return m;
   };
-  G.sight = function (g, u) { var def = AU.UNITS[u.type]; var s = def.sight || 2; if (g.tiles[u.tile].hills) s += 1; return s; };
+  G.sight = function (g, u) { var def = AU.UNITS[u.type]; var s = def.sight || 2; if (g.tiles[u.tile].hills) s += 1; if (u.civ >= 0 && (def.cls === 'recon' || def.cls === 'naval' || def.cls === 'navalRanged')) s += G.civFx(g, g.civs[u.civ]).reconSight || 0; return s; };
   G.removeUnit = function (g, u) { delete g.units[u.id]; var ix = G.unitIndex(g); if (ix[u.tile]) { ix[u.tile] = ix[u.tile].filter(function (o) { return o.id !== u.id; }); if (!ix[u.tile].length) delete ix[u.tile]; } };
   G.setUnitTile = function (g, u, tileIdx) { var from = u.tile; u.tile = tileIdx; G.unitMoved(g, u, from, tileIdx); };
   G.isMilitary = function (u) { return AU.UNITS[u.type].cls !== 'civilian'; };
@@ -204,11 +207,20 @@
   // ---------- Visibility ----------
   G.revealAround = function (g, civ, col, row, radius) {
     var idxs = Hex.spiral(col, row, radius, g.W, g.H);
-    for (var i = 0; i < idxs.length; i++) civ.explored[idxs[i]] = 1;
+    for (var i = 0; i < idxs.length; i++) { civ.explored[idxs[i]] = 1; if (g.tiles[idxs[i]].natural) G.discoverNatural(g, civ, g.tiles[idxs[i]]); }
+  };
+  G.discoverNatural = function (g, civ, t) {
+    var key = 'nat:' + t.natural; if (civ.flags[key]) return; civ.flags[key] = g.turn;
+    var NW = AU.NATURAL_WONDERS[t.natural], first = !g.naturalFound[t.natural];
+    if (first) g.naturalFound[t.natural] = civ.idx;
+    var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
+    civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
+    G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Science and Culture.', tile: t.i });
+    G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };
   G.refreshVisibility = function (g, civ) {
     var vis = new Uint8Array(g.W * g.H);
-    function mark(col, row, r) { var idxs = Hex.spiral(col, row, r, g.W, g.H); for (var i = 0; i < idxs.length; i++) { vis[idxs[i]] = 1; civ.explored[idxs[i]] = 1; } }
+    function mark(col, row, r) { var idxs = Hex.spiral(col, row, r, g.W, g.H); for (var i = 0; i < idxs.length; i++) { vis[idxs[i]] = 1; if (!civ.explored[idxs[i]]) { civ.explored[idxs[i]] = 1; if (g.tiles[idxs[i]].natural) G.discoverNatural(g, civ, g.tiles[idxs[i]]); } } }
     G.civUnits(g, civ.idx).forEach(function (u) { var t = g.tiles[u.tile]; mark(t.col, t.row, G.sight(g, u)); });
     G.civSettlements(g, civ.idx).forEach(function (s) { var t = g.tiles[s.tile]; mark(t.col, t.row, 3); G.territory(g, s).forEach(function (ti) { var tt = g.tiles[ti]; mark(tt.col, tt.row, 1); }); });
     civ.visible = vis;
@@ -273,11 +285,11 @@
     var seen = {};
     s.tiles.forEach(function (i) {
       var t = g.tiles[i];
-      if (!t.worked && !AU.TERRAIN[t.terrain].impassable && t.terrain !== 'ocean') out.push(i);
+      if (!t.worked && (!AU.TERRAIN[t.terrain].impassable || t.natural) && t.terrain !== 'ocean') out.push(i);
       G.neighbors(g, t).forEach(function (n) {
         var nt = g.tiles[n];
         if (seen[n] || owned[n] || nt.owner >= 0 || nt.camp) return;
-        if (AU.TERRAIN[nt.terrain].impassable || nt.terrain === 'ocean') return;
+        if ((AU.TERRAIN[nt.terrain].impassable && !nt.natural) || nt.terrain === 'ocean') return;
         if (G.dist(center, nt) > maxR) return;
         seen[n] = true; out.push(n);
       });
@@ -285,6 +297,7 @@
     return out;
   };
   G.improvementFor = function (g, t, civ) {
+    if (t.natural) return null;
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];
       if (!R.revealTech || (civ && civ.techs[R.revealTech])) return R.improvement;
@@ -309,8 +322,10 @@
     }
     if (imp) add(y, AU.IMPROVEMENTS[imp].yields);
     var water = G.isWater(t);
+    G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.natural) add(y, AU.NATURAL_WONDERS[nt.natural].adjacent); });
     (fx.tileBonus || []).forEach(function (b) {
       var ok = (b.when === 'water' && water) || (b.when === 'river' && t.river && !water) || (b.when === 'forest' && t.feature === 'forest') ||
+        (b.when === 'camp' && imp === 'camp') || (b.when === 'fishing' && imp === 'fishing') || (b.when === 'plantation' && imp === 'plantation') || (b.when === 'mine' && imp === 'mine') || (b.when === 'pasture' && imp === 'pasture') ||
         (b.when === 'jungle' && (t.feature === 'jungle' || t.feature === 'marsh')) || (b.when === 'desert' && t.terrain === 'desert') ||
         (b.when === 'cold' && (t.terrain === 'tundra' || t.terrain === 'snow')) ||
         (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm');
@@ -331,7 +346,7 @@
   };
   G.hasBuilding = function (s, id) { return s.buildings.indexOf(id) >= 0; };
   G.buildingDef = function (g, civ, id) {
-    var base = AU.BUILDINGS[id]; if (!base) return AU.WONDERS[id];
+    var base = AU.BUILDINGS[id]; if (!base) return AU.WONDERS[id] || AU.NATIONAL[id];
     var data = G.civData(civ);
     if (data.ub && data.ub.replaces === id) {
       var b = Object.assign({}, base, { name: data.ub.name, unique: true, yields: add(add({}, base.yields), data.ub.yields) });
@@ -343,13 +358,13 @@
   G.addBuilding = function (g, s, id) { if (s.buildings.indexOf(id) < 0) s.buildings.push(id); };
   G.luxuryCount = function (g, civ) {
     if (civ._lux && civ._luxTurn === g.turn) return civ._lux;
-    var set = {}, strat = {};
+    var set = {}, strat = {}, bonus = {};
     G.civSettlements(g, civ.idx).forEach(function (s) {
       s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || !t.resource) return; var R = AU.RESOURCES[t.resource];
         if (R.revealTech && !civ.techs[R.revealTech]) return;
-        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + 1; });
+        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + 1; if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
-    civ._lux = { luxuries: Object.keys(set), strategic: strat }; civ._luxTurn = g.turn;
+    civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
     return civ._lux;
   };
   G.hasResource = function (g, civ, res) { return !res || (G.luxuryCount(g, civ).strategic[res] || 0) > 0; };
@@ -380,6 +395,14 @@
       if (AU.WONDERS[id]) { wondersHere++; if (AU.WONDERS[id].fx.pctProduction) pct.production += AU.WONDERS[id].fx.pctProduction; }
       else if (s.isCity && fx.cityBuildingScience && id !== 'palace') bY.science += fx.cityBuildingScience;
     });
+    s.buildings.forEach(function (id) {
+      var nw = AU.NATIONAL[id]; if (!nw || !nw.fx) return;
+      if (nw.fx.pctUnitProduction) pct.unitProduction += nw.fx.pctUnitProduction;
+      if (nw.fx.sciencePerBuilding) { var cnt = 0; G.civSettlements(g, civ.idx).forEach(function (o) { if (G.hasBuilding(o, nw.fx.sciencePerBuilding)) cnt++; }); bY.science += cnt; }
+      if (nw.fx.productionPerMine) { var mines = 0; s.tiles.forEach(function (i) { var tt = g.tiles[i]; if (tt.worked && G.improvementFor(g, tt, civ) === 'mine') mines++; }); bY.production += mines * nw.fx.productionPerMine; }
+    });
+    if (fx.happinessPerShrine && G.hasBuilding(s, 'shrine')) bY.happiness += fx.happinessPerShrine;
+    if (fx.scienceNearMountains && G.neighbors(g, center).some(function (n) { return g.tiles[n].terrain === 'mountain' || g.tiles[n].natural; })) bY.science += fx.scienceNearMountains;
     if (s.specialization === 'urban') { bY.science = bY.science * 1.5 + 2; bY.culture = bY.culture * 1.5 + 2; }
     add(y, bY);
     y.science += (0.5 + (fx.sciencePerPop || 0)) * s.pop; y.culture += 0.3 * s.pop;
@@ -402,6 +425,8 @@
       var wonders = 0; for (var w in g.wonders) if (g.settlements[g.wonders[w]] && g.settlements[g.wonders[w]].civ === civ.idx) wonders++;
       y.culture += (fx.culturePerWonder || 0) * wonders; y.science += (fx.sciencePerWonder || 0) * wonders;
       y.culture += (fx.luxuryCulture || 0) * lux; y.gold += (fx.luxuryGold || 0) * lux;
+      y.gold += (fx.goldPerWonder || 0) * wonders;
+      if (fx.capitalYields) add(y, fx.capitalYields);
     }
     // happiness
     var happy = 3 + bY.happiness + (y.happiness || 0) + Math.min(lux, 4) + lux * (fx.luxuryHappinessBonus || 0) + (fx.happinessBonus || 0) + (fx.empireHappiness || 0) - Math.floor(s.pop / 2);
@@ -455,6 +480,7 @@
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && s && G.hasBuilding(s, 'colossus')) cost *= 0.8;
     } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1); }
     else if (kind === 'wonder') { cost = AU.WONDERS[id].cost * (fx.wonderCostMult || 1); }
+    else if (kind === 'national') { cost = AU.NATIONAL[id].cost * (fx.buildingCostMult || 1); }
     else if (kind === 'project') { cost = AU.PROJECTS[id].cost * (fx.projectCostMult || 1); }
     return Math.round(cost * G.speed(g));
   };
@@ -477,6 +503,7 @@
     var civ = g.civs[s.civ], d = AU.BUILDINGS[id];
     if (!d || d.noBuild || G.hasBuilding(s, id)) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
+    if (d.civic && !civ.civics[d.civic]) return false;
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
@@ -486,6 +513,7 @@
     var civ = g.civs[s.civ], d = AU.WONDERS[id];
     if (!s.isCity || g.wonders[id] !== undefined) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
+    if (d.civic && !civ.civics[d.civic]) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     return true;
   };
@@ -493,15 +521,27 @@
     var civ = g.civs[s.civ], d = AU.PROJECTS[id];
     if (!s.isCity || !s.isCapital) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
+    if (d.requiresBuilding && !G.hasBuilding(s, d.requiresBuilding)) return false;
     if (civ.projects && civ.projects[id]) return false;
     if (d.requiresProject && !(civ.projects && civ.projects[d.requiresProject])) return false;
     return true;
   };
+  G.canBuildNational = function (g, s, id) {
+    var civ = g.civs[s.civ], d = AU.NATIONAL[id];
+    if (!s.isCity || G.hasBuilding(s, id)) return false;
+    if (d.tech && !civ.techs[d.tech]) return false;
+    if (d.civic && !civ.civics[d.civic]) return false;
+    var sets = G.civSettlements(g, civ.idx);
+    if (sets.some(function (o) { return G.hasBuilding(o, id); })) return false;
+    if (d.requiresCount) { var n = 0; sets.forEach(function (o) { if (G.hasBuilding(o, d.requiresCount[0])) n++; }); if (n < d.requiresCount[1]) return false; }
+    return true;
+  };
   G.buildOptions = function (g, s) {
-    var out = { units: [], buildings: [], wonders: [], projects: [] };
+    var out = { units: [], buildings: [], wonders: [], national: [], projects: [] };
     for (var u in AU.UNITS) if (G.canBuildUnit(g, s, u)) out.units.push(u);
     for (var b in AU.BUILDINGS) if (G.canBuildBuilding(g, s, b)) out.buildings.push(b);
     for (var w in AU.WONDERS) if (G.canBuildWonder(g, s, w)) out.wonders.push(w);
+    for (var n in AU.NATIONAL) if (G.canBuildNational(g, s, n)) out.national.push(n);
     for (var p in AU.PROJECTS) if (G.canBuildProject(g, s, p)) out.projects.push(p);
     return out;
   };
@@ -519,7 +559,7 @@
     if (civ.gold < cost) return false;
     if (kind === 'unit' && !G.canBuildUnit(g, s, id)) return false;
     if (kind === 'building' && !G.canBuildBuilding(g, s, id)) return false;
-    if (kind === 'wonder') return false;
+    if (kind === 'wonder' || kind === 'national' || kind === 'project') return false;
     civ.gold -= cost;
     delete s.progress[kind + ':' + id];
     G.completeItem(g, s, kind, id);
@@ -531,7 +571,7 @@
       var tileIdx = G.findSpawnTile(g, s, id);
       if (tileIdx == null) return false;
       var u = G.spawnUnit(g, civ.idx, id, tileIdx);
-      var bonus = 0, hasBarracks = false; s.buildings.forEach(function (b) { var d = G.buildingDef(g, civ, b); if (d && d.unitStrength) { bonus += d.unitStrength; hasBarracks = true; } });
+      var bonus = 0, hasBarracks = false; s.buildings.forEach(function (b) { var d = G.buildingDef(g, civ, b); if (d && d.unitStrength) { bonus += d.unitStrength; hasBarracks = true; } if (AU.NATIONAL[b] && AU.NATIONAL[b].fx && AU.NATIONAL[b].fx.unitStrength) bonus += AU.NATIONAL[b].fx.unitStrength; });
       if (hasBarracks) bonus += G.civFx(g, civ).unitStrengthFromBarracks || 0;
       u.bonusStr = bonus;
       G.notify(g, civ, { kind: 'unit', text: s.name + ' trained a ' + u.name + '.', tile: tileIdx, unit: u.id });
@@ -551,6 +591,13 @@
       if (id === 'terracotta_army') G.civUnits(g, civ.idx).forEach(function (u) { var c = AU.UNITS[u.type].cls; if (c !== 'naval' && c !== 'navalRanged' && c !== 'civilian') u.bonusStr += 3; });
       G.log(g, G.civData(civ).name + ' completed the ' + w.name + ' in ' + s.name + '.', civ.idx);
       g.civs.forEach(function (c) { G.notify(g, c, { kind: 'wonder', text: (c === civ ? 'You' : G.civData(civ).name) + ' completed the ' + w.name + (c === civ ? ' in ' + s.name : '') + '.', tile: s.tile, settlement: s.id }); });
+    } else if (kind === 'national') {
+      if (!G.canBuildNational(g, s, id)) { civ.gold += Math.round(s.progress['national:' + id] || 0); return false; }
+      G.addBuilding(g, s, id); civ.nationalCount = (civ.nationalCount || 0) + 1; civ._fx = null;
+      var nw = AU.NATIONAL[id];
+      if (nw.fx && nw.fx.freeTech) G.grantFreeTech(g, civ);
+      G.notify(g, civ, { kind: 'wonder', text: s.name + ' completed the ' + nw.name + '.', tile: s.tile, settlement: s.id });
+      G.log(g, G.civData(civ).name + ' completed the ' + nw.name + '.', civ.idx);
     } else if (kind === 'project') {
       civ.projects = civ.projects || {}; civ.projects[id] = g.turn;
       G.log(g, G.civData(civ).name + ' completed ' + AU.PROJECTS[id].name + '.', civ.idx);
@@ -629,12 +676,89 @@
   G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
   G.grantFreeCivic = function (g, civ) { var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
   G.availableGovernments = function (civ) { var out = []; for (var id in AU.GOVERNMENTS) { var gv = AU.GOVERNMENTS[id]; if (!gv.civic || civ.civics[gv.civic]) out.push(id); } return out; };
-  G.setGovernment = function (g, civ, id) { if (G.availableGovernments(civ).indexOf(id) < 0) return false; civ.government = id; civ._fx = null; return true; };
+  G.setGovernment = function (g, civ, id) { if (G.availableGovernments(civ).indexOf(id) < 0) return false; civ.government = id; civ._fx = null; G.setPolicies(g, civ, civ.policies || []); return true; };
+  G.policySlots = function (civ) { return AU.GOVERNMENTS[civ.government].slots; };
+  G.availablePolicies = function (civ) { var out = []; for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.cards) c.cards.forEach(function (k) { if (AU.POLICIES[k] && out.indexOf(k) < 0) out.push(k); }); } return out; };
+  // Validate a card list against the government's slots (wildcard slots accept any type). Returns the accepted list.
+  G.setPolicies = function (g, civ, ids) {
+    var slots = Object.assign({}, G.policySlots(civ)), avail = G.availablePolicies(civ), accepted = [], seen = {};
+    ids.forEach(function (id) {
+      var pc = AU.POLICIES[id]; if (!pc || avail.indexOf(id) < 0 || seen[id]) return;
+      if (slots[pc.type] > 0) { slots[pc.type]--; accepted.push(id); seen[id] = 1; }
+      else if (slots.wildcard > 0) { slots.wildcard--; accepted.push(id); seen[id] = 1; }
+    });
+    civ.policies = accepted; civ._fx = null;
+    return accepted;
+  };
+  G.freeSlots = function (civ) { var slots = Object.assign({}, G.policySlots(civ)); (civ.policies || []).forEach(function (id) { var t = AU.POLICIES[id].type; if (slots[t] > 0) slots[t]--; else slots.wildcard--; }); return slots; };
+
+  // ---------- Eurekas & inspirations ----------
+  G.condMet = function (g, civ, cond) {
+    var type = cond[0], a = cond[1], n = cond[2] || 1, sets = G.civSettlements(g, civ.idx), units = G.civUnits(g, civ.idx);
+    function anyOf(v) { return String(a).split('|').indexOf(v) >= 0; }
+    function countBuilding(id) { var c = 0; sets.forEach(function (s) { if (G.hasBuilding(s, id)) c++; }); return c; }
+    switch (type) {
+      case 'pop': return sets.some(function (s) { return s.pop >= a; });
+      case 'totalPop': return sets.reduce(function (t, s) { return t + s.pop; }, 0) >= a;
+      case 'improvement': { var c = 0; sets.forEach(function (s) { s.tiles.forEach(function (i) { var t = g.tiles[i]; if (t.worked && i !== s.tile && anyOf(G.improvementFor(g, t, civ) || '')) c++; }); }); return c >= n; }
+      case 'improvedTiles': { var c2 = 0; sets.forEach(function (s) { s.tiles.forEach(function (i) { if (g.tiles[i].worked && i !== s.tile) c2++; }); }); return c2 >= a; }
+      case 'coastal': return sets.filter(function (s) { return G.isCoastal(g, s); }).length >= a;
+      case 'river': return sets.some(function (s) { return G.hasRiver(g, s); });
+      case 'adjacent': return sets.some(function (s) { return G.neighbors(g, g.tiles[s.tile]).some(function (i) { return g.tiles[i].terrain === a; }); });
+      case 'building': return countBuilding(a) >= n;
+      case 'event': return !!civ.flags['ev:' + a];
+      case 'met': return Object.keys(civ.met).length >= a;
+      case 'metAll': return g.civs.filter(function (c) { return c.alive && c.idx !== civ.idx; }).every(function (c) { return civ.met[c.idx]; });
+      case 'tiles': { var c3 = 0; sets.forEach(function (s) { s.tiles.forEach(function (i) { var t = g.tiles[i]; if ((a === 'hills' && t.hills) || t.terrain === a) c3++; }); }); return c3 >= n; }
+      case 'feature': { var c4 = 0; sets.forEach(function (s) { s.tiles.forEach(function (i) { if (anyOf(g.tiles[i].feature || '')) c4++; }); }); return c4 >= n; }
+      case 'kills': return (civ.stats.kills || 0) >= a;
+      case 'captures': return (civ.stats.captures || 0) >= a;
+      case 'resource': { var lc = G.luxuryCount(g, civ); return String(a).split('|').some(function (r) { return (lc.strategic[r] || 0) > 0 || lc.luxuries.indexOf(r) >= 0 || lc.bonus.indexOf(r) >= 0; }); }
+      case 'resourcekind': { var lc2 = G.luxuryCount(g, civ); return (a === 'luxury' ? lc2.luxuries.length : Object.keys(lc2.strategic).length) >= n; }
+      case 'gold': return civ.gold >= a;
+      case 'unit': return units.filter(function (u) { return u.type === a || (AU.UNITS[u.type].upgradesTo === a && false); }).length >= n;
+      case 'unitcls': return units.filter(function (u) { return anyOf(AU.UNITS[u.type].cls); }).length >= n;
+      case 'military': return units.filter(G.isMilitary).length >= a;
+      case 'settlements': return sets.length >= a;
+      case 'cities': return sets.filter(function (s) { return s.isCity; }).length >= a;
+      case 'civics': return Object.keys(civ.civics).length >= a;
+      case 'tech': return !!civ.techs[a];
+      case 'civicera': { for (var cid in civ.civics) if (AU.CIVIC_BY_ID[cid].era >= a) return true; return false; }
+      case 'level': return units.some(function (u) { return AU.U.level(u) >= a; });
+      case 'wonders': { var w = 0; for (var wid in g.wonders) if (g.settlements[g.wonders[wid]] && g.settlements[g.wonders[wid]].civ === civ.idx) w++; return w >= a; }
+      case 'project': return !!(civ.projects && civ.projects[a]);
+      case 'peaceWith': return g.civs.filter(function (c) { return c.alive && c.idx !== civ.idx && civ.met[c.idx] && !civ.rel[c.idx].war; }).length >= a;
+      case 'abroad': { var cc = G.capitalContinent(g, civ); return sets.some(function (s) { return g.tiles[s.tile].continent !== cc; }); }
+      case 'government': return anyOf(civ.government);
+      case 'warTurns': return (civ.stats.warTurns || 0) >= a;
+      default: return false;
+    }
+  };
+  G.checkBoosts = function (g, civ) {
+    civ.boosts = civ.boosts || {};
+    AU.TECHS.forEach(function (t) {
+      if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;
+      if (!G.condMet(g, civ, t.eureka.cond)) return;
+      civ.boosts[t.id] = g.turn;
+      var gain = Math.round(G.techCost(g, civ, t) * 0.4);
+      civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
+      G.notify(g, civ, { kind: 'tech', text: 'Eureka! ' + t.name + ' boosted (+' + gain + ' Science).', panel: 'tech' });
+    });
+    AU.CIVICS.forEach(function (c) {
+      if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
+      if (!G.condMet(g, civ, c.inspiration.cond)) return;
+      civ.boosts['c:' + c.id] = g.turn;
+      var gain2 = Math.round(G.civicCost(g, civ, c) * 0.4);
+      civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
+      G.notify(g, civ, { kind: 'civic', text: 'Inspiration! ' + c.name + ' boosted (+' + gain2 + ' Culture).', panel: 'civics' });
+    });
+  };
 
   // ---------- Diplomacy ----------
   G.declareWar = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
     ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn;
+    cb.flags['ev:warDeclaredOnUs'] = g.turn; ca.flags['ev:war'] = g.turn;
     cb.rel[a].attitude -= 30;
     g.civs.forEach(function (c) { if (c.idx !== a && c.idx !== b && c.alive) c.rel[a].attitude -= 5; });
     G.log(g, G.civData(ca).name + ' declared war on ' + G.civData(cb).name + '!', a);
@@ -663,6 +787,7 @@
     G.civSettlements(g, civ.idx).forEach(function (st) { s += st.pop * 2 + 5 + (st.isCity ? 3 : 0) + st.buildings.length; });
     s += Object.keys(civ.techs).length * 3 + Object.keys(civ.civics).length * 3;
     for (var w in g.wonders) if (g.settlements[g.wonders[w]] && g.settlements[g.wonders[w]].civ === civ.idx) s += 20;
+    s += (civ.nationalCount || 0) * 8;
     s += (civ.stats.captures || 0) * 10;
     return s;
   };
@@ -791,6 +916,7 @@
     }
     // research
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
+    G.checkBoosts(g, civ);
     if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (civ.currentTech) {
       civ.techProgress[civ.currentTech] = (civ.techProgress[civ.currentTech] || 0) + civ._turnScience;
@@ -806,6 +932,7 @@
     }
     // war weariness
     var atWar = g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
+    if (atWar) civ.stats.warTurns = (civ.stats.warTurns || 0) + 1;
     var wwm = G.civFx(g, civ).warWearinessMult; if (wwm === undefined) wwm = 1;
     civ.warWeariness = Math.max(0, (civ.warWeariness || 0) + (atWar ? 1 * wwm : -2));
     civ.score = G.score(g, civ);

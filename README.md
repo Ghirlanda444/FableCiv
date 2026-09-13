@@ -6,8 +6,15 @@ structure and imports the **Town / City settlement system** of the newest genera
 
 Design pillars:
 
-- **No era resets.** One continuous technology tree (54 techs) and civics tree (33 civics) across
-  seven eras. Nothing is taken away when an era changes.
+- **No era resets.** One continuous technology tree (104 techs) and civics tree (60 civics) across
+  eight eras, every one with a Eureka or Inspiration that grants 40% of its cost when you meet an
+  in-game condition. Nothing is taken away when an era changes.
+- **Governments and policy cards.** 10 governments with military, economic, diplomatic and wildcard
+  slots; 61 policy cards unlocked by civics.
+- **Three kinds of wonders.** 20 world wonders (one per world), 12 national wonders (one per
+  civilization, needing several copies of a building) and 16 natural wonders placed by the map.
+- **Civilopedia** for every object in the game, and a **3D city view** that shows each settlement
+  built from its real buildings.
 - **Leaders belong to their civilization.** Caesar can only rule Rome, Victoria only England.
   30 civilizations with 71 leaders (two or three per civilization), each leader with their own
   ability on top of the civilization's permanent ability, unique unit and unique building:
