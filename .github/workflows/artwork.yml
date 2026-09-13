@@ -1,0 +1,62 @@
+name: Generate artwork
+
+on:
+  workflow_dispatch:
+    inputs:
+      kinds:
+        description: "Comma-separated kinds to generate (units,leaders,buildings,wonders,national,natural,resources,civs). Empty = all."
+        required: false
+        default: ""
+      limit:
+        description: "Maximum number of pictures this run (0 = all missing)"
+        required: false
+        default: "0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: artwork
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: Generate missing pictures
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install background removal
+        run: |
+          python -m pip install --upgrade pip
+          pip install pillow "rembg[cpu]" onnxruntime
+      - name: Generate (commits progress every batch)
+        env:
+          KINDS: ${{ github.event.inputs.kinds }}
+          LIMIT: ${{ github.event.inputs.limit }}
+        run: |
+          git config user.name "fableciv-art-bot"
+          git config user.email "art-bot@users.noreply.github.com"
+          remaining=${LIMIT:-0}
+          for batch in $(seq 1 40); do
+            if [ "$remaining" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
+            step=12
+            if [ "$remaining" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
+            before=$(find web/assets -name '*.png' | wc -l)
+            python3 tools/gen-art.py --limit $step --kinds "$KINDS" || true
+            after=$(find web/assets -name '*.png' | wc -l)
+            if [ "$after" -gt "$before" ]; then
+              git add web/assets
+              git commit -q -m "Artwork: $((after-before)) generated pictures (total $after)" || true
+              git pull --rebase -q origin main || true
+              git push -q origin HEAD:main || true
+            fi
+            if [ "$after" -eq "$before" ]; then echo "no new pictures in this batch, stopping"; break; fi
+            if [ "$remaining" != "0" ]; then remaining=$((remaining-step)); fi
+          done
+          echo "pictures now: $(find web/assets -name '*.png' | wc -l)"
