@@ -54,9 +54,15 @@ android/    Android Studio / Gradle project wrapping web/ in a full-screen WebVi
 tests/      headless engine simulation (Node) and Playwright UI smoke tests
 ```
 
-## Play in a browser
+## Play on Windows, Mac or Linux
 
-Open `web/index.html` directly, or serve the folder (`npx http-server web`).
+- **Windows app:** download `FableCiv-windows.exe` from the `windows-latest` release and double-click
+  it (portable, no install). It is unsigned, so Windows SmartScreen may ask you to confirm once.
+- **Any browser:** download `FableCiv.html` from the same release and open it in Chrome, Edge or
+  Firefox. The whole game is in that one file.
+- **From source:** open `web/index.html` directly, or serve the folder (`npx http-server web`).
+
+The desktop app lives in `desktop/` (Electron); `tools/bundle-html.js` builds the single file.
 
 ## Android APK
 

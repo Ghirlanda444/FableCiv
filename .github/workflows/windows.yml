@@ -1,0 +1,54 @@
+name: Windows app
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Windows exe and single-file HTML
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Single-file HTML
+        run: node tools/bundle-html.js FableCiv.html
+      - name: Prepare desktop app
+        shell: bash
+        run: |
+          node tools/make-icon.js desktop/icon.ico
+          rm -rf desktop/web && cp -r web desktop/web
+          cd desktop && npm install --no-audit --no-fund
+      - name: Build portable exe
+        shell: bash
+        run: cd desktop && npx electron-builder --win portable --x64 --publish never
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fableciv-windows
+          path: |
+            desktop/dist/FableCiv-windows.exe
+            FableCiv.html
+          if-no-files-found: error
+      - name: Publish latest Windows pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: windows-latest
+          name: "FableCiv (latest Windows build)"
+          prerelease: true
+          files: |
+            desktop/dist/FableCiv-windows.exe
+            FableCiv.html
+          body: |
+            FableCiv-windows.exe: portable Windows app, no install (double-click; Windows SmartScreen may ask you to confirm the first time because it is unsigned).
+            FableCiv.html: the whole game in one file, opens in any modern browser on Windows, Mac or Linux.
+            Built from commit ${{ github.sha }}.

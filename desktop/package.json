@@ -1,0 +1,27 @@
+{
+  "name": "fableciv",
+  "productName": "FableCiv",
+  "version": "0.3.0",
+  "description": "FableCiv - Ages Unbroken, a Civilization-style 4X game",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win portable --x64",
+    "dist:linux": "electron-builder --linux AppImage --x64"
+  },
+  "devDependencies": {
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8"
+  },
+  "build": {
+    "appId": "com.ghirlanda.fableciv",
+    "productName": "FableCiv",
+    "artifactName": "FableCiv-${os}-${arch}.${ext}",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "web/**/*"],
+    "win": { "target": ["portable"], "icon": "icon.ico" },
+    "linux": { "target": ["AppImage"], "category": "Game" },
+    "portable": { "artifactName": "FableCiv-windows.exe" }
+  }
+}
