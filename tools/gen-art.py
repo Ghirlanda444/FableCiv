@@ -17,7 +17,7 @@ def fetch(url, timeout=120):
 
 _SESSION = {}
 _BG_LOCK = None
-def remove_bg(data):
+def remove_bg(data, keep_bg=False):
     from PIL import Image
     import threading
     global _BG_LOCK
@@ -26,6 +26,8 @@ def remove_bg(data):
     # the free service stamps a small logo in the bottom-right corner: drop the bottom strip
     w, h = img.size
     img = img.crop((0, 0, w, int(h * 0.93)))
+    if keep_bg:  # textures: keep the picture, restore the square size
+        return img.resize((w, h), Image.LANCZOS)
     try:
         from rembg import remove, new_session
         with _BG_LOCK:  # one shared model session; the small u2net model keeps memory low on CI runners
@@ -60,7 +62,7 @@ def main():
         elif line.startswith('  > ') and cur:
             prompts[cur] = line[4:].strip()
     kinds = [k for k in args.kinds.split(',') if k]
-    order = ['units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs']
+    order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []
     for it in items:
@@ -82,7 +84,7 @@ def main():
                 data, ctype = fetch(url)
                 if len(data) < 5000 or 'image' not in ctype:
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
-                img = remove_bg(data)
+                img = remove_bg(data, keep_bg=bool(it.get('nobg')))
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 img.save(path, 'PNG', optimize=True)
                 with lock: stats['done'] += 1

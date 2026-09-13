@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       kinds:
-        description: "Comma-separated kinds to generate (units,leaders,buildings,wonders,national,natural,resources,civs). Empty = all."
+        description: "Comma-separated kinds to generate (terrain,features,units,leaders,buildings,wonders,national,natural,resources,civs). Empty = all."
         required: false
         default: ""
       limit:

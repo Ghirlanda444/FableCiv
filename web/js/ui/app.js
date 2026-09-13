@@ -8,8 +8,8 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
-    settings: { graphics: '3d', yields: false }, pediaState: { cat: 'concepts' },
-    loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); Object.assign(this.settings, s); } catch (e) {} },
+    settings: { graphics: '2d', yields: false }, pediaState: { cat: 'concepts' },
+    loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); if (!s.v || s.v < 2) { s.graphics = '2d'; s.v = 2; } Object.assign(this.settings, s); } catch (e) {} },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
     makeRenderer: function () {

@@ -50,8 +50,25 @@
   function lcg(seed) { var s = (seed * 2654435761) >>> 0 || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 
   // ---------- tile sprites ----------
+  // Painted mode: generated terrain textures and feature sprites (web/assets/terrain, web/assets/features) when they exist.
+  Renderer.prototype.terrainTexture = function (terrain) {
+    var id = terrain === 'mountain' ? 'tundra' : terrain, img = AU.Assets.get('terrain', id);
+    if (!img) return null;
+    this.texCanvases = this.texCanvases || {};
+    var cv = this.texCanvases[id];
+    if (!cv) { // mirrored 2x2 copy: always seamless whatever the generator produced
+      var w = img.width, h = img.height; cv = document.createElement('canvas'); cv.width = w * 2; cv.height = h * 2; var c = cv.getContext('2d');
+      c.drawImage(img, 0, 0); c.save(); c.translate(w * 2, 0); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore();
+      c.save(); c.translate(0, h * 2); c.scale(1, -1); c.drawImage(img, 0, 0); c.restore(); c.save(); c.translate(w * 2, h * 2); c.scale(-1, -1); c.drawImage(img, 0, 0); c.restore();
+      this.texCanvases[id] = cv;
+    }
+    return cv;
+  };
+  Renderer.prototype.featureArt = function (id) { return AU.Assets.get('features', id); };
+  Renderer.prototype.drawArt = function (ctx, img, x, y, w, anchorY) { var h = w * img.height / img.width; ctx.drawImage(img, x - w / 2, y - h * (anchorY === undefined ? 0.5 : anchorY), w, h); };
   Renderer.prototype.tileSprite = function (t, rz) {
-    var key = t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz;
+    var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
+    var key = t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
     var sp = this.sprites[key];
     if (sp) return sp;
     if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
@@ -60,15 +77,23 @@
   };
   Renderer.prototype.paintTile = function (t, rz) {
     var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2) + 2;
-    var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
     var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
     var base = PAL[t.terrain], water = AU.TERRAIN[t.terrain].water, detail = rz >= 14;
     hexPath(ctx, cx, cy, rz + 0.8); ctx.save(); ctx.clip();
     // base fill with a soft radial light
-    var grad = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.2);
-    grad.addColorStop(0, rgb(base, water ? 1.12 : 1.08)); grad.addColorStop(1, rgb(base, water ? 0.88 : 0.9));
-    ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
-    if (detail) {
+    var tex = this.terrainTexture(t.terrain), painted = !!tex;
+    if (painted) {
+      var pat = ctx.createPattern(tex, 'repeat'), sc = rz / R * 0.36, v = t.i % 4;
+      if (pat.setTransform && typeof DOMMatrix !== 'undefined') pat.setTransform(new DOMMatrix().translate(cx - (137 * v + 40) * sc, cy - (89 * v + 30) * sc).scale(sc));
+      ctx.fillStyle = pat; ctx.fillRect(0, 0, w, h);
+      var lt = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.25); lt.addColorStop(0, 'rgba(255,255,255,0.08)'); lt.addColorStop(1, 'rgba(0,0,0,0.10)'); ctx.fillStyle = lt; ctx.fillRect(0, 0, w, h);
+    } else {
+      var grad = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.2);
+      grad.addColorStop(0, rgb(base, water ? 1.12 : 1.08)); grad.addColorStop(1, rgb(base, water ? 0.88 : 0.9));
+      ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+    }
+    if (detail && !painted) {
       // texture: speckles
       var n = Math.round(rz * 1.2);
       for (var k = 0; k < n; k++) {
@@ -89,13 +114,19 @@
         ctx.fillStyle = 'rgba(160,190,230,0.25)'; for (var sn = 0; sn < 4; sn++) { ctx.beginPath(); ctx.ellipse(cx + (rnd() - 0.5) * rz, cy + (rnd() - 0.5) * rz, rz * 0.3, rz * 0.12, 0, 0, Math.PI * 2); ctx.fill(); }
       }
     }
-    if (t.hills && t.terrain !== 'mountain') this.paintHills(ctx, cx, cy, rz, base, rnd, detail);
-    if (t.terrain === 'mountain') this.paintMountain(ctx, cx, cy, rz, rnd, detail);
-    if (t.feature === 'forest') this.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
-    if (t.feature === 'jungle') this.paintTrees(ctx, cx, cy, rz, rnd, detail, true, t.hills);
-    if (t.feature === 'marsh') this.paintMarsh(ctx, cx, cy, rz, rnd, detail);
-    if (t.feature === 'oasis') this.paintOasis(ctx, cx, cy, rz, rnd, detail);
-    ctx.restore();
+    var hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtnArt = t.terrain === 'mountain' ? this.featureArt('mountain') : null, featArt = t.feature ? this.featureArt(t.feature) : null;
+    ctx.restore(); // sprites may overhang the hex a little
+    if (t.hills && t.terrain !== 'mountain') { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); this.paintHills(ctx, cx, cy, rz, base, rnd, detail); ctx.restore(); } }
+    if (t.terrain === 'mountain') { if (mtnArt) this.drawArt(ctx, mtnArt, cx, cy, rz * 2.05, 0.55); else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); this.paintMountain(ctx, cx, cy, rz, rnd, detail); ctx.restore(); } }
+    if (t.feature) {
+      if (featArt) this.drawArt(ctx, featArt, cx, cy - (t.hills ? rz * 0.12 : 0), rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
+      else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip();
+        if (t.feature === 'forest') this.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
+        if (t.feature === 'jungle') this.paintTrees(ctx, cx, cy, rz, rnd, detail, true, t.hills);
+        if (t.feature === 'marsh') this.paintMarsh(ctx, cx, cy, rz, rnd, detail);
+        if (t.feature === 'oasis') this.paintOasis(ctx, cx, cy, rz, rnd, detail);
+        ctx.restore(); }
+    }
     // subtle edge shading for a tiled look
     ctx.strokeStyle = water ? 'rgba(0,20,60,0.18)' : 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1; hexPath(ctx, cx, cy, rz - 0.5); ctx.stroke();
     return cv;
@@ -253,19 +284,21 @@
         if (t.resource) {
           var Rs = AU.RESOURCES[t.resource];
           if (!Rs.revealTech || player.techs[Rs.revealTech]) {
+            var rart = AU.Assets.get('resources', t.resource);
             ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.3, 0, Math.PI * 2); ctx.fill();
-            this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44);
+            if (rart) this.drawArt(ctx, rart, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.52); else this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44);
           }
         }
         if (t.worked && t.owner >= 0 && t.settlement == null && !midDetail) {
           var s0 = g.settlements[t.owner]; var imp = s0 ? G.improvementFor(g, t, g.civs[s0.civ]) : null;
-          if (imp) this.drawGlyph(ctx, AU.IMPROVEMENTS[imp].icon, cc[0] - rzs * 0.42, cc[1] + rzs * 0.42, rzs * 0.36);
+          if (imp) { var iart = this.featureArt(imp); if (iart) this.drawArt(ctx, iart, cc[0] - rzs * 0.15, cc[1] + rzs * 0.2, rzs * 1.1, 0.6); else this.drawGlyph(ctx, AU.IMPROVEMENTS[imp].icon, cc[0] - rzs * 0.42, cc[1] + rzs * 0.42, rzs * 0.36); }
         }
-        if (t.camp) this.drawGlyph(ctx, '🏕️', cc[0], cc[1] - rzs * 0.1, rzs * 0.8);
+        if (t.camp) { var cart = this.featureArt('raider_camp'); if (cart) this.drawArt(ctx, cart, cc[0], cc[1], rzs * 1.7, 0.6); else this.drawGlyph(ctx, '🏕️', cc[0], cc[1] - rzs * 0.1, rzs * 0.8); }
         if (t.natural) {
           var NW = AU.NATURAL_WONDERS[t.natural];
-          ctx.fillStyle = 'rgba(255,215,90,0.35)'; hexPath(ctx, cc[0], cc[1], rzs - 1); ctx.fill();
-          this.drawGlyph(ctx, NW.icon, cc[0], cc[1] - rzs * 0.15, rzs * 1.1);
+          var nart = AU.Assets.get('natural', t.natural);
+          if (nart) this.drawArt(ctx, nart, cc[0], cc[1], rzs * 2.4, 0.6);
+          else { ctx.fillStyle = 'rgba(255,215,90,0.35)'; hexPath(ctx, cc[0], cc[1], rzs - 1); ctx.fill(); this.drawGlyph(ctx, NW.icon, cc[0], cc[1] - rzs * 0.15, rzs * 1.1); }
           var fs2 = Math.max(7, Math.round(rzs * 0.3)); ctx.font = 'bold ' + fs2 + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           var tw2 = ctx.measureText(NW.name).width + 8; ctx.fillStyle = 'rgba(40,30,0,0.75)'; ctx.fillRect(cc[0] - tw2 / 2, cc[1] + rzs * 0.45, tw2, fs2 * 1.3); ctx.fillStyle = '#ffe08a'; ctx.fillText(NW.name, cc[0], cc[1] + rzs * 0.45 + fs2 * 0.65);
         }

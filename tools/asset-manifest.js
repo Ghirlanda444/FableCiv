@@ -3,7 +3,8 @@
 const fs = require('fs'), path = require('path');
 require('../tests/load');
 const AU = globalThis.AU;
-const STYLE = 'Painted concept art for a classic turn-based strategy game (Civilization IV style), warm colours, bright even daylight, soft painterly shading, clean readable silhouette, isolated on a plain white background, no text, no watermark, no frame.';
+const STYLE = 'Cute chibi cartoon style like Clash of Clans, Kingshot and The Settlers 4: chunky exaggerated proportions, thick clean outlines, bright saturated colours, soft cel shading with a warm rim light, cheerful and readable, isolated on a plain white background, no text, no watermark, no frame.';
+const SCENE_STYLE = 'Colourful cartoon game art like Clash of Clans, Kingshot and The Settlers 4: chunky rounded shapes, thick clean outlines, bright saturated colours, soft cel shading, cheerful, no text, no watermark.';
 const UNIT_DESC = {
   settler: 'a pioneer family with an ox-drawn covered wagon and bundles',
   scout: 'a lean scout in leather with a bow on the back, looking into the distance',
@@ -40,17 +41,30 @@ const UNIT_DESC = {
 const ERA_HINT = ['ancient', 'classical', 'medieval', 'renaissance', 'industrial', 'modern', 'atomic', 'futuristic'];
 function eraOf(tech, civic) { if (tech && AU.TECH_BY_ID[tech]) return ERA_HINT[AU.TECH_BY_ID[tech].era]; if (civic && AU.CIVIC_BY_ID[civic]) return ERA_HINT[AU.CIVIC_BY_ID[civic].era]; return 'ancient'; }
 const items = [];
-for (const [id, u] of Object.entries(AU.UNITS)) items.push({ kind: 'units', id, name: u.name, size: '512x512', prompt: `Full-body illustration of ${UNIT_DESC[id] || u.name}, the entire figure visible from head to toe, standing on the ground, side view facing left, small in the frame with empty space around it. ${STYLE}` });
-for (const [id, b] of Object.entries(AU.BUILDINGS)) if (!b.noBuild) items.push({ kind: 'buildings', id, name: b.name, size: '512x512', prompt: `A single ${eraOf(b.tech, b.civic)} ${b.name} building as a strategy-game city building, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
-for (const [id, w] of Object.entries(AU.WONDERS)) items.push({ kind: 'wonders', id, name: w.name, size: '768x512', prompt: `The ${w.name}, the real historical monument, seen from a 3/4 bird's-eye view, whole monument visible with empty space around it. ${STYLE}` });
-for (const [id, n] of Object.entries(AU.NATIONAL)) items.push({ kind: 'national', id, name: n.name, size: '512x512', prompt: `A grand ${eraOf(n.tech, n.civic)} civic building called ${n.name}, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
-for (const [id, n] of Object.entries(AU.NATURAL_WONDERS)) items.push({ kind: 'natural', id, name: n.name, size: '768x512', prompt: `${n.name}, the real natural landmark, seen from above at an angle as a small landscape vignette on a plain white background, painted strategy-game concept art, no text.` });
-for (const c of AU.CIVS) for (const l of c.leaders) items.push({ kind: 'leaders', id: l.id, name: `${l.name} (${c.name})`, size: '512x640', prompt: `Painted portrait of ${l.name}, ${l.title} of ${c.name}, head and shoulders, period-accurate clothing, dignified expression, looking at the viewer, plain white background, classic strategy game leader portrait style, no text.` });
-for (const [id, r] of Object.entries(AU.RESOURCES)) items.push({ kind: 'resources', id, name: r.name, size: '256x256', prompt: `Simple game icon of ${r.name} as a map resource, single object, slight 3D shading, isolated on a plain white background, no text.` });
-for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '256x256', prompt: `Circular heraldic emblem symbolising the ${c.name} civilization, single symbolic motif, gold and ${c.color} colours, flat painted style, plain white background, no text.` });
+for (const [id, u] of Object.entries(AU.UNITS)) items.push({ kind: 'units', id, name: u.name, size: '512x512', prompt: `Chibi game character: ${UNIT_DESC[id] || u.name}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
+for (const [id, b] of Object.entries(AU.BUILDINGS)) if (!b.noBuild) items.push({ kind: 'buildings', id, name: b.name, size: '512x512', prompt: `A single cute cartoon ${eraOf(b.tech, b.civic)} ${b.name} building for a city-builder game, chunky and rounded, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
+for (const [id, w] of Object.entries(AU.WONDERS)) items.push({ kind: 'wonders', id, name: w.name, size: '768x512', prompt: `The ${w.name}, the famous historical monument, as a cute chunky cartoon game building, seen from a 3/4 bird's-eye view, whole monument visible with empty space around it. ${STYLE}` });
+for (const [id, n] of Object.entries(AU.NATIONAL)) items.push({ kind: 'national', id, name: n.name, size: '512x512', prompt: `A grand cartoon ${eraOf(n.tech, n.civic)} civic building called ${n.name}, chunky and rounded, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
+for (const [id, n] of Object.entries(AU.NATURAL_WONDERS)) items.push({ kind: 'natural', id, name: n.name, size: '768x512', prompt: `${n.name}, the famous natural landmark, as a cute chunky cartoon landscape vignette seen from above at an angle, sitting on a small round patch of ground, isolated on a plain white background. ${SCENE_STYLE}` });
+for (const c of AU.CIVS) for (const l of c.leaders) items.push({ kind: 'leaders', id: l.id, name: `${l.name} (${c.name})`, size: '512x640', prompt: `Chibi cartoon portrait of ${l.name}, ${l.title} of ${c.name}, big expressive head, period-accurate clothing and headgear, confident smile, looking at the viewer, head and shoulders, plain white background. ${STYLE}` });
+for (const [id, r] of Object.entries(AU.RESOURCES)) items.push({ kind: 'resources', id, name: r.name, size: '256x256', prompt: `Cute cartoon game icon of ${r.name} as a map resource, single chunky object with a thick outline, isolated on a plain white background. ${STYLE}` });
+for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '256x256', prompt: `Round cartoon shield emblem symbolising the ${c.name} civilization, single bold symbolic motif, gold and ${c.color} colours, thick outline, plain white background. ${STYLE}` });
+const TERRAIN_DESC = {
+  ocean: 'deep blue ocean water with small cartoon waves', coast: 'shallow turquoise sea water near a beach with gentle cartoon waves', lake: 'calm bright blue lake water',
+  grassland: 'lush green grass meadow with tiny flowers', plains: 'dry golden-yellow grass savanna', desert: 'warm sandy desert with soft dunes',
+  tundra: 'cold grey-green tundra moss with patches of frost', snow: 'clean white snow field with soft blue shadows'
+};
+for (const [id, d] of Object.entries(TERRAIN_DESC)) items.push({ kind: 'terrain', id, name: AU.TERRAIN[id].name + ' texture', size: '512x512', nobg: true, prompt: `Seamless tileable top-down ground texture of ${d}, perfectly flat, evenly lit, no objects, no horizon, no border. ${SCENE_STYLE}` });
+const FEATURE_DESC = {
+  forest: 'a dense cluster of chunky cartoon pine and oak trees', jungle: 'a dense cluster of chunky cartoon jungle trees with big leaves and vines', marsh: 'a cartoon marsh with reeds, mud puddles and water lilies', oasis: 'a small cartoon oasis pond with three palm trees',
+  hills: 'a group of three rounded grassy cartoon hills', mountain: 'a chunky cartoon rocky mountain with a snowy peak', raider_camp: 'a small barbarian raider camp with hide tents, a campfire and a wooden palisade',
+  farm: 'a small cartoon farm with wheat field rows and a tiny farmhouse', mine: 'a cartoon mine entrance in a rocky mound with a minecart and wooden supports', woodcutter: 'a cartoon lumber camp with a sawmill hut, log pile and stumps', pasture: 'a cartoon pasture with a wooden fence and two cows',
+  plantation: 'a cartoon plantation with neat rows of bushes and a small hut', quarry: 'a cartoon stone quarry with cut blocks and a crane', camp: 'a cartoon hunting camp with a tent, drying racks and a campfire', fishing: 'two cartoon wooden fishing boats with nets', well: 'a cartoon stone water well with a bucket and a small palm', clearing: 'a cartoon cleared meadow with stumps and a small garden'
+};
+for (const [id, d] of Object.entries(FEATURE_DESC)) items.push({ kind: 'features', id, name: id.replace('_', ' ') + ' sprite', size: '512x512', prompt: `${d}, seen from above at a 3/4 angle as one compact clump, sitting on a small round patch of ground, isolated on a plain white background. ${SCENE_STYLE}` });
 const outDir = path.join(__dirname, '..', 'web', 'assets');
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(items.map(i => ({ kind: i.kind, id: i.id, file: `${i.kind}/${i.id}.png`, name: i.name, size: i.size })), null, 1));
+fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(items.map(i => ({ kind: i.kind, id: i.id, file: `${i.kind}/${i.id}.png`, name: i.name, size: i.size, nobg: !!i.nobg })), null, 1));
 let md = `# Artwork wanted (${items.length} pictures)\n\nSave each image as **web/assets/<kind>/<id>.png** (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.\n\nStyle guide for every prompt: ${STYLE}\n\n`;
 let kind = '';
 for (const i of items) { if (i.kind !== kind) { kind = i.kind; md += `\n## ${kind}\n\n`; } md += `- **${i.kind}/${i.id}.png** (${i.size}) — ${i.name}\n  > ${i.prompt}\n`; }
