@@ -6,7 +6,7 @@
   AU.CIVS = [
     { id: 'rome', name: 'Rome', adj: 'Roman', color: '#8b1a1a', color2: '#f5d76e',
       ability: { name: 'Pax Romana', desc: 'Every new settlement starts with a free Monument. Upgrading a Town into a City costs 25% less.', fx: { freeBuilding: 'monument', cityUpgradeCostMult: 0.75 } },
-      uu: { id: 'legion', name: 'Legion', replaces: 'swordsman', strength: 4, desc: '+4 Combat Strength' },
+      uu: { id: 'legion', name: 'Legion', replaces: 'swordsman', strength: 3, fortifyMult: 1, vsSettlements: 5, desc: '+3 Strength, +5 vs settlements, fortification bonus doubled (the legion digs in like a fort)' },
       ub: { id: 'forum', name: 'Forum', replaces: 'market', yields: { gold: 2, culture: 1 }, desc: '+2 Gold, +1 Culture' },
       cities: ['Roma', 'Ostia', 'Antium', 'Cumae', 'Ravenna', 'Neapolis', 'Mediolanum', 'Aquileia', 'Brundisium', 'Capua', 'Verona', 'Tarentum'],
       leaders: [
@@ -17,7 +17,7 @@
 
     { id: 'japan', name: 'Japan', adj: 'Japanese', color: '#f2f2f2', color2: '#c0392b',
       ability: { name: 'Bushido', desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +1 Production.', fx: { noDamagePenalty: true, coastalSettlementYields: { production: 1 } } },
-      uu: { id: 'samurai', name: 'Samurai', replaces: 'pikeman', strength: 5, desc: '+5 Combat Strength' },
+      uu: { id: 'samurai', name: 'Samurai', replaces: 'pikeman', strength: 4, attack: 4, noDamagePenalty: true, desc: '+4 Strength, +4 when attacking, never loses strength when wounded' },
       ub: { id: 'dojo', name: 'Dojo', replaces: 'barracks', yields: { production: 1, culture: 2 }, unitStrength: 2, desc: '+1 Production, +2 Culture, units built here +2 Strength' },
       cities: ['Kyoto', 'Osaka', 'Edo', 'Nagoya', 'Kamakura', 'Nara', 'Sapporo', 'Kanazawa', 'Sendai', 'Hiroshima', 'Fukuoka', 'Nagasaki'],
       leaders: [
@@ -28,7 +28,7 @@
 
     { id: 'china', name: 'China', adj: 'Chinese', color: '#2e8b57', color2: '#f7e04b',
       ability: { name: 'Mandate of Heaven', desc: 'Civics cost 10% less. Settlements may expand into a fourth ring of tiles.', fx: { civicCostMult: 0.9, expansionRadius: 1 } },
-      uu: { id: 'crouching_tiger', name: 'Crouching Tiger', replaces: 'crossbowman', ranged: 5, desc: '+5 Ranged Strength' },
+      uu: { id: 'crouching_tiger', name: 'Crouching Tiger', replaces: 'crossbowman', ranged: 3, extraAttack: true, desc: '+3 Ranged Strength, fires twice per turn' },
       ub: { id: 'great_wall_tower', name: 'Great Wall', replaces: 'walls', yields: { culture: 2, gold: 1 }, desc: '+2 Culture, +1 Gold' },
       cities: ['Xi\'an', 'Beijing', 'Nanjing', 'Luoyang', 'Guangzhou', 'Hangzhou', 'Chengdu', 'Kaifeng', 'Suzhou', 'Wuhan', 'Xiamen', 'Tianjin'],
       leaders: [
@@ -39,7 +39,7 @@
 
     { id: 'america', name: 'America', adj: 'American', color: '#1f3f8f', color2: '#ffffff',
       ability: { name: 'Manifest Destiny', desc: 'Settlers cost 20% less and move +1. Towns grow 15% faster.', fx: { settlerCostMult: 0.8, civilianMoves: 1, townGrowthMult: 1.15 } },
-      uu: { id: 'minuteman', name: 'Minuteman', replaces: 'musketman', strength: 3, defense: 5, desc: '+3 Strength, +5 when defending' },
+      uu: { id: 'minuteman', name: 'Minuteman', replaces: 'musketman', strength: 3, ignoreTerrain: true, homeBonus: 6, desc: '+3 Strength, all terrain costs 1 movement, +6 inside your borders' },
       ub: { id: 'film_studio', name: 'Film Studio', replaces: 'broadcast_tower', yields: { culture: 4 }, desc: '+4 Culture' },
       cities: ['Washington', 'New York', 'Boston', 'Philadelphia', 'Chicago', 'Los Angeles', 'Atlanta', 'Seattle', 'Houston', 'Denver', 'Miami', 'Detroit'],
       leaders: [
@@ -50,7 +50,7 @@
 
     { id: 'india', name: 'India', adj: 'Indian', color: '#f39c12', color2: '#1a5e2a',
       ability: { name: 'Dharma', desc: '+1 Happiness in every settlement. Specialized Towns yield +2 Culture.', fx: { happinessBonus: 1, specializedTownYields: { culture: 2 } } },
-      uu: { id: 'varu', name: 'War Elephant', replaces: 'horseman', strength: 5, noResource: true, desc: '+5 Strength, needs no Horses' },
+      uu: { id: 'varu', name: 'War Elephant', replaces: 'horseman', strength: 6, moves: -1, defense: 5, noResource: true, intimidate: 3, desc: '+6 Strength, +5 defending, adjacent enemies fight at -3, needs no Horses, -1 Movement' },
       ub: { id: 'stepwell', name: 'Stepwell', replaces: 'granary', yields: { food: 1, happiness: 1 }, desc: '+1 Food, +1 Happiness' },
       cities: ['Delhi', 'Mumbai', 'Vijayanagara', 'Pataliputra', 'Varanasi', 'Agra', 'Calcutta', 'Lahore', 'Bengaluru', 'Hyderabad', 'Madurai', 'Ahmedabad'],
       leaders: [
@@ -61,7 +61,7 @@
 
     { id: 'indonesia', name: 'Indonesia', adj: 'Indonesian', color: '#7d2a7d', color2: '#f1c40f',
       ability: { name: 'Nusantara', desc: 'Worked Coast and Lake tiles yield +1 Food and +1 Gold. Units embark at full strength (defense 20).', fx: { tileBonus: [{ when: 'water', yields: { food: 1, gold: 1 } }], embarkedStrength: 20 } },
-      uu: { id: 'jong', name: 'Jong', replaces: 'caravel', strength: 8, moves: 1, desc: '+8 Strength, +1 Movement' },
+      uu: { id: 'jong', name: 'Jong', replaces: 'caravel', strength: 5, moves: 1, sight: 1, goldOnKill: 40, desc: '+5 Strength, +1 Movement, +1 Sight, +40 Gold per kill' },
       ub: { id: 'kampung', name: 'Kampung', replaces: 'lighthouse', yields: { food: 2, production: 1 }, desc: '+2 Food, +1 Production' },
       cities: ['Majapahit', 'Surabaya', 'Jakarta', 'Palembang', 'Makassar', 'Yogyakarta', 'Banda Aceh', 'Malang', 'Bali', 'Medan', 'Semarang', 'Ambon'],
       leaders: [
@@ -71,7 +71,7 @@
 
     { id: 'mongolia', name: 'Mongolia', adj: 'Mongol', color: '#5b3a1e', color2: '#e8d5a3',
       ability: { name: 'Horde', desc: 'Cavalry +1 Movement. Mounted units cost 20% less.', fx: { cavalryMoves: 1, classCostMult: { cavalry: 0.8 } } },
-      uu: { id: 'keshig', name: 'Keshig', replaces: 'knight', strength: 4, moves: 1, desc: '+4 Strength, +1 Movement' },
+      uu: { id: 'keshig', name: 'Keshig', replaces: 'knight', strength: 2, moves: 1, halfRetaliation: true, movesAfterAttack: true, desc: '+2 Strength, +1 Movement, showers arrows before charging (half damage back) and can move after attacking' },
       ub: { id: 'ordu', name: 'Ordu', replaces: 'barracks', yields: { production: 2, gold: 1 }, desc: '+2 Production, +1 Gold' },
       cities: ['Karakorum', 'Beshbalik', 'Turfan', 'Hsia', 'Old Sarai', 'New Sarai', 'Tabriz', 'Tiflis', 'Otrar', 'Sanchu', 'Kazan', 'Almarikh'],
       leaders: [
@@ -81,7 +81,7 @@
 
     { id: 'zulu', name: 'Zulu', adj: 'Zulu', color: '#3a2c1c', color2: '#e74c3c',
       ability: { name: 'Amabutho', desc: 'Melee and anti-cavalry units cost 25% less and start with a level of experience.', fx: { classCostMult: { melee: 0.75, antcav: 0.75 }, unitsStartXp: 5 } },
-      uu: { id: 'impi', name: 'Impi', replaces: 'pikeman', strength: 3, moves: 1, costMult: 0.75, desc: '+3 Strength, +1 Movement, cheaper' },
+      uu: { id: 'impi', name: 'Impi', replaces: 'pikeman', strength: 2, moves: 1, costMult: 0.7, flank: 3, xpMult: 0.5, desc: '+2 Strength, +1 Movement, 30% cheaper, +3 per adjacent friendly unit, +50% experience' },
       ub: { id: 'ikanda', name: 'Ikanda', replaces: 'barracks', yields: { production: 2 }, unitStrength: 1, desc: '+2 Production, units built here +1 Strength' },
       cities: ['Ulundi', 'uMgungundlovu', 'kwaBulawayo', 'kwaDukuza', 'Nobamba', 'Eshowe', 'Ondini', 'Isandlwana', 'Nongoma', 'Empangeni', 'Melmoth', 'Mthonjaneni'],
       leaders: [
@@ -91,7 +91,7 @@
 
     { id: 'persia', name: 'Persia', adj: 'Persian', color: '#7b2f8a', color2: '#f5cba7',
       ability: { name: 'Royal Road', desc: '+2 Gold per settlement. Units +1 Movement inside your borders.', fx: { goldPerSettlement: 2, homeMoves: 1 } },
-      uu: { id: 'immortal', name: 'Immortal', replaces: 'swordsman', strength: 2, defense: 5, desc: '+2 Strength, +5 when defending' },
+      uu: { id: 'immortal', name: 'Immortal', replaces: 'swordsman', strength: 3, defense: 6, healOnKill: 25, desc: '+3 Strength, +6 defending, heals 25 HP on a kill' },
       ub: { id: 'pairidaeza', name: 'Pairidaeza', replaces: 'amphitheater', yields: { culture: 2, gold: 2 }, desc: '+2 Culture, +2 Gold' },
       cities: ['Pasargadae', 'Susa', 'Persepolis', 'Ecbatana', 'Babylon', 'Sardis', 'Bactra', 'Tarsus', 'Gordion', 'Arbela', 'Rhagae', 'Zranka'],
       leaders: [
@@ -101,7 +101,7 @@
 
     { id: 'egypt', name: 'Egypt', adj: 'Egyptian', color: '#d4ac0d', color2: '#1b2631',
       ability: { name: 'Gift of the Nile', desc: 'Worked River tiles yield +1 Food. Settlements on rivers +1 Production and +1 Culture.', fx: { tileBonus: [{ when: 'river', yields: { food: 1 } }], settlementSiteBonus: [{ when: 'river', yields: { production: 1, culture: 1 } }] } },
-      uu: { id: 'maryannu', name: 'Chariot Archer', replaces: 'archer', ranged: 5, moves: 1, desc: '+5 Ranged Strength, +1 Movement' },
+      uu: { id: 'maryannu', name: 'Chariot Archer', replaces: 'archer', ranged: 4, moves: 1, movesAfterAttack: true, terrainBonus: {desert: 6, floodplains: 6}, desc: '+4 Ranged Strength, +1 Movement, can move after attacking, +6 on desert and floodplains' },
       ub: { id: 'nilometer', name: 'Nilometer', replaces: 'water_mill', yields: { food: 2, gold: 1 }, desc: '+2 Food, +1 Gold' },
       cities: ['Ra-Kedet', 'Thebes', 'Memphis', 'Akhetaten', 'Heliopolis', 'Elephantine', 'Alexandria', 'Pi-Ramesses', 'Abydos', 'Giza', 'Edfu', 'Tanis'],
       leaders: [
@@ -112,7 +112,7 @@
 
     { id: 'celts', name: 'Celts', adj: 'Celtic', color: '#1e6b3a', color2: '#e0e0e0',
       ability: { name: 'Sacred Groves', desc: 'Worked Forest tiles yield +1 Production and +1 Culture. Units move through forest at normal cost.', fx: { tileBonus: [{ when: 'forest', yields: { production: 1, culture: 1 } }], forestMoveCost: 1 } },
-      uu: { id: 'gaesatae', name: 'Gaesatae', replaces: 'spearman', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'gaesatae', name: 'Gaesatae', replaces: 'spearman', strength: 3, vsStronger: 10, costMult: 0.8, desc: '+3 Strength, +10 vs units stronger than itself, 20% cheaper' },
       ub: { id: 'ceilidh_hall', name: 'Ceilidh Hall', replaces: 'amphitheater', yields: { culture: 2, happiness: 1 }, desc: '+2 Culture, +1 Happiness' },
       cities: ['Camulodunon', 'Bibracte', 'Alesia', 'Verlamion', 'Gergovia', 'Lugdunon', 'Eburacon', 'Tara', 'Dun Ollaigh', 'Isca', 'Namnetes', 'Durocornovium'],
       leaders: [
@@ -122,7 +122,7 @@
 
     { id: 'arabia', name: 'Arabia', adj: 'Arabian', color: '#1a7a4a', color2: '#f4f4f4',
       ability: { name: 'Caravanserai', desc: 'Worked Desert tiles yield +1 Gold. Trade Outposts yield +2 Science.', fx: { tileBonus: [{ when: 'desert', yields: { gold: 1 } }], specializationYields: { trade: { science: 2 } } } },
-      uu: { id: 'mamluk', name: 'Mamluk', replaces: 'knight', strength: 2, healAlways: true, desc: '+2 Strength, heals every turn even after moving' },
+      uu: { id: 'mamluk', name: 'Mamluk', replaces: 'knight', strength: 2, attack: 4, healAlways: true, desc: '+2 Strength, +4 attacking, heals every turn even after moving' },
       ub: { id: 'madrasa', name: 'Madrasa', replaces: 'university', yields: { science: 2, culture: 1 }, desc: '+2 Science, +1 Culture' },
       cities: ['Cairo', 'Damascus', 'Baghdad', 'Mecca', 'Medina', 'Aleppo', 'Basra', 'Jerusalem', 'Kufa', 'Mosul', 'Sana\'a', 'Muscat'],
       leaders: [
@@ -132,7 +132,7 @@
 
     { id: 'france', name: 'France', adj: 'French', color: '#2c3e9e', color2: '#f5f5f5',
       ability: { name: 'Grand Siècle', desc: 'Each Wonder yields +2 Culture. Wonders cost 10% less.', fx: { culturePerWonder: 2, wonderCostMult: 0.9 } },
-      uu: { id: 'garde_imperiale', name: 'Garde Impériale', replaces: 'musketman', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'garde_imperiale', name: 'Garde Impériale', replaces: 'musketman', strength: 5, homeContinentBonus: 8, cultureOnKill: 15, desc: '+5 Strength, +8 on its home continent, +15 Culture per kill' },
       ub: { id: 'salon', name: 'Salon', replaces: 'museum', yields: { culture: 3, gold: 1 }, desc: '+3 Culture, +1 Gold' },
       cities: ['Paris', 'Orléans', 'Lyon', 'Marseille', 'Bordeaux', 'Toulouse', 'Rouen', 'Reims', 'Nantes', 'Strasbourg', 'Lille', 'Dijon'],
       leaders: [
@@ -143,7 +143,7 @@
 
     { id: 'england', name: 'England', adj: 'English', color: '#b71c1c', color2: '#ffffff',
       ability: { name: 'Rule the Waves', desc: 'Naval units +1 Movement and cost 20% less. Coastal settlements +2 Gold.', fx: { navalMoves: 1, navalCostMult: 0.8, coastalSettlementYields: { gold: 2 } } },
-      uu: { id: 'redcoat', name: 'Redcoat', replaces: 'rifleman', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'redcoat', name: 'Redcoat', replaces: 'rifleman', strength: 4, amphibious: true, abroadBonus: 8, desc: '+4 Strength, +8 on foreign continents, lands from the sea without penalty' },
       ub: { id: 'royal_dockyard', name: 'Royal Navy Dockyard', replaces: 'harbor', yields: { gold: 4, production: 1 }, desc: '+4 Gold, +1 Production' },
       cities: ['London', 'York', 'Liverpool', 'Bristol', 'Manchester', 'Norwich', 'Birmingham', 'Leeds', 'Nottingham', 'Exeter', 'Canterbury', 'Newcastle'],
       leaders: [
@@ -154,7 +154,7 @@
 
     { id: 'aztec', name: 'Aztec', adj: 'Aztec', color: '#0e6655', color2: '#f0b27a',
       ability: { name: 'Flower Wars', desc: 'Killing a unit grants +10 Culture and +5 Gold. Melee units +1 Strength per worked Luxury (max +5).', fx: { culturePerKill: 10, goldPerKill: 5, strPerLuxury: 1 } },
-      uu: { id: 'eagle_warrior', name: 'Eagle Warrior', replaces: 'warrior', strength: 8, desc: '+8 Strength' },
+      uu: { id: 'eagle_warrior', name: 'Eagle Warrior', replaces: 'warrior', strength: 6, productionOnKill: 25, desc: '+6 Strength, each kill sends +25 Production to the nearest settlement' },
       ub: { id: 'tlachtli', name: 'Tlachtli', replaces: 'amphitheater', yields: { culture: 1, happiness: 2 }, desc: '+1 Culture, +2 Happiness' },
       cities: ['Tenochtitlan', 'Texcoco', 'Tlatelolco', 'Tlacopan', 'Xochimilco', 'Azcapotzalco', 'Chalco', 'Tula', 'Cholula', 'Cuauhnahuac', 'Tlaxcala', 'Malinalco'],
       leaders: [
@@ -164,7 +164,7 @@
 
     { id: 'inca', name: 'Inca', adj: 'Incan', color: '#a04000', color2: '#f9e79f',
       ability: { name: 'Terraces', desc: 'Worked Hills yield +1 Food. Units can cross Mountains (3 movement).', fx: { tileBonus: [{ when: 'hills', yields: { food: 1 } }], mountainsPassable: true } },
-      uu: { id: 'warakaq', name: "Warak'aq", replaces: 'archer', ranged: 3, moves: 1, desc: '+3 Ranged Strength, +1 Movement' },
+      uu: { id: 'warakaq', name: "Warak'aq", replaces: 'archer', ranged: 2, moves: 1, ignoreHills: true, terrainBonus: {hills: 6}, desc: '+2 Ranged Strength, +1 Movement, hills cost no extra movement, +6 on hills' },
       ub: { id: 'qollqa', name: 'Qollqa', replaces: 'granary', yields: { food: 2, production: 1 }, desc: '+2 Food, +1 Production' },
       cities: ['Cusco', 'Machu Picchu', 'Ollantaytambo', 'Vilcabamba', 'Cajamarca', 'Quito', 'Tiwanaku', 'Chan Chan', 'Huánuco', 'Arequipa', 'Pisac', 'Vitcos'],
       leaders: [
@@ -174,7 +174,7 @@
 
     { id: 'maya', name: 'Maya', adj: 'Mayan', color: '#117864', color2: '#fdfefe',
       ability: { name: 'Long Count', desc: 'Farms yield +1 Food. +1 Science per 2 population in every settlement.', fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }], sciencePerPop: 0.5 } },
-      uu: { id: 'hulche', name: "Hul'che", replaces: 'archer', ranged: 3, bonusVsDamaged: 5, desc: '+3 Ranged Strength, +5 vs damaged units' },
+      uu: { id: 'hulche', name: "Hul'che", replaces: 'archer', ranged: 2, range: 1, bonusVsDamaged: 5, desc: '+2 Ranged Strength, +1 Range, +5 vs wounded units' },
       ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 2 }, desc: '+2 Science' },
       cities: ['Mutal', 'Yaxchilan', 'Calakmul', 'Uxmal', 'Chichen Itza', 'Copan', 'Palenque', 'Caracol', 'Coba', 'Tulum', 'Mayapan', 'Naranjo'],
       leaders: [
@@ -184,7 +184,7 @@
 
     { id: 'shawnee', name: 'Shawnee', adj: 'Shawnee', color: '#6e2c00', color2: '#7fb3d5',
       ability: { name: 'Kithita', desc: 'Worked River tiles yield +1 Food and +1 Culture. Independent camps yield triple Gold when dispersed.', fx: { tileBonus: [{ when: 'river', yields: { food: 1, culture: 1 } }], campGoldMult: 3 } },
-      uu: { id: 'kispoko', name: 'Kispoko Warrior', replaces: 'horseman', strength: 4, moves: 1, desc: '+4 Strength, +1 Movement' },
+      uu: { id: 'kispoko', name: 'Kispoko Warrior', replaces: 'horseman', strength: 3, moves: 1, forestMove: true, sight: 1, terrainBonus: {forest: 6}, desc: '+3 Strength, +1 Movement, +1 Sight, moves freely through forest, +6 in forest' },
       ub: { id: 'council_lodge', name: 'Council Lodge', replaces: 'monument', yields: { culture: 1, happiness: 1 }, desc: '+1 Culture, +1 Happiness' },
       cities: ['Chalahgawtha', 'Piqua', 'Wapakoneta', 'Kispoko', 'Mekoche', 'Prophetstown', 'Lower Shawneetown', 'Tippecanoe', 'Blue Jacket\'s Town', 'Girty\'s Town', 'Cornstalk\'s Town', 'Hog Creek'],
       leaders: [
@@ -194,7 +194,7 @@
 
     { id: 'greece', name: 'Greece', adj: 'Greek', color: '#1a5276', color2: '#f4f6f7',
       ability: { name: 'Agora', desc: '+10% Culture. Governments give +1 Happiness per settlement (any except Chiefdom).', fx: { yieldMult: { culture: 1.1 }, governmentHappiness: 1 } },
-      uu: { id: 'hoplite', name: 'Hoplite', replaces: 'spearman', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'hoplite', name: 'Hoplite', replaces: 'spearman', strength: 3, defense: 3, flankSame: 5, desc: '+3 Strength, +3 defending, +5 per adjacent Hoplite (phalanx)' },
       ub: { id: 'odeon', name: 'Odeon', replaces: 'amphitheater', yields: { culture: 2, science: 1 }, desc: '+2 Culture, +1 Science' },
       cities: ['Athens', 'Sparta', 'Corinth', 'Thebes', 'Argos', 'Delphi', 'Rhodes', 'Ephesus', 'Miletus', 'Knossos', 'Olympia', 'Pella'],
       leaders: [
@@ -205,7 +205,7 @@
 
     { id: 'germany', name: 'Germany', adj: 'German', color: '#4d4d4d', color2: '#f1c40f',
       ability: { name: 'Free Imperial Cities', desc: '+10% Production in Cities. Upgrading a Town into a City is 15% cheaper.', fx: { cityYieldMult: { production: 1.1 }, cityUpgradeCostMult: 0.85 } },
-      uu: { id: 'landsknecht', name: 'Landsknecht', replaces: 'pikeman', strength: 2, costMult: 0.6, desc: '+2 Strength, costs 40% less' },
+      uu: { id: 'landsknecht', name: 'Landsknecht', replaces: 'pikeman', strength: 2, costMult: 0.6, vsCls: {melee: 6}, goldOnKill: 25, desc: '+2 Strength, 40% cheaper, +6 vs melee, +25 Gold per kill' },
       ub: { id: 'hansa', name: 'Hansa', replaces: 'workshop', yields: { production: 2, gold: 2 }, desc: '+2 Production, +2 Gold' },
       cities: ['Aachen', 'Cologne', 'Frankfurt', 'Magdeburg', 'Mainz', 'Heidelberg', 'Trier', 'Berlin', 'Hamburg', 'Munich', 'Nuremberg', 'Leipzig'],
       leaders: [
@@ -216,7 +216,7 @@
 
     { id: 'russia', name: 'Russia', adj: 'Russian', color: '#5d6d7e', color2: '#f4d03f',
       ability: { name: 'Endless Steppe', desc: 'Tundra and Snow tiles yield +1 Food and +1 Production when worked. Settlements expand into a fourth ring.', fx: { tileBonus: [{ when: 'cold', yields: { food: 1, production: 1 } }], expansionRadius: 1 } },
-      uu: { id: 'cossack', name: 'Cossack', replaces: 'cavalry', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'cossack', name: 'Cossack', replaces: 'cavalry', strength: 5, movesAfterAttack: true, homeBonus: 5, terrainBonus: {tundra: 5, snow: 5}, desc: '+5 Strength, can move after attacking, +5 inside your borders and on tundra or snow' },
       ub: { id: 'lavra', name: 'Lavra', replaces: 'shrine', yields: { culture: 3, happiness: 1 }, desc: '+3 Culture, +1 Happiness' },
       cities: ['Moscow', 'St. Petersburg', 'Novgorod', 'Kiev', 'Kazan', 'Yekaterinburg', 'Vladimir', 'Smolensk', 'Rostov', 'Tver', 'Yaroslavl', 'Arkhangelsk'],
       leaders: [
@@ -227,7 +227,7 @@
 
     { id: 'spain', name: 'Spain', adj: 'Spanish', color: '#c0392b', color2: '#f7dc6f',
       ability: { name: 'Conquistadores', desc: 'Units +5 Strength when fighting on a continent other than your capital\'s. Dispersing camps grants double Gold.', fx: { combatBonusAbroad: 5, campGoldMult: 2 } },
-      uu: { id: 'tercio', name: 'Tercio', replaces: 'musketman', strength: 6, desc: '+6 Strength' },
+      uu: { id: 'tercio', name: 'Tercio', replaces: 'musketman', strength: 6, vsCls: {cavalry: 10}, captureBonus: true, desc: '+6 Strength, +10 vs cavalry, captured settlements keep population and buildings' },
       ub: { id: 'mission', name: 'Mission', replaces: 'shrine', yields: { culture: 2, science: 1, happiness: 1 }, desc: '+2 Culture, +1 Science, +1 Happiness' },
       cities: ['Madrid', 'Barcelona', 'Seville', 'Toledo', 'Valencia', 'Córdoba', 'Zaragoza', 'Granada', 'Bilbao', 'Cádiz', 'Salamanca', 'Santiago'],
       leaders: [
@@ -237,7 +237,7 @@
 
     { id: 'ottoman', name: 'Ottomans', adj: 'Ottoman', color: '#1b4f3f', color2: '#e8e8e8',
       ability: { name: 'Devshirme', desc: 'Siege units +1 Movement and +5 Strength vs settlements. Conquered settlements keep all buildings.', fx: { classMoves: { siege: 1 }, vsSettlements: 5, captureKeepBuildings: true } },
-      uu: { id: 'janissary', name: 'Janissary', replaces: 'musketman', strength: 4, costMult: 0.8, desc: '+4 Strength, 20% cheaper' },
+      uu: { id: 'janissary', name: 'Janissary', replaces: 'musketman', strength: 4, costMult: 0.8, vsSettlements: 8, freeLevel: 1, desc: '+4 Strength, 20% cheaper, +8 vs settlements, starts at level 1' },
       ub: { id: 'bazaar', name: 'Grand Bazaar', replaces: 'market', yields: { gold: 4, happiness: 1 }, desc: '+4 Gold, +1 Happiness' },
       cities: ['Istanbul', 'Edirne', 'Bursa', 'Ankara', 'Izmir', 'Konya', 'Trabzon', 'Antalya', 'Erzurum', 'Adana', 'Sofia', 'Belgrade'],
       leaders: [
@@ -247,7 +247,7 @@
 
     { id: 'korea', name: 'Korea', adj: 'Korean', color: '#2874a6', color2: '#f4f6f7',
       ability: { name: 'Seowon', desc: 'Libraries and Universities yield +2 Science. Urban Centers +3 Science.', fx: { buildingBonus: { library: { science: 2 }, university: { science: 2 } }, specializationYields: { urban: { science: 3 } } } },
-      uu: { id: 'hwacha', name: 'Hwacha', replaces: 'field_cannon', ranged: 8, desc: '+8 Ranged Strength' },
+      uu: { id: 'hwacha', name: 'Hwacha', replaces: 'field_cannon', ranged: 8, defense: 5, scienceOnKill: 20, desc: '+8 Ranged Strength, +5 defending, +20 Science per kill' },
       ub: { id: 'jipgyeongjeon', name: 'Jiphyeonjeon', replaces: 'university', yields: { science: 3, culture: 1 }, desc: '+3 Science, +1 Culture' },
       cities: ['Seoul', 'Busan', 'Gyeongju', 'Pyongyang', 'Gaeseong', 'Daegu', 'Incheon', 'Jeonju', 'Gwangju', 'Suwon', 'Ulsan', 'Cheongju'],
       leaders: [
@@ -257,7 +257,7 @@
 
     { id: 'vietnam', name: 'Vietnam', adj: 'Vietnamese', color: '#a93226', color2: '#f9e79f',
       ability: { name: 'Nine Dragons', desc: 'Worked Rainforest and Marsh tiles yield +1 Production and +1 Culture. Units +5 Strength in Rainforest and Marsh.', fx: { tileBonus: [{ when: 'jungle', yields: { production: 1, culture: 1 } }], combatBonusJungle: 5 } },
-      uu: { id: 'voi_chien', name: 'Voi Chiến', replaces: 'knight', strength: 3, ranged: 0, desc: '+3 Strength, ignores forest movement cost', forestMove: true },
+      uu: { id: 'voi_chien', name: 'Voi Chiến', replaces: 'knight', strength: 3, forestMove: true, terrainBonus: {forest: 7, jungle: 7, marsh: 7}, desc: '+3 Strength, moves freely through forest and jungle, +7 in forest, jungle and marsh' },
       ub: { id: 'thanh', name: 'Thành', replaces: 'walls', yields: { culture: 1, production: 1 }, desc: '+1 Culture, +1 Production' },
       cities: ['Thang Long', 'Hue', 'Saigon', 'Hai Phong', 'Da Nang', 'Hoa Lu', 'Vinh', 'Can Tho', 'Nha Trang', 'Hoi An', 'Ha Long', 'Bac Ninh'],
       leaders: [
@@ -267,7 +267,7 @@
 
     { id: 'ethiopia', name: 'Ethiopia', adj: 'Ethiopian', color: '#7d6608', color2: '#27ae60',
       ability: { name: 'Roof of Africa', desc: 'Settlements on Hills yield +2 Culture and +3 defense. Worked Hills +1 Gold.', fx: { settlementSiteBonus: [{ when: 'hills', yields: { culture: 2 } }], hillsDefense: 3, tileBonus: [{ when: 'hills', yields: { gold: 1 } }] } },
-      uu: { id: 'shotel', name: 'Shotel Warrior', replaces: 'swordsman', strength: 3, moves: 1, desc: '+3 Strength, +1 Movement' },
+      uu: { id: 'shotel', name: 'Shotel Warrior', replaces: 'swordsman', strength: 3, moves: 1, ignoreHills: true, terrainBonus: {hills: 5}, vsIndependents: 8, desc: '+3 Strength, +1 Movement, hills cost no extra movement, +5 on hills, +8 vs raiders' },
       ub: { id: 'rock_church', name: 'Rock-Hewn Church', replaces: 'shrine', yields: { culture: 2, happiness: 2 }, desc: '+2 Culture, +2 Happiness' },
       cities: ['Aksum', 'Gondar', 'Lalibela', 'Addis Ababa', 'Harar', 'Adwa', 'Mekelle', 'Bahir Dar', 'Dire Dawa', 'Jimma', 'Debre Markos', 'Yeha'],
       leaders: [
@@ -277,7 +277,7 @@
 
     { id: 'mali', name: 'Mali', adj: 'Malian', color: '#b9770e', color2: '#fdfefe',
       ability: { name: 'Salt and Gold', desc: 'Worked Desert tiles yield +2 Gold. Purchases cost 15% less. Cities -10% Production.', fx: { tileBonus: [{ when: 'desert', yields: { gold: 2 } }], purchaseMult: 0.85, cityYieldMult: { production: 0.9 } } },
-      uu: { id: 'sofa', name: 'Sofa', replaces: 'horseman', strength: 2, defense: 4, desc: '+2 Strength, +4 when defending' },
+      uu: { id: 'sofa', name: 'Sofa', replaces: 'horseman', strength: 2, defense: 4, goldOnKill: 50, purchaseMult: 0.7, desc: '+2 Strength, +4 defending, +50 Gold per kill, 30% cheaper to purchase' },
       ub: { id: 'suguba', name: 'Suguba', replaces: 'market', yields: { gold: 5 }, desc: '+5 Gold' },
       cities: ['Niani', 'Timbuktu', 'Djenné', 'Gao', 'Walata', 'Kangaba', 'Ségou', 'Koumbi Saleh', 'Kita', 'Bamako', 'Mopti', 'Sikasso'],
       leaders: [
@@ -287,7 +287,7 @@
 
     { id: 'norway', name: 'Norway', adj: 'Norse', color: '#1f618d', color2: '#e74c3c',
       ability: { name: 'Longships', desc: 'Units can embark from the start and embark/disembark without ending their move. Naval units +1 Movement.', fx: { earlyEmbark: true, freeDisembark: true, navalMoves: 1 } },
-      uu: { id: 'berserker', name: 'Berserker', replaces: 'swordsman', strength: 5, moves: 1, desc: '+5 Strength, +1 Movement' },
+      uu: { id: 'berserker', name: 'Berserker', replaces: 'swordsman', strength: 5, moves: 1, amphibious: true, attack: 7, defense: -3, desc: '+5 Strength, +1 Movement, +7 attacking, -3 defending, lands from the sea without penalty' },
       ub: { id: 'stave_church', name: 'Stave Church', replaces: 'shrine', yields: { culture: 2, production: 1 }, desc: '+2 Culture, +1 Production' },
       cities: ['Nidaros', 'Bergen', 'Oslo', 'Tønsberg', 'Stavanger', 'Kaupang', 'Tromsø', 'Hamar', 'Bodø', 'Ålesund', 'Kristiansand', 'Sarpsborg'],
       leaders: [
@@ -297,7 +297,7 @@
 
     { id: 'babylon', name: 'Babylon', adj: 'Babylonian', color: '#6c3483', color2: '#f8c471',
       ability: { name: 'Cradle of Civilization', desc: 'Technologies cost 15% less, but each settlement yields -1 Science. Worked River tiles +1 Gold.', fx: { techCostMult: 0.85, sciencePerSettlement: -1, tileBonus: [{ when: 'river', yields: { gold: 1 } }] } },
-      uu: { id: 'sabum', name: 'Sabum Kibittum', replaces: 'warrior', strength: 3, moves: 1, desc: '+3 Strength, +1 Movement' },
+      uu: { id: 'sabum', name: 'Sabum Kibittum', replaces: 'warrior', strength: 3, moves: 1, sight: 2, xpMult: 1, scienceOnKill: 10, desc: '+3 Strength, +1 Movement, +2 Sight, double experience, +10 Science per kill' },
       ub: { id: 'ziggurat', name: 'Ziggurat', replaces: 'library', yields: { science: 2, culture: 1 }, desc: '+2 Science, +1 Culture' },
       cities: ['Babylon', 'Ur', 'Uruk', 'Nippur', 'Sippar', 'Kish', 'Larsa', 'Eridu', 'Lagash', 'Borsippa', 'Isin', 'Akkad'],
       leaders: [
@@ -307,7 +307,7 @@
 
     { id: 'polynesia', name: 'Polynesia', adj: 'Polynesian', color: '#148f77', color2: '#fad7a0',
       ability: { name: 'Wayfinders', desc: 'Units can embark and cross Ocean from the start. Embarked units +1 Movement. Worked water tiles +1 Production.', fx: { earlyEmbark: true, earlyOcean: true, embarkMoves: 1, tileBonus: [{ when: 'water', yields: { production: 1 } }] } },
-      uu: { id: 'maori_warrior', name: 'Toa', replaces: 'warrior', strength: 5, desc: '+5 Strength' },
+      uu: { id: 'maori_warrior', name: 'Toa', replaces: 'warrior', strength: 5, intimidate: 5, amphibious: true, desc: '+5 Strength, adjacent enemies fight at -5 (haka), lands from the sea without penalty' },
       ub: { id: 'marae', name: 'Marae', replaces: 'monument', yields: { culture: 2, happiness: 1 }, desc: '+2 Culture, +1 Happiness' },
       cities: ['Honolulu', 'Rapa Nui', 'Tahiti', 'Nuku Hiva', 'Apia', 'Tongatapu', 'Rarotonga', 'Hilo', 'Bora Bora', 'Aotearoa', 'Raiatea', 'Nukuʻalofa'],
       leaders: [

@@ -11,7 +11,7 @@
     this.canvas = canvas;
     this.cam = { x: 0, y: 0, zoom: 1 };
     this.highlights = { reach: null, attack: null, expand: null, path: null, selTile: -1 };
-    this.showGrid = true; this.is3D = true; this.maxZoom = 6;
+    this.showGrid = true; this.is3D = true; this.maxZoom = 6; this.showYields = false; this.yieldNodes = {};
     this.three = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.three.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     this.three.shadowMap.enabled = true; this.three.shadowMap.type = T.PCFShadowMap;
@@ -499,6 +499,7 @@
     while (this.hlGroup.children.length) this.hlGroup.remove(this.hlGroup.children[0]);
     function rings(set, mat) { if (!set) return; for (var key in set) { var t = g.tiles[+key]; if (!t) continue; var p = tileXZ(t); var m = new T.Mesh(self.geo.ring, mat); m.position.set(p[0], Math.max(0.5, self.tileTop(t)) + 2.2, p[1]); self.hlGroup.add(m); } }
     rings(hl.reach, this.mat.hlReach); rings(hl.expand, this.mat.hlExpand); rings(hl.attack, this.mat.hlAttack);
+    if (hl.dragTile >= 0 && g.tiles[hl.dragTile]) { var dtt = g.tiles[hl.dragTile], dtp = tileXZ(dtt); var dm = new T.Mesh(this.geo.ring, this.mat.hlSel); dm.position.set(dtp[0], this.tileTop(dtt) + 2.4, dtp[1]); this.hlGroup.add(dm); }
     if (hl.path) hl.path.forEach(function (pi) { var t = g.tiles[pi], p = tileXZ(t); var d = new T.Mesh(self.geo.pathDot, self.mat.pathDot); d.position.set(p[0], self.tileTop(t) + R * 0.15, p[1]); self.hlGroup.add(d); });
     if (hl.selTile >= 0 && (!app || !app.sel.unit)) { var st = g.tiles[hl.selTile], sp = tileXZ(st); var sm = new T.Mesh(this.geo.ring, this.mat.hlSel); sm.position.set(sp[0], this.tileTop(st) + 1.6, sp[1]); this.hlGroup.add(sm); }
   };
@@ -512,6 +513,7 @@
     this.syncUnits(g, app);
     this.syncHighlights(g, app);
     if (this.world.grid) this.world.grid.visible = this.showGrid;
+    this.syncYields(g);
     this.updateCamera();
     // labels and badges keep a readable, roughly constant screen size
     var f = 1 / Math.max(1, this.cam.zoom * 0.8), k, n, explored2 = G.player(g).explored;
@@ -519,6 +521,43 @@
     for (k in this.settlementNodes) { var b = this.settlementNodes[k].banner; b.scale.set(b.userData.baseScale[0] * f, b.userData.baseScale[1] * f, 1); }
     for (n in this.unitNodes) this.unitNodes[n].group.children.forEach(function (c) { if (c.userData.baseScale) c.scale.set(c.userData.baseScale[0] * f, c.userData.baseScale[1] * f, 1); });
     this.three.render(this.scene, this.camera);
+  };
+  // Yield labels: one small sprite per explored tile near the camera (option, key Y).
+  P.yieldSprite = function (text) {
+    var T = window.THREE, cv = document.createElement('canvas'), fs = 26, ctx = cv.getContext('2d');
+    ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; var tw = Math.ceil(ctx.measureText(text).width) + 12, th = fs * 1.4;
+    cv.width = tw; cv.height = th; ctx = cv.getContext('2d');
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, tw, th);
+    ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center'; ctx.fillText(text, tw / 2, th / 2 + 1);
+    var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; tex.minFilter = T.LinearFilter;
+    var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+    var sc = R * 0.42 / fs; sp.userData.baseScale = [tw * sc, th * sc]; sp.scale.set(sp.userData.baseScale[0], sp.userData.baseScale[1], 1); sp.renderOrder = 9;
+    return sp;
+  };
+  P.syncYields = function (g) {
+    var self = this, keep = {}, player = G.player(g);
+    if (this.showYields) {
+      var YI = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭' };
+      var cx = this.cam.x, cz = this.cam.y, rad = R * 22;
+      var c0 = Math.max(0, Math.floor((cx - rad) / (R * 1.732))), c1 = Math.min(g.W - 1, Math.ceil((cx + rad) / (R * 1.732)));
+      var r0 = Math.max(0, Math.floor((cz - rad) / (R * 1.5))), r1 = Math.min(g.H - 1, Math.ceil((cz + rad) / (R * 1.5)));
+      for (var rr = r0; rr <= r1; rr++) for (var cc = c0; cc <= c1; cc++) {
+        var i = rr * g.W + cc, t = g.tiles[i];
+        if (!player.explored[i] || (AU.TERRAIN[t.terrain].impassable && !t.natural)) continue;
+        var so = t.owner >= 0 ? g.settlements[t.owner] : null, yy = so ? G.tileYields(g, t, so) : AU.baseTileYields(t, player);
+        var txt = ''; for (var yk in YI) if (yy[yk] >= 1) txt += (txt ? ' ' : '') + YI[yk] + Math.floor(yy[yk]);
+        if (!txt) continue;
+        keep[i] = txt;
+        var node = this.yieldNodes[i];
+        if (!node || node.userData.txt !== txt) {
+          if (node) this.scene.remove(node);
+          node = this.yieldSprite(txt); node.userData.txt = txt;
+          var p = Hex.center(t.col, t.row, R); node.position.set(p[0], this.heightAt(p[0], p[1]) + R * 0.35, p[1] + R * 0.45);
+          this.scene.add(node); this.yieldNodes[i] = node;
+        }
+      }
+    }
+    for (var k in this.yieldNodes) if (!keep[k]) { this.scene.remove(this.yieldNodes[k]); delete this.yieldNodes[k]; }
   };
   P.dispose = function () { this.three.dispose(); };
   AU.Renderer3D = Renderer3D;

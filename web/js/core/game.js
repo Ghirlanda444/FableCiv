@@ -91,7 +91,7 @@
   G.rngInt = function (g, n) { return Math.floor(G.rng(g) * n); };
   G.log = function (g, msg, civIdx) { g.log.push({ turn: g.turn, msg: msg, civ: civIdx }); if (g.log.length > 300) g.log.shift(); };
   G.notify = function (g, civ, n) { if (!civ.isPlayer) return; n.turn = g.turn; g.notifications.push(n); };
-  G.quote = function (g, civ, cat, id, title, kicker) { if (!civ.isPlayer) return; var q = AU.QUOTES && AU.QUOTES[cat] && AU.QUOTES[cat][id]; if (!q) return; g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: kicker, title: title, text: q.text, by: q.by }); };
+  G.quote = function (g, civ, cat, id, title, kicker, tile) { if (!civ.isPlayer) return; var q = AU.QUOTES && AU.QUOTES[cat] && AU.QUOTES[cat][id]; if (!q) return; g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: kicker, title: title, text: q.text, by: q.by, cat: cat, id: id, tile: tile }); };
   G.civData = function (civ) { return AU.CIV_BY_ID[civ.civId]; };
   G.civColor = function (civ) { return civ.color || AU.CIV_BY_ID[civ.civId].color; };
   // Make sure no two civilizations in the same game share a near-identical banner colour.
@@ -165,17 +165,9 @@
     var base = AU.UNITS[typeId];
     var data = G.civData(civ);
     if (data.uu && data.uu.replaces === typeId) {
-      var u = Object.assign({}, base, { name: data.uu.name, unique: true, baseId: typeId });
-      if (data.uu.strength) u.strength += data.uu.strength;
-      if (data.uu.ranged) u.ranged += data.uu.ranged;
-      if (data.uu.moves) u.moves += data.uu.moves;
-      if (data.uu.noResource) delete u.resource;
-      if (data.uu.costMult) u.cost = Math.round(u.cost * data.uu.costMult);
-      if (data.uu.healAlways) u.healAlways = true;
-      if (data.uu.bonusVsDamaged) u.bonusVsDamaged = data.uu.bonusVsDamaged;
-      if (data.uu.defense) u.defense = data.uu.defense;
-      if (data.uu.noDamagePenalty) u.noDamagePenalty = true;
-      if (data.uu.forestMove) u.forestMove = true;
+      var u = Object.assign({}, base, { name: data.uu.name, unique: true, baseId: typeId, uuDesc: data.uu.desc });
+      AU.applyUnitMods(u, data.uu);
+      if (u.moves < 1) u.moves = 1;
       return u;
     }
     return base;
@@ -185,22 +177,25 @@
     var def = civ ? G.unitType(g, civ, typeId) : AU.UNITS[typeId];
     var u = { id: g.nextId++, civ: civIdx, type: typeId, tile: tileIdx, hp: 100, moves: G.maxMoves(g, civIdx, typeId), fortify: 0, sleep: false, path: null, xp: 0, bonusStr: 0, name: def.name };
     if (civ && def.cls !== 'civilian') u.xp = G.civFx(g, civ).unitsStartXp || 0;
+    u.promos = [];
+    if (def.freeLevel) u.xp = Math.max(u.xp, AU.U.xpForLevel(def.freeLevel));
     if (extra) Object.assign(u, extra);
     g.units[u.id] = u;
     var ix = G.unitIndex(g); (ix[u.tile] = ix[u.tile] || []).push(u);
     if (civ) { civ.unitsBuilt++; G.revealAround(g, civ, g.tiles[tileIdx].col, g.tiles[tileIdx].row, G.sight(g, u)); }
     return u;
   };
-  G.maxMoves = function (g, civIdx, typeId) {
-    if (civIdx < 0) return AU.UNITS[typeId].moves;
-    var civ = g.civs[civIdx], def = G.unitType(g, civ, typeId), fx = G.civFx(g, civ), m = def.moves;
+  G.maxMoves = function (g, civIdx, typeId, unit) {
+    var pm = unit && unit.promos ? AU.U.promoMods(unit).moves || 0 : 0;
+    if (civIdx < 0) return AU.UNITS[typeId].moves + pm;
+    var civ = g.civs[civIdx], def = G.unitType(g, civ, typeId), fx = G.civFx(g, civ), m = def.moves + pm;
     if (def.cls === 'cavalry' && fx.cavalryMoves) m += fx.cavalryMoves;
     if ((def.cls === 'naval' || def.cls === 'navalRanged') && fx.navalMoves) m += fx.navalMoves;
     if (def.cls === 'civilian' && fx.civilianMoves) m += fx.civilianMoves;
     if (fx.classMoves && fx.classMoves[def.cls]) m += fx.classMoves[def.cls];
     return m;
   };
-  G.sight = function (g, u) { var def = AU.UNITS[u.type]; var s = def.sight || 2; if (g.tiles[u.tile].hills) s += 1; if (u.civ >= 0 && (def.cls === 'recon' || def.cls === 'naval' || def.cls === 'navalRanged')) s += G.civFx(g, g.civs[u.civ]).reconSight || 0; return s; };
+  G.sight = function (g, u) { var def = AU.U.def(g, u); var s = (def.sight || 2) + (AU.UNITS[u.type].sight ? 0 : 0); if (g.tiles[u.tile].hills) s += 1; if (u.civ >= 0 && (def.cls === 'recon' || def.cls === 'naval' || def.cls === 'navalRanged')) s += G.civFx(g, g.civs[u.civ]).reconSight || 0; return s; };
   G.removeUnit = function (g, u) { delete g.units[u.id]; var ix = G.unitIndex(g); if (ix[u.tile]) { ix[u.tile] = ix[u.tile].filter(function (o) { return o.id !== u.id; }); if (!ix[u.tile].length) delete ix[u.tile]; } };
   G.setUnitTile = function (g, u, tileIdx) { var from = u.tile; u.tile = tileIdx; G.unitMoved(g, u, from, tileIdx); };
   G.isMilitary = function (u) { return AU.UNITS[u.type].cls !== 'civilian'; };
@@ -217,7 +212,7 @@
     var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
     civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
     G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Science and Culture.', tile: t.i });
-    G.quote(g, civ, 'natural', t.natural, NW.name, 'Natural wonder discovered');
+    G.quote(g, civ, 'natural', t.natural, NW.name, 'Natural wonder discovered', t.i);
     G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };
   G.refreshVisibility = function (g, civ) {
@@ -490,6 +485,7 @@
     var fx = G.civFx(g, civ);
     var prog = s ? (s.progress[kind + ':' + id] || 0) : 0;
     var m = (fx.purchaseMult || 1) * (s && !s.isCity && fx.townPurchaseMult ? fx.townPurchaseMult : 1);
+    if (kind === 'unit') { var ud = G.unitType(g, civ, id); if (ud.purchaseMult) m *= ud.purchaseMult; }
     return Math.max(10, Math.round((G.itemCost(g, civ, kind, id, s) - prog) * 2 * m));
   };
   G.canBuildUnit = function (g, s, id) {
@@ -787,6 +783,30 @@
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
   };
 
+  // ---------- Tourism & culture ----------
+  // Tourism per turn: wonders, cultural buildings and natural wonders inside the borders, scaled by era.
+  G.tourism = function (g, civ) {
+    var fx = G.civFx(g, civ), t = 0, sets = G.civSettlements(g, civ.idx);
+    sets.forEach(function (s) {
+      s.buildings.forEach(function (b) {
+        if (AU.WONDERS[b]) t += 3;
+        else if (AU.NATIONAL[b]) t += 2;
+        else if (AU.BUILDINGS[b]) { var bd = AU.BUILDINGS[b]; t += bd.tourism !== undefined ? bd.tourism : (bd.yields && bd.yields.culture ? bd.yields.culture * 0.5 : 0); }
+      });
+      s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
+    });
+    t *= (1 + civ.era * 0.25) * (1 + (fx.tourismMult || 0));
+    return Math.round(t * 10) / 10;
+  };
+  G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
+  G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / 100); };
+  // Culture victory: your foreign visitors exceed the domestic tourists of every other living civilization (Industrial era or later).
+  G.cultureProgress = function (g, civ) {
+    var v = G.visitors(g, civ), need = 0;
+    g.civs.forEach(function (o) { if (o.alive && o.idx !== civ.idx) need = Math.max(need, G.domesticTourists(g, o)); });
+    return { visitors: v, need: need + 1, ready: civ.era >= 4 && v > need };
+  };
+
   // ---------- Score & victory ----------
   G.score = function (g, civ) {
     var s = 0;
@@ -807,6 +827,7 @@
       for (var j = 0; j < g.civs.length; j++) { var oc = g.settlements[g.civs[j].originalCapital]; if (!oc || oc.civ !== c.idx) { all = false; break; } }
       if (all) { g.victory = { type: 'domination', civ: c.idx, turn: g.turn }; return g.victory; }
     }
+    for (var k = 0; k < alive.length; k++) { if (alive.length > 1 && G.cultureProgress(g, alive[k]).ready) { g.victory = { type: 'culture', civ: alive[k].idx, turn: g.turn }; return g.victory; } }
     if (g.turn >= g.maxTurns) {
       var best = alive.slice().sort(function (a, b) { return G.score(g, b) - G.score(g, a); })[0];
       g.victory = { type: 'score', civ: best.idx, turn: g.turn };
@@ -836,7 +857,7 @@
     }
     // production
     if (s.isCity) {
-      var prod = y.production;
+      var prod = y.production + (s.bonusProduction || 0); if (s.bonusProduction) { if (!s.isCity) civ.gold += s.bonusProduction; s.bonusProduction = 0; }
       if (s.queue.length) {
         var item = s.queue[0], key = item.kind + ':' + item.id;
         if (item.kind === 'unit' && y.unitProductionPct) prod *= 1 + y.unitProductionPct / 100;
@@ -922,6 +943,7 @@
     }
     // research
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
+    civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     G.checkBoosts(g, civ);
     if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (civ.currentTech) {

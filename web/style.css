@@ -132,3 +132,22 @@ button.turn { min-width: 118px; padding: 12px 10px; font-weight: 600; font-size:
 .quote-box p { font-size: 17px; line-height: 1.5; font-style: italic; margin: 0 0 8px; color: #f1eee6; }
 .quote-by { font-size: 13px; color: var(--muted); text-align: right; margin-bottom: 12px; }
 .pquote { margin: 10px 0 0; padding: 10px 14px; border-left: 3px solid var(--gold); background: rgba(255,255,255,.04); font-style: italic; }
+
+/* to-do End Turn button, pass button, promotions, notifications, quote reveal */
+#btn-end.todo { background: #7a5a11; border-color: var(--gold); text-align: left; }
+#btn-end.todo small { display: block; font-size: 11px; opacity: .8; font-weight: normal; }
+#btn-pass { flex: none; padding: 8px 10px; font-size: 13px; opacity: .85; }
+.promo { margin: 6px 0; padding: 6px 8px; border: 1px solid var(--gold); border-radius: 8px; background: rgba(122,90,17,.25); }
+.promo .actions button { display: block; text-align: left; }
+.promo button small { display: block; font-size: 10px; opacity: .8; font-weight: normal; }
+button.gold { border-color: var(--gold); background: #4a3a10; }
+.notif { display: inline-flex; align-items: center; gap: 6px; }
+.notif .nx { margin-left: 4px; opacity: .6; font-size: 15px; padding: 0 2px; } .notif .nx:hover { opacity: 1; }
+.notif.clear { opacity: .7; font-size: 12px; }
+.quote-art { display: block; width: 100%; max-height: 42vh; object-fit: contain; border-radius: 10px; margin: 0 0 10px; background: rgba(0,0,0,.25); }
+.quote-box.reveal { animation: quoteIn .45s ease-out; }
+.quote-box.reveal .quote-art { animation: artIn 1.4s cubic-bezier(.2,.8,.2,1); }
+.quote-box.natural { border-color: #7fd3a6; box-shadow: 0 0 60px rgba(127,211,166,.35); }
+.quote-box.natural h2 { color: #a8f0c8; }
+@keyframes quoteIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes artIn { from { transform: scale(1.25); filter: brightness(2) blur(6px); opacity: 0; } 40% { opacity: 1; } to { transform: scale(1); filter: none; } }

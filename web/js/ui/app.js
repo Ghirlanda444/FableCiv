@@ -8,7 +8,7 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
-    settings: { graphics: '3d' }, pediaState: { cat: 'concepts' },
+    settings: { graphics: '3d', yields: false }, pediaState: { cat: 'concepts' },
     loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); Object.assign(this.settings, s); } catch (e) {} },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
@@ -21,6 +21,7 @@
       try { this.renderer = use3d ? new AU.Renderer3D(cv) : new AU.Renderer(cv); }
       catch (e) { console.warn('3D renderer failed, falling back to 2D', e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
       if (cam) this.renderer.cam = cam;
+      this.renderer.showYields = !!this.settings.yields;
       this.renderer.resize(); this.bindInput(); this.invalidate();
     },
     init: function () {
@@ -130,12 +131,13 @@
     bindGame: function () {
       $('btn-menu').onclick = function () { App.openPanel('menu'); };
       $('btn-pedia-top').onclick = function () { App.openPanel('pedia', { cat: App.pediaState.cat }); };
-      $('btn-end').onclick = function () { App.endTurn(); };
+      $('btn-end').onclick = function () { if (App._todo && App._todo.length) App.doTodo(0); else App.endTurn(); };
       $('btn-next').onclick = function () { App.nextUnit(); };
       $('panel-close').onclick = function () { App.closePanel(); };
       $('top-yields').onclick = function (e) { var y = e.target.closest('.y'); if (y) App.openPanel(y.dataset.panel); };
       $('context').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
-      $('notifs').addEventListener('click', function (e) { var n = e.target.closest('.notif'); if (n) App.onNotif(+n.dataset.i); });
+      $('notifs').addEventListener('click', function (e) { var x = e.target.closest('.nx'); if (x) { App.action('dismiss', x.dataset); return; } var n = e.target.closest('.notif'); if (!n) return; if (n.dataset.clear) App.action('clearnotifs', {}); else App.onNotif(+n.dataset.i); });
+      $('btn-pass').onclick = function () { App.endTurn(true); };
       $('panel-body').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
       $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
@@ -159,14 +161,40 @@
       $('btn-next').textContent = need ? 'Next Unit (' + need + ')' : 'Next Unit';
       $('btn-next').classList.toggle('attention', need > 0);
       $('btn-next').disabled = need === 0;
-      var growth = sets.filter(function (s) { return s.pendingGrowth > 0; }).length;
-      $('btn-end').textContent = growth ? 'End Turn (' + growth + ' 🌱)' : 'End Turn';
+      var todo = this.todo(); this._todo = todo;
+      var be = $('btn-end');
+      if (todo.length) { be.innerHTML = todo[0].icon + ' ' + todo[0].text + (todo.length > 1 ? ' <small>+' + (todo.length - 1) + ' more</small>' : ''); be.classList.add('todo'); $('btn-pass').hidden = false; }
+      else { be.textContent = 'End Turn'; be.classList.remove('todo'); $('btn-pass').hidden = true; }
     },
+    // Everything that still needs a decision before the turn can end, most important first (Civ 6 style).
+    todo: function () {
+      var g = this.g, p = G.player(g), list = [], self = this;
+      if (!g) return list;
+      g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
+      G.civSettlements(g, p.idx).forEach(function (s) {
+        if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: 'Production: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
+        if (s.pendingGrowth > 0) list.push({ icon: '🌱', text: 'Choose tile: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
+      });
+      if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
+      if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
+      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics'); } });
+      var promo = G.civUnits(g, p.idx).filter(function (u) { return U.promosAvailable(u) > 0; });
+      if (promo.length) list.push({ icon: '⭐', text: 'Promote ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
+      var need = this.unitsNeedingOrders();
+      if (need.length) list.push({ icon: '🪖', text: need.length === 1 ? need[0].name + ' needs orders' : need.length + ' units need orders', go: function () { self.nextUnit(); } });
+      return list;
+    },
+    doTodo: function (i) { var it = (this._todo || [])[i]; if (it) { it.go(); this.refreshHud(); this.invalidate(); } },
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
-      g.notifications.slice(-12).reverse().forEach(function (n, k) {
-        var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n); d.textContent = n.text; box.appendChild(d);
+      var ICON = { growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐' };
+      var list = g.notifications.slice(-14).reverse();
+      list.forEach(function (n) {
+        var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
+        d.innerHTML = '<span class="ni">' + (ICON[n.kind] || '📣') + '</span><span class="nt"></span><span class="nx" data-action="dismiss" data-i="' + d.dataset.i + '">×</span>';
+        d.querySelector('.nt').textContent = n.text; box.appendChild(d);
       });
+      if (list.length > 2) { var cl = document.createElement('div'); cl.className = 'notif clear'; cl.textContent = 'Clear all'; cl.dataset.clear = '1'; box.appendChild(cl); }
     },
     onNotif: function (i) {
       var n = this.g.notifications[i]; if (!n) return;
@@ -181,6 +209,11 @@
       var g = this.g; if (!g || !g.quoteQueue || !g.quoteQueue.length) return;
       var q = g.quoteQueue.shift(), box = $('quote'), self = this;
       $('quote-kicker').textContent = q.kicker || ''; $('quote-title').textContent = q.title; $('quote-text').textContent = '“' + q.text + '”'; $('quote-by').textContent = '— ' + q.by;
+      var art = $('quote-art'), kind = q.cat === 'natural' ? 'natural' : q.cat === 'wonder' ? 'wonders' : q.cat === 'national' ? 'national' : null;
+      art.hidden = true; art.removeAttribute('src');
+      if (kind && q.id) { art.src = AU.Assets.url(kind, q.id); art.hidden = false; art.onerror = function () { art.hidden = true; }; }
+      var bx = box.querySelector('.quote-box'); bx.classList.remove('reveal', 'natural'); void bx.offsetWidth; bx.classList.add('reveal'); if (q.cat === 'natural') bx.classList.add('natural');
+      if (q.tile != null && this.renderer) { this.renderer.centerOn(g, q.tile); this.renderer.highlights.selTile = q.tile; this.invalidate(); }
       box.hidden = false;
       $('quote-ok').onclick = function () { box.hidden = true; setTimeout(function () { self.showQuotes(); }, 120); };
     },
@@ -232,6 +265,11 @@
         html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">Independent</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
         html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? 'Str ' + U.strength(g, u, { attacking: false }) : 'Civilian') + (def.ranged ? ' · Ranged ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · Moves ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · Fortified' : '') + (U.isEmbarked(g, u) ? ' · Embarked' : '') + '</div>';
+        if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
+        if (def.unique && def.uuDesc) html += '<div class="meta stat">' + def.uuDesc + '</div>';
+        if (own && U.promosAvailable(u)) {
+          html += '<div class="promo"><b>⭐ Promotion available</b> (heals 50 HP, ends the turn)<div class="actions">' + U.promoChoices(g, u).map(function (pr) { return '<button class="small gold" data-action="dopromote" data-id="' + pr.id + '" title="' + AU.modsText(pr.mods) + '">' + pr.name + '<small>' + AU.modsText(pr.mods) + '</small></button>'; }).join('') + '</div></div>';
+        }
         if (own) {
           html += '<div class="actions">';
           if (this.pendingAttack != null) { var pa = this.previewAttack(u, this.pendingAttack); html += '<button class="small danger" data-action="attack" data-tile="' + this.pendingAttack + '">⚔️ Attack: ' + pa + '</button>'; }
@@ -285,8 +323,14 @@
 
     // ---------- Actions ----------
     action: function (name, d) {
-      var g = this.g, p = G.player(g), u = this.sel.unit ? g.units[this.sel.unit] : null, s;
+      var g = this.g;
+      if (!g) { if (name === 'pedia' || name === 'help' || name === 'togglegraphics' || name === 'toggleyields') AU.Panels.action(this, name, d); return; }
+      var p = G.player(g), u = this.sel.unit ? g.units[this.sel.unit] : null, s;
       switch (name) {
+        case 'dopromote': if (u && U.promote(g, u, d.id)) { this.toast(u.name + ' promoted: ' + AU.PROMO_BY_ID[d.id].name + '.'); this.afterUnitAction(u, true); } break;
+        case 'todo': this.doTodo(+d.i); break;
+        case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
+        case 'clearnotifs': this.g.notifications.length = 0; this.refreshHud(); break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast('Founded ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
         case 'skip': if (u) { U.skip(g, u); this.afterUnitAction(u, true); } break;
@@ -367,8 +411,9 @@
       else if (next.settlement) { if (this.sel.settlement === next.settlement.id && next.settlement.civ === p.idx && curIdx >= 0 && items.length === 2) this.openPanel('city', { id: next.settlement.id }); else this.selectSettlement(next.settlement); }
       else { this.sel.unit = null; this.sel.settlement = null; this.sel.tile = tileIdx; this.mode = 'normal'; this.renderer.highlights = { reach: null, attack: null, expand: null, path: null, selTile: tileIdx }; this.refreshContext(); this.invalidate(); }
     },
-    endTurn: function () {
+    endTurn: function (force) {
       if (this.busy || !this.g) return;
+      if (!force && this._todo && this._todo.length && this.settings.strictTurn) { this.doTodo(0); return; }
       var g = this.g, p = G.player(g), self = this;
       if (g.victory) { this.openPanel('victory'); return; }
       this.busy = true; $('btn-end').disabled = true; $('btn-end').textContent = 'Processing…';
@@ -402,12 +447,15 @@
     // ---------- Input ----------
     bindInput: function () {
       var cv = $('map'), r = this.renderer, self = this;
-      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0;
+      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0, dragUnit = null, dragTarget = -1;
       cv.addEventListener('pointerdown', function (e) {
         cv.setPointerCapture(e.pointerId);
         pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
         var keys = Object.keys(pointers);
-        if (keys.length === 1) { dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; }
+        if (keys.length === 1) {
+          dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; dragUnit = null;
+          if (self.g && self.mode !== 'expand') { var rect0 = cv.getBoundingClientRect(); var idx0 = r.tileAtScreen(self.g, e.clientX - rect0.left, e.clientY - rect0.top); var pl = G.player(self.g); if (idx0 >= 0) { var own = G.unitsAt(self.g, idx0).filter(function (o) { return o.civ === pl.idx && o.moves > 0; }); var cur = self.sel.unit && self.g.units[self.sel.unit]; if (cur && cur.tile === idx0 && cur.moves > 0) dragUnit = cur; else if (own.length) dragUnit = own[0]; } }
+        }
         else if (keys.length === 2) { var a = pointers[keys[0]], b = pointers[keys[1]]; lastDist = Math.hypot(a.x - b.x, a.y - b.y); }
       });
       cv.addEventListener('pointermove', function (e) {
@@ -421,7 +469,11 @@
         } else if (dragging) {
           var dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
           if (Math.hypot(e.clientX - startX, e.clientY - startY) > 6) moved = true;
-          if (moved) { r.cam.x -= dx / r.cam.zoom; r.cam.y -= dy / r.cam.zoom; r.clampCamera(self.g); self.invalidate(); }
+          if (moved && dragUnit && self.g.units[dragUnit.id]) {
+            if (self.sel.unit !== dragUnit.id) self.selectUnit(dragUnit);
+            var rect1 = cv.getBoundingClientRect(); var idx1 = r.tileAtScreen(self.g, e.clientX - rect1.left, e.clientY - rect1.top);
+            if (idx1 !== dragTarget) { dragTarget = idx1; var path = idx1 >= 0 && idx1 !== dragUnit.tile && G.player(self.g).explored[idx1] ? U.findPath(self.g, dragUnit, idx1) : null; r.highlights.path = path || null; r.highlights.dragTile = idx1; self.invalidate(); }
+          } else if (moved) { r.cam.x -= dx / r.cam.zoom; r.cam.y -= dy / r.cam.zoom; r.clampCamera(self.g); self.invalidate(); }
         }
       });
       function up(e) {
@@ -429,7 +481,8 @@
         if (!was) return;
         if (Object.keys(pointers).length === 0) {
           if (dragging && !moved && self.g) { var rect = cv.getBoundingClientRect(); var idx = r.tileAtScreen(self.g, e.clientX - rect.left, e.clientY - rect.top); self.onTap(idx); self.refreshHud(); self.invalidate(); }
-          dragging = false; lastDist = 0;
+          else if (dragging && moved && dragUnit && self.g && self.g.units[dragUnit.id]) { r.highlights.dragTile = -1; if (dragTarget >= 0 && dragTarget !== dragUnit.tile) { self.sel.unit = dragUnit.id; self.onTap(dragTarget); } else self.selectUnit(dragUnit); self.refreshHud(); self.invalidate(); }
+          dragging = false; lastDist = 0; dragUnit = null; dragTarget = -1;
         } else lastDist = 0;
       }
       cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
@@ -439,6 +492,7 @@
         if (e.key === 'Enter' && !self.panel) self.endTurn();
         else if (e.key === 'Escape') self.back();
         else if (e.key === 'n' || e.key === 'N') self.nextUnit();
+        else if (e.key === 'y' || e.key === 'Y') self.action('toggleyields', {});
         else if (e.key === 'f' || e.key === 'F') self.action('fortify', {});
         else if (e.key === ' ') { e.preventDefault(); self.action('skip', {}); }
       });

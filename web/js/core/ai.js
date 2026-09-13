@@ -234,8 +234,17 @@
     civ._warTarget = best; civ._warTargetTurn = g.turn;
     return best;
   };
+  // Promote whenever a level is available: prefer offensive picks for aggressive leaders, defensive otherwise.
+  AI.autoPromote = function (g, u) {
+    var U = AU.U; if (!U.promosAvailable(u)) return;
+    var ch = U.promoChoices(g, u); if (!ch.length) return;
+    var civ = u.civ >= 0 ? g.civs[u.civ] : null, aggr = civ ? (G.leaderData(civ).ai || {}).aggression || 0.5 : 0.7;
+    ch.sort(function (x, y) { var sx = (x.mods.attack || 0) + (x.mods.vsSettlements || 0) + (x.mods.moves || 0) * 5, sy = (y.mods.attack || 0) + (y.mods.vsSettlements || 0) + (y.mods.moves || 0) * 5; return (sy - sx) * (aggr - 0.5) + (G.rng(g) - 0.5) * 6; });
+    if (u.hp < 60 || G.rng(g) < 0.7) U.promote(g, u, ch[0].id);
+  };
   AI.moveUnits = function (g, civ) {
     var units = G.civUnits(g, civ.idx);
+    units.forEach(function (u) { AI.autoPromote(g, u); });
     var sets = G.civSettlements(g, civ.idx);
     var garrisoned = {};
     units.forEach(function (u) { var s = G.settlementAt(g, u.tile); if (s && G.isMilitary(u) && s.civ === civ.idx) garrisoned[s.id] = (garrisoned[s.id] || 0) + 1; });
@@ -352,6 +361,7 @@
 
   // ---------- Independent peoples (barbarians) ----------
   AI.barbarianTurn = function (g) {
+    for (var bid in g.units) if (g.units[bid].civ < 0) AI.autoPromote(g, g.units[bid]);
     var avgEra = 0, n = 0; g.civs.forEach(function (c) { if (c.alive) { avgEra += c.era; n++; } }); avgEra = n ? Math.round(avgEra / n) : 0;
     g.camps.forEach(function (c) {
       c.counter--;

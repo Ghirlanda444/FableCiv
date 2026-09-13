@@ -3,7 +3,32 @@
   var G = AU.G, Hex = AU.Hex;
   var U = AU.U = {};
 
-  U.def = function (g, u) { return u.civ >= 0 ? G.unitType(g, g.civs[u.civ], u.type) : AU.UNITS[u.type]; };
+  // Effective definition: base type + unique-unit modifiers + promotions (cached per unit).
+  U.def = function (g, u) {
+    var base = u.civ >= 0 ? G.unitType(g, g.civs[u.civ], u.type) : AU.UNITS[u.type];
+    if (!u.promos || !u.promos.length) return base;
+    var key = u.type + '|' + u.civ + '|' + u.promos.join(',');
+    if (u._defKey === key && u._def) return u._def;
+    var d = Object.assign({}, base);
+    u.promos.forEach(function (pid) { var p = AU.PROMO_BY_ID[pid]; if (p) AU.applyUnitMods(d, p.mods); });
+    u._def = d; u._defKey = key; return d;
+  };
+  U.promoMods = function (u) { var m = {}; (u.promos || []).forEach(function (pid) { var p = AU.PROMO_BY_ID[pid]; if (p) AU.applyUnitMods(m, p.mods); }); return m; };
+  U.xpForLevel = function (lv) { return [0, 5, 12, 24, 40][Math.min(4, lv)]; };
+  U.level = function (u) { return u.xp >= 40 ? 4 : u.xp >= 24 ? 3 : u.xp >= 12 ? 2 : u.xp >= 5 ? 1 : 0; };
+  U.promosAvailable = function (u) { return G.isMilitary(u) ? Math.max(0, U.level(u) - (u.promos || []).length) : 0; };
+  U.promoChoices = function (g, u) {
+    var fam = AU.promoFamily(AU.UNITS[u.type].cls), have = u.promos || [], lv = U.level(u);
+    return AU.PROMOTIONS.filter(function (p) { return p.fam === fam && have.indexOf(p.id) < 0 && p.tier <= Math.max(1, lv); });
+  };
+  U.promote = function (g, u, promoId) {
+    if (!U.promosAvailable(u)) return false;
+    var p = AU.PROMO_BY_ID[promoId]; if (!p || U.promoChoices(g, u).indexOf(p) < 0) return false;
+    u.promos = (u.promos || []).concat([promoId]); u._def = null;
+    u.hp = Math.min(100, u.hp + 50); u.moves = 0;
+    var civ = U.civ(g, u); if (civ) civ.flags['ev:promote'] = g.turn;
+    return true;
+  };
   U.isNaval = function (u) { var c = AU.UNITS[u.type].cls; return c === 'naval' || c === 'navalRanged'; };
   U.isRanged = function (u) { var c = AU.UNITS[u.type].cls; return c === 'ranged' || c === 'siege' || c === 'navalRanged'; };
   U.isEmbarked = function (g, u) { return !U.isNaval(u) && G.isWater(g.tiles[u.tile]); };
@@ -27,12 +52,13 @@
       return 1;
     }
     if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return 3; } return Infinity; }
-    var cost = 1;
-    var fm = fx.forestMoveCost || (U.def(g, u).forestMove ? 1 : 0);
-    if (to.hills) cost = fx.hillsMoveCost || 2;
+    var cost = 1, ud = U.def(g, u);
+    if (ud.ignoreTerrain) { if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) return 99; return 1; }
+    var fm = fx.forestMoveCost || (ud.forestMove ? 1 : 0);
+    if (to.hills) cost = ud.ignoreHills ? 1 : (fx.hillsMoveCost || 2);
     if (to.feature && AU.FEATURES[to.feature].move > cost) cost = fm && (to.feature === 'forest' || to.feature === 'jungle') ? Math.max(cost, fm) : AU.FEATURES[to.feature].move;
     if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle') && !fm) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
-    if (from && G.isWater(from) && !fx.freeDisembark) cost = 99; // disembarking ends the move
+    if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
     if (ownerCiv >= 0 && ownerCiv !== u.civ && G.isMilitary(u) && AU.UNITS[u.type].cls !== 'recon' && !G.atWar(g, u.civ, ownerCiv)) return Infinity;
@@ -145,11 +171,12 @@
       if (civ && ownerCiv === u.civ) { heal = 10 + (cfx.healBonusHome || 0); var s = G.settlementAt(g, u.tile); if (s) { heal += 10; if (s.specialization === 'fort') heal += cfx.fortFullHeal ? 100 : 15; } }
       else if (civ && ownerCiv >= 0 && ownerCiv !== u.civ) heal = 5;
       if (u.fortify > 0) heal += 5;
-      heal += cfx.healBonusAll || 0;
+      heal += (cfx.healBonusAll || 0) + (def.healBonus || 0);
       u.hp = Math.min(100, u.hp + heal);
     }
     if (u.fortify > 0 && u.fortify < 2 && !moved) u.fortify++;
-    u.moves = G.maxMoves(g, u.civ, u.type);
+    u.moves = G.maxMoves(g, u.civ, u.type, u);
+    u.attacksLeft = def.extraAttack ? 2 : 1;
     if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
     if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
   };
@@ -158,7 +185,6 @@
   U.sleep = function (g, u) { u.sleep = true; u.path = null; u.moves = 0; };
   U.disband = function (g, u) { G.removeUnit(g, u); };
   U.needsOrders = function (g, u) { return u.moves > 0 && !u.sleep && !u.fortify && !(u.path && u.path.length); };
-  U.level = function (u) { return u.xp >= 24 ? 3 : u.xp >= 12 ? 2 : u.xp >= 5 ? 1 : 0; };
 
   // ---------- Combat ----------
   U.strength = function (g, u, ctx) {
@@ -168,8 +194,25 @@
     var str = ctx && ctx.ranged && ctx.attacking ? (def.ranged || 0) : def.strength;
     if (U.isEmbarked(g, u)) return fx.embarkedStrength || 8;
     if (str === 0) return 0;
-    str += u.bonusStr + U.level(u) * 3;
+    str += u.bonusStr + U.level(u) * 2;
     var cls = def.cls;
+    var vsU0 = ctx && ctx.vs && ctx.vs.type ? ctx.vs : null;
+    if (def.terrainBonus) { if (t.hills && def.terrainBonus.hills) str += def.terrainBonus.hills; if (def.terrainBonus[t.terrain]) str += def.terrainBonus[t.terrain]; if (t.feature && def.terrainBonus[t.feature]) str += def.terrainBonus[t.feature]; }
+    var rough = t.hills || t.feature === 'forest' || t.feature === 'jungle';
+    if (def.roughBonus && rough) str += def.roughBonus;
+    if (def.openBonus && !rough && !G.isWater(t)) str += def.openBonus;
+    if (def.homeBonus && civ && G.tileOwnerCiv(g, t) === u.civ) str += def.homeBonus;
+    if ((def.abroadBonus || def.homeContinentBonus) && civ) { var cc0 = G.capitalContinent(g, civ); if (cc0 !== -2 && t.continent >= 0) { if (def.abroadBonus && t.continent !== cc0) str += def.abroadBonus; if (def.homeContinentBonus && t.continent === cc0) str += def.homeContinentBonus; } }
+    if (def.garrisonBonus && G.settlementAt(g, u.tile)) str += def.garrisonBonus;
+    if (vsU0 && def.vsCls && def.vsCls[AU.UNITS[vsU0.type].cls]) str += def.vsCls[AU.UNITS[vsU0.type].cls];
+    if (vsU0 && vsU0.civ < 0 && def.vsIndependents) str += def.vsIndependents;
+    {
+      var nb = G.neighbors(g, t), adjF = 0, adjS = 0, intim = 0;
+      for (var ni = 0; ni < nb.length; ni++) { var nus = G.unitsAt(g, nb[ni]); for (var nj = 0; nj < nus.length; nj++) { var o = nus[nj]; if (!G.isMilitary(o)) continue; if (o.civ === u.civ) { adjF++; if (o.type === u.type) adjS++; } else if (G.atWar(g, u.civ, o.civ)) { var od = U.def(g, o); if (od.intimidate) intim = Math.max(intim, od.intimidate); } } }
+      if (def.flank) str += Math.min(3, adjF) * def.flank;
+      if (def.flankSame) str += Math.min(3, adjS) * def.flankSame;
+      str -= intim;
+    }
     var land = cls !== 'naval' && cls !== 'navalRanged';
     var vs = ctx && ctx.vs, vsUnit = vs && vs.type ? vs : null, vsSet = vs && vs.tiles ? vs : null;
     if (fx.classBonus && fx.classBonus[cls]) str += fx.classBonus[cls];
@@ -193,6 +236,9 @@
     if (fx.combatBonusForest && (t.feature === 'forest' || t.feature === 'jungle')) str += fx.combatBonusForest;
     if (ctx && ctx.attacking) {
       if (vsSet && fx.vsSettlements) str += fx.vsSettlements;
+      if (vsSet && def.vsSettlements) str += def.vsSettlements;
+      if (def.attack) str += def.attack;
+      if (vsU0 && def.vsStronger && U.def(g, vsU0).strength > def.strength) str += def.vsStronger;
       if (vsSet && fx.classBonusVsSettlements && fx.classBonusVsSettlements[cls]) str += fx.classBonusVsSettlements[cls];
       if ((cls === 'melee' || cls === 'antcav') && fx.meleeAttackBonus) str += fx.meleeAttackBonus;
       if (ctx.vs && ctx.vs.hp !== undefined && def.bonusVsDamaged && ctx.vs.hp < 100) str += def.bonusVsDamaged;
@@ -204,8 +250,9 @@
       if (t.hills) str += 3 + (fx.hillsDefenseBonus || 0);
       if (!land && fx.navalDefenseBonus) str += fx.navalDefenseBonus;
       if (t.feature && AU.FEATURES[t.feature].defense) str += AU.FEATURES[t.feature].defense;
-      if (u.fortify) str += 3 * u.fortify;
+      if (u.fortify) str += 3 * u.fortify * (def.fortifyMult ? 2 : 1);
       if (def.defense) str += def.defense;
+      if (def.defVsRanged && ctx && ctx.vs && ctx.vs.type && U.isRanged(ctx.vs)) str += def.defVsRanged;
       var s = G.settlementAt(g, u.tile); if (s && G.hasBuilding(s, 'walls')) str += 3;
       if (ctx && ctx.vs && ctx.vs.type && cls === 'antcav' && AU.UNITS[ctx.vs.type].cls === 'cavalry') str += 10;
     }
@@ -218,6 +265,7 @@
   };
   U.canAttackTile = function (g, u, tileIdx) {
     if (u.moves <= 0 || !G.isMilitary(u) || U.isEmbarked(g, u)) return false;
+    if (u.attacksLeft === 0) return false;
     var def = U.def(g, u), from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var d = G.dist(from, to);
     var target = U.targetAt(g, u, tileIdx);
@@ -255,13 +303,13 @@
       s.hp = Math.max(0, s.hp - dmg); s.attackedTurn = g.turn;
       result.settlementDamage = dmg; result.settlement = s.id;
       if (!ranged) {
-        var back = U.damage(g, sStr - attackStr);
+        var back = U.damage(g, sStr - attackStr) * (def.noRetaliation ? 0 : def.halfRetaliation ? 0.5 : 1);
         u.hp -= Math.round(back * 0.7); result.attackerDamage = Math.round(back * 0.7);
       }
       if (target.unit && ranged) { /* garrison untouched by ranged */ }
       if (s.hp <= 0 && !ranged && U.canCapture(u) && u.hp > 0) {
         if (target.unit) { G.removeUnit(g, target.unit); G.unitsAt(g, tileIdx).forEach(function (o) { if (o.civ !== u.civ) G.removeUnit(g, o); }); }
-        U.captureSettlement(g, s, u.civ);
+        U.captureSettlement(g, s, u.civ, def);
         u.moves = 0; G.setUnitTile(g, u, tileIdx); result.captured = true;
         if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
         return result;
@@ -274,9 +322,10 @@
       var dmg2 = U.damage(g, attackStr - defStr);
       if (!G.isMilitary(v) || U.isEmbarked(g, v)) dmg2 = 100;
       v.hp -= dmg2; result.defenderDamage = dmg2; result.defender = v.id;
-      if (!ranged) { var back2 = U.damage(g, defStr - attackStr); if (!G.isMilitary(v)) back2 = 0; u.hp -= back2; result.attackerDamage = back2; }
+      if (!ranged) { var back2 = U.damage(g, defStr - attackStr); if (!G.isMilitary(v)) back2 = 0; if (def.noRetaliation) back2 = 0; else if (def.halfRetaliation) back2 = Math.round(back2 / 2); u.hp -= back2; result.attackerDamage = back2; }
       if (v.hp <= 0) {
-        result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1);
+        result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
+        U.killRewards(g, u, def, v);
         if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
@@ -286,23 +335,34 @@
           G.removeUnit(g, v);
           if (!ranged && !U.tileBlocked(g, u, tileIdx, true) && U.enterCost(g, u, g.tiles[tileIdx], g.tiles[u.tile]) !== Infinity) { G.setUnitTile(g, u, tileIdx); result.advanced = true; }
         }
-      } else u.xp += 1 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1);
+      } else u.xp += 1 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
       if (target.settlement) target.settlement.attackedTurn = g.turn;
     }
-    u.moves = 0;
+    u.attacksLeft = Math.max(0, (u.attacksLeft === undefined ? 1 : u.attacksLeft) - 1);
+    if (u.attacksLeft > 0 && u.moves > 0) u.moves = Math.max(1, u.moves - 1);
+    else if (def.movesAfterAttack) u.moves = Math.max(0, u.moves - 1);
+    else u.moves = 0;
     if (u.hp <= 0) { result.attackerKilled = true; if (civ) G.notify(g, civ, { kind: 'loss', text: 'Your ' + u.name + ' died attacking.', tile: u.tile }); G.removeUnit(g, u); if (target.unit && target.unit.hp > 0) target.unit.xp += 3; }
     if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return result;
+  };
+  U.killRewards = function (g, u, def, v) {
+    var civ = U.civ(g, u); if (!civ) return;
+    if (def.healOnKill) u.hp = Math.min(100, u.hp + def.healOnKill);
+    if (def.goldOnKill) civ.gold += def.goldOnKill;
+    if (def.cultureOnKill) civ.bonusCulture = (civ.bonusCulture || 0) + def.cultureOnKill;
+    if (def.scienceOnKill) civ.bonusScience = (civ.bonusScience || 0) + def.scienceOnKill;
+    if (def.productionOnKill) { var best = null, bd = 1e9, t = g.tiles[u.tile]; G.civSettlements(g, civ.idx).forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < bd) { bd = d; best = s; } }); if (best) best.bonusProduction = (best.bonusProduction || 0) + def.productionOnKill; }
   };
   U.nearestName = function (g, tileIdx) {
     var best = null, bd = 1e9, t = g.tiles[tileIdx];
     for (var id in g.settlements) { var d = G.dist(t, g.tiles[g.settlements[id].tile]); if (d < bd) { bd = d; best = g.settlements[id]; } }
     return best ? best.name : 'the wilds';
   };
-  U.captureSettlement = function (g, s, newCivIdx) {
+  U.captureSettlement = function (g, s, newCivIdx, captor) {
     var oldCiv = g.civs[s.civ], newCiv = g.civs[newCivIdx];
     var oldIdx = s.civ;
-    var fx = G.civFx(g, newCiv);
+    var fx = Object.assign({}, G.civFx(g, newCiv)); if (captor && captor.captureBonus) { fx.captureNoPopLoss = true; fx.captureKeepBuildings = true; }
     s.civ = newCivIdx; s.hp = Math.round(G.settlementMaxHp(g, s) * 0.3); s.queue = []; s.progress = {}; s.pendingGrowth = 0; s.specialization = null; s.captured = true;
     if (!fx.captureNoPopLoss) { s.pop = Math.max(1, s.pop - 1); G.unworkWorstTile(g, s); }
     if (!fx.captureKeepBuildings) s.buildings = s.buildings.filter(function (b) { return AU.WONDERS[b] || G.rng(g) < 0.7; });

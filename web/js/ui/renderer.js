@@ -10,7 +10,7 @@
     this.cam = { x: 0, y: 0, zoom: 1 };
     this.dpr = 1; this.w = 0; this.h = 0;
     this.highlights = { reach: null, attack: null, expand: null, path: null, selTile: -1 };
-    this.showGrid = false;
+    this.showGrid = false; this.showYields = false;
     this.sprites = {}; this.spriteCount = 0; this.glyphs = {}; this.maxZoom = 2.8;
   }
   Renderer.prototype.resize = function () {
@@ -271,11 +271,28 @@
         }
       }
     }
+    // pass 4b: tile yields (option)
+    if (this.showYields && rz >= 14) {
+      var ys = Math.max(7, rz * 0.26), YI = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭' };
+      for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
+        i = r * g.W + c; t = g.tiles[i];
+        if (!explored[i] || AU.TERRAIN[t.terrain].impassable && !t.natural) continue;
+        var so = t.owner >= 0 ? g.settlements[t.owner] : null;
+        var yy = so ? G.tileYields(g, t, so) : AU.baseTileYields(t, player);
+        var parts = []; for (var yk in YI) if (yy[yk] >= 1) parts.push([YI[yk], Math.floor(yy[yk])]);
+        if (!parts.length) continue;
+        cc = S(t); var totalW = parts.length * ys * 1.55, x0 = cc[0] - totalW / 2 + ys * 0.75, yy0 = cc[1] + rz * 0.62;
+        ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.fillRect(cc[0] - totalW / 2 - 2, yy0 - ys * 0.6, totalW + 4, ys * 1.2);
+        ctx.font = 'bold ' + Math.round(ys * 0.9) + 'px system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff';
+        for (var pi2 = 0; pi2 < parts.length; pi2++) { this.drawGlyph(ctx, parts[pi2][0], x0 + pi2 * ys * 1.55 - ys * 0.3, yy0, ys * 0.85); ctx.fillText(parts[pi2][1], x0 + pi2 * ys * 1.55 + ys * 0.15, yy0 + 0.5); }
+      }
+    }
     // pass 5: highlights
     function overlay(set, color) { if (!set) return; ctx.fillStyle = color; for (var key in set) { var tt = g.tiles[+key]; if (!tt) continue; var p2 = S(tt); hexPath(ctx, p2[0], p2[1], rzs - 1); ctx.fill(); } }
     overlay(hl.reach, 'rgba(255,255,255,0.25)');
     overlay(hl.expand, 'rgba(120,255,120,0.4)');
     overlay(hl.attack, 'rgba(255,60,60,0.5)');
+    if (hl.dragTile >= 0 && g.tiles[hl.dragTile]) { var dtp = S(g.tiles[hl.dragTile]); ctx.strokeStyle = '#ffe680'; ctx.lineWidth = Math.max(2, rzs * 0.12); hexPath(ctx, dtp[0], dtp[1], rzs - 2); ctx.stroke(); }
     if (hl.path && hl.path.length) { ctx.fillStyle = 'rgba(255,255,255,0.85)'; hl.path.forEach(function (pi) { var p3 = S(g.tiles[pi]); ctx.beginPath(); ctx.arc(p3[0], p3[1], Math.max(2, rzs * 0.12), 0, Math.PI * 2); ctx.fill(); }); }
     // pass 6: settlements
     for (var sid in g.settlements) {

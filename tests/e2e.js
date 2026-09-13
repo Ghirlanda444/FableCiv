@@ -54,7 +54,7 @@ require('fs').mkdirSync(out, { recursive: true });
   await page.screenshot({ path: out + '/07-unit.png' });
   // run 30 turns through the End Turn button
   for (let i = 0; i < 30; i++) {
-    await page.click('#btn-end');
+    await page.evaluate(() => { document.getElementById('panel').hidden = true; AU.App.panel = null; AU.App.endTurn(true); });
     await page.waitForFunction(() => !AU.App.busy); await page.evaluate(() => { while (AU.App.g.quoteQueue && AU.App.g.quoteQueue.length) AU.App.g.quoteQueue.shift(); document.getElementById('quote').hidden = true; });
   }
   await page.waitForTimeout(200);

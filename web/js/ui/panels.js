@@ -220,6 +220,9 @@
   P.render_empire = function (app, g) {
     var p = G.player(g), d = G.civData(p), y = G.civYields(g, p), html = '';
     html += '<div class="section"><h3>' + G.leaderName(p) + ' of ' + d.name + '</h3><div class="yields">' + yieldsHtml(y, { skip: ['food', 'happiness'], plus: true }) + '<span>💰 ' + Math.floor(p.gold) + ' treasury</span><span>unit upkeep ' + y.upkeep + '</span></div><p class="stat">' + d.ability.name + ': ' + d.ability.desc + '</p></div>';
+    var cp = G.cultureProgress(g, p);
+    html += '<div class="section"><h3>Tourism &amp; culture victory</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' tourism/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">Win by culture when your foreign visitors exceed the domestic tourists of every rival (Industrial era or later). Tourism comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.</p>' +
+      g.civs.filter(function (o) { return o.alive && o.idx !== p.idx && p.met && p.met[o.idx]; }).map(function (o) { var dom = G.domesticTourists(g, o); return '<div class="row"><div class="grow">' + G.civData(o).name + '</div><small>' + Math.min(100, Math.round(cp.visitors / (dom + 1) * 100)) + '% (' + cp.visitors + '/' + (dom + 1) + ')</small></div>'; }).join('') + '</div>';
     var lux = G.luxuryCount(g, p);
     html += '<div class="section"><h3>Resources</h3><div class="yields">' + (lux.luxuries.map(function (r) { return '<span>' + AU.RESOURCES[r].icon + ' ' + AU.RESOURCES[r].name + '</span>'; }).join('') || '<span class="stat">no luxuries yet (work tiles with luxury resources for happiness)</span>') +
       Object.keys(lux.strategic).map(function (r) { return '<span>' + AU.RESOURCES[r].icon + ' ' + AU.RESOURCES[r].name + ' ×' + lux.strategic[r] + '</span>'; }).join('') + '</div></div>';
@@ -250,6 +253,8 @@
     html += '<button class="big" data-action="loadgame" ' + (app.hasSave() ? '' : 'disabled') + '>Load saved game</button><br><br>';
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
     html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D classic') + ' (switch)</button><br><br>';
+    html += '<button class="big ghost" data-action="toggleyields">' + (app.settings.yields ? 'Hide' : 'Show') + ' tile yields on the map (Y)</button><br><br>';
+    html += '<button class="big ghost" data-action="togglestrict">End Turn button: ' + (app.settings.strictTurn ? 'must clear the to-do list first' : 'to-do first, Pass anytime') + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="pedia">📖 Civilopedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
@@ -304,6 +309,8 @@
       case 'cityview': app.openPanel('cityview', { id: +d.id }); break;
       case 'log': app.openPanel('log'); break;
       case 'togglegrid': app.renderer.showGrid = !app.renderer.showGrid; app.invalidate(); app.refreshPanel(); break;
+      case 'toggleyields': app.settings.yields = !app.settings.yields; app.saveSettings(); if (app.renderer) app.renderer.showYields = app.settings.yields; app.invalidate(); if (app.panel === 'menu') app.refreshPanel(); if (g) app.toast('Tile yields ' + (app.settings.yields ? 'shown' : 'hidden') + '.'); break;
+      case 'togglestrict': app.settings.strictTurn = !app.settings.strictTurn; app.saveSettings(); app.refreshPanel(); break;
       case 'togglegraphics': app.settings.graphics = app.settings.graphics === '3d' ? '2d' : '3d'; app.saveSettings(); app.makeRenderer(); app.refreshPanel(); break;
       case 'continueplaying': app.closePanel(); break;
     }

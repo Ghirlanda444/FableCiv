@@ -189,7 +189,7 @@
     C('suffrage', 'Suffrage', 5, 2, ['mass_media', 'capitalism'], ['Adopt Democracy', ['government', 'democracy']], { fx: { happinessBonus: 1, yieldMult: { gold: 1.05 } }, cards: ['new_deal'] }),
     C('totalitarianism', 'Totalitarianism', 5, 2, ['mobilization'], ['Adopt Fascism or Communism', ['government', 'fascism|communism']], { fx: { combatBonus: 2 }, cards: ['martial_law'] }),
     C('class_struggle', 'Class Struggle', 5, 3, ['ideology', 'capitalism'], ['Own 3 Factories', ['building', 'factory', 3]], { fx: { yieldMult: { production: 1.05 } }, cards: ['collectivization'] }),
-    C('cultural_heritage', 'Cultural Heritage', 5, 4, ['conservation', 'mass_media'], ['Own 3 Museums', ['building', 'museum', 3]], { fx: { culturePerSettlement: 1 }, cards: ['heritage_tourism'] }),
+    C('cultural_heritage', 'Cultural Heritage', 5, 4, ['conservation', 'mass_media'], ['Own 3 Museums', ['building', 'museum', 3]], { fx: { culturePerSettlement: 1, tourismMult: 0.25 }, cards: ['heritage_tourism'] }),
     C('cold_war', 'Cold War', 5, 5, ['totalitarianism', 'suffrage'], ['Research Nuclear Fission… research Rocketry', ['tech', 'rocketry']], { fx: { cityDefense: 3 }, cards: ['military_research'] }),
     // Atomic
     C('professional_sports', 'Professional Sports', 6, 0, ['mass_media', 'cultural_heritage'], ['Own 2 Stadiums', ['building', 'stadium', 2]], { fx: { happinessBonus: 2 }, cards: ['sports_media'] }),
@@ -260,7 +260,7 @@
     new_deal: P('new_deal', 'New Deal', 'economic', '+2 Happiness and +2 Food per City.', { citySiteYields: { food: 2, happiness: 2 } }),
     martial_law: P('martial_law', 'Martial Law', 'military', '+2 Happiness per settlement while at war; +3 Strength.', { happinessBonus: 2, combatBonus: 3 }),
     collectivization: P('collectivization', 'Collectivization', 'economic', 'Farms +2 Food.', { tileBonus: [{ when: 'farm', yields: { food: 2 } }] }),
-    heritage_tourism: P('heritage_tourism', 'Heritage Tourism', 'diplomatic', 'Each wonder yields +3 Gold.', { goldPerWonder: 3 }),
+    heritage_tourism: P('heritage_tourism', 'Heritage Tourism', 'diplomatic', 'Each wonder yields +3 Gold and +25% Tourism.', { goldPerWonder: 3, tourismMult: 0.25 }),
     military_research: P('military_research', 'Military Research', 'military', 'Military Academies +5 Science.', { buildingBonus: { military_academy: { science: 5 } } }),
     sports_media: P('sports_media', 'Sports Media', 'wildcard', 'Stadiums +3 Culture and +2 Happiness.', { buildingBonus: { stadium: { culture: 3, happiness: 2 } } }),
     lightning_warfare: P('lightning_warfare', 'Lightning Warfare', 'military', 'Armored and cavalry units +1 Movement and +4 Strength.', { classMoves: { cavalry: 1 }, classBonus: { cavalry: 4 } }),
