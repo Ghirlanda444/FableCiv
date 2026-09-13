@@ -60,6 +60,12 @@ jobs:
             if [ "$limit" != "0" ]; then remaining=$((remaining-step)); fi
           done
           echo "pictures now: $(find web/assets -name '*.png' | wc -l)"
-          # one final commit without [skip ci] so the apps get rebuilt with the new artwork
           git pull --rebase -q origin main || true
           git commit --allow-empty -q -m "Artwork: rebuild apps with $(find web/assets -name '*.png' | wc -l) pictures" && git push -q origin HEAD:main || true
+      - name: Rebuild the apps with the new artwork
+        # pushes made with the workflow token do not start other workflows, so dispatch them explicitly
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run android.yml --ref main || true
+          gh workflow run windows.yml --ref main || true
