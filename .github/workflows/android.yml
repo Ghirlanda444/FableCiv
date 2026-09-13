@@ -1,0 +1,61 @@
+name: Android APK
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platforms;android-34 build-tools;34.0.0 platform-tools"
+
+      - name: Accept SDK licenses
+        run: yes | sdkmanager --licenses >/dev/null || true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ages-unbroken-debug-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Publish latest pre-release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-latest
+          name: "Ages Unbroken (latest Android build)"
+          prerelease: true
+          files: android/app/build/outputs/apk/debug/*.apk
+          body: |
+            Automated debug build of the FableCiv (Ages Unbroken) Android app from commit ${{ github.sha }}.
+            Install the APK on a device with "Install unknown apps" enabled.
