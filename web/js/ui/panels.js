@@ -227,7 +227,7 @@
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
-    html += '</div><p class="stat">Ages Unbroken v0.1. Autosaves at the end of every turn.</p>';
+    html += '</div><p class="stat">Ages Unbroken v0.2. Autosaves at the end of every turn.</p>';
     return { title: 'Menu', html: html };
   };
   P.render_help = function () {
