@@ -1,0 +1,1696 @@
+[
+ {
+  "kind": "units",
+  "id": "settler",
+  "file": "units/settler.png",
+  "name": "Settler",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "scout",
+  "file": "units/scout.png",
+  "name": "Scout",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "warrior",
+  "file": "units/warrior.png",
+  "name": "Warrior",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "slinger",
+  "file": "units/slinger.png",
+  "name": "Slinger",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "archer",
+  "file": "units/archer.png",
+  "name": "Archer",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "spearman",
+  "file": "units/spearman.png",
+  "name": "Spearman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "swordsman",
+  "file": "units/swordsman.png",
+  "name": "Swordsman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "horseman",
+  "file": "units/horseman.png",
+  "name": "Horseman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "catapult",
+  "file": "units/catapult.png",
+  "name": "Catapult",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "galley",
+  "file": "units/galley.png",
+  "name": "Galley",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "crossbowman",
+  "file": "units/crossbowman.png",
+  "name": "Crossbowman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "pikeman",
+  "file": "units/pikeman.png",
+  "name": "Pikeman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "knight",
+  "file": "units/knight.png",
+  "name": "Knight",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "musketman",
+  "file": "units/musketman.png",
+  "name": "Musketman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "bombard",
+  "file": "units/bombard.png",
+  "name": "Bombard",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "caravel",
+  "file": "units/caravel.png",
+  "name": "Caravel",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "field_cannon",
+  "file": "units/field_cannon.png",
+  "name": "Field Cannon",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "cavalry",
+  "file": "units/cavalry.png",
+  "name": "Cavalry",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "rifleman",
+  "file": "units/rifleman.png",
+  "name": "Rifleman",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "ironclad",
+  "file": "units/ironclad.png",
+  "name": "Ironclad",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "artillery",
+  "file": "units/artillery.png",
+  "name": "Artillery",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "infantry",
+  "file": "units/infantry.png",
+  "name": "Infantry",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "machine_gun",
+  "file": "units/machine_gun.png",
+  "name": "Machine Gun",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "battleship",
+  "file": "units/battleship.png",
+  "name": "Battleship",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "tank",
+  "file": "units/tank.png",
+  "name": "Tank",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "mech_infantry",
+  "file": "units/mech_infantry.png",
+  "name": "Mechanized Infantry",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "rocket_artillery",
+  "file": "units/rocket_artillery.png",
+  "name": "Rocket Artillery",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "destroyer",
+  "file": "units/destroyer.png",
+  "name": "Destroyer",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "submarine",
+  "file": "units/submarine.png",
+  "name": "Submarine",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "modern_armor",
+  "file": "units/modern_armor.png",
+  "name": "Modern Armor",
+  "size": "512x512"
+ },
+ {
+  "kind": "units",
+  "id": "special_forces",
+  "file": "units/special_forces.png",
+  "name": "Special Forces",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "monument",
+  "file": "buildings/monument.png",
+  "name": "Monument",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "granary",
+  "file": "buildings/granary.png",
+  "name": "Granary",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "shrine",
+  "file": "buildings/shrine.png",
+  "name": "Shrine",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "walls",
+  "file": "buildings/walls.png",
+  "name": "Walls",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "library",
+  "file": "buildings/library.png",
+  "name": "Library",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "barracks",
+  "file": "buildings/barracks.png",
+  "name": "Barracks",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "water_mill",
+  "file": "buildings/water_mill.png",
+  "name": "Water Mill",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "market",
+  "file": "buildings/market.png",
+  "name": "Market",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "lighthouse",
+  "file": "buildings/lighthouse.png",
+  "name": "Lighthouse",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "amphitheater",
+  "file": "buildings/amphitheater.png",
+  "name": "Amphitheater",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "aqueduct",
+  "file": "buildings/aqueduct.png",
+  "name": "Aqueduct",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "university",
+  "file": "buildings/university.png",
+  "name": "University",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "workshop",
+  "file": "buildings/workshop.png",
+  "name": "Workshop",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "harbor",
+  "file": "buildings/harbor.png",
+  "name": "Harbor",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "castle",
+  "file": "buildings/castle.png",
+  "name": "Castle",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "bank",
+  "file": "buildings/bank.png",
+  "name": "Bank",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "museum",
+  "file": "buildings/museum.png",
+  "name": "Museum",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "printing_house",
+  "file": "buildings/printing_house.png",
+  "name": "Printing House",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "factory",
+  "file": "buildings/factory.png",
+  "name": "Factory",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "hospital",
+  "file": "buildings/hospital.png",
+  "name": "Hospital",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "stock_exchange",
+  "file": "buildings/stock_exchange.png",
+  "name": "Stock Exchange",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "military_academy",
+  "file": "buildings/military_academy.png",
+  "name": "Military Academy",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "research_lab",
+  "file": "buildings/research_lab.png",
+  "name": "Research Lab",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "power_plant",
+  "file": "buildings/power_plant.png",
+  "name": "Power Plant",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "broadcast_tower",
+  "file": "buildings/broadcast_tower.png",
+  "name": "Broadcast Tower",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "stadium",
+  "file": "buildings/stadium.png",
+  "name": "Stadium",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "airport",
+  "file": "buildings/airport.png",
+  "name": "Airport",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "computer_center",
+  "file": "buildings/computer_center.png",
+  "name": "Computer Center",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "sewer",
+  "file": "buildings/sewer.png",
+  "name": "Sewer",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "shipyard",
+  "file": "buildings/shipyard.png",
+  "name": "Shipyard",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "astronomical_observatory",
+  "file": "buildings/astronomical_observatory.png",
+  "name": "Observatory",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "railway_station",
+  "file": "buildings/railway_station.png",
+  "name": "Railway Station",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "telegraph_office",
+  "file": "buildings/telegraph_office.png",
+  "name": "Telegraph Office",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "nuclear_plant",
+  "file": "buildings/nuclear_plant.png",
+  "name": "Nuclear Plant",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "data_center",
+  "file": "buildings/data_center.png",
+  "name": "Data Center",
+  "size": "512x512"
+ },
+ {
+  "kind": "buildings",
+  "id": "spaceport",
+  "file": "buildings/spaceport.png",
+  "name": "Spaceport",
+  "size": "512x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "pyramids",
+  "file": "wonders/pyramids.png",
+  "name": "Pyramids",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "stonehenge",
+  "file": "wonders/stonehenge.png",
+  "name": "Stonehenge",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "great_library",
+  "file": "wonders/great_library.png",
+  "name": "Great Library",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "oracle",
+  "file": "wonders/oracle.png",
+  "name": "Oracle",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "colosseum",
+  "file": "wonders/colosseum.png",
+  "name": "Colosseum",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "hanging_gardens",
+  "file": "wonders/hanging_gardens.png",
+  "name": "Hanging Gardens",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "great_lighthouse",
+  "file": "wonders/great_lighthouse.png",
+  "name": "Great Lighthouse",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "terracotta_army",
+  "file": "wonders/terracotta_army.png",
+  "name": "Terracotta Army",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "petra",
+  "file": "wonders/petra.png",
+  "name": "Petra",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "colossus",
+  "file": "wonders/colossus.png",
+  "name": "Colossus",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "machu_picchu",
+  "file": "wonders/machu_picchu.png",
+  "name": "Machu Picchu",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "chichen_itza",
+  "file": "wonders/chichen_itza.png",
+  "name": "Chichen Itza",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "alhambra",
+  "file": "wonders/alhambra.png",
+  "name": "Alhambra",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "notre_dame",
+  "file": "wonders/notre_dame.png",
+  "name": "Notre Dame",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "forbidden_city",
+  "file": "wonders/forbidden_city.png",
+  "name": "Forbidden City",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "taj_mahal",
+  "file": "wonders/taj_mahal.png",
+  "name": "Taj Mahal",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "big_ben",
+  "file": "wonders/big_ben.png",
+  "name": "Big Ben",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "eiffel_tower",
+  "file": "wonders/eiffel_tower.png",
+  "name": "Eiffel Tower",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "statue_of_liberty",
+  "file": "wonders/statue_of_liberty.png",
+  "name": "Statue of Liberty",
+  "size": "768x512"
+ },
+ {
+  "kind": "wonders",
+  "id": "hubble",
+  "file": "wonders/hubble.png",
+  "name": "Hubble Telescope",
+  "size": "768x512"
+ },
+ {
+  "kind": "national",
+  "id": "national_epic",
+  "file": "national/national_epic.png",
+  "name": "National Epic",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "heroic_epic",
+  "file": "national/heroic_epic.png",
+  "name": "Heroic Epic",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "royal_library",
+  "file": "national/royal_library.png",
+  "name": "Royal Library",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "ironworks",
+  "file": "national/ironworks.png",
+  "name": "Ironworks",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "national_treasury",
+  "file": "national/national_treasury.png",
+  "name": "National Treasury",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "grand_temple",
+  "file": "national/grand_temple.png",
+  "name": "Grand Temple",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "national_university",
+  "file": "national/national_university.png",
+  "name": "National University",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "grand_arsenal",
+  "file": "national/grand_arsenal.png",
+  "name": "Grand Arsenal",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "national_museum",
+  "file": "national/national_museum.png",
+  "name": "National Museum",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "central_bank",
+  "file": "national/central_bank.png",
+  "name": "Central Bank",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "national_park",
+  "file": "national/national_park.png",
+  "name": "National Park",
+  "size": "512x512"
+ },
+ {
+  "kind": "national",
+  "id": "space_agency",
+  "file": "national/space_agency.png",
+  "name": "Space Agency",
+  "size": "512x512"
+ },
+ {
+  "kind": "natural",
+  "id": "everest",
+  "file": "natural/everest.png",
+  "name": "Mount Everest",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "kilimanjaro",
+  "file": "natural/kilimanjaro.png",
+  "name": "Kilimanjaro",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "vesuvius",
+  "file": "natural/vesuvius.png",
+  "name": "Mount Vesuvius",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "matterhorn",
+  "file": "natural/matterhorn.png",
+  "name": "Matterhorn",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "uluru",
+  "file": "natural/uluru.png",
+  "name": "Uluru",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "dead_sea",
+  "file": "natural/dead_sea.png",
+  "name": "Dead Sea",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "crater_lake",
+  "file": "natural/crater_lake.png",
+  "name": "Crater Lake",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "yosemite",
+  "file": "natural/yosemite.png",
+  "name": "Yosemite",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "torres",
+  "file": "natural/torres.png",
+  "name": "Torres del Paine",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "danxia",
+  "file": "natural/danxia.png",
+  "name": "Zhangye Danxia",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "causeway",
+  "file": "natural/causeway.png",
+  "name": "Giant's Causeway",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "barrier_reef",
+  "file": "natural/barrier_reef.png",
+  "name": "Great Barrier Reef",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "halong",
+  "file": "natural/halong.png",
+  "name": "Ha Long Bay",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "galapagos",
+  "file": "natural/galapagos.png",
+  "name": "Galápagos",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "pantanal",
+  "file": "natural/pantanal.png",
+  "name": "Pantanal",
+  "size": "768x512"
+ },
+ {
+  "kind": "natural",
+  "id": "cliffs_dover",
+  "file": "natural/cliffs_dover.png",
+  "name": "Cliffs of Dover",
+  "size": "768x512"
+ },
+ {
+  "kind": "leaders",
+  "id": "trajan",
+  "file": "leaders/trajan.png",
+  "name": "Trajan (Rome)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "augustus",
+  "file": "leaders/augustus.png",
+  "name": "Augustus (Rome)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "caesar",
+  "file": "leaders/caesar.png",
+  "name": "Julius Caesar (Rome)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "tokugawa",
+  "file": "leaders/tokugawa.png",
+  "name": "Tokugawa Ieyasu (Japan)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "hojo",
+  "file": "leaders/hojo.png",
+  "name": "Hojo Tokimune (Japan)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "meiji",
+  "file": "leaders/meiji.png",
+  "name": "Emperor Meiji (Japan)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "qin",
+  "file": "leaders/qin.png",
+  "name": "Qin Shi Huang (China)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "wu",
+  "file": "leaders/wu.png",
+  "name": "Wu Zetian (China)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "kublai",
+  "file": "leaders/kublai.png",
+  "name": "Kublai Khan (China)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "roosevelt",
+  "file": "leaders/roosevelt.png",
+  "name": "Theodore Roosevelt (America)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "lincoln",
+  "file": "leaders/lincoln.png",
+  "name": "Abraham Lincoln (America)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "franklin",
+  "file": "leaders/franklin.png",
+  "name": "Benjamin Franklin (America)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "gandhi",
+  "file": "leaders/gandhi.png",
+  "name": "Gandhi (India)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "ashoka",
+  "file": "leaders/ashoka.png",
+  "name": "Ashoka (India)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "akbar",
+  "file": "leaders/akbar.png",
+  "name": "Akbar (India)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "gitarja",
+  "file": "leaders/gitarja.png",
+  "name": "Gitarja (Indonesia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "gajah",
+  "file": "leaders/gajah.png",
+  "name": "Gajah Mada (Indonesia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "genghis",
+  "file": "leaders/genghis.png",
+  "name": "Genghis Khan (Mongolia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "mandukhai",
+  "file": "leaders/mandukhai.png",
+  "name": "Mandukhai (Mongolia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "shaka",
+  "file": "leaders/shaka.png",
+  "name": "Shaka (Zulu)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "cetshwayo",
+  "file": "leaders/cetshwayo.png",
+  "name": "Cetshwayo (Zulu)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "cyrus",
+  "file": "leaders/cyrus.png",
+  "name": "Cyrus (Persia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "darius",
+  "file": "leaders/darius.png",
+  "name": "Darius I (Persia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "cleopatra",
+  "file": "leaders/cleopatra.png",
+  "name": "Cleopatra (Egypt)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "ramses",
+  "file": "leaders/ramses.png",
+  "name": "Ramses II (Egypt)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "hatshepsut",
+  "file": "leaders/hatshepsut.png",
+  "name": "Hatshepsut (Egypt)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "boudica",
+  "file": "leaders/boudica.png",
+  "name": "Boudica (Celts)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "vercingetorix",
+  "file": "leaders/vercingetorix.png",
+  "name": "Vercingetorix (Celts)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "saladin",
+  "file": "leaders/saladin.png",
+  "name": "Saladin (Arabia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "harun",
+  "file": "leaders/harun.png",
+  "name": "Harun al-Rashid (Arabia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "napoleon",
+  "file": "leaders/napoleon.png",
+  "name": "Napoleon Bonaparte (France)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "louis",
+  "file": "leaders/louis.png",
+  "name": "Louis XIV (France)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "joan",
+  "file": "leaders/joan.png",
+  "name": "Joan of Arc (France)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "victoria",
+  "file": "leaders/victoria.png",
+  "name": "Victoria (England)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "elizabeth",
+  "file": "leaders/elizabeth.png",
+  "name": "Elizabeth I (England)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "churchill",
+  "file": "leaders/churchill.png",
+  "name": "Winston Churchill (England)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "montezuma",
+  "file": "leaders/montezuma.png",
+  "name": "Montezuma (Aztec)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "itzcoatl",
+  "file": "leaders/itzcoatl.png",
+  "name": "Itzcoatl (Aztec)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "pachacuti",
+  "file": "leaders/pachacuti.png",
+  "name": "Pachacuti (Inca)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "huayna",
+  "file": "leaders/huayna.png",
+  "name": "Huayna Capac (Inca)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "sixsky",
+  "file": "leaders/sixsky.png",
+  "name": "Lady Six Sky (Maya)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "pakal",
+  "file": "leaders/pakal.png",
+  "name": "K'inich Janaab' Pakal (Maya)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "tecumseh",
+  "file": "leaders/tecumseh.png",
+  "name": "Tecumseh (Shawnee)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "cornstalk",
+  "file": "leaders/cornstalk.png",
+  "name": "Cornstalk (Shawnee)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "pericles",
+  "file": "leaders/pericles.png",
+  "name": "Pericles (Greece)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "leonidas",
+  "file": "leaders/leonidas.png",
+  "name": "Leonidas (Greece)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "alexander",
+  "file": "leaders/alexander.png",
+  "name": "Alexander (Greece)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "barbarossa",
+  "file": "leaders/barbarossa.png",
+  "name": "Frederick Barbarossa (Germany)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "bismarck",
+  "file": "leaders/bismarck.png",
+  "name": "Otto von Bismarck (Germany)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "frederick",
+  "file": "leaders/frederick.png",
+  "name": "Frederick the Great (Germany)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "peter",
+  "file": "leaders/peter.png",
+  "name": "Peter the Great (Russia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "catherine",
+  "file": "leaders/catherine.png",
+  "name": "Catherine the Great (Russia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "ivan",
+  "file": "leaders/ivan.png",
+  "name": "Ivan the Terrible (Russia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "isabella",
+  "file": "leaders/isabella.png",
+  "name": "Isabella I (Spain)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "philip",
+  "file": "leaders/philip.png",
+  "name": "Philip II (Spain)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "mehmed",
+  "file": "leaders/mehmed.png",
+  "name": "Mehmed II (Ottomans)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "suleiman",
+  "file": "leaders/suleiman.png",
+  "name": "Suleiman (Ottomans)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "sejong",
+  "file": "leaders/sejong.png",
+  "name": "Sejong (Korea)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "sunsin",
+  "file": "leaders/sunsin.png",
+  "name": "Yi Sun-sin (Korea)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "trung",
+  "file": "leaders/trung.png",
+  "name": "Trưng Trắc (Vietnam)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "leloi",
+  "file": "leaders/leloi.png",
+  "name": "Lê Lợi (Vietnam)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "menelik",
+  "file": "leaders/menelik.png",
+  "name": "Menelik II (Ethiopia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "zara",
+  "file": "leaders/zara.png",
+  "name": "Zara Yaqob (Ethiopia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "mansa",
+  "file": "leaders/mansa.png",
+  "name": "Mansa Musa (Mali)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "sundiata",
+  "file": "leaders/sundiata.png",
+  "name": "Sundiata Keita (Mali)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "harald",
+  "file": "leaders/harald.png",
+  "name": "Harald Hardrada (Norway)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "olav",
+  "file": "leaders/olav.png",
+  "name": "Olav Tryggvason (Norway)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "hammurabi",
+  "file": "leaders/hammurabi.png",
+  "name": "Hammurabi (Babylon)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "nebuchadnezzar",
+  "file": "leaders/nebuchadnezzar.png",
+  "name": "Nebuchadnezzar II (Babylon)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "kamehameha",
+  "file": "leaders/kamehameha.png",
+  "name": "Kamehameha (Polynesia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "leaders",
+  "id": "hotu",
+  "file": "leaders/hotu.png",
+  "name": "Hotu Matu'a (Polynesia)",
+  "size": "512x640"
+ },
+ {
+  "kind": "resources",
+  "id": "wheat",
+  "file": "resources/wheat.png",
+  "name": "Wheat",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "rice",
+  "file": "resources/rice.png",
+  "name": "Rice",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "cattle",
+  "file": "resources/cattle.png",
+  "name": "Cattle",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "sheep",
+  "file": "resources/sheep.png",
+  "name": "Sheep",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "deer",
+  "file": "resources/deer.png",
+  "name": "Deer",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "bananas",
+  "file": "resources/bananas.png",
+  "name": "Bananas",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "stone",
+  "file": "resources/stone.png",
+  "name": "Stone",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "fish",
+  "file": "resources/fish.png",
+  "name": "Fish",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "crabs",
+  "file": "resources/crabs.png",
+  "name": "Crabs",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "silk",
+  "file": "resources/silk.png",
+  "name": "Silk",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "spices",
+  "file": "resources/spices.png",
+  "name": "Spices",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "gems",
+  "file": "resources/gems.png",
+  "name": "Gems",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "wine",
+  "file": "resources/wine.png",
+  "name": "Wine",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "furs",
+  "file": "resources/furs.png",
+  "name": "Furs",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "ivory",
+  "file": "resources/ivory.png",
+  "name": "Ivory",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "cotton",
+  "file": "resources/cotton.png",
+  "name": "Cotton",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "dyes",
+  "file": "resources/dyes.png",
+  "name": "Dyes",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "salt",
+  "file": "resources/salt.png",
+  "name": "Salt",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "incense",
+  "file": "resources/incense.png",
+  "name": "Incense",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "pearls",
+  "file": "resources/pearls.png",
+  "name": "Pearls",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "whales",
+  "file": "resources/whales.png",
+  "name": "Whales",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "horses",
+  "file": "resources/horses.png",
+  "name": "Horses",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "iron",
+  "file": "resources/iron.png",
+  "name": "Iron",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "niter",
+  "file": "resources/niter.png",
+  "name": "Niter",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "coal",
+  "file": "resources/coal.png",
+  "name": "Coal",
+  "size": "256x256"
+ },
+ {
+  "kind": "resources",
+  "id": "oil",
+  "file": "resources/oil.png",
+  "name": "Oil",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "rome",
+  "file": "civs/rome.png",
+  "name": "Rome emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "japan",
+  "file": "civs/japan.png",
+  "name": "Japan emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "china",
+  "file": "civs/china.png",
+  "name": "China emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "america",
+  "file": "civs/america.png",
+  "name": "America emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "india",
+  "file": "civs/india.png",
+  "name": "India emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "indonesia",
+  "file": "civs/indonesia.png",
+  "name": "Indonesia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "mongolia",
+  "file": "civs/mongolia.png",
+  "name": "Mongolia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "zulu",
+  "file": "civs/zulu.png",
+  "name": "Zulu emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "persia",
+  "file": "civs/persia.png",
+  "name": "Persia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "egypt",
+  "file": "civs/egypt.png",
+  "name": "Egypt emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "celts",
+  "file": "civs/celts.png",
+  "name": "Celts emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "arabia",
+  "file": "civs/arabia.png",
+  "name": "Arabia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "france",
+  "file": "civs/france.png",
+  "name": "France emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "england",
+  "file": "civs/england.png",
+  "name": "England emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "aztec",
+  "file": "civs/aztec.png",
+  "name": "Aztec emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "inca",
+  "file": "civs/inca.png",
+  "name": "Inca emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "maya",
+  "file": "civs/maya.png",
+  "name": "Maya emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "shawnee",
+  "file": "civs/shawnee.png",
+  "name": "Shawnee emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "greece",
+  "file": "civs/greece.png",
+  "name": "Greece emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "germany",
+  "file": "civs/germany.png",
+  "name": "Germany emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "russia",
+  "file": "civs/russia.png",
+  "name": "Russia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "spain",
+  "file": "civs/spain.png",
+  "name": "Spain emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "ottoman",
+  "file": "civs/ottoman.png",
+  "name": "Ottomans emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "korea",
+  "file": "civs/korea.png",
+  "name": "Korea emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "vietnam",
+  "file": "civs/vietnam.png",
+  "name": "Vietnam emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "ethiopia",
+  "file": "civs/ethiopia.png",
+  "name": "Ethiopia emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "mali",
+  "file": "civs/mali.png",
+  "name": "Mali emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "norway",
+  "file": "civs/norway.png",
+  "name": "Norway emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "babylon",
+  "file": "civs/babylon.png",
+  "name": "Babylon emblem",
+  "size": "256x256"
+ },
+ {
+  "kind": "civs",
+  "id": "polynesia",
+  "file": "civs/polynesia.png",
+  "name": "Polynesia emblem",
+  "size": "256x256"
+ }
+]

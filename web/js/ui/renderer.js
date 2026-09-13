@@ -351,7 +351,9 @@
     var rc = hexToRgb(ucol); grd.addColorStop(0, rgb(rc, 1.25)); grd.addColorStop(1, rgb(rc, 0.75));
     ctx.fillStyle = grd; ctx.strokeStyle = isSel ? '#fff' : ucol2; ctx.lineWidth = isSel ? 3 : 1.5;
     ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1);
+    var art = AU.Assets.get('units', u.type);
+    if (art) { var ah = ur * 2.6, aw = ah * art.width / art.height; ctx.drawImage(art, ux - aw / 2, uy - ah + ur * 0.6, aw, ah); }
+    else this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1);
     if (u.hp < 100) { ctx.fillStyle = '#222'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2, 3); ctx.fillStyle = u.hp > 50 ? '#4caf50' : u.hp > 25 ? '#e6b422' : '#e05252'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2 * u.hp / 100, 3); }
     if (u.fortify && mil) { ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1; ctx.strokeRect(ux - ur - 2, uy - ur - 2, ur * 2 + 4, ur * 2 + 4); }
     if (U.level(u) > 0) { ctx.fillStyle = '#f5d76e'; for (var k = 0; k < U.level(u); k++) { ctx.beginPath(); ctx.arc(ux - ur * 0.6 + k * ur * 0.6, uy - ur - 3, Math.max(1.5, ur * 0.12), 0, Math.PI * 2); ctx.fill(); } }

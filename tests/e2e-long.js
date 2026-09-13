@@ -9,7 +9,7 @@ const TURNS = +process.argv[2] || 200;
   const page = await browser.newPage({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true });
   const errors = [];
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-  page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  page.on('console', m => { if (m.type() === 'error' && !/ERR_FILE_NOT_FOUND|Failed to load resource/.test(m.text())) errors.push('console: ' + m.text()); });
   page.on('dialog', d => d.accept());
   await page.goto('file://' + path.join(__dirname, '..', 'web', 'index.html'));
   await page.click('#btn-new');

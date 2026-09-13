@@ -65,6 +65,7 @@
       $('btn-new').onclick = function () { App.showSetup(); };
       $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
+      $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
       $('btn-back').onclick = function () { App.showTitle(); };
       $('btn-start').onclick = function () { App.startNewGame(); };
     },
@@ -94,7 +95,8 @@
         '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' +
         '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
-        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '"><b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+        var portrait = AU.Assets.get('leaders', l.id);
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + (portrait ? '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="">' : '') + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
       });
       html += '</div>';
       $('civ-detail').innerHTML = html;
@@ -125,6 +127,7 @@
     // ---------- HUD ----------
     bindGame: function () {
       $('btn-menu').onclick = function () { App.openPanel('menu'); };
+      $('btn-pedia-top').onclick = function () { App.openPanel('pedia', { cat: App.pediaState.cat }); };
       $('btn-end').onclick = function () { App.endTurn(); };
       $('btn-next').onclick = function () { App.nextUnit(); };
       $('panel-close').onclick = function () { App.closePanel(); };

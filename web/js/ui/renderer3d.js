@@ -11,14 +11,14 @@
     this.canvas = canvas;
     this.cam = { x: 0, y: 0, zoom: 1 };
     this.highlights = { reach: null, attack: null, expand: null, path: null, selTile: -1 };
-    this.showGrid = false; this.is3D = true; this.maxZoom = 6;
+    this.showGrid = true; this.is3D = true; this.maxZoom = 6;
     this.three = new T.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.three.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     this.three.shadowMap.enabled = true; this.three.shadowMap.type = T.PCFShadowMap;
-    this.scene = new T.Scene(); this.scene.background = new T.Color(0x060c16);
+    this.scene = new T.Scene(); this.scene.background = new T.Color(0x0a1424); this.scene.fog = new T.Fog(0x0a1424, 2600, 5200);
     this.camera = new T.PerspectiveCamera(42, 1, 5, 12000);
-    this.hemi = new T.HemisphereLight(0xcfe3ff, 0x3f5a2a, 1.1); this.scene.add(this.hemi);
-    this.sun = new T.DirectionalLight(0xfff1d6, 1.6); this.sun.position.set(300, 700, 250); this.sun.castShadow = true;
+    this.hemi = new T.HemisphereLight(0xdbe8ff, 0x5a4a2a, 0.95); this.scene.add(this.hemi);
+    this.sun = new T.DirectionalLight(0xffe9c4, 1.9); this.sun.position.set(300, 700, 250); this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(1024, 1024); this.sun.shadow.camera.near = 50; this.sun.shadow.camera.far = 3000; this.sun.shadow.bias = -0.0015;
     this.scene.add(this.sun); this.scene.add(this.sun.target);
     this.ground = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ visible: false })); this.ground.rotation.x = -Math.PI / 2; this.ground.position.y = LAND_H; this.scene.add(this.ground);
@@ -96,7 +96,7 @@
     this.camera.position.set(this.cam.x, dist * Math.sin(pr), this.cam.y + dist * Math.cos(pr));
     this.camera.lookAt(this.cam.x, LAND_H, this.cam.y);
     this.sun.target.position.set(this.cam.x, LAND_H, this.cam.y);
-    this.sun.position.set(this.cam.x + 300, 700, this.cam.y + 250);
+    this.sun.position.set(this.cam.x + 420, 520, this.cam.y + 300);
     var s = Math.max(500, dist * 1.2); var sc = this.sun.shadow.camera; sc.left = -s; sc.right = s; sc.top = s; sc.bottom = -s; sc.updateProjectionMatrix();
     this.ground.position.set(this.cam.x, LAND_H, this.cam.y); this.ground.scale.set(dist * 6, dist * 6, 1);
   };
@@ -126,136 +126,205 @@
     this.cam.zoom = Math.max(0.3, Math.min(this.maxZoom, this.cam.zoom));
   };
 
-  // ---------- world construction ----------
+  // ---------- world construction: a continuous textured height field (no hex blocks) ----------
   function tileXZ(t) { return [R * SQ3 * (t.col + 0.5 * (t.row & 1)), R * 1.5 * t.row]; }
   function lcg(seed) { var s = (seed * 2654435761) >>> 0 || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
-  var PAL = { ocean: 0x16427a, coast: 0x2f86c2, lake: 0x3f96d8, grassland: 0x5f9a3c, plains: 0xb1a052, desert: 0xdec88b, tundra: 0x8b9278, snow: 0xe8eef2, mountain: 0x7a746e };
-  P.tileTop = function (t) { if (G.isWater(t)) return WATER_TOP; if (t.terrain === 'mountain') return LAND_H; return LAND_H + (t.hills ? HILL_H * 0.5 : 0); };
+  var PAL = { ocean: [0.10, 0.22, 0.34], coast: [0.42, 0.58, 0.52], lake: [0.36, 0.56, 0.55], grassland: [0.30, 0.60, 0.20], plains: [0.72, 0.62, 0.28], desert: [0.92, 0.80, 0.50], tundra: [0.50, 0.55, 0.40], snow: [0.92, 0.95, 0.97], mountain: [0.46, 0.43, 0.40] };
+  var BASE_H = { ocean: -12, coast: -4.5, lake: -3.5, land: 6, hills: 16, mountain: 36 };
+  var SAMPLE = 11; // height field spacing in world units (hex radius is 30)
+
+  // Value noise for terrain detail
+  function makeNoise(seed) {
+    var size = 128, grid = new Float32Array(size * size), rnd = lcg(seed);
+    for (var i = 0; i < grid.length; i++) grid[i] = rnd();
+    function at(x, y) { var x0 = Math.floor(x), y0 = Math.floor(y), fx = x - x0, fy = y - y0; fx = fx * fx * (3 - 2 * fx); fy = fy * fy * (3 - 2 * fy); function v(ix, iy) { return grid[((iy % size + size) % size) * size + ((ix % size + size) % size)]; } var a = v(x0, y0), b = v(x0 + 1, y0), c = v(x0, y0 + 1), d = v(x0 + 1, y0 + 1); return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy; }
+    return function (x, y) { return (at(x, y) * 0.55 + at(x * 2.1, y * 2.1) * 0.28 + at(x * 4.3, y * 4.3) * 0.17) - 0.5; };
+  }
+  P.tileTop = function (t) { var p = tileXZ(t); return this.heightAt(p[0], p[1]); };
+  // Blend of the nearest hexes: heights, colours and fog all use the same weights.
+  P.hexWeights = function (g, x, z) {
+    var o = Hex.fromPixel(x, z, R), col = Math.max(0, Math.min(g.W - 1, o[0])), row = Math.max(0, Math.min(g.H - 1, o[1]));
+    var t = g.tiles[row * g.W + col], cands = [t.i].concat(Hex.neighborsOf(col, row, g.W, g.H)), list = [];
+    for (var k = 0; k < cands.length; k++) { var tt = g.tiles[cands[k]], p = tileXZ(tt), d = Math.hypot(p[0] - x, p[1] - z); list.push([cands[k], d]); }
+    list.sort(function (a, b) { return a[1] - b[1]; });
+    var out = [], sum = 0;
+    for (var m = 0; m < 3 && m < list.length; m++) { var w = 1 / Math.pow(list[m][1] + 6, 2.6); out.push([list[m][0], w]); sum += w; }
+    for (var q = 0; q < out.length; q++) out[q][1] /= sum;
+    return out;
+  };
+  P.baseHeight = function (t) { if (G.isWater(t)) return BASE_H[t.terrain]; if (t.terrain === 'mountain') return BASE_H.mountain; return t.hills ? BASE_H.hills : BASE_H.land; };
+  P.heightAt = function (x, z) {
+    var g = this.world && this.world.g; if (!g) return LAND_H;
+    var ws = this.hexWeights(g, x, z), h = 0, amp = 0;
+    for (var k = 0; k < ws.length; k++) { var t = g.tiles[ws[k][0]], w = ws[k][1]; h += this.baseHeight(t) * w; amp += (t.terrain === 'mountain' ? 14 : t.hills ? 4.5 : G.isWater(t) ? 0.8 : 1.4) * w; }
+    var n = this.noise(x / 38, z / 38);
+    if (h > 12) h += n * amp * 1.4 + Math.abs(this.noise(x / 9, z / 9)) * amp * 0.8; else h += n * amp;
+    return h;
+  };
   P.buildWorld = function (g) {
     var T = window.THREE, self = this;
-    if (this.world) { this.world.group.traverse(function (o) { if (o.geometry && o.geometry !== self.geo.hex && !Object.keys(self.geo).some(function (k) { return self.geo[k] === o.geometry; })) o.geometry.dispose(); }); this.scene.remove(this.world.group); }
+    if (this.world) { this.scene.remove(this.world.group); this.world.group.traverse(function (o) { if (o.geometry && !self.isSharedGeo(o.geometry)) o.geometry.dispose(); }); }
     for (var sid in this.settlementNodes) this.scene.remove(this.settlementNodes[sid].group); this.settlementNodes = {};
     for (var uid in this.unitNodes) this.scene.remove(this.unitNodes[uid].group); this.unitNodes = {};
+    this.noise = makeNoise(g.seed || 7);
     var group = new T.Group(); this.scene.add(group);
-    var n = g.tiles.length, landIdx = [], waterIdx = [], hillIdx = [], mtIdx = [], treeList = [], bushList = [], reedList = [];
-    for (var i = 0; i < n; i++) {
-      var t = g.tiles[i];
-      if (G.isWater(t)) waterIdx.push(i); else landIdx.push(i);
-      if (t.hills && t.terrain !== 'mountain') hillIdx.push(i);
-      if (t.terrain === 'mountain') mtIdx.push(i);
-      var rnd = lcg(i + 3), k, p = tileXZ(t), top = this.tileTop(t);
-      if (t.feature === 'forest') for (k = 0; k < 5; k++) treeList.push([i, p[0] + (rnd() - 0.5) * R * 1.2, top, p[1] + (rnd() - 0.5) * R * 1.2, 0.8 + rnd() * 0.5]);
-      if (t.feature === 'jungle') for (k = 0; k < 5; k++) bushList.push([i, p[0] + (rnd() - 0.5) * R * 1.25, top, p[1] + (rnd() - 0.5) * R * 1.25, 0.8 + rnd() * 0.7]);
-      if (t.feature === 'marsh') for (k = 0; k < 7; k++) reedList.push([i, p[0] + (rnd() - 0.5) * R * 1.3, top, p[1] + (rnd() - 0.5) * R * 1.3, 1]);
+    this.world = { g: g, group: group, fogSig: '', borderSig: '', riverSig: -1, rivers: null, borders: null, camps: null, campSig: -1 };
+    // --- height field
+    var width = R * SQ3 * (g.W + 1), depth = R * 1.5 * (g.H + 1), nx = Math.ceil(width / SAMPLE) + 1, nz = Math.ceil(depth / SAMPLE) + 1;
+    var geo = new T.PlaneGeometry(width, depth, nx - 1, nz - 1); geo.rotateX(-Math.PI / 2); geo.translate(width / 2 - R * SQ3 * 0.5, 0, depth / 2 - R * 0.75);
+    var pos = geo.attributes.position, count = pos.count;
+    var vHex = new Int32Array(count * 3), vW = new Float32Array(count * 3), vBase = new Float32Array(count * 3), colors = new Float32Array(count * 3);
+    var heights = new Float32Array(count);
+    for (var i = 0; i < count; i++) {
+      var x = pos.getX(i), z = pos.getZ(i);
+      var ws = this.hexWeights(g, x, z), h = 0, amp = 0, r = 0, gg = 0, b = 0;
+      for (var k = 0; k < 3; k++) { var e = ws[k] || ws[0]; var t = g.tiles[e[0]], w = e[1]; vHex[i * 3 + k] = e[0]; vW[i * 3 + k] = w; h += this.baseHeight(t) * w; amp += (t.terrain === 'mountain' ? 14 : t.hills ? 4.5 : G.isWater(t) ? 0.8 : 1.4) * w; var c = PAL[t.terrain], v = 0.9 + (lcg(e[0] + 3)() * 0.2); r += c[0] * v * w; gg += c[1] * v * w; b += c[2] * v * w; }
+      var n = this.noise(x / 38, z / 38);
+      if (h > 12) h += n * amp * 1.4 + Math.abs(this.noise(x / 9, z / 9)) * amp * 0.8; else h += n * amp;
+      heights[i] = h; pos.setY(i, h);
+      // colour: seabed sand near the shore, dark deep water, rock and snow on peaks, a little grain everywhere
+      var grain = 0.92 + (this.noise(x / 5, z / 5) + 0.5) * 0.16;
+      if (h < 0) { var depthF = Math.min(1, -h / 12); r = (0.55 * (1 - depthF) + 0.10 * depthF) * grain; gg = (0.58 * (1 - depthF) + 0.22 * depthF) * grain; b = (0.50 * (1 - depthF) + 0.36 * depthF) * grain; }
+      else { if (h > 22) { var rock = Math.min(1, (h - 22) / 12); r = r * (1 - rock) + 0.46 * rock; gg = gg * (1 - rock) + 0.44 * rock; b = b * (1 - rock) + 0.42 * rock; } if (h > 36) { var snow = Math.min(1, (h - 36) / 8); r = r * (1 - snow) + 0.94 * snow; gg = gg * (1 - snow) + 0.95 * snow; b = b * (1 - snow) + 0.97 * snow; } r *= grain; gg *= grain; b *= grain; }
+      vBase[i * 3] = r; vBase[i * 3 + 1] = gg; vBase[i * 3 + 2] = b;
     }
-    var land = new T.InstancedMesh(this.geo.hex, this.mat.land, landIdx.length); land.receiveShadow = true; land.castShadow = false;
-    var water = new T.InstancedMesh(this.geo.hex, this.mat.water, waterIdx.length); water.receiveShadow = true;
-    var hills = new T.InstancedMesh(this.geo.dome, this.mat.land, hillIdx.length); hills.castShadow = true; hills.receiveShadow = true;
-    var mts = new T.InstancedMesh(this.geo.cone, this.mat.mountain, mtIdx.length); mts.castShadow = true;
-    var snow = new T.InstancedMesh(this.geo.snow, this.mat.snow, mtIdx.length);
-    var trees = new T.InstancedMesh(this.geo.tree, this.mat.tree, treeList.length); trees.castShadow = true;
-    var trunks = new T.InstancedMesh(this.geo.trunk, this.mat.trunk, treeList.length);
-    var bushes = new T.InstancedMesh(this.geo.bush, this.mat.bush, bushList.length); bushes.castShadow = true;
-    var reeds = new T.InstancedMesh(this.geo.reed, this.mat.reed, reedList.length);
+    geo.setAttribute('color', new T.BufferAttribute(colors, 3));
+    geo.computeVertexNormals();
+    var detail = this.detailTexture();
+    var terrain = new T.Mesh(geo, new T.MeshLambertMaterial({ vertexColors: true, map: detail })); terrain.receiveShadow = true; terrain.castShadow = false;
+    group.add(terrain);
+    this.world.terrain = terrain; this.world.vHex = vHex; this.world.vW = vW; this.world.vBase = vBase; this.world.heights = heights;
+    // --- water surface
+    var water = new T.Mesh(new T.PlaneGeometry(width * 1.4, depth * 1.4), new T.MeshPhongMaterial({ color: 0x2f7fc4, transparent: true, opacity: 0.66, shininess: 90, specular: 0x9ad0ff }));
+    water.rotation.x = -Math.PI / 2; water.position.set(width / 2 - R * SQ3 * 0.5, 0, depth / 2 - R * 0.75); water.receiveShadow = true; group.add(water); this.world.water = water;
+    // --- hex grid overlay following the terrain
+    var lines = [], corners, ci, a, bpt;
+    for (var ti = 0; ti < g.tiles.length; ti++) {
+      var tt2 = g.tiles[ti], p2 = tileXZ(tt2); corners = Hex.corners(p2[0], p2[1], R);
+      for (ci = 0; ci < 3; ci++) { a = corners[ci]; bpt = corners[ci + 1]; for (var seg = 0; seg < 2; seg++) { var x1 = a[0] + (bpt[0] - a[0]) * seg / 2, z1 = a[1] + (bpt[1] - a[1]) * seg / 2, x2 = a[0] + (bpt[0] - a[0]) * (seg + 1) / 2, z2 = a[1] + (bpt[1] - a[1]) * (seg + 1) / 2; lines.push(x1, Math.max(0.3, this.heightAt(x1, z1)) + 0.35, z1, x2, Math.max(0.3, this.heightAt(x2, z2)) + 0.35, z2); } }
+    }
+    var lgeo = new T.BufferGeometry(); lgeo.setAttribute('position', new T.BufferAttribute(new Float32Array(lines), 3));
+    var grid = new T.LineSegments(lgeo, new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.13 })); grid.visible = this.showGrid; group.add(grid); this.world.grid = grid; this.world.gridLines = lines;
+    // --- forests and jungles as many small trees on the height field
+    var treeList = [], bushList = [], reedList = [], palmList = [];
+    for (var i2 = 0; i2 < g.tiles.length; i2++) {
+      var t3 = g.tiles[i2]; if (!t3.feature) continue;
+      var rnd = lcg(i2 + 3), p3 = tileXZ(t3), k2;
+      if (t3.feature === 'forest') for (k2 = 0; k2 < 11; k2++) { var fx = p3[0] + (rnd() - 0.5) * R * 1.5, fz = p3[1] + (rnd() - 0.5) * R * 1.55; treeList.push([i2, fx, this.heightAt(fx, fz), fz, 0.7 + rnd() * 0.7]); }
+      if (t3.feature === 'jungle') for (k2 = 0; k2 < 9; k2++) { var jx = p3[0] + (rnd() - 0.5) * R * 1.5, jz = p3[1] + (rnd() - 0.5) * R * 1.55; bushList.push([i2, jx, this.heightAt(jx, jz), jz, 0.9 + rnd() * 0.9]); }
+      if (t3.feature === 'marsh') for (k2 = 0; k2 < 14; k2++) { var mx = p3[0] + (rnd() - 0.5) * R * 1.5, mz = p3[1] + (rnd() - 0.5) * R * 1.5; reedList.push([i2, mx, this.heightAt(mx, mz), mz, 1]); }
+      if (t3.feature === 'oasis') for (k2 = 0; k2 < 4; k2++) { var ox = p3[0] + (rnd() - 0.5) * R * 0.9, oz = p3[1] + (rnd() - 0.5) * R * 0.9; palmList.push([i2, ox, this.heightAt(ox, oz), oz, 1 + rnd() * 0.4]); }
+    }
+    function inst(geoK, matK, list, fn) { var m = new T.InstancedMesh(self.geo[geoK], self.mat[matK], Math.max(1, list.length)); m.castShadow = true; list.forEach(function (e, k) { fn(e, k, m); }); if (!list.length) m.count = 0; m.instanceMatrix.needsUpdate = true; m.userData.base = m.instanceMatrix.array.slice(); group.add(m); return m; }
     function place(mesh, idx, x, y, z, sx, sy, sz, ry) { DUMMY.position.set(x, y, z); DUMMY.scale.set(sx, sy, sz); DUMMY.rotation.set(0, ry || 0, 0); DUMMY.updateMatrix(); mesh.setMatrixAt(idx, DUMMY.matrix); }
-    landIdx.forEach(function (i, k) { var t = g.tiles[i], p = tileXZ(t), h = LAND_H + (t.hills ? HILL_H * 0.5 : 0) + (t.terrain === 'mountain' ? 3 : 0); place(land, k, p[0], h / 2 - 3, p[1], 1, h + 3, 1); });
-    waterIdx.forEach(function (i, k) { var t = g.tiles[i], p = tileXZ(t), h = 3 + (t.terrain === 'ocean' ? 0 : 1.2); place(water, k, p[0], WATER_TOP - h / 2, p[1], 1, h, 1); });
-    hillIdx.forEach(function (i, k) { var t = g.tiles[i], p = tileXZ(t), rnd = lcg(i + 9); place(hills, k, p[0] + (rnd() - 0.5) * R * 0.3, LAND_H + HILL_H * 0.5 - 1, p[1] + (rnd() - 0.5) * R * 0.3, 1.9, 1.7, 1.6, rnd() * Math.PI); });
-    mtIdx.forEach(function (i, k) { var t = g.tiles[i], p = tileXZ(t), rnd = lcg(i + 5), s = 0.9 + rnd() * 0.4; place(mts, k, p[0], LAND_H + R * 0.55 * s, p[1], s, s, s, rnd() * Math.PI); place(snow, k, p[0], LAND_H + R * 1.1 * s - R * 0.21 * s + 0.5, p[1], s, s, s, rnd() * Math.PI); });
-    treeList.forEach(function (e, k) { place(trees, k, e[1], e[2] + R * 0.16 + R * 0.21 * e[4], e[3], e[4], e[4], e[4]); place(trunks, k, e[1], e[2] + R * 0.08, e[3], 1, 1, 1); });
-    bushList.forEach(function (e, k) { place(bushes, k, e[1], e[2] + R * 0.14 * e[4], e[3], e[4], e[4] * 0.85, e[4], k); });
-    reedList.forEach(function (e, k) { place(reeds, k, e[1], e[2] + R * 0.15, e[3], 1, 1, 1); });
-    [land, water, hills, mts, snow, trees, trunks, bushes, reeds].forEach(function (m) { m.instanceMatrix.needsUpdate = true; m.userData.base = m.instanceMatrix.array.slice(); group.add(m); });
+    this.world.trees = inst('tree', 'tree', treeList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.12 + R * 0.21 * e[4], e[3], e[4], e[4], e[4], k); });
+    this.world.trunks = inst('trunk', 'trunk', treeList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.07, e[3], 1, 1, 1); });
+    this.world.bushes = inst('bush', 'bush', bushList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.13 * e[4], e[3], e[4], e[4] * 0.8, e[4], k); });
+    this.world.reeds = inst('reed', 'reed', reedList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.14, e[3], 1, 1, 1); });
+    this.world.palms = inst('tree', 'bush', palmList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.25 * e[4], e[3], e[4] * 1.2, e[4] * 0.5, e[4] * 1.2, k); });
+    this.world.treeList = treeList; this.world.bushList = bushList; this.world.reedList = reedList; this.world.palmList = palmList;
     // natural wonders: one landmark mesh + a label, per style
     var natGroup = new T.Group(); group.add(natGroup); var self2 = this;
     g.tiles.forEach(function (t) {
       if (!t.natural) return;
-      var NW = AU.NATURAL_WONDERS[t.natural], p = tileXZ(t), top = self2.tileTop(t), grp2 = new T.Group(); grp2.position.set(p[0], top, p[1]);
-      function add(geo, mat, x, y, z, sx, sy, sz) { var m = new T.Mesh(geo, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.castShadow = true; grp2.add(m); return m; }
-      var gold = new T.MeshLambertMaterial({ color: 0xd9b45a, emissive: 0x2a1e05 });
+      var NW = AU.NATURAL_WONDERS[t.natural], p = tileXZ(t), top = self2.tileTop(t), grp2 = new T.Group(); grp2.position.set(p[0], Math.max(0, top), p[1]);
+      function add(geo2, mat, x, y, z, sx, sy, sz) { var m = new T.Mesh(geo2, mat); m.position.set(x, y, z); m.scale.set(sx, sy, sz); m.castShadow = true; grp2.add(m); return m; }
       switch (NW.style) {
-        case 'peak': add(self2.geo.cone, self2.mat.mountain, 0, R * 0.8, 0, 1.3, 1.6, 1.3); add(self2.geo.snow, self2.mat.snow, 0, R * 1.35, 0, 1.4, 1.4, 1.4); break;
-        case 'volcano': add(self2.geo.cone, new T.MeshLambertMaterial({ color: 0x4a3a34 }), 0, R * 0.7, 0, 1.3, 1.4, 1.3); add(self2.geo.snow, new T.MeshLambertMaterial({ color: 0xff5a2a, emissive: 0x7a1a00 }), 0, R * 1.2, 0, 1.0, 0.8, 1.0); break;
+        case 'peak': add(self2.geo.cone, self2.mat.mountain, 0, R * 0.6, 0, 1.3, 1.6, 1.3); add(self2.geo.snow, self2.mat.snow, 0, R * 1.15, 0, 1.4, 1.4, 1.4); break;
+        case 'volcano': add(self2.geo.cone, new T.MeshLambertMaterial({ color: 0x4a3a34 }), 0, R * 0.5, 0, 1.3, 1.4, 1.3); add(self2.geo.snow, new T.MeshLambertMaterial({ color: 0xff5a2a, emissive: 0x7a1a00 }), 0, R * 1.0, 0, 1.0, 0.8, 1.0); break;
         case 'monolith': add(self2.geo.box, new T.MeshLambertMaterial({ color: 0xb5452b }), 0, R * 0.22, 0, R * 1.1, R * 0.44, R * 0.55); break;
         case 'lake': add(self2.geo.disc, new T.MeshPhongMaterial({ color: 0x2f9be0, shininess: 90 }), 0, 1.2, 0, 2.6, 1, 2.6); add(self2.geo.dome, self2.mat.mountain, R * 0.6, 0, R * 0.3, 1.2, 1.4, 1.2); add(self2.geo.dome, self2.mat.mountain, -R * 0.6, 0, -R * 0.2, 1.1, 1.2, 1.1); break;
         case 'cliffs': for (var k = 0; k < 4; k++) add(self2.geo.box, new T.MeshLambertMaterial({ color: k % 2 ? 0xe9e2d0 : 0xd6c9a8 }), (k - 1.5) * R * 0.4, R * (0.2 + k * 0.08), 0, R * 0.38, R * (0.4 + k * 0.16), R * 0.6); break;
-        case 'reef': for (var q = 0; q < 6; q++) { var a = q * Math.PI / 3; add(self2.geo.bush, new T.MeshLambertMaterial({ color: q % 2 ? 0x2ee6c8 : 0xff8a5b }), Math.cos(a) * R * 0.5, 2, Math.sin(a) * R * 0.5, 0.9, 0.5, 0.9); } break;
+        case 'reef': for (var q = 0; q < 6; q++) { var a2 = q * Math.PI / 3; add(self2.geo.bush, new T.MeshLambertMaterial({ color: q % 2 ? 0x2ee6c8 : 0xff8a5b }), Math.cos(a2) * R * 0.5, 2, Math.sin(a2) * R * 0.5, 0.9, 0.5, 0.9); } break;
         case 'wetland': for (var w2 = 0; w2 < 5; w2++) add(self2.geo.disc, new T.MeshPhongMaterial({ color: 0x3b8fd0 }), (w2 % 3 - 1) * R * 0.45, 1.2, (w2 % 2 - 0.5) * R * 0.6, 1.1, 1, 1.1); for (var r2 = 0; r2 < 10; r2++) add(self2.geo.reed, self2.mat.reed, (Math.random() - 0.5) * R * 1.3, R * 0.15, (Math.random() - 0.5) * R * 1.3, 1, 1, 1); break;
       }
       var label = self2.textSprite(NW.icon + ' ' + NW.name, '#e3b84a', null); label.position.set(0, R * 1.9, 0); grp2.add(label); grp2.userData.label = label;
       natGroup.add(grp2); grp2.userData.tile = t.i;
     });
-    this.world = { g: g, group: group, land: land, water: water, hills: hills, mts: mts, snow: snow, trees: trees, trunks: trunks, bushes: bushes, reeds: reeds,
-      landIdx: landIdx, waterIdx: waterIdx, hillIdx: hillIdx, mtIdx: mtIdx, treeList: treeList, bushList: bushList, reedList: reedList,
-      fogSig: '', borderSig: '', riverSig: -1, rivers: null, borders: null, camps: null, campSig: -1 };
     this.applyFog(g, true);
   };
-  // Fog of war is expressed through instance colours: unexplored = background, remembered = dimmed.
+  P.isSharedGeo = function (geo) { for (var k in this.geo) if (this.geo[k] === geo) return true; return false; };
+  P.detailTexture = function () {
+    if (this._detail) return this._detail;
+    var T = window.THREE, cv = document.createElement('canvas'), n = 256; cv.width = cv.height = n;
+    var ctx = cv.getContext('2d'), img = ctx.createImageData(n, n), noise = makeNoise(99);
+    for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) { var v = 222 + (noise(x / 9, y / 9) * 70) + (noise(x / 3, y / 3) * 34); var i = (y * n + x) * 4; img.data[i] = img.data[i + 1] = img.data[i + 2] = Math.max(140, Math.min(255, v)); img.data[i + 3] = 255; }
+    ctx.putImageData(img, 0, 0);
+    var tex = new T.CanvasTexture(cv); tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(70, 45); tex.colorSpace = T.SRGBColorSpace;
+    this._detail = tex; return tex;
+  };
+  // Fog of war: unexplored terrain fades to the sky colour, remembered terrain is dimmed. Vertex colours carry it.
   P.applyFog = function (g, force) {
     var w = this.world, player = G.player(g), explored = player.explored, visible = player.visible || explored;
     var sig = 0; for (var i = 0; i < explored.length; i++) sig += explored[i] + (visible[i] ? 2 : 0) * (i % 7 + 1);
     if (!force && sig === w.fogSig) return; w.fogSig = sig;
-    var bg = 0x060c16;
-    function tint(mesh, idx, base, tileIdx, variant) {
-      var e = explored[tileIdx], v = visible[tileIdx];
-      if (!e) COLOR.setHex(bg); else { COLOR.setHex(base); if (variant) COLOR.multiplyScalar(variant); if (!v) COLOR.multiplyScalar(0.55); }
-      mesh.setColorAt(idx, COLOR);
-      // unexplored instances are collapsed to nothing (matrix zero); explored ones get their stored matrix back
-      var arr = mesh.instanceMatrix.array, baseArr = mesh.userData.base, o = idx * 16;
-      if (!e) { for (var q = 0; q < 16; q++) arr[o + q] = 0; } else { for (var q2 = 0; q2 < 16; q2++) arr[o + q2] = baseArr[o + q2]; }
+    var col = w.terrain.geometry.attributes.color, arr = col.array, vHex = w.vHex, vW = w.vW, vBase = w.vBase, n = col.count;
+    var bg = [0.04, 0.06, 0.1];
+    for (var v = 0; v < n; v++) {
+      var fog = 0;
+      for (var k = 0; k < 3; k++) { var ti = vHex[v * 3 + k]; fog += (explored[ti] ? (visible[ti] ? 1 : 0.52) : 0) * vW[v * 3 + k]; }
+      arr[v * 3] = vBase[v * 3] * fog + bg[0] * (1 - fog); arr[v * 3 + 1] = vBase[v * 3 + 1] * fog + bg[1] * (1 - fog); arr[v * 3 + 2] = vBase[v * 3 + 2] * fog + bg[2] * (1 - fog);
     }
-    w.landIdx.forEach(function (ti, k) { var t = g.tiles[ti]; var rnd = lcg(ti + 1); tint(w.land, k, PAL[t.terrain], ti, 0.93 + rnd() * 0.12); });
-    w.waterIdx.forEach(function (ti, k) { var t = g.tiles[ti]; tint(w.water, k, PAL[t.terrain], ti, 1); });
-    w.hillIdx.forEach(function (ti, k) { var t = g.tiles[ti]; tint(w.hills, k, PAL[t.terrain], ti, 1.06); });
-    w.mtIdx.forEach(function (ti, k) { tint(w.mts, k, 0x77716b, ti, 1); tint(w.snow, k, 0xf4f7fa, ti, 1); });
-    w.treeList.forEach(function (e, k) { tint(w.trees, k, k % 3 === 0 ? 0x1f5e2c : 0x2f7a36, e[0], 1); tint(w.trunks, k, 0x5a3b1e, e[0], 1); });
-    w.bushList.forEach(function (e, k) { tint(w.bushes, k, k % 2 ? 0x1f6b2e : 0x3aa04a, e[0], 1); });
-    w.reedList.forEach(function (e, k) { tint(w.reeds, k, 0x4e7d2a, e[0], 1); });
-    [w.land, w.water, w.hills, w.mts, w.snow, w.trees, w.trunks, w.bushes, w.reeds].forEach(function (m) { if (m.instanceColor) m.instanceColor.needsUpdate = true; m.instanceMatrix.needsUpdate = true; });
+    col.needsUpdate = true;
+    function tintInst(mesh, list, base, alt) {
+      if (!mesh || !list.length) return;
+      var m = mesh.instanceMatrix.array, baseArr = mesh.userData.base;
+      list.forEach(function (e, idx) { var ti = e[0], ex = explored[ti], vis = visible[ti]; COLOR.setHex(idx % 3 === 0 ? alt : base); if (!vis) COLOR.multiplyScalar(0.55); mesh.setColorAt(idx, COLOR); var o = idx * 16; if (!ex) { for (var q = 0; q < 16; q++) m[o + q] = 0; } else { for (var q2 = 0; q2 < 16; q2++) m[o + q2] = baseArr[o + q2]; } });
+      mesh.instanceColor.needsUpdate = true; mesh.instanceMatrix.needsUpdate = true;
+    }
+    tintInst(w.trees, w.treeList, 0x2f7a36, 0x1f5e2c); tintInst(w.trunks, w.treeList, 0x5a3b1e, 0x4a2e14); tintInst(w.bushes, w.bushList, 0x3aa04a, 0x1f6b2e); tintInst(w.reeds, w.reedList, 0x4e7d2a, 0x6a9a3a); tintInst(w.palms, w.palmList, 0x2e8b3d, 0x2e8b3d);
     this.rebuildRivers(g);
   };
   P.rebuildRivers = function (g) {
-    var T = window.THREE, w = this.world, explored = G.player(g).explored;
+    var T = window.THREE, w = this.world, explored = G.player(g).explored, self = this;
     var cnt = 0; for (var i = 0; i < explored.length; i++) cnt += explored[i];
     if (w.riverSig === cnt) return; w.riverSig = cnt;
     if (w.rivers) { w.rivers.children.forEach(function (c) { c.geometry.dispose(); }); w.group.remove(w.rivers); }
-    var grp = new T.Group(); w.rivers = grp; w.group.add(grp); var self = this;
+    var grp = new T.Group(); w.rivers = grp; w.group.add(grp);
     (g.rivers || []).forEach(function (path) {
       var pts = [];
       for (var k = 0; k < path.length; k++) {
         var t = g.tiles[path[k]]; if (!t) break;
         if (!explored[t.i]) { if (pts.length >= 2) addTube(pts); pts = []; continue; }
-        var p = tileXZ(t); pts.push(new T.Vector3(p[0], (G.isWater(t) ? WATER_TOP : self.tileTop(t)) + 1.2, p[1]));
+        var p = tileXZ(t);
+        if (pts.length) { var prev = pts[pts.length - 1]; var mx = (prev.x + p[0]) / 2, mz = (prev.z + p[1]) / 2; pts.push(new T.Vector3(mx, Math.max(-1, self.heightAt(mx, mz)) + 0.9, mz)); }
+        pts.push(new T.Vector3(p[0], Math.max(-1, self.heightAt(p[0], p[1])) + 0.9, p[1]));
       }
       if (pts.length >= 2) addTube(pts);
     });
-    function addTube(pts) { var curve = new T.CatmullRomCurve3(pts, false, 'catmullrom', 0.4); var geo = new T.TubeGeometry(curve, Math.max(8, pts.length * 5), R * 0.09, 5, false); grp.add(new T.Mesh(geo, self.mat.river)); }
+    function addTube(pts) { var curve = new T.CatmullRomCurve3(pts, false, 'catmullrom', 0.5); var geo = new T.TubeGeometry(curve, Math.max(10, pts.length * 6), R * 0.075, 5, false); grp.add(new T.Mesh(geo, self.mat.river)); }
   };
   P.rebuildBorders = function (g) {
-    var T = window.THREE, w = this.world, sig = 0, explored = G.player(g).explored;
+    var T = window.THREE, w = this.world, sig = 0, explored = G.player(g).explored, self = this;
     for (var i = 0; i < g.tiles.length; i++) { var o = g.tiles[i].owner; if (o >= 0) sig = (sig * 31 + o + (g.settlements[o] ? g.settlements[o].civ * 7 : 0) + (g.tiles[i].worked ? 3 : 0)) % 1000000007; }
     sig = sig * 13 + w.riverSig;
     if (sig === w.borderSig) return; w.borderSig = sig;
-    if (w.borders) w.group.remove(w.borders);
-    var segs = [];
+    if (w.borders) { w.borders.geometry.dispose(); w.group.remove(w.borders); }
     var dirs = { even: [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]], odd: [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]] };
     var dirCorner = [[0, 1], [5, 0], [4, 5], [3, 4], [2, 3], [1, 2]];
+    var positions = [], colors = [];
     for (var ti = 0; ti < g.tiles.length; ti++) {
       var t = g.tiles[ti]; if (t.owner < 0 || !explored[ti]) continue;
       var s = g.settlements[t.owner]; if (!s) continue;
-      var civ = g.civs[s.civ], p = tileXZ(t), corners = Hex.corners(p[0], p[1], R * 0.93), dd = (t.row & 1) ? dirs.odd : dirs.even;
+      var civ = g.civs[s.civ], p = tileXZ(t), corners = Hex.corners(p[0], p[1], R * 0.9), dd = (t.row & 1) ? dirs.odd : dirs.even, cc = new T.Color(G.civColor(civ));
       for (var e = 0; e < 6; e++) {
         var nc = t.col + dd[e][0], nr = t.row + dd[e][1], same = false;
         if (nc >= 0 && nc < g.W && nr >= 0 && nr < g.H) { var nt = g.tiles[nr * g.W + nc]; same = nt.owner >= 0 && g.settlements[nt.owner] && g.settlements[nt.owner].civ === s.civ; }
         if (same) continue;
         var a = corners[dirCorner[e][0]], b = corners[dirCorner[e][1]];
-        segs.push([(a[0] + b[0]) / 2, this.tileTop(t) + 1.2, (a[1] + b[1]) / 2, Math.atan2(-(b[1] - a[1]), b[0] - a[0]), G.civColor(civ)]);
+        // a ribbon: a thin quad along the edge, 2.4 units wide, lifted over the terrain
+        var dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz), nxv = -dz / len * 1.6, nzv = dx / len * 1.6;
+        var steps = 3;
+        for (var st = 0; st < steps; st++) {
+          var x1 = a[0] + dx * st / steps, z1 = a[1] + dz * st / steps, x2 = a[0] + dx * (st + 1) / steps, z2 = a[1] + dz * (st + 1) / steps;
+          var y1 = Math.max(0.2, self.heightAt(x1, z1)) + 0.9, y2 = Math.max(0.2, self.heightAt(x2, z2)) + 0.9;
+          positions.push(x1 - nxv, y1, z1 - nzv, x1 + nxv, y1, z1 + nzv, x2 + nxv, y2, z2 + nzv, x1 - nxv, y1, z1 - nzv, x2 + nxv, y2, z2 + nzv, x2 - nxv, y2, z2 - nzv);
+          for (var q = 0; q < 6; q++) colors.push(cc.r, cc.g, cc.b);
+        }
       }
     }
-    var mesh = new T.InstancedMesh(this.geo.border, this.mat.border, Math.max(1, segs.length));
-    segs.forEach(function (sg, k) { DUMMY.position.set(sg[0], sg[1], sg[2]); DUMMY.rotation.set(0, sg[3], 0); DUMMY.scale.set(1, 1, 1); DUMMY.updateMatrix(); mesh.setMatrixAt(k, DUMMY.matrix); COLOR.set(sg[4]); mesh.setColorAt(k, COLOR); });
-    if (!segs.length) mesh.count = 0;
-    mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+    var bgeo = new T.BufferGeometry(); bgeo.setAttribute('position', new T.BufferAttribute(new Float32Array(positions), 3)); bgeo.setAttribute('color', new T.BufferAttribute(new Float32Array(colors), 3));
+    var mesh = new T.Mesh(bgeo, new T.MeshBasicMaterial({ vertexColors: true, side: T.DoubleSide, transparent: true, opacity: 0.9 }));
     w.borders = mesh; w.group.add(mesh);
   };
   P.rebuildCamps = function (g) {
@@ -281,6 +350,8 @@
   };
   P.buildingMesh = function (id, isWonder) {
     var T = window.THREE, geo = this.geo, mat = this.mat, grp = new T.Group();
+    var art = AU.Assets.texture(isWonder ? (AU.NATIONAL[id] ? 'national' : 'wonders') : 'buildings', id);
+    if (art) { var img = art.image, aspect = img.width / img.height, bh = R * (isWonder ? 0.85 : 0.5); var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(bh * aspect, bh, 1); pic.position.y = bh / 2; grp.add(pic); return grp; }
     var def = SHAPES[id] || (isWonder ? ['wonder', 'gold'] : ['barn', 'stone']);
     var shape = def[0], m = mat[def[1]] || mat.stone, s = R * (isWonder ? 0.42 : 0.26);
     function add(g2, mm, x, y, z, sx, sy, sz) { var mesh = new T.Mesh(g2, mm); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; mesh.receiveShadow = true; grp.add(mesh); return mesh; }
@@ -304,7 +375,7 @@
     }
     return grp;
   };
-  P.settlementSig = function (s, g) { return s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
+  P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
   P.buildSettlement = function (g, s) {
     var T = window.THREE, geo = this.geo, mat = this.mat, self = this;
     var t = g.tiles[s.tile], p = tileXZ(t), top = this.tileTop(t), civ = g.civs[s.civ], color = G.civColor(civ);
@@ -386,17 +457,23 @@
       var ox = mil ? -R * 0.18 : R * 0.3, oz = mil ? R * 0.05 : R * 0.3;
       if (t.settlement != null) { ox = mil ? -R * 0.6 : R * 0.6; oz = -R * 0.45; }
       var color = u.civ >= 0 ? G.civColor(g.civs[u.civ]) : '#2b2b2b', color2 = u.civ >= 0 ? G.civData(g.civs[u.civ]).color2 : '#e33';
-      var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0);
+      var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0) + '|' + (AU.Assets.usable3D('units', u.type) ? 'a' : 'p');
       var node = this.unitNodes[id];
       if (node && node.sig !== sig) { this.scene.remove(node.group); node = null; }
       if (!node) {
         var grp = new T.Group();
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
-        var body = new T.Mesh(this.geo.figure, new T.MeshLambertMaterial({ color: color2 })); body.position.y = R * 0.24; body.castShadow = true; grp.add(body);
-        var head = new T.Mesh(this.geo.head, this.mat.wood); head.position.y = R * 0.47; grp.add(head);
-        if (!mil) { body.scale.set(0.8, 0.8, 0.8); body.position.y = R * 0.2; head.position.y = R * 0.4; }
+        var art = AU.Assets.texture('units', u.type);
+        if (art) { // painted unit as a billboard standing on its base
+          var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 1.05 : 0.85);
+          var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);
+        } else {
+          var body = new T.Mesh(this.geo.figure, new T.MeshLambertMaterial({ color: color2 })); body.position.y = R * 0.24; body.castShadow = true; grp.add(body);
+          var head = new T.Mesh(this.geo.head, this.mat.wood); head.position.y = R * 0.47; grp.add(head);
+          if (!mil) { body.scale.set(0.8, 0.8, 0.8); body.position.y = R * 0.2; head.position.y = R * 0.4; }
+        }
         var badge = new T.Sprite(new T.SpriteMaterial({ map: this.unitBadge(AU.UNITS[u.type].icon, color, color2, u.hp, U.level(u)), transparent: true, depthTest: false }));
-        badge.userData.baseScale = [R * 0.62, R * 0.72]; badge.scale.set(R * 0.62, R * 0.72, 1); badge.position.y = R * 0.95; badge.renderOrder = 11; grp.add(badge);
+        var bs = art ? 0.42 : 0.62; badge.userData.baseScale = [R * bs, R * bs * 1.16]; badge.scale.set(R * bs, R * bs * 1.16, 1); badge.position.y = art ? R * 1.25 : R * 0.95; badge.renderOrder = 11; grp.add(badge);
         if (u.fortify && mil) { var f = new T.Mesh(this.geo.ring, this.mat.hlReach); f.scale.set(0.45, 0.45, 0.45); f.position.y = 1.2; grp.add(f); }
         if (app && app.sel.unit === u.id) { var selr = new T.Mesh(this.geo.ring, this.mat.hlSel); selr.position.y = 1.5; selr.position.x = -ox; selr.position.z = -oz; grp.add(selr); }
         this.scene.add(grp);
@@ -420,7 +497,7 @@
   P.syncHighlights = function (g, app) {
     var T = window.THREE, self = this, hl = this.highlights;
     while (this.hlGroup.children.length) this.hlGroup.remove(this.hlGroup.children[0]);
-    function rings(set, mat) { if (!set) return; for (var key in set) { var t = g.tiles[+key]; if (!t) continue; var p = tileXZ(t); var m = new T.Mesh(self.geo.ring, mat); m.position.set(p[0], self.tileTop(t) + 1.4, p[1]); self.hlGroup.add(m); } }
+    function rings(set, mat) { if (!set) return; for (var key in set) { var t = g.tiles[+key]; if (!t) continue; var p = tileXZ(t); var m = new T.Mesh(self.geo.ring, mat); m.position.set(p[0], Math.max(0.5, self.tileTop(t)) + 2.2, p[1]); self.hlGroup.add(m); } }
     rings(hl.reach, this.mat.hlReach); rings(hl.expand, this.mat.hlExpand); rings(hl.attack, this.mat.hlAttack);
     if (hl.path) hl.path.forEach(function (pi) { var t = g.tiles[pi], p = tileXZ(t); var d = new T.Mesh(self.geo.pathDot, self.mat.pathDot); d.position.set(p[0], self.tileTop(t) + R * 0.15, p[1]); self.hlGroup.add(d); });
     if (hl.selTile >= 0 && (!app || !app.sel.unit)) { var st = g.tiles[hl.selTile], sp = tileXZ(st); var sm = new T.Mesh(this.geo.ring, this.mat.hlSel); sm.position.set(sp[0], this.tileTop(st) + 1.6, sp[1]); this.hlGroup.add(sm); }
@@ -434,6 +511,7 @@
     this.syncSettlements(g);
     this.syncUnits(g, app);
     this.syncHighlights(g, app);
+    if (this.world.grid) this.world.grid.visible = this.showGrid;
     this.updateCamera();
     // labels and badges keep a readable, roughly constant screen size
     var f = 1 / Math.max(1, this.cam.zoom * 0.8), k, n, explored2 = G.player(g).explored;

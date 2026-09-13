@@ -204,7 +204,8 @@
       var d = G.civData(c), rel = p.rel[c.idx], met = p.met[c.idx];
       var att = c.alive ? c.rel[p.idx].attitude : 0;
       var mood = att > 15 ? 'Friendly' : att > -10 ? 'Neutral' : att > -30 ? 'Unfriendly' : 'Hostile';
-      html += '<div class="row"><div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(c) + ';border-right:4px solid ' + d.color2 + '"></div><div class="grow"><b>' + d.leader + ' <span class="pill">' + d.name + '</span>' + (!c.alive ? ' <span class="pill">destroyed</span>' : '') + '</b>' +
+      var portrait = AU.Assets.get('leaders', c.leaderId);
+      html += '<div class="row">' + (portrait ? '<img class="portrait-sm" src="' + AU.Assets.url('leaders', c.leaderId) + '" alt="">' : '') + '<div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(c) + ';border-right:4px solid ' + d.color2 + '"></div><div class="grow"><b>' + d.leader + ' <span class="pill">' + d.name + '</span>' + (!c.alive ? ' <span class="pill">destroyed</span>' : '') + '</b>' +
         (met && c.alive ? '<small>' + (rel.war ? '<span class="pill war">At war</span> since turn ' + rel.warSince : '<span class="pill peace">Peace</span> · ' + mood) + ' · ' + G.civSettlements(g, c.idx).length + ' settlements · military ' + Math.round(G.militaryStrength(g, c.idx)) + ' · score ' + G.score(g, c) + '</small><small>' + d.ability.name + ': ' + d.ability.desc + '</small>' : '<small>' + (c.alive ? 'Not met yet' : '') + '</small>') + '</div>';
       if (met && c.alive) {
         if (rel.war) html += '<button class="small" data-action="peace" data-id="' + c.idx + '">' + (c.peaceOffer && g.turn - c.peaceOffer < 5 ? 'Accept peace' : 'Propose peace') + '</button>';
@@ -249,7 +250,7 @@
     html += '<button class="big" data-action="loadgame" ' + (app.hasSave() ? '' : 'disabled') + '>Load saved game</button><br><br>';
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
     html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D classic') + ' (switch)</button><br><br>';
-    if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br>' + (app.renderer.is3D ? '' : '<button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>');
+    if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="pedia">📖 Civilopedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
     html += '</div><p class="stat">Ages Unbroken v0.2. Autosaves at the end of every turn.</p>';

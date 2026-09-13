@@ -122,3 +122,5 @@ button.turn { min-width: 118px; padding: 12px 10px; font-weight: 600; font-size:
 .cityview-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 12px; touch-action: none; }
 #cityview-canvas { display: block; width: 100%; }
 .cityview-hint { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,.8); text-shadow: 0 1px 3px #000; pointer-events: none; }
+.portrait { float: right; width: 72px; height: 90px; object-fit: cover; border-radius: 8px; margin: 0 0 6px 8px; border: 1px solid var(--line); }
+.portrait-sm { width: 44px; height: 54px; object-fit: cover; border-radius: 6px; }
