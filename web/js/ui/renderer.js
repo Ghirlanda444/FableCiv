@@ -11,7 +11,7 @@
     this.dpr = 1; this.w = 0; this.h = 0;
     this.highlights = { reach: null, attack: null, expand: null, path: null, selTile: -1 };
     this.showGrid = false;
-    this.sprites = {}; this.spriteCount = 0; this.glyphs = {};
+    this.sprites = {}; this.spriteCount = 0; this.glyphs = {}; this.maxZoom = 2.8;
   }
   Renderer.prototype.resize = function () {
     var dpr = Math.min(2, window.devicePixelRatio || 1);

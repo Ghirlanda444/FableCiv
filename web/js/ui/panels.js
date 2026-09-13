@@ -224,7 +224,8 @@
     if (g) html += '<button class="big" data-action="save">Save game</button><br><br>';
     html += '<button class="big" data-action="loadgame" ' + (app.hasSave() ? '' : 'disabled') + '>Load saved game</button><br><br>';
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
-    if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
+    html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D classic') + ' (switch)</button><br><br>';
+    if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br>' + (app.renderer.is3D ? '' : '<button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>');
     html += '<button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
     html += '</div><p class="stat">Ages Unbroken v0.2. Autosaves at the end of every turn.</p>';
@@ -273,6 +274,7 @@
       case 'help': app.openPanel('help'); break;
       case 'log': app.openPanel('log'); break;
       case 'togglegrid': app.renderer.showGrid = !app.renderer.showGrid; app.invalidate(); app.refreshPanel(); break;
+      case 'togglegraphics': app.settings.graphics = app.settings.graphics === '3d' ? '2d' : '3d'; app.saveSettings(); app.makeRenderer(); app.refreshPanel(); break;
       case 'continueplaying': app.closePanel(); break;
     }
   };

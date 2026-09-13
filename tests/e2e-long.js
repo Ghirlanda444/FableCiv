@@ -49,6 +49,11 @@ const TURNS = +process.argv[2] || 200;
       await page.screenshot({ path: out + `/long-${st.turn}.png` });
     }
   }
+  await page.evaluate(() => { const app = AU.App, g = app.g, p = AU.G.player(g); app.closePanel(); app.deselect(); p.explored.fill(1); p.visible = null; const best = Object.values(g.settlements).sort((a, b) => b.buildings.length - a.buildings.length)[0]; if (best) { app.renderer.centerOn(g, best.tile); app.renderer.cam.zoom = 5; app.invalidate(); console.log('zoom target', best.name, best.buildings.join(',')); } });
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: out + '/long-capital-zoom.png' });
+  const frameMs = await page.evaluate(() => { const app = AU.App; const t0 = performance.now(); for (let i = 0; i < 10; i++) app.renderer.draw(app.g, app); return (performance.now() - t0) / 10; });
+  console.log('avg draw ms', frameMs.toFixed(1));
   await page.evaluate(() => { const app = AU.App; app.g.victory = app.g.victory || { type: 'score', civ: 0, turn: app.g.turn }; app.openPanel('victory'); });
   await page.screenshot({ path: out + '/long-victory.png' });
   console.log('elapsed', ((Date.now() - t0) / 1000).toFixed(1) + 's', 'ERRORS:', errors.length); errors.slice(0, 20).forEach(e => console.log('  ', e));

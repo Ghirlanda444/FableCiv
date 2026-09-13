@@ -26,6 +26,19 @@ Design pillars:
   10 governments, diplomacy (war, peace, attitudes), independent camps, three victory types
   (Domination, Science, Score), fog of war, autosave, touch controls (pan, pinch-zoom, tap).
 
+## Graphics modes
+
+The game ships two renderers, switchable from the in-game menu:
+
+- **3D world** (default): a low-poly Three.js scene. Terrain, hills, mountains, forests, rivers and
+  borders are generated from the map; every settlement is drawn as a town whose buildings appear as
+  models when they are built (walls ring the city, wonders get their own monument, houses grow with
+  population). Zoom in to inspect a city, zoom out for the strategic view. Procedural props can be
+  replaced by real models later without touching game code.
+- **2D classic**: a painted canvas map, lighter on battery and useful on weak devices.
+
+`web/lib/three.min.js` is a local bundle of Three.js r169 so the app works fully offline.
+
 ## Layout
 
 ```

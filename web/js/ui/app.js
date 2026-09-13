@@ -8,9 +8,25 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
+    settings: { graphics: '3d' },
+    loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); Object.assign(this.settings, s); } catch (e) {} },
+    saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
+    webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
+    makeRenderer: function () {
+      var old = this.renderer, cam = old ? old.cam : null;
+      if (old && old.dispose) old.dispose();
+      // a fresh canvas: a context type cannot be changed on an existing canvas
+      var oldCanvas = $('map'), cv = document.createElement('canvas'); cv.id = 'map'; oldCanvas.parentNode.replaceChild(cv, oldCanvas);
+      var use3d = this.settings.graphics === '3d' && this.webglOk();
+      try { this.renderer = use3d ? new AU.Renderer3D(cv) : new AU.Renderer(cv); }
+      catch (e) { console.warn('3D renderer failed, falling back to 2D', e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
+      if (cam) this.renderer.cam = cam;
+      this.renderer.resize(); this.bindInput(); this.invalidate();
+    },
     init: function () {
-      this.renderer = new AU.Renderer($('map'));
-      this.bindTitle(); this.bindGame(); this.bindInput();
+      this.loadSettings();
+      this.makeRenderer();
+      this.bindTitle(); this.bindGame();
       window.addEventListener('resize', function () { App.renderer.resize(); App.invalidate(); });
       window.__androidBack = function () { return App.back() ? 'true' : 'false'; };
       this.showTitle();
@@ -416,7 +432,7 @@
     zoomAt: function (sx, sy, f) {
       var r = this.renderer, rect = $('map').getBoundingClientRect(); sx -= rect.left; sy -= rect.top;
       var before = r.screenToWorld(sx, sy);
-      r.cam.zoom = Math.max(0.35, Math.min(2.6, r.cam.zoom * f));
+      r.cam.zoom = Math.max(0.3, Math.min(r.maxZoom || 2.8, r.cam.zoom * f));
       var after = r.screenToWorld(sx, sy);
       r.cam.x += before[0] - after[0]; r.cam.y += before[1] - after[1];
       r.clampCamera(this.g); this.invalidate();
