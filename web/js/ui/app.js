@@ -32,7 +32,19 @@
 
     // ---------- Screens ----------
     showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
-    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); this.showScreen('title'); },
+    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); this.showScreen('title'); this.paintTitle(); },
+    paintTitle: function () {
+      try {
+        var cv = $('title-bg'); if (!cv) return;
+        cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+        var r = new AU.Renderer(cv); r.resize();
+        var g = G.newGame({ playerCiv: 'greece', mapSize: 'small', mapType: ['continents', 'archipelago', 'fractal', 'pangaea'][Math.floor(Math.random() * 4)], numCivs: 1, seed: (Date.now() & 0xffff) + 1 });
+        var p = G.player(g); p.explored.fill(1); p.visible = null;
+        r.cam.zoom = Math.max(cv.width / (AU.HEX_R * 1.732 * g.W), cv.height / (AU.HEX_R * 1.5 * g.H)) * 1.05;
+        r.cam.x = AU.HEX_R * 1.732 * g.W / 2; r.cam.y = AU.HEX_R * 1.5 * g.H / 2;
+        r.draw(g, null);
+      } catch (e) { console.warn('title background failed', e); }
+    },
     bindTitle: function () {
       $('btn-new').onclick = function () { App.showSetup(); };
       $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
@@ -44,28 +56,37 @@
       var grid = $('civ-grid'); grid.innerHTML = '';
       AU.CIVS.forEach(function (c) {
         var d = document.createElement('div'); d.className = 'civ-card' + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
-        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div><b>' + c.name + '</b><span>' + c.leader + '</span>';
-        d.onclick = function () { App.setup.civ = c.id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); };
+        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div><b>' + c.name + '</b><span>' + c.leaders.length + ' leaders</span>';
+        d.onclick = function () { App.setup.civ = c.id; App.setup.leader = c.leaders[0].id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); };
         grid.appendChild(d);
       });
       function fill(sel, obj, def) { sel.innerHTML = ''; for (var k in obj) { var o = document.createElement('option'); o.value = k; o.textContent = obj[k].name; if (k === def) o.selected = true; sel.appendChild(o); } }
       fill($('opt-size'), AU.MAP_SIZES, 'small'); fill($('opt-diff'), AU.DIFFICULTIES, 'prince');
+      fill($('opt-type'), AU.MAP_TYPES, 'continents'); fill($('opt-speed'), AU.SPEEDS, 'standard');
       var civSel = $('opt-civs'); civSel.innerHTML = '';
-      for (var n = 1; n <= 11; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
+      for (var n = 1; n <= 19; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
       $('opt-size').onchange = function () { var s = AU.MAP_SIZES[this.value]; civSel.value = String(s.civs - 1); };
+      if (!this.setup.leader || AU.LEADER_BY_ID[this.setup.leader].civId !== this.setup.civ) this.setup.leader = AU.CIV_BY_ID[this.setup.civ].leaders[0].id;
       this.showSetupDetail();
       this.showScreen('setup');
     },
     showSetupDetail: function () {
-      var c = AU.CIV_BY_ID[this.setup.civ];
-      $('civ-detail').innerHTML = '<h3>' + c.leader + ', ' + c.title + ' of ' + c.name + '</h3>' +
+      var c = AU.CIV_BY_ID[this.setup.civ], self = this;
+      var html = '<h3>' + c.name + '</h3>' +
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
         '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' +
-        '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>';
+        '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' +
+        '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
+      c.leaders.forEach(function (l) {
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '"><b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+      });
+      html += '</div>';
+      $('civ-detail').innerHTML = html;
+      $('civ-detail').querySelectorAll('.leader-card').forEach(function (el) { el.onclick = function () { self.setup.leader = el.dataset.leader; self.showSetupDetail(); }; });
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, mapSize: $('opt-size').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, seed: isNaN(seed) ? undefined : seed };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, seed: isNaN(seed) ? undefined : seed };
       this.toast('Generating the world…');
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast('Failed to create the game: ' + e.message); } }, 30);

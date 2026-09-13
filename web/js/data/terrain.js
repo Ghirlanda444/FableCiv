@@ -65,9 +65,21 @@
   };
 
   AU.MAP_SIZES = {
-    tiny:     { name: 'Tiny',     w: 40, h: 26, civs: 4,  camps: 5 },
-    small:    { name: 'Small',    w: 52, h: 34, civs: 6,  camps: 8 },
-    standard: { name: 'Standard', w: 64, h: 42, civs: 8,  camps: 12 },
-    large:    { name: 'Large',    w: 80, h: 52, civs: 12, camps: 18 }
+    tiny:     { name: 'Tiny',     w: 40,  h: 26, civs: 4,  camps: 5 },
+    small:    { name: 'Small',    w: 52,  h: 34, civs: 6,  camps: 8 },
+    standard: { name: 'Standard', w: 64,  h: 42, civs: 8,  camps: 12 },
+    large:    { name: 'Large',    w: 80,  h: 52, civs: 12, camps: 18 },
+    huge:     { name: 'Huge',     w: 104, h: 66, civs: 16, camps: 26 },
+    enormous: { name: 'Enormous', w: 128, h: 80, civs: 20, camps: 36 }
+  };
+  AU.MAP_TYPES = {
+    continents:  { name: 'Continents',  desc: 'Two to four large land masses separated by oceans.' },
+    pangaea:     { name: 'Pangaea',     desc: 'One giant supercontinent with a few small islands.' },
+    fractal:     { name: 'Fractal',     desc: 'Irregular, unpredictable coastlines and land masses.' },
+    archipelago: { name: 'Archipelago', desc: 'Many small and medium islands. Sailing matters.' },
+    islands:     { name: 'Islands',     desc: 'A scatter of medium islands, each big enough for a civilization.' },
+    donut:       { name: 'Donut',       desc: 'A ring of land around a central inland sea.' },
+    inland_sea:  { name: 'Inland Sea',  desc: 'Land all around the map edge, a large sea in the middle.' },
+    terra:       { name: 'Terra',       desc: 'Everyone starts on the old world; a rich new world waits across the ocean.' }
   };
 })(globalThis.AU = globalThis.AU || {});

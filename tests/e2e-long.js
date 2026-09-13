@@ -19,7 +19,7 @@ const TURNS = +process.argv[2] || 200;
   await page.fill('#opt-seed', '99');
   await page.click('#btn-start');
   await page.waitForFunction(() => window.AU.App.g && !document.getElementById('game').hidden);
-  await page.evaluate(() => { const p = AU.G.player(AU.App.g); p.ai = Object.assign({}, AU.G.civData(p).ai); });
+  await page.evaluate(() => { const p = AU.G.player(AU.App.g); p.ai = Object.assign({}, AU.G.leaderData(p).ai); });
   const t0 = Date.now();
   for (let i = 0; i < TURNS; i++) {
     const done = await page.evaluate(() => {

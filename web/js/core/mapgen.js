@@ -37,21 +37,40 @@
     var i, c, r;
     for (r = 0; r < H; r++) for (c = 0; c < W; c++) { i = r * W + c; tiles[i] = makeTile(i, c, r); }
 
-    var elevN = new ValueNoise(rng, 64), moistN = new ValueNoise(rng, 64), tempN = new ValueNoise(rng, 64), hillN = new ValueNoise(rng, 64);
-    var scale = 3.2 / Math.max(W, H); // a few large land masses
+    var elevN = new ValueNoise(rng, 64), moistN = new ValueNoise(rng, 64), tempN = new ValueNoise(rng, 64), hillN = new ValueNoise(rng, 64), splitN = new ValueNoise(rng, 64);
+    var type = opts.mapType || 'continents';
+    var TYPE = {
+      continents:  { scale: 3.2, land: 0.36, octaves: 5, lac: 2.1, edge: 0.18, minStart: 25 },
+      pangaea:     { scale: 2.4, land: 0.38, octaves: 5, lac: 2.1, edge: 0.22, minStart: 40 },
+      fractal:     { scale: 4.5, land: 0.34, octaves: 6, lac: 2.4, edge: 0.10, minStart: 20 },
+      archipelago: { scale: 15.0, land: 0.22, octaves: 3, lac: 2.2, edge: 0.10, minStart: 8 },
+      islands:     { scale: 8.0, land: 0.27, octaves: 3, lac: 2.1, edge: 0.12, minStart: 14 },
+      donut:       { scale: 4.0, land: 0.36, octaves: 4, lac: 2.1, edge: 0.10, minStart: 25 },
+      inland_sea:  { scale: 4.0, land: 0.40, octaves: 4, lac: 2.1, edge: 0.0,  minStart: 25 },
+      terra:       { scale: 3.2, land: 0.36, octaves: 5, lac: 2.1, edge: 0.16, minStart: 25 }
+    }[type] || { scale: 3.2, land: 0.36, octaves: 5, lac: 2.1, edge: 0.18, minStart: 25 };
+    var scale = TYPE.scale / Math.max(W, H);
 
-    // Elevation with edge falloff to keep an ocean rim.
+    // Elevation shaped by the map type.
     var elev = new Float32Array(W * H);
     var landCount = 0;
-    var targetLand = opts.landFraction || 0.36;
+    var targetLand = opts.landFraction || TYPE.land;
     var values = [];
     for (r = 0; r < H; r++) for (c = 0; c < W; c++) {
       i = r * W + c;
       var nx = c * scale, ny = r * scale * 1.15;
-      var e = fbm(elevN, nx, ny, 5, 2.1, 0.5);
-      var ex = Math.min(c, W - 1 - c) / (W * 0.18), ey = Math.min(r, H - 1 - r) / (H * 0.18);
-      var edge = Math.min(1, ex) * Math.min(1, ey);
-      e = e * (0.35 + 0.65 * edge);
+      var e = fbm(elevN, nx, ny, TYPE.octaves, TYPE.lac, 0.5);
+      var fx = c / (W - 1) - 0.5, fy = r / (H - 1) - 0.5; // -0.5..0.5
+      var radial = Math.sqrt(fx * fx * 1.3 + fy * fy * 2.2); // 0 center .. ~0.9 corners
+      var edge = 1;
+      if (TYPE.edge > 0) { var ex = Math.min(c, W - 1 - c) / (W * TYPE.edge), ey = Math.min(r, H - 1 - r) / (H * TYPE.edge); edge = Math.min(1, ex) * Math.min(1, ey); }
+      var mask = 1;
+      if (type === 'pangaea') mask = Math.max(0, 1 - radial * 1.6) * 0.8 + 0.2;
+      else if (type === 'donut') { var ring = Math.abs(radial - 0.45) / 0.22; mask = Math.max(0, 1 - ring) * 0.85 + 0.15; if (radial < 0.2) mask = 0; }
+      else if (type === 'inland_sea') mask = radial < 0.25 ? 0 : Math.min(1, (radial - 0.25) / 0.2) * 0.8 + 0.2;
+      else if (type === 'continents') { var sp = splitN.at(c * 1.4 / W + 3, r * 1.4 / H + 7); mask = 0.55 + 0.45 * Math.abs(sp - 0.5) * 2; }
+      else if (type === 'terra') { var gap = Math.abs(fx + 0.02) < 0.06 ? 0.2 : 1; mask = gap; }
+      e = e * (0.3 + 0.7 * edge) * mask;
       elev[i] = e; values.push(e);
     }
     values.sort(function (a, b) { return a - b; });
@@ -89,8 +108,8 @@
       var temp = 1 - lat + (tempN.at(t2.col * 0.2, t2.row * 0.2) - 0.5) * 0.35;
       var moist = fbm(moistN, t2.col * 0.11, t2.row * 0.11, 3, 2, 0.5);
       var hv = fbm(hillN, t2.col * 0.35, t2.row * 0.35, 3, 2, 0.5) * 0.6 + (t2.elev - seaLevel) / (1 - seaLevel) * 0.9;
-      if (hv > 0.78) { t2.terrain = 'mountain'; continue; }
-      if (hv > 0.56) t2.hills = true;
+      if (hv > 0.72) { t2.terrain = 'mountain'; continue; }
+      if (hv > 0.52) t2.hills = true;
       if (temp < 0.12) t2.terrain = 'snow';
       else if (temp < 0.28) t2.terrain = 'tundra';
       else if (temp > 0.62 && moist < 0.36) t2.terrain = 'desert';
@@ -165,6 +184,7 @@
       var t4 = tiles[i];
       if (t4.terrain === 'mountain') continue;
       var p = AU.TERRAIN[t4.terrain].water ? 0.08 : 0.16;
+      if (type === 'terra' && t4.col > W * 0.5) p *= 1.8;
       if (!rng.chance(p)) continue;
       var opts2 = resIds.filter(function (id) {
         var R = AU.RESOURCES[id];
@@ -184,11 +204,13 @@
 
     // Start positions
     var nStarts = opts.numCivs;
-    var landTiles = [];
+    var landTiles = [], landTilesAll = [];
     for (i = 0; i < tiles.length; i++) {
       var t5 = tiles[i];
       if (AU.TERRAIN[t5.terrain].water || t5.terrain === 'mountain' || t5.terrain === 'snow') continue;
-      if (t5.continent >= 0 && continentSizes[t5.continent] < 25) continue;
+      if (t5.continent >= 0 && continentSizes[t5.continent] < TYPE.minStart) continue;
+      landTilesAll.push(t5);
+      if (type === 'terra' && t5.col > W * 0.47) continue; // the new world is settled later
       landTiles.push(t5);
     }
     function siteScore(t) {
@@ -211,8 +233,8 @@
     landTiles.forEach(function (t) { t._score = siteScore(t); });
     landTiles.sort(function (a, b) { return b._score - a._score; });
     var starts = [];
-    var minDist = Math.max(7, Math.floor(Math.sqrt((W * H * targetLand) / nStarts) * 0.9));
-    while (starts.length < nStarts && minDist >= 4) {
+    var minDist = Math.max(7, Math.floor(Math.sqrt(landTiles.length / nStarts) * 1.15));
+    while (starts.length < nStarts && minDist >= 6) {
       starts = [];
       for (var li = 0; li < landTiles.length && starts.length < nStarts; li++) {
         var cand = landTiles[li], good = true;
@@ -220,6 +242,21 @@
         if (good) starts.push(cand);
       }
       if (starts.length < nStarts) minDist--;
+    }
+    if (starts.length < nStarts && landTilesAll.length > landTiles.length) {
+      // not enough room in the old world: fall back to the whole map
+      landTilesAll.forEach(function (t) { if (t._score === undefined) t._score = siteScore(t); });
+      landTiles = landTilesAll.sort(function (a, b) { return b._score - a._score; });
+      minDist = 8; starts = [];
+      while (starts.length < nStarts && minDist >= 5) {
+        starts = [];
+        for (var li2 = 0; li2 < landTiles.length && starts.length < nStarts; li2++) {
+          var cand2 = landTiles[li2], good2 = true;
+          for (var si2 = 0; si2 < starts.length; si2++) if (Hex.distance(cand2.col, cand2.row, starts[si2].col, starts[si2].row) < minDist) { good2 = false; break; }
+          if (good2) starts.push(cand2);
+        }
+        if (starts.length < nStarts) minDist--;
+      }
     }
     // Barbarian camps far from starts
     var camps = [];
@@ -234,8 +271,8 @@
       for (var cj = 0; cj < camps.length; cj++) if (Hex.distance(cc.col, cc.row, tiles[camps[cj]].col, tiles[camps[cj]].row) < 8) { far = false; break; }
       if (far) { camps.push(cc.i); cc.camp = true; }
     }
-    landTiles.forEach(function (t) { delete t._score; });
-    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths };
+    landTilesAll.forEach(function (t) { delete t._score; });
+    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths, mapType: type };
   };
 
   // Base yields of a tile: terrain + hills + feature + resource (resource only if visible to viewer civ, if given)

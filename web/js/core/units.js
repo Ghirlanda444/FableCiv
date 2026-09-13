@@ -13,24 +13,26 @@
   // Movement cost to enter tile `to` for unit u; Infinity if not allowed.
   U.enterCost = function (g, u, to, from) {
     var T = AU.TERRAIN[to.terrain];
-    if (T.impassable) return Infinity;
     var civ = U.civ(g, u), fx = civ ? G.civFx(g, civ) : {};
+    if (T.impassable && !fx.mountainsPassable) return Infinity;
     var naval = U.isNaval(u);
     if (naval) {
       if (!T.water) { var s = G.settlementAt(g, to.i); if (!s || s.civ !== u.civ) return Infinity; return 1; }
-      if (to.terrain === 'ocean' && !(AU.UNITS[u.type].ocean || (civ && civ.techs.cartography))) return Infinity;
+      if (to.terrain === 'ocean' && !(AU.UNITS[u.type].ocean || (civ && (civ.techs.cartography || fx.earlyOcean)))) return Infinity;
       return 1;
     }
     if (T.water) {
-      if (!civ || !civ.techs.sailing) return Infinity;
-      if (to.terrain === 'ocean' && !civ.techs.cartography) return Infinity;
+      if (!civ || !(civ.techs.sailing || fx.earlyEmbark)) return Infinity;
+      if (to.terrain === 'ocean' && !(civ.techs.cartography || fx.earlyOcean)) return Infinity;
       return 1;
     }
+    if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return 3; } return Infinity; }
     var cost = 1;
+    var fm = fx.forestMoveCost || (U.def(g, u).forestMove ? 1 : 0);
     if (to.hills) cost = fx.hillsMoveCost || 2;
-    if (to.feature && AU.FEATURES[to.feature].move > cost) cost = AU.FEATURES[to.feature].move;
-    if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle')) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
-    if (from && G.isWater(from)) cost = 99; // disembarking ends the move
+    if (to.feature && AU.FEATURES[to.feature].move > cost) cost = fm && (to.feature === 'forest' || to.feature === 'jungle') ? Math.max(cost, fm) : AU.FEATURES[to.feature].move;
+    if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle') && !fm) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
+    if (from && G.isWater(from) && !fx.freeDisembark) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
     if (ownerCiv >= 0 && ownerCiv !== u.civ && G.isMilitary(u) && AU.UNITS[u.type].cls !== 'recon' && !G.atWar(g, u.civ, ownerCiv)) return Infinity;
@@ -109,7 +111,7 @@
   U.clearCamp = function (g, u, t) {
     t.camp = false; g.camps = g.camps.filter(function (c) { return c.tile !== t.i; });
     var civ = U.civ(g, u); if (!civ) return;
-    var gold = 40 + G.rngInt(g, 40) + Object.keys(civ.techs).length * 2;
+    var gold = Math.round((40 + G.rngInt(g, 40) + Object.keys(civ.techs).length * 2) * (G.civFx(g, civ).campGoldMult || 1));
     civ.gold += gold;
     // remove barbarian units on the camp
     G.unitsAt(g, t.i).forEach(function (o) { if (o.civ < 0) G.removeUnit(g, o); });
@@ -137,16 +139,18 @@
     var civ = U.civ(g, u);
     var moved = u.movedTurn === g.turn || u.attackedTurn === g.turn;
     if (u.hp < 100 && (!moved || def.healAlways)) {
-      var t = g.tiles[u.tile], heal = 5;
+      var t = g.tiles[u.tile], heal = 5, cfx = civ ? G.civFx(g, civ) : {};
       var ownerCiv = G.tileOwnerCiv(g, t);
-      if (civ && ownerCiv === u.civ) { heal = 10 + (G.civFx(g, civ).healBonusHome || 0); var s = G.settlementAt(g, u.tile); if (s) { heal += 10; if (s.specialization === 'fort') heal += 15; } }
+      if (civ && ownerCiv === u.civ) { heal = 10 + (cfx.healBonusHome || 0); var s = G.settlementAt(g, u.tile); if (s) { heal += 10; if (s.specialization === 'fort') heal += cfx.fortFullHeal ? 100 : 15; } }
       else if (civ && ownerCiv >= 0 && ownerCiv !== u.civ) heal = 5;
       if (u.fortify > 0) heal += 5;
+      heal += cfx.healBonusAll || 0;
       u.hp = Math.min(100, u.hp + heal);
     }
     if (u.fortify > 0 && u.fortify < 2 && !moved) u.fortify++;
     u.moves = G.maxMoves(g, u.civ, u.type);
-    if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2);
+    if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
+    if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
   };
   U.fortify = function (g, u) { if (!G.isMilitary(u)) return; u.fortify = Math.max(u.fortify, 1); u.path = null; u.moves = 0; };
   U.skip = function (g, u) { u.moves = 0; };
@@ -161,11 +165,21 @@
     var def = U.def(g, u), civ = U.civ(g, u), fx = civ ? G.civFx(g, civ) : {};
     var t = g.tiles[u.tile];
     var str = ctx && ctx.ranged && ctx.attacking ? (def.ranged || 0) : def.strength;
-    if (U.isEmbarked(g, u)) return 8;
+    if (U.isEmbarked(g, u)) return fx.embarkedStrength || 8;
     if (str === 0) return 0;
     str += u.bonusStr + U.level(u) * 3;
     var cls = def.cls;
     var land = cls !== 'naval' && cls !== 'navalRanged';
+    var vs = ctx && ctx.vs, vsUnit = vs && vs.type ? vs : null, vsSet = vs && vs.tiles ? vs : null;
+    if (fx.classBonus && fx.classBonus[cls]) str += fx.classBonus[cls];
+    if (vsUnit && vsUnit.civ < 0 && fx.vsIndependents) str += fx.vsIndependents;
+    if (fx.combatBonusJungle && (t.feature === 'jungle' || t.feature === 'marsh')) str += fx.combatBonusJungle;
+    var capCont = civ ? G.capitalContinent(g, civ) : -2;
+    if (fx.combatBonusAbroad && capCont !== -2 && t.continent >= 0 && t.continent !== capCont) str += fx.combatBonusAbroad;
+    if (fx.combatBonusHomeContinent && capCont !== -2 && t.continent === capCont) str += fx.combatBonusHomeContinent;
+    if (fx.combatBonusVsInvaders && vsUnit && vsUnit.civ >= 0 && t.continent >= 0 && G.capitalContinent(g, g.civs[vsUnit.civ]) !== t.continent) str += fx.combatBonusVsInvaders;
+    if (fx.nearHomeBonus && civ) { var nearS = G.civSettlements(g, civ.idx).some(function (st) { return G.dist(g.tiles[st.tile], t) <= 3; }); if (nearS) str += fx.nearHomeBonus; }
+    if (fx.capitalRadiusCombat && civ && civ.capital && g.settlements[civ.capital] && G.dist(g.tiles[g.settlements[civ.capital].tile], t) <= fx.capitalRadiusCombat.radius) str += fx.capitalRadiusCombat.bonus;
     if (land && fx.landBonus) str += fx.landBonus;
     if (!land && fx.navalBonus) str += fx.navalBonus;
     if (cls === 'cavalry' && fx.cavalryBonus) str += fx.cavalryBonus;
@@ -177,19 +191,24 @@
     if (fx.combatBonusCoast && t.terrain === 'coast') str += fx.combatBonusCoast;
     if (fx.combatBonusForest && (t.feature === 'forest' || t.feature === 'jungle')) str += fx.combatBonusForest;
     if (ctx && ctx.attacking) {
+      if (vsSet && fx.vsSettlements) str += fx.vsSettlements;
+      if (vsSet && fx.classBonusVsSettlements && fx.classBonusVsSettlements[cls]) str += fx.classBonusVsSettlements[cls];
       if ((cls === 'melee' || cls === 'antcav') && fx.meleeAttackBonus) str += fx.meleeAttackBonus;
       if (ctx.vs && ctx.vs.hp !== undefined && def.bonusVsDamaged && ctx.vs.hp < 100) str += def.bonusVsDamaged;
       if (ctx.vs && ctx.vs.type && cls === 'antcav' && AU.UNITS[ctx.vs.type].cls === 'cavalry') str += 10;
       if (ctx.vs && ctx.vs.type && cls === 'cavalry' && AU.UNITS[ctx.vs.type].cls === 'antcav') str -= 10;
     } else {
-      if (t.hills) str += 3;
+      if (fx.defenseBonus) str += fx.defenseBonus;
+      if (fx.homeDefenseBonus && ownerCiv === u.civ) str += fx.homeDefenseBonus;
+      if (t.hills) str += 3 + (fx.hillsDefenseBonus || 0);
+      if (!land && fx.navalDefenseBonus) str += fx.navalDefenseBonus;
       if (t.feature && AU.FEATURES[t.feature].defense) str += AU.FEATURES[t.feature].defense;
       if (u.fortify) str += 3 * u.fortify;
       if (def.defense) str += def.defense;
       var s = G.settlementAt(g, u.tile); if (s && G.hasBuilding(s, 'walls')) str += 3;
       if (ctx && ctx.vs && ctx.vs.type && cls === 'antcav' && AU.UNITS[ctx.vs.type].cls === 'cavalry') str += 10;
     }
-    if (!def.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
+    if (!def.noDamagePenalty && !fx.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
     return Math.max(1, str);
   };
   U.damage = function (g, diff) {
@@ -256,8 +275,8 @@
       v.hp -= dmg2; result.defenderDamage = dmg2; result.defender = v.id;
       if (!ranged) { var back2 = U.damage(g, defStr - attackStr); if (!G.isMilitary(v)) back2 = 0; u.hp -= back2; result.attackerDamage = back2; }
       if (v.hp <= 0) {
-        result.killed = v.id; u.xp += 3;
-        if (civ) civ.stats.kills++;
+        result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1);
+        if (civ) { civ.stats.kills++; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
         if (!G.isMilitary(v) && !ranged && U.canCapture(u)) { // capture civilian: convert
@@ -266,7 +285,7 @@
           G.removeUnit(g, v);
           if (!ranged && !U.tileBlocked(g, u, tileIdx, true) && U.enterCost(g, u, g.tiles[tileIdx], g.tiles[u.tile]) !== Infinity) { G.setUnitTile(g, u, tileIdx); result.advanced = true; }
         }
-      } else u.xp += 1;
+      } else u.xp += 1 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1);
       if (target.settlement) target.settlement.attackedTurn = g.turn;
     }
     u.moves = 0;
@@ -282,13 +301,18 @@
   U.captureSettlement = function (g, s, newCivIdx) {
     var oldCiv = g.civs[s.civ], newCiv = g.civs[newCivIdx];
     var oldIdx = s.civ;
-    s.civ = newCivIdx; s.hp = Math.round(G.settlementMaxHp(g, s) * 0.3); s.queue = []; s.progress = {}; s.pendingGrowth = 0; s.specialization = null;
-    s.pop = Math.max(1, s.pop - 1); G.unworkWorstTile(g, s);
-    s.buildings = s.buildings.filter(function (b) { return AU.WONDERS[b] || G.rng(g) < 0.7; });
+    var fx = G.civFx(g, newCiv);
+    s.civ = newCivIdx; s.hp = Math.round(G.settlementMaxHp(g, s) * 0.3); s.queue = []; s.progress = {}; s.pendingGrowth = 0; s.specialization = null; s.captured = true;
+    if (!fx.captureNoPopLoss) { s.pop = Math.max(1, s.pop - 1); G.unworkWorstTile(g, s); }
+    if (!fx.captureKeepBuildings) s.buildings = s.buildings.filter(function (b) { return AU.WONDERS[b] || G.rng(g) < 0.7; });
     var wasCapital = s.isCapital; s.isCapital = false;
     oldCiv.lostSettlements = (oldCiv.lostSettlements || 0) + 1;
     newCiv.stats.captures++;
-    var fx = G.civFx(g, newCiv); if (fx.captureGold) newCiv.gold += fx.captureGold;
+    if (fx.captureGold) newCiv.gold += fx.captureGold;
+    if (fx.captureCapitalGold && wasCapital) newCiv.gold += fx.captureCapitalGold;
+    if (fx.captureCulture) newCiv.bonusCulture = (newCiv.bonusCulture || 0) + fx.captureCulture;
+    if (fx.captureScience) newCiv.bonusScience = (newCiv.bonusScience || 0) + fx.captureScience;
+    if (fx.captureHeal) { var ct = g.tiles[s.tile]; G.civUnits(g, newCivIdx).forEach(function (cu) { if (G.dist(g.tiles[cu.tile], ct) <= 3) cu.hp = Math.min(100, cu.hp + 50); }); }
     s.buildings = s.buildings.filter(function (b) { return b !== 'palace'; });
     if (!newCiv.capital || !g.settlements[newCiv.capital] || g.settlements[newCiv.capital].civ !== newCivIdx) { newCiv.capital = s.id; s.isCapital = true; s.isCity = true; G.addBuilding(g, s, 'palace'); }
     // old civ: new capital
@@ -309,7 +333,7 @@
     g.civs.forEach(function (c) { G.notify(g, c, { kind: 'eliminated', text: G.civData(civ).name + ' has been eliminated from the game.' }); });
   };
   U.settlementAttack = function (g, s) {
-    if (!G.hasBuilding(s, 'walls') || s.hp <= 0) return;
+    if ((!G.hasBuilding(s, 'walls') && !G.civFx(g, g.civs[s.civ]).cityAttackNoWalls) || s.hp <= 0) return;
     var t = g.tiles[s.tile], targets = [];
     Hex.spiral(t.col, t.row, 1, g.W, g.H).forEach(function (i) { if (i === s.tile) return; G.unitsAt(g, i).forEach(function (u) { if (G.atWar(g, s.civ, u.civ) && G.isMilitary(u)) targets.push(u); }); });
     if (!targets.length) return;

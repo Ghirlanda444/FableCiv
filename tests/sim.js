@@ -1,12 +1,12 @@
 // Headless simulation: every civ (player included) is driven by the AI for N turns.
 const AU = require('./load');
 const G = AU.G, U = AU.U;
-const turns = +process.argv[2] || 120, seed = +process.argv[3] || 12345, size = process.argv[4] || 'small';
+const turns = +process.argv[2] || 120, seed = +process.argv[3] || 12345, size = process.argv[4] || 'small', mapType = process.argv[5] || 'continents', speed = process.argv[6] || 'standard';
 const t0 = Date.now();
-const g = G.newGame({ playerCiv: 'rome', mapSize: size, difficulty: 'prince', seed });
+const g = G.newGame({ playerCiv: 'rome', mapSize: size, difficulty: 'prince', seed, mapType, speed });
 const player = G.player(g);
-player.ai = Object.assign({}, G.civData(player).ai);
-console.log('map', g.W + 'x' + g.H, 'civs', g.civs.map(c => c.civId).join(','), 'camps', g.camps.length);
+player.ai = Object.assign({}, G.leaderData(player).ai);
+console.log('map', g.W + 'x' + g.H, mapType, speed, 'civs', g.civs.map(c => c.civId + '/' + c.leaderId).join(','), 'camps', g.camps.length);
 for (let i = 0; i < turns && !g.victory; i++) {
   AU.AI.takeTurn(g, player);
   G.endTurn(g);

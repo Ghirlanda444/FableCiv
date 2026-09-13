@@ -21,7 +21,7 @@
       var rel = civ.rel[o.idx];
       if (rel.war) {
         if (G.aiAcceptsPeace(g, civ, o.idx) && G.rng(g) < 0.12) {
-          if (o.isPlayer) { civ.peaceOffer = g.turn; G.notify(g, o, { kind: 'peace_offer', text: G.civData(civ).leader + ' of ' + G.civData(civ).name + ' proposes peace.', panel: 'diplomacy' }); }
+          if (o.isPlayer) { civ.peaceOffer = g.turn; G.notify(g, o, { kind: 'peace_offer', text: G.leaderName(civ) + ' of ' + G.civData(civ).name + ' proposes peace.', panel: 'diplomacy' }); }
           else if (G.aiAcceptsPeace(g, o, civ.idx)) G.makePeace(g, civ.idx, o.idx);
         }
         return;

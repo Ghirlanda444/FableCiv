@@ -8,10 +8,16 @@ Design pillars:
 
 - **No era resets.** One continuous technology tree (54 techs) and civics tree (33 civics) across
   seven eras. Nothing is taken away when an era changes.
-- **Leaders belong to their civilization.** Trajan can only rule Rome, Victoria only England.
-  The 20 launch civilizations: Rome, Japan, China, America, India, Indonesia, Mongolia, Zulu, Persia,
-  Egypt, Celts, Arabia, France, England, Aztec, Inca, Maya, Shawnee, Greece, Germany. Each has a
-  unique ability, a unique unit and a unique building.
+- **Leaders belong to their civilization.** Caesar can only rule Rome, Victoria only England.
+  30 civilizations with 71 leaders (two or three per civilization), each leader with their own
+  ability on top of the civilization's permanent ability, unique unit and unique building:
+  Rome, Japan, China, America, India, Indonesia, Mongolia, Zulu, Persia, Egypt, Celts, Arabia,
+  France, England, Aztec, Inca, Maya, Shawnee, Greece, Germany, Russia, Spain, Ottomans, Korea,
+  Vietnam, Ethiopia, Mali, Norway, Babylon, Polynesia.
+- **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 20 civilizations) and eight map
+  types: Continents, Pangaea, Fractal, Archipelago, Islands, Donut, Inland Sea, Terra.
+- **Game speeds.** Quick, Standard, Epic and Marathon scale research, production, growth and the
+  turn limit.
 - **Towns and Cities.** New settlements are Towns: no production queue, production becomes gold,
   buildings are bought. Towns specialize (Farming, Mining, Trade Outpost, Fort, Urban Center) and
   feed your Cities. Pay gold to upgrade a Town into a City with a full production queue.
