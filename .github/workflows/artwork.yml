@@ -42,11 +42,11 @@ jobs:
         run: |
           git config user.name "fableciv-art-bot"
           git config user.email "art-bot@users.noreply.github.com"
-          remaining=${LIMIT:-0}
+          limit=${LIMIT:-0}; remaining=$limit
           for batch in $(seq 1 40); do
-            if [ "$remaining" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
+            if [ "$limit" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
             step=12
-            if [ "$remaining" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
+            if [ "$limit" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
             before=$(find web/assets -name '*.png' | wc -l)
             python3 tools/gen-art.py --limit $step --kinds "$KINDS" || true
             after=$(find web/assets -name '*.png' | wc -l)
@@ -57,6 +57,6 @@ jobs:
               git push -q origin HEAD:main || true
             fi
             if [ "$after" -eq "$before" ]; then echo "no new pictures in this batch, stopping"; break; fi
-            if [ "$remaining" != "0" ]; then remaining=$((remaining-step)); fi
+            if [ "$limit" != "0" ]; then remaining=$((remaining-step)); fi
           done
           echo "pictures now: $(find web/assets -name '*.png' | wc -l)"
