@@ -52,34 +52,39 @@ def main():
     kinds = [k for k in args.kinds.split(',') if k]
     order = ['units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
-    done = 0; failed = 0
+    todo = []
     for it in items:
         if kinds and it['kind'] not in kinds: continue
+        if os.path.exists(os.path.join(ROOT, it['file'])): continue
+        todo.append(it)
+        if args.limit and len(todo) >= args.limit: break
+    from concurrent.futures import ThreadPoolExecutor
+    import threading
+    lock = threading.Lock(); stats = {'done': 0, 'failed': 0}
+    def work(it):
         path = os.path.join(ROOT, it['file'])
-        if os.path.exists(path): continue
-        if args.limit and done >= args.limit: break
         prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
-        # prompts already ask for a plain white background; rembg removes it
         w, h = it['size'].split('x')
         url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, args.seed)
-        ok = False
         for attempt in range(3):
             try:
-                print('[%d] %s (%s)' % (done + 1, it['file'], it['name']), flush=True)
+                print('%s (%s)' % (it['file'], it['name']), flush=True)
                 data, ctype = fetch(url)
                 if len(data) < 5000 or 'image' not in ctype:
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
                 img = remove_bg(data)
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 img.save(path, 'PNG', optimize=True)
-                ok = True; break
+                with lock: stats['done'] += 1
+                time.sleep(args.delay)
+                return
             except Exception as e:
-                print('  attempt %d failed: %s' % (attempt + 1, e), flush=True)
+                print('  %s attempt %d failed: %s' % (it['file'], attempt + 1, e), flush=True)
                 time.sleep(8 * (attempt + 1))
-        if ok: done += 1
-        else: failed += 1
-        time.sleep(args.delay)
-    print('generated %d, failed %d' % (done, failed))
+        with lock: stats['failed'] += 1
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        list(ex.map(work, todo))
+    print('generated %d, failed %d' % (stats['done'], stats['failed']))
 
 if __name__ == '__main__':
     main()

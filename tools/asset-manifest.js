@@ -3,7 +3,7 @@
 const fs = require('fs'), path = require('path');
 require('../tests/load');
 const AU = globalThis.AU;
-const STYLE = 'Painted concept art for a classic turn-based strategy game (Civilization IV style), warm colours, soft painterly shading, clean readable silhouette, isolated on a plain white background, no text, no watermark, no frame.';
+const STYLE = 'Painted concept art for a classic turn-based strategy game (Civilization IV style), warm colours, bright even daylight, soft painterly shading, clean readable silhouette, isolated on a plain white background, no text, no watermark, no frame.';
 const UNIT_DESC = {
   settler: 'a pioneer family with an ox-drawn covered wagon and bundles',
   scout: 'a lean scout in leather with a bow on the back, looking into the distance',

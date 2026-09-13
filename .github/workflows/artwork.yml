@@ -52,7 +52,7 @@ jobs:
             after=$(find web/assets -name '*.png' | wc -l)
             if [ "$after" -gt "$before" ]; then
               git add web/assets
-              git commit -q -m "Artwork: $((after-before)) generated pictures (total $after)" || true
+              git commit -q -m "Artwork: $((after-before)) generated pictures (total $after) [skip ci]" || true
               git pull --rebase -q origin main || true
               git push -q origin HEAD:main || true
             fi
@@ -60,3 +60,6 @@ jobs:
             if [ "$limit" != "0" ]; then remaining=$((remaining-step)); fi
           done
           echo "pictures now: $(find web/assets -name '*.png' | wc -l)"
+          # one final commit without [skip ci] so the apps get rebuilt with the new artwork
+          git pull --rebase -q origin main || true
+          git commit --allow-empty -q -m "Artwork: rebuild apps with $(find web/assets -name '*.png' | wc -l) pictures" && git push -q origin HEAD:main || true
