@@ -23,6 +23,9 @@ def remove_bg(data):
     global _BG_LOCK
     if _BG_LOCK is None: _BG_LOCK = threading.Lock()
     img = Image.open(io.BytesIO(data)).convert('RGBA')
+    # the free service stamps a small logo in the bottom-right corner: drop the bottom strip
+    w, h = img.size
+    img = img.crop((0, 0, w, int(h * 0.93)))
     try:
         from rembg import remove, new_session
         with _BG_LOCK:  # one shared model session; the small u2net model keeps memory low on CI runners
