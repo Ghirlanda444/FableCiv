@@ -8,7 +8,7 @@ Exits 0 even when some images fail; a later run retries whatever is still missin
 import argparse, io, json, os, sys, time, urllib.parse, urllib.request
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'web', 'assets')
-BG_HINT = ', on a plain solid uniform bright green background (#00FF00), nothing else in the background'
+BG_HINT = ''
 
 def fetch(url, timeout=120):
     req = urllib.request.Request(url, headers={'User-Agent': 'FableCiv-art/1.0'})
@@ -28,10 +28,8 @@ def remove_bg(data):
         for y in range(h):
             for x in range(w):
                 r, g, b, a = px[x, y]
-                if g > 120 and g > r * 1.6 and g > b * 1.6:
+                if r > 235 and g > 235 and b > 235:
                     px[x, y] = (r, g, b, 0)
-                elif g > 90 and g > r * 1.25 and g > b * 1.25:
-                    px[x, y] = (r, g, b, 110)
         return img
 
 def main():
@@ -61,10 +59,7 @@ def main():
         if os.path.exists(path): continue
         if args.limit and done >= args.limit: break
         prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
-        if it['kind'] == 'leaders':
-            prompt = prompt + ', plain solid uniform bright green background (#00FF00)'
-        else:
-            prompt = prompt.replace('isolated on a plain transparent (alpha) background', 'isolated' + BG_HINT)
+        # prompts already ask for a plain white background; rembg removes it
         w, h = it['size'].split('x')
         url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, args.seed)
         ok = False
