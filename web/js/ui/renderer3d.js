@@ -351,7 +351,7 @@
   P.buildingMesh = function (id, isWonder) {
     var T = window.THREE, geo = this.geo, mat = this.mat, grp = new T.Group();
     var art = AU.Assets.texture(isWonder ? (AU.NATIONAL[id] ? 'national' : 'wonders') : 'buildings', id);
-    if (art) { var img = art.image, aspect = img.width / img.height, bh = R * (isWonder ? 0.85 : 0.5); var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(bh * aspect, bh, 1); pic.position.y = bh / 2; grp.add(pic); return grp; }
+    if (art) { var img = art.image, aspect = img.width / img.height, bh = R * (isWonder ? 0.8 : 0.55); var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(bh * aspect, bh, 1); pic.position.y = bh / 2; grp.add(pic); grp.userData.isSprite = true; return grp; }
     var def = SHAPES[id] || (isWonder ? ['wonder', 'gold'] : ['barn', 'stone']);
     var shape = def[0], m = mat[def[1]] || mat.stone, s = R * (isWonder ? 0.42 : 0.26);
     function add(g2, mm, x, y, z, sx, sy, sz) { var mesh = new T.Mesh(g2, mm); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; mesh.receiveShadow = true; grp.add(mesh); return mesh; }
@@ -465,7 +465,7 @@
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
         var art = AU.Assets.texture('units', u.type);
         if (art) { // painted unit as a billboard standing on its base
-          var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 1.05 : 0.85);
+          var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 0.82 : 0.68);
           var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);
         } else {
           var body = new T.Mesh(this.geo.figure, new T.MeshLambertMaterial({ color: color2 })); body.position.y = R * 0.24; body.castShadow = true; grp.add(body);
@@ -473,7 +473,7 @@
           if (!mil) { body.scale.set(0.8, 0.8, 0.8); body.position.y = R * 0.2; head.position.y = R * 0.4; }
         }
         var badge = new T.Sprite(new T.SpriteMaterial({ map: this.unitBadge(AU.UNITS[u.type].icon, color, color2, u.hp, U.level(u)), transparent: true, depthTest: false }));
-        var bs = art ? 0.42 : 0.62; badge.userData.baseScale = [R * bs, R * bs * 1.16]; badge.scale.set(R * bs, R * bs * 1.16, 1); badge.position.y = art ? R * 1.25 : R * 0.95; badge.renderOrder = 11; grp.add(badge);
+        var bs = art ? 0.42 : 0.62; badge.userData.baseScale = [R * bs, R * bs * 1.16]; badge.scale.set(R * bs, R * bs * 1.16, 1); badge.position.y = art ? R * 1.0 : R * 0.95; badge.renderOrder = 11; grp.add(badge);
         if (u.fortify && mil) { var f = new T.Mesh(this.geo.ring, this.mat.hlReach); f.scale.set(0.45, 0.45, 0.45); f.position.y = 1.2; grp.add(f); }
         if (app && app.sel.unit === u.id) { var selr = new T.Mesh(this.geo.ring, this.mat.hlSel); selr.position.y = 1.5; selr.position.x = -ox; selr.position.z = -oz; grp.add(selr); }
         this.scene.add(grp);

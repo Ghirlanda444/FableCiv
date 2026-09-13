@@ -35,9 +35,9 @@
     nb.forEach(function (n) { var nt = g.tiles[n]; var dx = (nt.col + 0.5 * (nt.row & 1)) - (t.col + 0.5 * (t.row & 1)), dz = nt.row - t.row; var x = dx * R * Math.sqrt(3) * S, z = dz * R * 1.5 * S; var water = G.isWater(nt); var m = prism(PAL[nt.terrain] || 0x5f9a3c, R * S * 0.99, water ? 2 : 6 + (nt.hills ? 4 : 0), x, z); if (water) m.position.y = -3; if (nt.feature === 'forest' || nt.feature === 'jungle') { for (var k = 0; k < 12; k++) { var a = Math.random() * Math.PI * 2, d = Math.random() * R * S * 0.8; var tree = new T.Mesh(h.geo.tree, h.mat.tree); var sz = S * (0.9 + Math.random()); tree.scale.set(sz, sz, sz); tree.position.set(x + Math.cos(a) * d, R * 0.21 * sz + (nt.hills ? 4 : 0), z + Math.sin(a) * d); tree.castShadow = true; scene.add(tree); } } if (nt.terrain === 'mountain') { var mt = new T.Mesh(h.geo.cone, h.mat.mountain); mt.scale.set(S * 1.6, S * 1.6, S * 1.6); mt.position.set(x, R * 0.55 * S * 1.6, z); mt.castShadow = true; scene.add(mt); } });
     // buildings, spaced out on three rings
     var slots = [];
-    [[6, 1.0], [10, 1.75], [14, 2.45]].forEach(function (ring) { for (var k = 0; k < ring[0]; k++) { var a = k * Math.PI * 2 / ring[0] + ring[1]; slots.push([Math.cos(a) * R * ring[1], Math.sin(a) * R * ring[1], a]); } });
+    [[6, 1.05], [10, 1.85], [14, 2.5]].forEach(function (ring) { for (var k = 0; k < ring[0]; k++) { var a = k * Math.PI * 2 / ring[0] + ring[1]; slots.push([Math.cos(a) * R * ring[1], Math.sin(a) * R * ring[1], a]); } });
     var slot = 0, wonders = [], BS = 3.4;
-    function put(mesh, x, z, rotY, scale) { mesh.position.set(x, 0, z); mesh.rotation.y = rotY; mesh.scale.set(scale, scale, scale); scene.add(mesh); }
+    function put(mesh, x, z, rotY, scale) { if (mesh.userData.isSprite) scale = scale * 0.62; mesh.position.set(x, 0, z); mesh.rotation.y = rotY; mesh.scale.set(scale, scale, scale); scene.add(mesh); }
     if (s.isCapital) put(h.buildingMesh('palace'), 0, 0, 0, BS * 1.2);
     else if (s.isCity) { var hall = h.buildingMesh('keep'); put(hall, 0, 0, 0, BS); }
     else { var hut = new T.Mesh(h.geo.roof, h.mat.roofBrown); hut.scale.set(R * 0.7, R * 0.6, R * 0.7); hut.position.y = R * 0.3; hut.castShadow = true; scene.add(hut); }
