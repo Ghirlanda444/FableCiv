@@ -15,12 +15,19 @@ def fetch(url, timeout=120):
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read(), r.headers.get('Content-Type', '')
 
+_SESSION = {}
+_BG_LOCK = None
 def remove_bg(data):
     from PIL import Image
+    import threading
+    global _BG_LOCK
+    if _BG_LOCK is None: _BG_LOCK = threading.Lock()
     img = Image.open(io.BytesIO(data)).convert('RGBA')
     try:
-        from rembg import remove
-        out = remove(img)
+        from rembg import remove, new_session
+        with _BG_LOCK:  # one shared model session; the small u2net model keeps memory low on CI runners
+            if 'u2net' not in _SESSION: _SESSION['u2net'] = new_session('u2net')
+            out = remove(img, session=_SESSION['u2net'])
         return out
     except Exception as e:  # rembg unavailable: chroma-key the green background
         print('  rembg unavailable (%s), using chroma key' % e)
