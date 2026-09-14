@@ -2656,6 +2656,1150 @@
   "nobg": false
  },
  {
+  "kind": "thrones",
+  "id": "mediterranean",
+  "file": "thrones/mediterranean.jpg",
+  "name": "Mediterranean throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "european",
+  "file": "thrones/european.jpg",
+  "name": "European throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "new_world",
+  "file": "thrones/new_world.jpg",
+  "name": "New World throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "east_asian",
+  "file": "thrones/east_asian.jpg",
+  "name": "East Asian throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "southeast_asian",
+  "file": "thrones/southeast_asian.jpg",
+  "name": "Southeast Asian throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "south_asian",
+  "file": "thrones/south_asian.jpg",
+  "name": "South Asian throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "middle_eastern",
+  "file": "thrones/middle_eastern.jpg",
+  "name": "Middle Eastern throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "african",
+  "file": "thrones/african.jpg",
+  "name": "African throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "mesoamerican",
+  "file": "thrones/mesoamerican.jpg",
+  "name": "Mesoamerican and Andean throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "native_american",
+  "file": "thrones/native_american.jpg",
+  "name": "Native American throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "thrones",
+  "id": "polynesian",
+  "file": "thrones/polynesian.jpg",
+  "name": "Polynesian throne room",
+  "size": "768x512",
+  "nobg": true
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "hall",
+  "file": "palace/mediterranean/hall.png",
+  "name": "Classical hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "left_wing",
+  "file": "palace/mediterranean/left_wing.png",
+  "name": "Classical left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "right_wing",
+  "file": "palace/mediterranean/right_wing.png",
+  "name": "Classical right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "dome",
+  "file": "palace/mediterranean/dome.png",
+  "name": "Classical dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "tower_left",
+  "file": "palace/mediterranean/tower_left.png",
+  "name": "Classical tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "tower_right",
+  "file": "palace/mediterranean/tower_right.png",
+  "name": "Classical tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "gate",
+  "file": "palace/mediterranean/gate.png",
+  "name": "Classical gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "walls",
+  "file": "palace/mediterranean/walls.png",
+  "name": "Classical walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "gardens",
+  "file": "palace/mediterranean/gardens.png",
+  "name": "Classical gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "fountain",
+  "file": "palace/mediterranean/fountain.png",
+  "name": "Classical fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "statue",
+  "file": "palace/mediterranean/statue.png",
+  "name": "Classical statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mediterranean",
+  "id": "banners",
+  "file": "palace/mediterranean/banners.png",
+  "name": "Classical banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "hall",
+  "file": "palace/european/hall.png",
+  "name": "Gothic hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "left_wing",
+  "file": "palace/european/left_wing.png",
+  "name": "Gothic left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "right_wing",
+  "file": "palace/european/right_wing.png",
+  "name": "Gothic right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "dome",
+  "file": "palace/european/dome.png",
+  "name": "Gothic dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "tower_left",
+  "file": "palace/european/tower_left.png",
+  "name": "Gothic tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "tower_right",
+  "file": "palace/european/tower_right.png",
+  "name": "Gothic tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "gate",
+  "file": "palace/european/gate.png",
+  "name": "Gothic gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "walls",
+  "file": "palace/european/walls.png",
+  "name": "Gothic walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "gardens",
+  "file": "palace/european/gardens.png",
+  "name": "Gothic gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "fountain",
+  "file": "palace/european/fountain.png",
+  "name": "Gothic fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "statue",
+  "file": "palace/european/statue.png",
+  "name": "Gothic statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/european",
+  "id": "banners",
+  "file": "palace/european/banners.png",
+  "name": "Gothic banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "hall",
+  "file": "palace/new_world/hall.png",
+  "name": "Federal hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "left_wing",
+  "file": "palace/new_world/left_wing.png",
+  "name": "Federal left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "right_wing",
+  "file": "palace/new_world/right_wing.png",
+  "name": "Federal right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "dome",
+  "file": "palace/new_world/dome.png",
+  "name": "Federal dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "tower_left",
+  "file": "palace/new_world/tower_left.png",
+  "name": "Federal tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "tower_right",
+  "file": "palace/new_world/tower_right.png",
+  "name": "Federal tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "gate",
+  "file": "palace/new_world/gate.png",
+  "name": "Federal gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "walls",
+  "file": "palace/new_world/walls.png",
+  "name": "Federal walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "gardens",
+  "file": "palace/new_world/gardens.png",
+  "name": "Federal gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "fountain",
+  "file": "palace/new_world/fountain.png",
+  "name": "Federal fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "statue",
+  "file": "palace/new_world/statue.png",
+  "name": "Federal statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/new_world",
+  "id": "banners",
+  "file": "palace/new_world/banners.png",
+  "name": "Federal banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "hall",
+  "file": "palace/east_asian/hall.png",
+  "name": "Pagoda hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "left_wing",
+  "file": "palace/east_asian/left_wing.png",
+  "name": "Pagoda left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "right_wing",
+  "file": "palace/east_asian/right_wing.png",
+  "name": "Pagoda right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "dome",
+  "file": "palace/east_asian/dome.png",
+  "name": "Pagoda dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "tower_left",
+  "file": "palace/east_asian/tower_left.png",
+  "name": "Pagoda tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "tower_right",
+  "file": "palace/east_asian/tower_right.png",
+  "name": "Pagoda tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "gate",
+  "file": "palace/east_asian/gate.png",
+  "name": "Pagoda gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "walls",
+  "file": "palace/east_asian/walls.png",
+  "name": "Pagoda walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "gardens",
+  "file": "palace/east_asian/gardens.png",
+  "name": "Pagoda gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "fountain",
+  "file": "palace/east_asian/fountain.png",
+  "name": "Pagoda fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "statue",
+  "file": "palace/east_asian/statue.png",
+  "name": "Pagoda statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/east_asian",
+  "id": "banners",
+  "file": "palace/east_asian/banners.png",
+  "name": "Pagoda banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "hall",
+  "file": "palace/southeast_asian/hall.png",
+  "name": "Khmer hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "left_wing",
+  "file": "palace/southeast_asian/left_wing.png",
+  "name": "Khmer left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "right_wing",
+  "file": "palace/southeast_asian/right_wing.png",
+  "name": "Khmer right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "dome",
+  "file": "palace/southeast_asian/dome.png",
+  "name": "Khmer dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "tower_left",
+  "file": "palace/southeast_asian/tower_left.png",
+  "name": "Khmer tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "tower_right",
+  "file": "palace/southeast_asian/tower_right.png",
+  "name": "Khmer tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "gate",
+  "file": "palace/southeast_asian/gate.png",
+  "name": "Khmer gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "walls",
+  "file": "palace/southeast_asian/walls.png",
+  "name": "Khmer walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "gardens",
+  "file": "palace/southeast_asian/gardens.png",
+  "name": "Khmer gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "fountain",
+  "file": "palace/southeast_asian/fountain.png",
+  "name": "Khmer fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "statue",
+  "file": "palace/southeast_asian/statue.png",
+  "name": "Khmer statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/southeast_asian",
+  "id": "banners",
+  "file": "palace/southeast_asian/banners.png",
+  "name": "Khmer banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "hall",
+  "file": "palace/south_asian/hall.png",
+  "name": "Mughal hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "left_wing",
+  "file": "palace/south_asian/left_wing.png",
+  "name": "Mughal left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "right_wing",
+  "file": "palace/south_asian/right_wing.png",
+  "name": "Mughal right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "dome",
+  "file": "palace/south_asian/dome.png",
+  "name": "Mughal dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "tower_left",
+  "file": "palace/south_asian/tower_left.png",
+  "name": "Mughal tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "tower_right",
+  "file": "palace/south_asian/tower_right.png",
+  "name": "Mughal tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "gate",
+  "file": "palace/south_asian/gate.png",
+  "name": "Mughal gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "walls",
+  "file": "palace/south_asian/walls.png",
+  "name": "Mughal walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "gardens",
+  "file": "palace/south_asian/gardens.png",
+  "name": "Mughal gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "fountain",
+  "file": "palace/south_asian/fountain.png",
+  "name": "Mughal fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "statue",
+  "file": "palace/south_asian/statue.png",
+  "name": "Mughal statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/south_asian",
+  "id": "banners",
+  "file": "palace/south_asian/banners.png",
+  "name": "Mughal banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "hall",
+  "file": "palace/middle_eastern/hall.png",
+  "name": "Persian hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "left_wing",
+  "file": "palace/middle_eastern/left_wing.png",
+  "name": "Persian left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "right_wing",
+  "file": "palace/middle_eastern/right_wing.png",
+  "name": "Persian right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "dome",
+  "file": "palace/middle_eastern/dome.png",
+  "name": "Persian dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "tower_left",
+  "file": "palace/middle_eastern/tower_left.png",
+  "name": "Persian tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "tower_right",
+  "file": "palace/middle_eastern/tower_right.png",
+  "name": "Persian tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "gate",
+  "file": "palace/middle_eastern/gate.png",
+  "name": "Persian gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "walls",
+  "file": "palace/middle_eastern/walls.png",
+  "name": "Persian walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "gardens",
+  "file": "palace/middle_eastern/gardens.png",
+  "name": "Persian gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "fountain",
+  "file": "palace/middle_eastern/fountain.png",
+  "name": "Persian fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "statue",
+  "file": "palace/middle_eastern/statue.png",
+  "name": "Persian statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/middle_eastern",
+  "id": "banners",
+  "file": "palace/middle_eastern/banners.png",
+  "name": "Persian banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "hall",
+  "file": "palace/african/hall.png",
+  "name": "Sahelian hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "left_wing",
+  "file": "palace/african/left_wing.png",
+  "name": "Sahelian left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "right_wing",
+  "file": "palace/african/right_wing.png",
+  "name": "Sahelian right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "dome",
+  "file": "palace/african/dome.png",
+  "name": "Sahelian dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "tower_left",
+  "file": "palace/african/tower_left.png",
+  "name": "Sahelian tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "tower_right",
+  "file": "palace/african/tower_right.png",
+  "name": "Sahelian tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "gate",
+  "file": "palace/african/gate.png",
+  "name": "Sahelian gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "walls",
+  "file": "palace/african/walls.png",
+  "name": "Sahelian walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "gardens",
+  "file": "palace/african/gardens.png",
+  "name": "Sahelian gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "fountain",
+  "file": "palace/african/fountain.png",
+  "name": "Sahelian fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "statue",
+  "file": "palace/african/statue.png",
+  "name": "Sahelian statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/african",
+  "id": "banners",
+  "file": "palace/african/banners.png",
+  "name": "Sahelian banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "hall",
+  "file": "palace/mesoamerican/hall.png",
+  "name": "Stepped hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "left_wing",
+  "file": "palace/mesoamerican/left_wing.png",
+  "name": "Stepped left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "right_wing",
+  "file": "palace/mesoamerican/right_wing.png",
+  "name": "Stepped right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "dome",
+  "file": "palace/mesoamerican/dome.png",
+  "name": "Stepped dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "tower_left",
+  "file": "palace/mesoamerican/tower_left.png",
+  "name": "Stepped tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "tower_right",
+  "file": "palace/mesoamerican/tower_right.png",
+  "name": "Stepped tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "gate",
+  "file": "palace/mesoamerican/gate.png",
+  "name": "Stepped gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "walls",
+  "file": "palace/mesoamerican/walls.png",
+  "name": "Stepped walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "gardens",
+  "file": "palace/mesoamerican/gardens.png",
+  "name": "Stepped gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "fountain",
+  "file": "palace/mesoamerican/fountain.png",
+  "name": "Stepped fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "statue",
+  "file": "palace/mesoamerican/statue.png",
+  "name": "Stepped statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/mesoamerican",
+  "id": "banners",
+  "file": "palace/mesoamerican/banners.png",
+  "name": "Stepped banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "hall",
+  "file": "palace/native_american/hall.png",
+  "name": "Longhouse hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "left_wing",
+  "file": "palace/native_american/left_wing.png",
+  "name": "Longhouse left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "right_wing",
+  "file": "palace/native_american/right_wing.png",
+  "name": "Longhouse right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "dome",
+  "file": "palace/native_american/dome.png",
+  "name": "Longhouse dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "tower_left",
+  "file": "palace/native_american/tower_left.png",
+  "name": "Longhouse tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "tower_right",
+  "file": "palace/native_american/tower_right.png",
+  "name": "Longhouse tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "gate",
+  "file": "palace/native_american/gate.png",
+  "name": "Longhouse gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "walls",
+  "file": "palace/native_american/walls.png",
+  "name": "Longhouse walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "gardens",
+  "file": "palace/native_american/gardens.png",
+  "name": "Longhouse gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "fountain",
+  "file": "palace/native_american/fountain.png",
+  "name": "Longhouse fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "statue",
+  "file": "palace/native_american/statue.png",
+  "name": "Longhouse statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/native_american",
+  "id": "banners",
+  "file": "palace/native_american/banners.png",
+  "name": "Longhouse banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "hall",
+  "file": "palace/polynesian/hall.png",
+  "name": "Marae hall",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "left_wing",
+  "file": "palace/polynesian/left_wing.png",
+  "name": "Marae left wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "right_wing",
+  "file": "palace/polynesian/right_wing.png",
+  "name": "Marae right wing",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "dome",
+  "file": "palace/polynesian/dome.png",
+  "name": "Marae dome",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "tower_left",
+  "file": "palace/polynesian/tower_left.png",
+  "name": "Marae tower left",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "tower_right",
+  "file": "palace/polynesian/tower_right.png",
+  "name": "Marae tower right",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "gate",
+  "file": "palace/polynesian/gate.png",
+  "name": "Marae gate",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "walls",
+  "file": "palace/polynesian/walls.png",
+  "name": "Marae walls",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "gardens",
+  "file": "palace/polynesian/gardens.png",
+  "name": "Marae gardens",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "fountain",
+  "file": "palace/polynesian/fountain.png",
+  "name": "Marae fountain",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "statue",
+  "file": "palace/polynesian/statue.png",
+  "name": "Marae statue",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "palace/polynesian",
+  "id": "banners",
+  "file": "palace/polynesian/banners.png",
+  "name": "Marae banners",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
   "kind": "units/mediterranean",
   "id": "settler",
   "file": "units/mediterranean/settler.png",

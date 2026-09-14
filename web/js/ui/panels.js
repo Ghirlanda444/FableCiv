@@ -219,20 +219,23 @@
         html += '<div class="row"><div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(m) + '"></div><div class="grow"><b>' + T.icon + ' ' + d.name + '</b> <span class="pill">' + T.name + '</span>' + (!m.alive ? ' <span class="pill war">destroyed</span>' : war ? ' <span class="pill war">At war</span>' : '') +
           '<small>Your envoys: ' + mine + ' · Suzerain: ' + (suz < 0 ? 'none' : suz === p.idx ? '<b>you</b>' : G.civData(g.civs[suz]).name) + (m.religion ? ' · ' + AU.Religion.icon(g, m.religion) + ' ' + AU.Religion.name(g, m.religion) : '') + '</small>' +
           '<small>' + tiers.map(function (t) { return (mine >= t.n ? '✅ ' : '⬜ ') + t.n + ': ' + t.desc; }).join(' · ') + '</small><small><b>' + d.ability.name + ':</b> ' + d.ability.desc + '</small></div>' +
-          (m.alive ? '<div><button class="small primary" data-action="envoy" data-id="' + m.idx + '" ' + ((p.envoys || 0) > 0 && !war ? '' : 'disabled') + '>Send envoy</button>' + (war ? '<button class="small" data-action="peace" data-id="' + m.idx + '">Make peace</button>' : '<button class="small danger" data-action="war" data-id="' + m.idx + '">War</button>') + '</div>' : '') + '</div>';
+          (m.alive ? '<div><button class="small primary" data-action="talk" data-id="' + m.idx + '">Audience</button><button class="small" data-action="envoy" data-id="' + m.idx + '" ' + ((p.envoys || 0) > 0 && !war ? '' : 'disabled') + '>Send envoy</button></div>' : '') + '</div>';
       });
       html += '</div>';
     }
     others.forEach(function (c) {
       var d = G.civData(c), rel = p.rel[c.idx], met = p.met[c.idx];
-      var att = c.alive ? c.rel[p.idx].attitude : 0;
-      var mood = att > 15 ? 'Friendly' : att > -10 ? 'Neutral' : att > -30 ? 'Unfriendly' : 'Hostile';
+      var att = c.alive ? c.rel[p.idx].attitude : 0, Dp = AU.Diplo;
+      var mood = Dp ? Dp.mood(att) : (att > 15 ? 'Friendly' : att > -10 ? 'Neutral' : att > -30 ? 'Unfriendly' : 'Hostile');
+      var tags = Dp && met && c.alive ? (Dp.isAlly(g, p.idx, c.idx) ? ' <span class="pill peace">Allied</span>' : Dp.isFriend(g, p.idx, c.idx) ? ' <span class="pill peace">Friends</span>' : '') + (Dp.isDenounced(g, c.idx, p.idx) ? ' <span class="pill war">Denounced you</span>' : '') : '';
       var portrait = AU.Assets.get('leaders', c.leaderId);
-      html += '<div class="row">' + (portrait ? '<img class="portrait-sm" src="' + AU.Assets.url('leaders', c.leaderId) + '" alt="">' : '') + '<div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(c) + ';border-right:4px solid ' + d.color2 + '"></div><div class="grow"><b>' + d.leader + ' <span class="pill">' + d.name + '</span>' + (!c.alive ? ' <span class="pill">destroyed</span>' : '') + '</b>' +
-        (met && c.alive ? '<small>' + (rel.war ? '<span class="pill war">At war</span> since turn ' + rel.warSince : '<span class="pill peace">Peace</span> · ' + mood) + ' · ' + G.civSettlements(g, c.idx).length + ' settlements · military ' + Math.round(G.militaryStrength(g, c.idx)) + ' · score ' + G.score(g, c) + '</small><small>' + d.ability.name + ': ' + d.ability.desc + '</small>' : '<small>' + (c.alive ? 'Not met yet' : '') + '</small>') + '</div>';
+      html += '<div class="row">' + (portrait ? '<img class="portrait-sm" src="' + AU.Assets.url('leaders', c.leaderId) + '" alt="">' : '') + '<div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(c) + ';border-right:4px solid ' + d.color2 + '"></div><div class="grow"><b>' + G.leaderName(c) + ' <span class="pill">' + d.name + '</span>' + (!c.alive ? ' <span class="pill">destroyed</span>' : '') + '</b>' +
+        (met && c.alive ? '<small>' + (rel.war ? '<span class="pill war">At war</span> since turn ' + rel.warSince : '<span class="pill peace">Peace</span> · ' + mood) + tags + ' · ' + G.civSettlements(g, c.idx).length + ' settlements · military ' + Math.round(G.militaryStrength(g, c.idx)) + ' · score ' + G.score(g, c) + '</small><small>' + d.ability.name + ': ' + d.ability.desc + '</small>' : '<small>' + (c.alive ? 'Not met yet' : '') + '</small>') + '</div>';
       if (met && c.alive) {
+        html += '<div><button class="small primary" data-action="talk" data-id="' + c.idx + '">Talk</button>';
         if (rel.war) html += '<button class="small" data-action="peace" data-id="' + c.idx + '">' + (c.peaceOffer && g.turn - c.peaceOffer < 5 ? 'Accept peace' : 'Propose peace') + '</button>';
-        else html += '<button class="small danger" data-action="war" data-id="' + c.idx + '" ' + (rel.peaceUntil > g.turn ? 'disabled title="Peace treaty until turn ' + rel.peaceUntil + '"' : '') + '>Declare war</button>';
+        else html += '<button class="small danger" data-action="war" data-id="' + c.idx + '" ' + (Dp && !Dp.canDeclareWar(g, p.idx, c.idx) ? 'disabled title="A treaty forbids it"' : rel.peaceUntil > g.turn ? 'disabled title="Peace treaty until turn ' + rel.peaceUntil + '"' : '') + '>Declare war</button>';
+        html += '</div>';
       }
       html += '</div>';
     });
@@ -243,6 +246,7 @@
   P.render_empire = function (app, g) {
     var p = G.player(g), d = G.civData(p), y = G.civYields(g, p), html = '';
     html += '<div class="section"><h3>' + G.leaderName(p) + ' of ' + d.name + '</h3><div class="yields">' + yieldsHtml(y, { skip: ['food', 'happiness'], plus: true }) + '<span>💰 ' + Math.floor(p.gold) + ' treasury</span><span>unit upkeep ' + y.upkeep + '</span></div><p class="stat">' + d.ability.name + ': ' + d.ability.desc + '</p></div>';
+    if (AU.Palace) html += '<div class="section"><button class="big" data-action="palace">🏰 Your palace (' + AU.Palace.count(p) + '/' + AU.PALACE_PIECES.length + ' pieces' + (p.palace && p.palace.pending > 0 ? ', a piece is offered!' : '') + ')</button></div>';
     var cp = G.cultureProgress(g, p);
     html += '<div class="section"><h3>Tourism &amp; culture victory</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' tourism/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">Win by culture when your foreign visitors exceed the domestic tourists of every rival (Industrial era or later). Tourism comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.</p>' +
       g.civs.filter(function (o) { return o.alive && o.idx !== p.idx && p.met && p.met[o.idx]; }).map(function (o) { var dom = G.domesticTourists(g, o); return '<div class="row"><div class="grow">' + G.civData(o).name + '</div><small>' + Math.min(100, Math.round(cp.visitors / (dom + 1) * 100)) + '% (' + cp.visitors + '/' + (dom + 1) + ')</small></div>'; }).join('') + '</div>';
@@ -286,7 +290,7 @@
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="pedia">📖 Civilopedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
-    html += '</div><p class="stat">Ages Unbroken v0.2. Autosaves at the end of every turn.</p>';
+    html += '</div><p class="stat">Chibilization. Autosaves at the end of every turn.</p>';
     return { title: 'Menu', html: html };
   };
   P.render_help = function () {
@@ -374,6 +378,10 @@
       case 'help': app.openPanel('help'); break;
       case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
       case 'envoy': if (AU.CityStates.sendEnvoy(g, p, g.civs[+d.id])) { app.refreshPanel(); app.refreshHud(); } break;
+      case 'talk': if (AU.DiploUI && g.civs[+d.id]) AU.DiploUI.open(app, +d.id, { kind: 'talk' }); break;
+      case 'palace': app.openPanel('palace'); break;
+      case 'palacepick': app.panelData = { piece: d.piece, style: d.style }; app.refreshPanel(); break;
+      case 'palacebuild': if (AU.Palace.build(g, p, d.piece, d.style)) { app.toast('The ' + AU.PALACE_PIECE_BY_ID[d.piece].name + ' is built.'); app.panelData = {}; app.refreshPanel(); app.refreshHud(); } break;
       case 'relpick': app.panelData[d.what] = d.id; app.refreshPanel(); break;
       case 'pantheon': if (AU.Religion.choosePantheon(g, p, d.id)) { app.toast('Pantheon: ' + AU.BELIEF_BY_ID[d.id].name + '.'); app.refreshPanel(); app.refreshHud(); } break;
       case 'foundrel': { var pdx = app.panelData; if (AU.Religion.found(g, p, pdx.relName, pdx.relFollower, pdx.relFounder)) { app.toast('Religion founded!'); app.refreshPanel(); app.refreshHud(); app.showQuotes(); } break; }

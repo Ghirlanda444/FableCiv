@@ -178,6 +178,8 @@
     todo: function () {
       var g = this.g, p = G.player(g), list = [], self = this;
       if (!g) return list;
+      if (AU.Palace && p.palace && p.palace.pending > 0 && AU.Palace.available(p).length) list.push({ icon: '🏰', text: 'Improve your palace', go: function () { self.openPanel('palace'); } });
+      if (g.diploQueue && g.diploQueue.length) list.push({ icon: '👑', text: 'Audience: ' + G.civData(g.civs[g.diploQueue[0].civ]).name, go: function () { self.showDiploQueue(); } });
       g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
       G.civSettlements(g, p.idx).forEach(function (s) {
         if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: 'Production: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
@@ -201,7 +203,7 @@
     doTodo: function (i) { var it = (this._todo || [])[i]; if (it) { it.go(); this.refreshHud(); this.invalidate(); } },
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
-      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐' };
+      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰' };
       var list = g.notifications.slice(-14).reverse();
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
@@ -259,7 +261,7 @@
       this.sel.tile = tileIdx; this.renderer.highlights.selTile = tileIdx; this.invalidate();
     },
     showQuotes: function () {
-      var g = this.g; if (!g || !g.quoteQueue || !g.quoteQueue.length) return;
+      var g = this.g; if (!g || !g.quoteQueue || !g.quoteQueue.length) { this.showDiploQueue(); return; }
       var q = g.quoteQueue.shift(), box = $('quote'), self = this;
       $('quote-kicker').textContent = q.kicker || ''; $('quote-title').textContent = q.title; $('quote-text').textContent = '“' + q.text + '”'; $('quote-by').textContent = '— ' + q.by;
       var art = $('quote-art'), kind = q.cat === 'natural' ? 'natural' : q.cat === 'wonder' ? 'wonders' : q.cat === 'national' ? 'national' : null;
@@ -269,6 +271,13 @@
       if (q.tile != null && this.renderer) { this.renderer.centerOn(g, q.tile); this.renderer.highlights.selTile = q.tile; this.invalidate(); }
       box.hidden = false;
       $('quote-ok').onclick = function () { box.hidden = true; setTimeout(function () { self.showQuotes(); }, 120); };
+    },
+    // Leader screens queued by the rules (first contact, proposals, denouncements): shown after the quotes.
+    showDiploQueue: function () {
+      var g = this.g; if (!g || !g.diploQueue || !g.diploQueue.length || !AU.DiploUI) return;
+      if (!$('quote').hidden || !$('leader').hidden || !$('confirm').hidden) return;
+      var ev = g.diploQueue.shift(); if (!g.civs[ev.civ]) return this.showDiploQueue();
+      AU.DiploUI.open(this, ev.civ, ev);
     },
     confirm: function (msg, onYes) {
       var box = $('confirm'); $('confirm-text').textContent = msg; box.hidden = false;
@@ -416,7 +425,7 @@
       if (advance) { var list = this.unitsNeedingOrders(); if (list.length) { this.selectUnit(list[0]); this.renderer.centerOn(this.g, list[0].tile); } else this.deselect(); }
       else this.selectUnit(u);
       this.refreshHud();
-      if (this.g && this.g.quoteQueue && this.g.quoteQueue.length && $('quote').hidden) { var self3 = this; setTimeout(function () { self3.showQuotes(); }, 150); }
+      if (this.g && ((this.g.quoteQueue && this.g.quoteQueue.length) || (this.g.diploQueue && this.g.diploQueue.length)) && $('quote').hidden) { var self3 = this; setTimeout(function () { self3.showQuotes(); }, 150); }
     },
     doAttack: function (u, tileIdx) {
       var g = this.g, res = U.attack(g, u, tileIdx);

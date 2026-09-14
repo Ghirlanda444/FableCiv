@@ -4,7 +4,7 @@ JPEG for full-frame pictures (terrain textures, technology and civic cards)."""
 import os, sys
 from PIL import Image
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'web', 'assets')
-JPEG_KINDS = ('terrain', 'techs', 'civics')
+JPEG_KINDS = ('terrain', 'techs', 'civics', 'thrones')
 MAX = 512
 
 def shrink(path):

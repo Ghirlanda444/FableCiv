@@ -168,7 +168,7 @@ def main():
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
                 img = remove_bg(data, keep_bg=bool(it.get('nobg')), crop=(args.provider != 'xai'))
                 cov = coverage(img) if not it.get('nobg') else 1.0
-                if it.get('nobg'):  # a texture: reject a picture with a focal point in the middle (an island, a pond...)
+                if it.get('nobg') and it['kind'] == 'terrain':  # a texture: reject a picture with a focal point in the middle (an island, a pond...)
                     focus = texture_focus(img)
                     if focus > 40:
                         if best is None or -focus > best[0]: best = (-focus, img)

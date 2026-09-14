@@ -129,6 +129,7 @@
   G.tileAt = function (g, col, row) { return g.tiles[row * g.W + col]; };
   G.neighbors = function (g, t) { return Hex.neighborsOf(t.col, t.row, g.W, g.H); };
   G.dist = function (a, b) { return Hex.distance(a.col, a.row, b.col, b.row); };
+  G.meet = function (g, a, b) { if (AU.Diplo) return AU.Diplo.onMeet(g, a, b); var ca = g.civs[a], cb = g.civs[b]; if (!ca || !cb) return false; var n = !ca.met[b]; ca.met[b] = true; cb.met[a] = true; return n; };
   G.isWater = function (t) { return !!AU.TERRAIN[t.terrain].water; };
   G.passable = function (g, t) { return !AU.TERRAIN[t.terrain].impassable && !G.isWater(t); };
   G.settlementAt = function (g, tileIdx) { var t = g.tiles[tileIdx]; return t.settlement != null ? g.settlements[t.settlement] : null; };
@@ -159,6 +160,7 @@
     mergeFx(fx, AU.GOVERNMENTS[civ.government].fx);
     if (fx.governmentHappiness && civ.government !== 'chiefdom') fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
     if (fx.monarchHappiness && (civ.government === 'monarchy' || civ.government === 'theocracy')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.monarchHappiness;
+    if (AU.Palace && !civ.minor) { var ph = AU.Palace.fx(civ).happiness; if (ph) fx.happinessBonus = (fx.happinessBonus || 0) + ph; }
     if (fx.despotCombat && (civ.government === 'oligarchy' || civ.government === 'autocracy')) fx.combatBonus = (fx.combatBonus || 0) + fx.despotCombat;
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
@@ -252,9 +254,10 @@
     G.civSettlements(g, civ.idx).forEach(function (s) { var t = g.tiles[s.tile]; mark(t.col, t.row, 3); G.territory(g, s).forEach(function (ti) { var tt = g.tiles[ti]; mark(tt.col, tt.row, 1); }); });
     civ.visible = vis;
     // meet civs
-    for (var id in g.units) { var u = g.units[id]; if (u.civ >= 0 && u.civ !== civ.idx && vis[u.tile]) civ.met[u.civ] = true; }
-    for (var sid in g.settlements) { var s2 = g.settlements[sid]; if (s2.civ !== civ.idx && vis[s2.tile]) civ.met[s2.civ] = true; }
-    for (var m in civ.met) { if (g.civs[m]) g.civs[m].met[civ.idx] = true; if (civ.isPlayer && g.civs[m] && g.civs[m].minor && !civ.flags['met:' + m]) { civ.flags['met:' + m] = g.turn; G.notify(g, civ, { kind: 'meet', text: 'You met the city-state of ' + G.civData(g.civs[m]).name + ' (' + AU.CITY_STATE_TYPES[g.civs[m].stateType].name + '). Send envoys to gain its favour.', panel: 'diplomacy' }); } }
+    for (var id in g.units) { var u = g.units[id]; if (u.civ >= 0 && u.civ !== civ.idx && vis[u.tile] && !civ.met[u.civ]) G.meet(g, civ.idx, u.civ); }
+    for (var sid in g.settlements) { var s2 = g.settlements[sid]; if (s2.civ !== civ.idx && vis[s2.tile] && !civ.met[s2.civ]) G.meet(g, civ.idx, s2.civ); }
+    // allies share their map knowledge
+    if (AU.Diplo) g.civs.forEach(function (o) { if (o.alive && o.idx !== civ.idx && AU.Diplo.isAlly(g, civ.idx, o.idx)) { var oe = o.explored; for (var k = 0; k < oe.length; k++) if (oe[k] && !civ.explored[k]) civ.explored[k] = 1; } });
     return vis;
   };
   G.canSee = function (g, civ, tileIdx) { return !civ.visible || civ.visible[tileIdx] === 1; };
@@ -394,6 +397,7 @@
         if (R.revealTech && !civ.techs[R.revealTech]) return;
         if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + 1; if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
+    if (civ.imports) for (var ir in civ.imports) if (civ.imports[ir] > g.turn && AU.RESOURCES[ir]) { if (AU.RESOURCES[ir].kind === 'luxury') set[ir] = true; else if (AU.RESOURCES[ir].kind === 'strategic') strat[ir] = (strat[ir] || 0) + 1; }
     civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
     return civ._lux;
   };
@@ -465,6 +469,7 @@
     if (s.isCapital) {
       var wonders = 0; for (var w in g.wonders) if (g.settlements[g.wonders[w]] && g.settlements[g.wonders[w]].civ === civ.idx) wonders++;
       y.culture += (fx.culturePerWonder || 0) * wonders; y.science += (fx.sciencePerWonder || 0) * wonders;
+      if (AU.Palace && !civ.minor) y.culture += AU.Palace.fx(civ).capitalCulture;
       y.culture += (fx.luxuryCulture || 0) * lux; y.gold += (fx.luxuryGold || 0) * lux;
       y.gold += (fx.goldPerWonder || 0) * wonders;
       if (fx.capitalYields) add(y, fx.capitalYields);
@@ -628,6 +633,7 @@
       if (g.wonders[id] !== undefined) { G.notify(g, civ, { kind: 'build', text: AU.WONDERS[id].name + ' was completed elsewhere; production refunded as gold.', tile: s.tile }); civ.gold += Math.round((s.progress['wonder:' + id] || 0)); return false; }
       G.addBuilding(g, s, id); g.wonders[id] = s.id;
       var w = AU.WONDERS[id];
+      if (AU.Palace) AU.Palace.onWonder(g, civ);
       if (w.fx.freeTech) G.grantFreeTech(g, civ);
       if (w.fx.freeCivic) G.grantFreeCivic(g, civ);
       if (w.fx.instantGold) civ.gold += w.fx.instantGold;
@@ -809,6 +815,7 @@
     cb.flags['ev:warDeclaredOnUs'] = g.turn; ca.flags['ev:war'] = g.turn;
     cb.rel[a].attitude -= 30;
     g.civs.forEach(function (c) { if (c.idx !== a && c.idx !== b && c.alive) c.rel[a].attitude -= 5; });
+    if (AU.Diplo) AU.Diplo.onWarDeclared(g, a, b);
     G.log(g, G.civData(ca).name + ' declared war on ' + G.civData(cb).name + '!', a);
     g.civs.forEach(function (c) { if (c.isPlayer) G.notify(g, c, { kind: 'war', text: (c.idx === a ? 'You declared war on ' + G.civData(cb).name : G.civData(ca).name + ' declared war on ' + (c.idx === b ? 'you' : G.civData(cb).name)) + '!', panel: 'diplomacy' }); });
   };
@@ -842,6 +849,7 @@
       });
       s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
     });
+    if (AU.Palace && !civ.minor) t += AU.Palace.fx(civ).tourism;
     t *= (1 + civ.era * 0.25) * (1 + (fx.tourismMult || 0));
     return Math.round(t * 10) / 10;
   };
@@ -974,6 +982,7 @@
 
   G.processCiv = function (g, civ) {
     if (!civ.alive) return;
+    if (AU.Palace) AU.Palace.turn(g, civ);
     civ._turnScience = 0; civ._turnCulture = 0; civ._turnFaith = 0;
     var sets = G.civSettlements(g, civ.idx);
     var foodFor = {};
@@ -1024,8 +1033,8 @@
     // AI civilizations meet whoever has walked into the land they have explored
     if (g.turn % 3 === 0) g.civs.forEach(function (a) {
       if (a.isPlayer || !a.alive) return;
-      for (var sid0 in g.settlements) { var s0 = g.settlements[sid0]; if (s0.civ !== a.idx && !a.met[s0.civ] && a.explored[s0.tile]) { a.met[s0.civ] = true; g.civs[s0.civ].met[a.idx] = true; } }
-      for (var uid0 in g.units) { var u0 = g.units[uid0]; if (u0.civ >= 0 && u0.civ !== a.idx && !a.met[u0.civ] && a.explored[u0.tile]) { a.met[u0.civ] = true; g.civs[u0.civ].met[a.idx] = true; } }
+      for (var sid0 in g.settlements) { var s0 = g.settlements[sid0]; if (s0.civ !== a.idx && !a.met[s0.civ] && a.explored[s0.tile]) G.meet(g, a.idx, s0.civ); }
+      for (var uid0 in g.units) { var u0 = g.units[uid0]; if (u0.civ >= 0 && u0.civ !== a.idx && !a.met[u0.civ] && a.explored[u0.tile]) G.meet(g, a.idx, u0.civ); }
     });
     // AI turns
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) AU.AI.takeTurn(g, civ); });
@@ -1035,7 +1044,7 @@
     // economy
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
-    if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) AU.CityStates.turn(g, civ); });
+    if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);

@@ -61,7 +61,7 @@
     if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
-    if (ownerCiv >= 0 && ownerCiv !== u.civ && G.isMilitary(u) && AU.UNITS[u.type].cls !== 'recon' && !G.atWar(g, u.civ, ownerCiv)) return Infinity;
+    if (ownerCiv >= 0 && ownerCiv !== u.civ && G.isMilitary(u) && AU.UNITS[u.type].cls !== 'recon' && !G.atWar(g, u.civ, ownerCiv) && !(AU.Diplo && AU.Diplo.hasOpenBorders(g, u.civ, ownerCiv))) return Infinity;
     return cost;
   };
   // Can the unit end its move / pass through this tile given other units?

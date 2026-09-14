@@ -165,3 +165,16 @@ button.gold { border-color: var(--gold); background: #4a3a10; }
 
 .techpic { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; flex: none; }
 .pedia-pic { float: right; width: 120px; height: 120px; border-radius: 12px; object-fit: cover; margin: 0 0 8px 12px; }
+
+/* leader screen (diplomacy) */
+.leader-box { background: linear-gradient(180deg, #1c2230, #12161f); border: 1px solid var(--gold); border-radius: 16px; padding: 16px; max-width: 520px; width: 100%; max-height: 92vh; overflow: auto; box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+.leader-head { display: flex; gap: 14px; align-items: flex-start; }
+.leader-art { width: 108px; height: 132px; object-fit: cover; border-radius: 10px; border: 2px solid var(--gold); background: #0c1018; flex: none; }
+.leader-id h2 { margin: 2px 0 4px; color: var(--gold); font-size: 21px; }
+.leader-sub { font-size: 13px; color: #c9c4b8; line-height: 1.4; }
+.leader-say { font-size: 15px; line-height: 1.5; font-style: italic; color: #f1eee6; margin: 12px 0 8px; }
+.leader-info { font-size: 12.5px; color: #c9c4b8; line-height: 1.45; }
+.leader-info .op-plus { color: #9ee29e; } .leader-info .op-minus { color: #ff9c9c; }
+.leader-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
+.leader-actions button { flex: 1 1 46%; }
+.leader-actions select { flex: 1 1 100%; background: #0c1018; color: #eee; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }

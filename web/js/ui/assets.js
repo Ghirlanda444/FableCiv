@@ -6,7 +6,7 @@
     base: 'assets/',
     key: function (kind, id) { return kind + '/' + id; },
     // full-frame pictures are stored as JPEG, cut-outs as PNG
-    ext: function (kind) { return kind === 'terrain' || kind === 'techs' || kind === 'civics' ? 'jpg' : 'png'; },
+    ext: function (kind) { return kind === 'terrain' || kind === 'techs' || kind === 'civics' || kind === 'thrones' ? 'jpg' : 'png'; },
     // returns an HTMLImageElement when loaded, null while loading or if missing
     get: function (kind, id) {
       var k = A.key(kind, id), e = cache[k];

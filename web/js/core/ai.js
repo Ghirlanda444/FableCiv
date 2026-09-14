@@ -19,6 +19,7 @@
   // ---------- Diplomacy ----------
   AI.diplomacy = function (g, civ) {
     var tr = civ.ai;
+    if (AU.Diplo) AU.Diplo.turn(g, civ);
     g.civs.forEach(function (o) {
       if (o === civ || !o.alive || !civ.met[o.idx]) return;
       var rel = civ.rel[o.idx];
@@ -38,6 +39,7 @@
       if (g.turn < 25 || rel.peaceUntil > g.turn) return;
       var p = tr.aggression * tr.aggression * 0.03 + (nearby ? 0.01 : 0) + (rel.attitude < -15 ? 0.02 : 0);
       if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
+      if (AU.Diplo && !AU.Diplo.canDeclareWar(g, civ.idx, o.idx)) return;
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
     });
   };
