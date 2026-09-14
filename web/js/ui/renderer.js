@@ -54,7 +54,7 @@
   // ---------- tile sprites ----------
   // Painted mode: generated terrain textures and feature sprites (web/assets/terrain, web/assets/features) when they exist.
   Renderer.prototype.terrainTexture = function (terrain) {
-    var id = terrain === 'mountain' ? 'tundra' : terrain, img = AU.Assets.get('terrain', id);
+    var id = terrain === 'mountain' ? 'tundra' : terrain; if (!AU.TERRAIN[id] && ['forest', 'jungle', 'marsh', 'hills'].indexOf(id) < 0) return null; var img = AU.Assets.get('terrain', id);
     if (!img) return null;
     this.texCanvases = this.texCanvases || {};
     var cv = this.texCanvases[id];
@@ -82,7 +82,8 @@
   Renderer.prototype.drawArt = function (ctx, img, x, y, w, anchorY) { var h = w * img.height / img.width; ctx.drawImage(img, x - w / 2, y - h * (anchorY === undefined ? 0.5 : anchorY), w, h); };
   Renderer.prototype.tileSprite = function (t, rz, groundOnly) {
     var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
-    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
+    var ftex = t.feature ? this.terrainTexture(t.feature) : null, htex = t.hills ? this.terrainTexture('hills') : null;
+    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.hills ? 'h' : '') + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0) + (ftex ? 1 : 0) + (htex ? 1 : 0);
     var sp = this.sprites[key];
     if (sp) return sp;
     if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
@@ -92,6 +93,8 @@
   // Upright feature sprite (hills, mountains, trees...) for the isometric view, drawn after the squashed ground.
   Renderer.prototype.featureSprite = function (t, rz) {
     if (!t.hills && !t.feature && t.terrain !== 'mountain') return null;
+    var needHills = t.hills && t.terrain !== 'mountain' && !this.terrainTexture('hills'), needFeat = t.feature && !this.terrainTexture(t.feature);
+    if (!needHills && !needFeat && t.terrain !== 'mountain') return null;
     var feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
     var key = 'F|' + t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
     var sp = this.sprites[key]; if (sp) return sp;
@@ -105,9 +108,10 @@
   Renderer.prototype.paintFeatures = function (ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, noClip) {
     function clipped(fn) { if (noClip) { fn(); return; } ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); fn(); ctx.restore(); }
     var self = this;
-    if (t.hills && t.terrain !== 'mountain') { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else clipped(function () { self.paintHills(ctx, cx, cy, rz, base, rnd, detail); }); }
+    var texHills = !!this.terrainTexture('hills'), texFeat = t.feature && !!this.terrainTexture(t.feature);
+    if (t.hills && t.terrain !== 'mountain' && !texHills) { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else clipped(function () { self.paintHills(ctx, cx, cy, rz, base, rnd, detail); }); }
     if (t.terrain === 'mountain') { if (mtnArt) this.drawArt(ctx, mtnArt, cx, cy, rz * 2.05, 0.55); else clipped(function () { self.paintMountain(ctx, cx, cy, rz, rnd, detail); }); }
-    if (t.feature) {
+    if (t.feature && !texFeat) {
       if (featArt) this.drawArt(ctx, featArt, cx, cy - (t.hills ? rz * 0.12 : 0), rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
       else clipped(function () {
         if (t.feature === 'forest') self.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
@@ -135,6 +139,18 @@
       grad.addColorStop(0, rgb(base, water ? 1.12 : 1.08)); grad.addColorStop(1, rgb(base, water ? 0.88 : 0.9));
       ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
     }
+    var self0 = this;
+    function overlayTex(id, alphaMax, scaleK) {
+      var tx = self0.terrainTexture(id); if (!tx) return false;
+      var pt = ctx.createPattern(tx, 'repeat'), sc2 = rz / R * (scaleK || 0.3), v2 = (t.i * 7) % 4;
+      if (pt.setTransform && typeof DOMMatrix !== 'undefined') pt.setTransform(new DOMMatrix().translate(cx - (151 * v2 + 60) * sc2, cy - (97 * v2 + 20) * sc2).scale(sc2));
+      ctx.save(); ctx.globalAlpha = alphaMax; ctx.fillStyle = pt; ctx.fillRect(0, 0, w, h); ctx.restore();
+      var edge = ctx.createRadialGradient(cx, cy, rz * 0.55, cx, cy, rz * 1.05); edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,0.22)'); ctx.fillStyle = edge; ctx.fillRect(0, 0, w, h);
+      return true;
+    }
+    t._texFeat = false; t._texHills = false;
+    if (t.hills && t.terrain !== 'mountain' && overlayTex('hills', 0.85, 0.34)) t._texHills = true;
+    if (t.feature && (t.feature === 'forest' || t.feature === 'jungle' || t.feature === 'marsh') && overlayTex(t.feature, 0.95, 0.3)) t._texFeat = true;
     if (detail && !painted) {
       // texture: speckles
       var n = Math.round(rz * 1.2);

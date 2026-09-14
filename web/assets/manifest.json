@@ -2544,42 +2544,42 @@
   "nobg": true
  },
  {
-  "kind": "features",
+  "kind": "terrain",
   "id": "forest",
-  "file": "features/forest.png",
-  "name": "forest sprite",
+  "file": "terrain/forest.png",
+  "name": "Forest texture",
   "size": "512x512",
-  "nobg": false
+  "nobg": true
  },
  {
-  "kind": "features",
+  "kind": "terrain",
   "id": "jungle",
-  "file": "features/jungle.png",
-  "name": "jungle sprite",
+  "file": "terrain/jungle.png",
+  "name": "Rainforest texture",
   "size": "512x512",
-  "nobg": false
+  "nobg": true
  },
  {
-  "kind": "features",
+  "kind": "terrain",
   "id": "marsh",
-  "file": "features/marsh.png",
-  "name": "marsh sprite",
+  "file": "terrain/marsh.png",
+  "name": "Marsh texture",
   "size": "512x512",
-  "nobg": false
+  "nobg": true
+ },
+ {
+  "kind": "terrain",
+  "id": "hills",
+  "file": "terrain/hills.png",
+  "name": "Hills texture",
+  "size": "512x512",
+  "nobg": true
  },
  {
   "kind": "features",
   "id": "oasis",
   "file": "features/oasis.png",
   "name": "oasis sprite",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "features",
-  "id": "hills",
-  "file": "features/hills.png",
-  "name": "hills sprite",
   "size": "512x512",
   "nobg": false
  },
