@@ -1876,7 +1876,7 @@
   "id": "wheat",
   "file": "resources/wheat.png",
   "name": "Wheat",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1884,7 +1884,7 @@
   "id": "rice",
   "file": "resources/rice.png",
   "name": "Rice",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1892,7 +1892,7 @@
   "id": "cattle",
   "file": "resources/cattle.png",
   "name": "Cattle",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1900,7 +1900,7 @@
   "id": "sheep",
   "file": "resources/sheep.png",
   "name": "Sheep",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1908,7 +1908,7 @@
   "id": "deer",
   "file": "resources/deer.png",
   "name": "Deer",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1916,7 +1916,7 @@
   "id": "bananas",
   "file": "resources/bananas.png",
   "name": "Bananas",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1924,7 +1924,7 @@
   "id": "stone",
   "file": "resources/stone.png",
   "name": "Stone",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1932,7 +1932,7 @@
   "id": "fish",
   "file": "resources/fish.png",
   "name": "Fish",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1940,7 +1940,7 @@
   "id": "crabs",
   "file": "resources/crabs.png",
   "name": "Crabs",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1948,7 +1948,7 @@
   "id": "silk",
   "file": "resources/silk.png",
   "name": "Silk",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1956,7 +1956,7 @@
   "id": "spices",
   "file": "resources/spices.png",
   "name": "Spices",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1964,7 +1964,7 @@
   "id": "gems",
   "file": "resources/gems.png",
   "name": "Gems",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1972,7 +1972,7 @@
   "id": "wine",
   "file": "resources/wine.png",
   "name": "Wine",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1980,7 +1980,7 @@
   "id": "furs",
   "file": "resources/furs.png",
   "name": "Furs",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1988,7 +1988,7 @@
   "id": "ivory",
   "file": "resources/ivory.png",
   "name": "Ivory",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -1996,7 +1996,7 @@
   "id": "cotton",
   "file": "resources/cotton.png",
   "name": "Cotton",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2004,7 +2004,7 @@
   "id": "dyes",
   "file": "resources/dyes.png",
   "name": "Dyes",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2012,7 +2012,7 @@
   "id": "salt",
   "file": "resources/salt.png",
   "name": "Salt",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2020,7 +2020,7 @@
   "id": "incense",
   "file": "resources/incense.png",
   "name": "Incense",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2028,7 +2028,7 @@
   "id": "pearls",
   "file": "resources/pearls.png",
   "name": "Pearls",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2036,7 +2036,7 @@
   "id": "whales",
   "file": "resources/whales.png",
   "name": "Whales",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2044,7 +2044,7 @@
   "id": "horses",
   "file": "resources/horses.png",
   "name": "Horses",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2052,7 +2052,7 @@
   "id": "iron",
   "file": "resources/iron.png",
   "name": "Iron",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2060,7 +2060,7 @@
   "id": "niter",
   "file": "resources/niter.png",
   "name": "Niter",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2068,7 +2068,7 @@
   "id": "coal",
   "file": "resources/coal.png",
   "name": "Coal",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2076,7 +2076,7 @@
   "id": "oil",
   "file": "resources/oil.png",
   "name": "Oil",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2084,7 +2084,7 @@
   "id": "rome",
   "file": "civs/rome.png",
   "name": "Rome emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2092,7 +2092,7 @@
   "id": "japan",
   "file": "civs/japan.png",
   "name": "Japan emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2100,7 +2100,7 @@
   "id": "china",
   "file": "civs/china.png",
   "name": "China emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2108,7 +2108,7 @@
   "id": "america",
   "file": "civs/america.png",
   "name": "America emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2116,7 +2116,7 @@
   "id": "india",
   "file": "civs/india.png",
   "name": "India emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2124,7 +2124,7 @@
   "id": "indonesia",
   "file": "civs/indonesia.png",
   "name": "Indonesia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2132,7 +2132,7 @@
   "id": "mongolia",
   "file": "civs/mongolia.png",
   "name": "Mongolia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2140,7 +2140,7 @@
   "id": "zulu",
   "file": "civs/zulu.png",
   "name": "Zulu emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2148,7 +2148,7 @@
   "id": "persia",
   "file": "civs/persia.png",
   "name": "Persia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2156,7 +2156,7 @@
   "id": "egypt",
   "file": "civs/egypt.png",
   "name": "Egypt emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2164,7 +2164,7 @@
   "id": "celts",
   "file": "civs/celts.png",
   "name": "Celts emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2172,7 +2172,7 @@
   "id": "arabia",
   "file": "civs/arabia.png",
   "name": "Arabia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2180,7 +2180,7 @@
   "id": "france",
   "file": "civs/france.png",
   "name": "France emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2188,7 +2188,7 @@
   "id": "england",
   "file": "civs/england.png",
   "name": "England emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2196,7 +2196,7 @@
   "id": "aztec",
   "file": "civs/aztec.png",
   "name": "Aztec emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2204,7 +2204,7 @@
   "id": "inca",
   "file": "civs/inca.png",
   "name": "Inca emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2212,7 +2212,7 @@
   "id": "maya",
   "file": "civs/maya.png",
   "name": "Maya emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2220,7 +2220,7 @@
   "id": "shawnee",
   "file": "civs/shawnee.png",
   "name": "Shawnee emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2228,7 +2228,7 @@
   "id": "greece",
   "file": "civs/greece.png",
   "name": "Greece emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2236,7 +2236,7 @@
   "id": "germany",
   "file": "civs/germany.png",
   "name": "Germany emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2244,7 +2244,7 @@
   "id": "russia",
   "file": "civs/russia.png",
   "name": "Russia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2252,7 +2252,7 @@
   "id": "spain",
   "file": "civs/spain.png",
   "name": "Spain emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2260,7 +2260,7 @@
   "id": "ottoman",
   "file": "civs/ottoman.png",
   "name": "Ottomans emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2268,7 +2268,7 @@
   "id": "korea",
   "file": "civs/korea.png",
   "name": "Korea emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2276,7 +2276,7 @@
   "id": "vietnam",
   "file": "civs/vietnam.png",
   "name": "Vietnam emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2284,7 +2284,7 @@
   "id": "ethiopia",
   "file": "civs/ethiopia.png",
   "name": "Ethiopia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2292,7 +2292,7 @@
   "id": "mali",
   "file": "civs/mali.png",
   "name": "Mali emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2300,7 +2300,7 @@
   "id": "norway",
   "file": "civs/norway.png",
   "name": "Norway emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2308,7 +2308,7 @@
   "id": "babylon",
   "file": "civs/babylon.png",
   "name": "Babylon emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2316,7 +2316,7 @@
   "id": "polynesia",
   "file": "civs/polynesia.png",
   "name": "Polynesia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2324,7 +2324,7 @@
   "id": "carthage",
   "file": "civs/carthage.png",
   "name": "Carthage emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2332,7 +2332,7 @@
   "id": "byzantium",
   "file": "civs/byzantium.png",
   "name": "Byzantium emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2340,7 +2340,7 @@
   "id": "poland",
   "file": "civs/poland.png",
   "name": "Poland emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2348,7 +2348,7 @@
   "id": "sumer",
   "file": "civs/sumer.png",
   "name": "Sumer emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2356,7 +2356,7 @@
   "id": "hittites",
   "file": "civs/hittites.png",
   "name": "Hittites emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2364,7 +2364,7 @@
   "id": "assyria",
   "file": "civs/assyria.png",
   "name": "Assyria emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2372,7 +2372,7 @@
   "id": "nubia",
   "file": "civs/nubia.png",
   "name": "Nubia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2380,7 +2380,7 @@
   "id": "holy_roman_empire",
   "file": "civs/holy_roman_empire.png",
   "name": "Holy Roman Empire emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2388,7 +2388,7 @@
   "id": "portugal",
   "file": "civs/portugal.png",
   "name": "Portugal emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2396,7 +2396,7 @@
   "id": "netherlands",
   "file": "civs/netherlands.png",
   "name": "Netherlands emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2404,7 +2404,7 @@
   "id": "sweden",
   "file": "civs/sweden.png",
   "name": "Sweden emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2412,7 +2412,7 @@
   "id": "brazil",
   "file": "civs/brazil.png",
   "name": "Brazil emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2420,7 +2420,7 @@
   "id": "khmer",
   "file": "civs/khmer.png",
   "name": "Khmer emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2428,7 +2428,7 @@
   "id": "siam",
   "file": "civs/siam.png",
   "name": "Siam emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2436,7 +2436,7 @@
   "id": "austria_hungary",
   "file": "civs/austria_hungary.png",
   "name": "Austria-Hungary emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2444,7 +2444,7 @@
   "id": "scotland",
   "file": "civs/scotland.png",
   "name": "Scotland emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2452,7 +2452,7 @@
   "id": "kongo",
   "file": "civs/kongo.png",
   "name": "Kongo emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2460,7 +2460,7 @@
   "id": "mapuche",
   "file": "civs/mapuche.png",
   "name": "Mapuche emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2468,7 +2468,7 @@
   "id": "australia",
   "file": "civs/australia.png",
   "name": "Australia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {
@@ -2476,7 +2476,7 @@
   "id": "georgia",
   "file": "civs/georgia.png",
   "name": "Georgia emblem",
-  "size": "256x256",
+  "size": "512x512",
   "nobg": false
  },
  {

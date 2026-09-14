@@ -44,6 +44,15 @@ def remove_bg(data, keep_bg=False):
                     px[x, y] = (r, g, b, 0)
         return img
 
+def coverage(img):
+    """Fraction of visibly opaque pixels; a cut-out that lost its subject is nearly empty."""
+    try:
+        a = img.split()[3]
+        hist = a.histogram()
+        return sum(hist[40:]) / float(img.width * img.height)
+    except Exception:
+        return 1.0
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--limit', type=int, default=0)
@@ -77,14 +86,24 @@ def main():
         path = os.path.join(ROOT, it['file'])
         prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
         w, h = it['size'].split('x')
-        url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, args.seed)
+        best = None
         for attempt in range(3):
             try:
-                print('%s (%s)' % (it['file'], it['name']), flush=True)
+                seed = args.seed + attempt * 101  # a fresh seed each attempt so a hollow cut-out gets a different picture
+                url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, seed)
+                print('%s (%s) seed %d' % (it['file'], it['name'], seed), flush=True)
                 data, ctype = fetch(url)
                 if len(data) < 5000 or 'image' not in ctype:
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
                 img = remove_bg(data, keep_bg=bool(it.get('nobg')))
+                cov = coverage(img) if not it.get('nobg') else 1.0
+                if cov < 0.08:
+                    if best is None or cov > best[0]: best = (cov, img)
+                    if attempt < 2:
+                        print('  %s came out hollow (%.1f%% visible), retrying with another seed' % (it['file'], cov * 100), flush=True)
+                        time.sleep(args.delay)
+                        continue
+                    img = best[1]
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 img.save(path, 'PNG', optimize=True)
                 with lock: stats['done'] += 1
