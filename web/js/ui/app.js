@@ -97,7 +97,7 @@
       var c = AU.CIV_BY_ID[this.setup.civ], self = this;
       var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
       var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: 'Easy to play', medium: 'Medium', hard: 'Specialised' }[c.difficulty] || 'Medium') + '</span></h3>' +
-        (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
+        (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' cultural group.</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
         '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' +
         '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' +
