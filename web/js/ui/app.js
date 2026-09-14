@@ -56,7 +56,7 @@
         var cv = $('title-bg'); if (!cv) return;
         cv.width = cv.clientWidth; cv.height = cv.clientHeight;
         var r = new AU.Renderer(cv); r.resize();
-        var g = G.newGame({ playerCiv: 'greece', mapSize: 'small', mapType: ['continents', 'archipelago', 'fractal', 'pangaea'][Math.floor(Math.random() * 4)], numCivs: 1, seed: (Date.now() & 0xffff) + 1 });
+        var g = G.newGame({ playerCiv: 'greece', mapSize: 'small', mapType: ['continents', 'archipelago', 'fractal', 'pangaea'][Math.floor(Math.random() * 4)], numCivs: 1, numStates: 0, seed: (Date.now() & 0xffff) + 1 });
         var p = G.player(g); p.explored.fill(1); p.visible = null;
         r.cam.zoom = Math.max(cv.width / (AU.HEX_R * 1.732 * g.W), cv.height / (AU.HEX_R * 1.5 * g.H)) * 1.05;
         r.cam.x = AU.HEX_R * 1.732 * g.W / 2; r.cam.y = AU.HEX_R * 1.5 * g.H / 2;
@@ -73,9 +73,11 @@
     },
     showSetup: function () {
       var grid = $('civ-grid'); grid.innerHTML = '';
-      AU.CIVS.forEach(function (c) {
-        var d = document.createElement('div'); d.className = 'civ-card' + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
-        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div><b>' + c.name + '</b><span>' + c.leaders.length + ' leaders</span>';
+      var ORDER = { easy: 0, medium: 1, hard: 2 }, DLABEL = { easy: '● Easy', medium: '●● Medium', hard: '●●● Hard' };
+      AU.CIVS.slice().sort(function (x, y) { return (ORDER[x.difficulty] || 1) - (ORDER[y.difficulty] || 1) || x.name.localeCompare(y.name); }).forEach(function (c) {
+        var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
+        var em = AU.Assets.get('civs', c.id);
+        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + (em ? '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="">' : '') + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
         d.onclick = function () { App.setup.civ = c.id; App.setup.leader = c.leaders[0].id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); };
         grid.appendChild(d);
       });
@@ -84,14 +86,18 @@
       fill($('opt-type'), AU.MAP_TYPES, 'continents'); fill($('opt-speed'), AU.SPEEDS, 'standard');
       var civSel = $('opt-civs'); civSel.innerHTML = '';
       for (var n = 1; n <= 19; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
-      $('opt-size').onchange = function () { var s = AU.MAP_SIZES[this.value]; civSel.value = String(s.civs - 1); };
+      var stSel = $('opt-states'); stSel.innerHTML = '';
+      for (var ns = 0; ns <= 16; ns++) { var os = document.createElement('option'); os.value = ns; os.textContent = ns; if (ns === 4) os.selected = true; stSel.appendChild(os); }
+      $('opt-size').onchange = function () { var s = AU.MAP_SIZES[this.value]; civSel.value = String(s.civs - 1); stSel.value = String(Math.min(16, Math.round(s.civs * 0.6))); };
       if (!this.setup.leader || AU.LEADER_BY_ID[this.setup.leader].civId !== this.setup.civ) this.setup.leader = AU.CIV_BY_ID[this.setup.civ].leaders[0].id;
       this.showSetupDetail();
       this.showScreen('setup');
     },
     showSetupDetail: function () {
       var c = AU.CIV_BY_ID[this.setup.civ], self = this;
-      var html = '<h3>' + c.name + '</h3>' +
+      var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
+      var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: 'Easy to play', medium: 'Medium', hard: 'Specialised' }[c.difficulty] || 'Medium') + '</span></h3>' +
+        (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
         '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' +
         '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' +
@@ -106,7 +112,7 @@
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, seed: isNaN(seed) ? undefined : seed };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed };
       this.toast('Generating the world…');
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast('Failed to create the game: ' + e.message); } }, 30);
@@ -181,6 +187,7 @@
         if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: 'Found a religion', go: function () { self.openPanel('religion'); } });
         if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: 'Enhance your religion', go: function () { self.openPanel('religion'); } });
       }
+      if (AU.CityStates && (p.envoys || 0) > 0 && g.civs.some(function (m) { return m.minor && m.alive && p.met[m.idx] && !G.atWar(g, p.idx, m.idx); })) list.push({ icon: '🤝', text: 'Send ' + p.envoys + ' envoy' + (p.envoys > 1 ? 's' : ''), go: function () { self.openPanel('diplomacy'); } });
       if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
       if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
       var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics'); } });

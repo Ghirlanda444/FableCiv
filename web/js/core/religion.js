@@ -38,7 +38,7 @@
   R.choosePantheon = function (g, civ, id) {
     if (!R.canChoosePantheon(g, civ) || !AU.BELIEF_BY_ID[id] || R.availablePantheons(g).indexOf(AU.BELIEF_BY_ID[id]) < 0) return false;
     if (!G.civFx(g, civ).freePantheon || civ.faith >= R.PANTHEON_COST) civ.faith -= R.PANTHEON_COST; else civ.faith = Math.max(0, civ.faith);
-    civ.pantheon = id; civ._fx = null;
+    civ.pantheon = id; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     G.notify(g, civ, { kind: 'faith', text: 'Pantheon founded: ' + AU.BELIEF_BY_ID[id].name + '.', panel: 'religion' });
     G.log(g, G.civData(civ).name + ' founded the pantheon ' + AU.BELIEF_BY_ID[id].name + '.', civ.idx);
     return true;
@@ -59,7 +59,7 @@
     civ.faith -= R.foundCost(g);
     g.religions = g.religions || {};
     var rel = { id: nameId, nameId: nameId, name: customName || nm.name, icon: nm.icon, founder: civ.idx, holyCity: civ.capital, beliefs: [followerId, founderId], enhanced: false, turn: g.turn };
-    g.religions[nameId] = rel; civ.religion = nameId; civ._fx = null;
+    g.religions[nameId] = rel; civ.religion = nameId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     var cap = g.settlements[civ.capital]; cap.religion = nameId; cap.pressure = cap.pressure || {}; cap.pressure[nameId] = Math.max(cap.pressure[nameId] || 0, 200);
     G.notify(g, civ, { kind: 'faith', text: 'You founded ' + rel.name + ' in ' + cap.name + '!', panel: 'religion' });
     g.civs.forEach(function (o) { if (o.isPlayer && o.idx !== civ.idx && o.met[civ.idx]) G.notify(g, o, { kind: 'faith', text: G.civData(civ).name + ' founded ' + rel.name + '.', panel: 'religion' }); });
@@ -74,7 +74,7 @@
     var rel = R.rel(g, civ.religion);
     var eb = AU.BELIEF_BY_ID[enhancerId]; if (!eb || eb.type !== 'enhancer' || R.availableBeliefs(g, 'enhancer').indexOf(eb) < 0) return false;
     var fb = AU.BELIEF_BY_ID[followerId]; if (!fb || fb.type !== 'follower' || R.availableBeliefs(g, 'follower').indexOf(fb) < 0) return false;
-    civ.faith -= R.enhanceCost(g); rel.beliefs.push(enhancerId, followerId); rel.enhanced = true; civ._fx = null;
+    civ.faith -= R.enhanceCost(g); rel.beliefs.push(enhancerId, followerId); rel.enhanced = true; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     G.notify(g, civ, { kind: 'faith', text: rel.name + ' enhanced: ' + eb.name + ' and ' + fb.name + '.', panel: 'religion' });
     G.log(g, G.civData(civ).name + ' enhanced ' + rel.name + '.', civ.idx);
     return true;
@@ -99,6 +99,7 @@
       if (civ && civ.isPlayer) G.notify(g, civ, { kind: 'faith', text: s.name + (after ? ' now follows ' + R.name(g, after) + '.' : ' lost its religion.'), tile: s.tile, settlement: s.id });
       if (after) { var rel = R.rel(g, after); if (rel && g.civs[rel.founder] && g.civs[rel.founder].isPlayer && rel.founder !== s.civ) G.notify(g, g.civs[rel.founder], { kind: 'faith', text: rel.name + ' spread to ' + s.name + '.', tile: s.tile }); }
       if (civ) civ._fx = null;
+      g.fxGen = (g.fxGen || 0) + 1;
     }
   };
   R.spreadTurn = function (g) {

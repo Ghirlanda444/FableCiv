@@ -208,8 +208,21 @@
   // ---------- Diplomacy ----------
   P.render_diplomacy = function (app, g) {
     var p = G.player(g), html = '';
-    var others = g.civs.filter(function (c) { return c.idx !== p.idx; });
+    var others = g.civs.filter(function (c) { return c.idx !== p.idx && !c.minor; });
     if (!others.some(function (c) { return p.met[c.idx]; })) html += '<p class="stat">You have not met any other civilization yet. Explore!</p>';
+    var CS = AU.CityStates, minors = g.civs.filter(function (c) { return c.minor && p.met[c.idx]; });
+    if (CS) {
+      html += '<div class="section"><h3>City-states</h3><p class="stat">Envoys: <b>' + (p.envoys || 0) + '</b> to send (you earn one with every civic). 1 envoy: bonus in your capital · 3: in every settlement and you can become Suzerain (most envoys) · 6: bonus doubled. The Suzerain gets the city-state\'s special bonus and its help in war.</p>';
+      if (!minors.length) html += '<p class="stat">No city-state met yet.</p>';
+      minors.forEach(function (m) {
+        var d = G.civData(m), T = AU.CITY_STATE_TYPES[m.stateType], mine = CS.envoysOf(g, p, m), suz = CS.suzerain(g, m), tiers = AU.ENVOY_TIERS(m.stateType), war = G.atWar(g, p.idx, m.idx);
+        html += '<div class="row"><div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(m) + '"></div><div class="grow"><b>' + T.icon + ' ' + d.name + '</b> <span class="pill">' + T.name + '</span>' + (!m.alive ? ' <span class="pill war">destroyed</span>' : war ? ' <span class="pill war">At war</span>' : '') +
+          '<small>Your envoys: ' + mine + ' · Suzerain: ' + (suz < 0 ? 'none' : suz === p.idx ? '<b>you</b>' : G.civData(g.civs[suz]).name) + (m.religion ? ' · ' + AU.Religion.icon(g, m.religion) + ' ' + AU.Religion.name(g, m.religion) : '') + '</small>' +
+          '<small>' + tiers.map(function (t) { return (mine >= t.n ? '✅ ' : '⬜ ') + t.n + ': ' + t.desc; }).join(' · ') + '</small><small><b>' + d.ability.name + ':</b> ' + d.ability.desc + '</small></div>' +
+          (m.alive ? '<div><button class="small primary" data-action="envoy" data-id="' + m.idx + '" ' + ((p.envoys || 0) > 0 && !war ? '' : 'disabled') + '>Send envoy</button>' + (war ? '<button class="small" data-action="peace" data-id="' + m.idx + '">Make peace</button>' : '<button class="small danger" data-action="war" data-id="' + m.idx + '">War</button>') + '</div>' : '') + '</div>';
+      });
+      html += '</div>';
+    }
     others.forEach(function (c) {
       var d = G.civData(c), rel = p.rel[c.idx], met = p.met[c.idx];
       var att = c.alive ? c.rel[p.idx].attitude : 0;
@@ -355,6 +368,7 @@
       case 'quit': app.confirm('Quit to the title screen? Your game is saved.', function () { app.save(true); app.panel = null; $('panel').hidden = true; app.g = null; app.showTitle(); }); break;
       case 'help': app.openPanel('help'); break;
       case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
+      case 'envoy': if (AU.CityStates.sendEnvoy(g, p, g.civs[+d.id])) { app.refreshPanel(); app.refreshHud(); } break;
       case 'relpick': app.panelData[d.what] = d.id; app.refreshPanel(); break;
       case 'pantheon': if (AU.Religion.choosePantheon(g, p, d.id)) { app.toast('Pantheon: ' + AU.BELIEF_BY_ID[d.id].name + '.'); app.refreshPanel(); app.refreshHud(); } break;
       case 'foundrel': { var pdx = app.panelData; if (AU.Religion.found(g, p, pdx.relName, pdx.relFollower, pdx.relFounder)) { app.toast('Religion founded!'); app.refreshPanel(); app.refreshHud(); app.showQuotes(); } break; }

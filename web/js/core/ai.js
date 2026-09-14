@@ -10,6 +10,7 @@
       AI.chooseGovernment(g, civ);
       AI.choosePolicies(g, civ);
       AI.religion(g, civ);
+      AI.envoys(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
     } catch (e) { G.log(g, 'AI error for ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
@@ -36,6 +37,7 @@
       if (nearby) rel.attitude -= 0.4;
       if (g.turn < 25 || rel.peaceUntil > g.turn) return;
       var p = tr.aggression * tr.aggression * 0.03 + (nearby ? 0.01 : 0) + (rel.attitude < -15 ? 0.02 : 0);
+      if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
     });
   };
@@ -98,6 +100,7 @@
 
   // ---------- Settlements ----------
   AI.wantsSettler = function (g, civ) {
+    if (civ.minor) return false;
     var tr = civ.ai, sets = G.civSettlements(g, civ.idx);
     var target = 4 + Math.round(tr.expansion * 7) + Math.floor(g.turn / 60);
     if (sets.length >= target) return false;
@@ -287,6 +290,13 @@
         if (targets.length) { var home = G.civSettlements(g, civ.idx).filter(function (s) { return R.canBuyUnit(g, s, 'missionary'); })[0]; if (home) R.buyUnit(g, home, 'missionary'); }
       }
     }
+  };
+  AI.envoys = function (g, civ) {
+    var CS = AU.CityStates; if (!CS || civ.minor || !(civ.envoys > 0)) return;
+    var tr = civ.ai, want = { science: tr.science, culture: tr.culture, military: tr.aggression, trade: 0.5, industrial: 0.5, religious: tr.religion || 0.3 };
+    var best = null, bs = -1;
+    CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || G.atWar(g, civ.idx, m.idx)) return; var mine = CS.envoysOf(g, civ, m), suz = CS.suzerain(g, m); var sc = (want[m.stateType] || 0.4) + (mine > 0 && suz !== civ.idx ? 0.4 : 0) + (mine >= 3 && suz === civ.idx ? -0.5 : 0) + (mine >= 6 ? -2 : 0) + G.rng(g) * 0.3; if (sc > bs) { bs = sc; best = m; } });
+    if (best) CS.sendEnvoy(g, civ, best);
   };
   AI.conversionTargets = function (g, civ) {
     var out = [];

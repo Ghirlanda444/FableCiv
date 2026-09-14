@@ -226,7 +226,7 @@
     });
 
     // Start positions
-    var nStarts = opts.numCivs;
+    var nStarts = opts.numCivs + (opts.extraStarts || 0);
     var landTiles = [], landTilesAll = [];
     for (i = 0; i < tiles.length; i++) {
       var t5 = tiles[i];
