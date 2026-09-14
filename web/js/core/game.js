@@ -534,6 +534,7 @@
   };
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
+    if (d.religious) return false; // missionaries, apostles and inquisitors are bought with Faith only (see Religion)
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;

@@ -117,7 +117,7 @@
     if (!opts[tab].length) html += '<p class="stat">Nothing available yet. Research new technologies.</p>';
     opts[tab].forEach(function (id) {
       var cost = G.itemCost(g, civ, kind, id, s), buyCost = G.purchaseCost(g, civ, kind, id, s), name, desc;
-      if (kind === 'unit') { var d = G.unitType(g, civ, id); name = AU.UNITS[id].icon + ' ' + d.name + (d.unique ? ' ★' : ''); desc = (d.cls === 'civilian' ? 'Founds a new Town.' : 'Str ' + d.strength + (d.ranged ? ' · Ranged ' + d.ranged + ' (range ' + d.range + ')' : '') + ' · Moves ' + G.maxMoves(g, civ.idx, id)) + (d.resource ? ' · needs ' + AU.RESOURCES[d.resource].name : ''); }
+      if (kind === 'unit') { var d = G.unitType(g, civ, id); name = AU.UNITS[id].icon + ' ' + d.name + (d.unique ? ' ★' : ''); desc = (d.cls === 'civilian' ? (d.desc || 'Founds a new Town.') : 'Str ' + d.strength + (d.ranged ? ' · Ranged ' + d.ranged + ' (range ' + d.range + ')' : '') + ' · Moves ' + G.maxMoves(g, civ.idx, id)) + (d.resource ? ' · needs ' + AU.RESOURCES[d.resource].name : ''); }
       else if (kind === 'building') { var b = G.buildingDef(g, civ, id); name = b.name + (b.unique ? ' ★' : ''); desc = yieldsHtml(b.yields, { plus: true }) + (b.desc ? ' · ' + b.desc : '') + (b.perPop ? ' · +' + b.perPop.science + ' 🔬 per pop' : '') + (b.pct ? ' · +' + (b.pct.production || b.pct.science || b.pct.unitProduction) + '% ' + Object.keys(b.pct)[0] : ''); }
       else if (kind === 'wonder') { var w = AU.WONDERS[id]; name = '🏛️ ' + w.name; desc = yieldsHtml(w.yields, { plus: true }) + ' · ' + w.desc; }
       else if (kind === 'national') { var nw = AU.NATIONAL[id]; name = '🏯 ' + nw.name; desc = yieldsHtml(nw.yields, { plus: true }) + ' · ' + nw.desc; }
