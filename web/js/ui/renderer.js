@@ -473,7 +473,7 @@
     var rc = hexToRgb(ucol); grd.addColorStop(0, rgb(rc, 1.25)); grd.addColorStop(1, rgb(rc, 0.75));
     ctx.fillStyle = grd; ctx.strokeStyle = isSel ? '#fff' : ucol2; ctx.lineWidth = isSel ? 3 : 1.5;
     ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-    var art = AU.Assets.get('units', u.type);
+    var art = AU.Assets.getFor('units', u.type, u.civ >= 0 ? AU.cultureOf(g.civs[u.civ]) : null);
     if (art) { var ah = ur * 2.6, aw = ah * art.width / art.height; ctx.drawImage(art, ux - aw / 2, uy - ah + ur * 0.6, aw, ah); }
     else this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1);
     if (u.hp < 100) { ctx.fillStyle = '#222'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2, 3); ctx.fillStyle = u.hp > 50 ? '#4caf50' : u.hp > 25 ? '#e6b422' : '#e05252'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2 * u.hp / 100, 3); }

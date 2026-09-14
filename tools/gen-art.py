@@ -50,7 +50,7 @@ def fetch_xai(prompt, w, h):
     if not key: raise RuntimeError('XAI_API_KEY is not set')
     model = os.environ.get('XAI_IMAGE_MODEL') or 'grok-2-image-1212'
     body = json.dumps({'model': model, 'prompt': prompt, 'n': 1, 'response_format': 'b64_json'}).encode('utf-8')
-    req = urllib.request.Request('https://api.x.ai/v1/images/generations', data=body, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'CHIBIlization-art/1.0'})
+    req = urllib.request.Request('https://api.x.ai/v1/images/generations', data=body, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'Chibilization-art/1.0'})
     with urllib.request.urlopen(req, timeout=180) as r:
         out = json.loads(r.read().decode('utf-8'))
     import base64

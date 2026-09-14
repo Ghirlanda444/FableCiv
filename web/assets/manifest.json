@@ -2664,6 +2664,6342 @@
   "nobg": false
  },
  {
+  "kind": "units/mediterranean",
+  "id": "settler",
+  "file": "units/mediterranean/settler.png",
+  "name": "Settler (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "scout",
+  "file": "units/mediterranean/scout.png",
+  "name": "Scout (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "warrior",
+  "file": "units/mediterranean/warrior.png",
+  "name": "Warrior (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "slinger",
+  "file": "units/mediterranean/slinger.png",
+  "name": "Slinger (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "archer",
+  "file": "units/mediterranean/archer.png",
+  "name": "Archer (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "spearman",
+  "file": "units/mediterranean/spearman.png",
+  "name": "Spearman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "swordsman",
+  "file": "units/mediterranean/swordsman.png",
+  "name": "Swordsman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "horseman",
+  "file": "units/mediterranean/horseman.png",
+  "name": "Horseman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "catapult",
+  "file": "units/mediterranean/catapult.png",
+  "name": "Catapult (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "galley",
+  "file": "units/mediterranean/galley.png",
+  "name": "Galley (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "crossbowman",
+  "file": "units/mediterranean/crossbowman.png",
+  "name": "Crossbowman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "pikeman",
+  "file": "units/mediterranean/pikeman.png",
+  "name": "Pikeman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "knight",
+  "file": "units/mediterranean/knight.png",
+  "name": "Knight (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "musketman",
+  "file": "units/mediterranean/musketman.png",
+  "name": "Musketman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "bombard",
+  "file": "units/mediterranean/bombard.png",
+  "name": "Bombard (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "caravel",
+  "file": "units/mediterranean/caravel.png",
+  "name": "Caravel (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "field_cannon",
+  "file": "units/mediterranean/field_cannon.png",
+  "name": "Field Cannon (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "cavalry",
+  "file": "units/mediterranean/cavalry.png",
+  "name": "Cavalry (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "rifleman",
+  "file": "units/mediterranean/rifleman.png",
+  "name": "Rifleman (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "ironclad",
+  "file": "units/mediterranean/ironclad.png",
+  "name": "Ironclad (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "artillery",
+  "file": "units/mediterranean/artillery.png",
+  "name": "Artillery (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "infantry",
+  "file": "units/mediterranean/infantry.png",
+  "name": "Infantry (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "machine_gun",
+  "file": "units/mediterranean/machine_gun.png",
+  "name": "Machine Gun (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "battleship",
+  "file": "units/mediterranean/battleship.png",
+  "name": "Battleship (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "tank",
+  "file": "units/mediterranean/tank.png",
+  "name": "Tank (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "mech_infantry",
+  "file": "units/mediterranean/mech_infantry.png",
+  "name": "Mechanized Infantry (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "rocket_artillery",
+  "file": "units/mediterranean/rocket_artillery.png",
+  "name": "Rocket Artillery (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "destroyer",
+  "file": "units/mediterranean/destroyer.png",
+  "name": "Destroyer (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "submarine",
+  "file": "units/mediterranean/submarine.png",
+  "name": "Submarine (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "modern_armor",
+  "file": "units/mediterranean/modern_armor.png",
+  "name": "Modern Armor (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "special_forces",
+  "file": "units/mediterranean/special_forces.png",
+  "name": "Special Forces (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "missionary",
+  "file": "units/mediterranean/missionary.png",
+  "name": "Missionary (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "apostle",
+  "file": "units/mediterranean/apostle.png",
+  "name": "Apostle (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "inquisitor",
+  "file": "units/mediterranean/inquisitor.png",
+  "name": "Inquisitor (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "palace",
+  "file": "buildings/mediterranean/palace.png",
+  "name": "Palace (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "monument",
+  "file": "buildings/mediterranean/monument.png",
+  "name": "Monument (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "granary",
+  "file": "buildings/mediterranean/granary.png",
+  "name": "Granary (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "shrine",
+  "file": "buildings/mediterranean/shrine.png",
+  "name": "Shrine (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "temple",
+  "file": "buildings/mediterranean/temple.png",
+  "name": "Temple (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "walls",
+  "file": "buildings/mediterranean/walls.png",
+  "name": "Walls (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "library",
+  "file": "buildings/mediterranean/library.png",
+  "name": "Library (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "barracks",
+  "file": "buildings/mediterranean/barracks.png",
+  "name": "Barracks (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "water_mill",
+  "file": "buildings/mediterranean/water_mill.png",
+  "name": "Water Mill (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "market",
+  "file": "buildings/mediterranean/market.png",
+  "name": "Market (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "lighthouse",
+  "file": "buildings/mediterranean/lighthouse.png",
+  "name": "Lighthouse (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "amphitheater",
+  "file": "buildings/mediterranean/amphitheater.png",
+  "name": "Amphitheater (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "aqueduct",
+  "file": "buildings/mediterranean/aqueduct.png",
+  "name": "Aqueduct (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "university",
+  "file": "buildings/mediterranean/university.png",
+  "name": "University (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "workshop",
+  "file": "buildings/mediterranean/workshop.png",
+  "name": "Workshop (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "harbor",
+  "file": "buildings/mediterranean/harbor.png",
+  "name": "Harbor (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "castle",
+  "file": "buildings/mediterranean/castle.png",
+  "name": "Castle (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "bank",
+  "file": "buildings/mediterranean/bank.png",
+  "name": "Bank (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "museum",
+  "file": "buildings/mediterranean/museum.png",
+  "name": "Museum (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "printing_house",
+  "file": "buildings/mediterranean/printing_house.png",
+  "name": "Printing House (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "factory",
+  "file": "buildings/mediterranean/factory.png",
+  "name": "Factory (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "hospital",
+  "file": "buildings/mediterranean/hospital.png",
+  "name": "Hospital (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "stock_exchange",
+  "file": "buildings/mediterranean/stock_exchange.png",
+  "name": "Stock Exchange (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "military_academy",
+  "file": "buildings/mediterranean/military_academy.png",
+  "name": "Military Academy (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "research_lab",
+  "file": "buildings/mediterranean/research_lab.png",
+  "name": "Research Lab (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "power_plant",
+  "file": "buildings/mediterranean/power_plant.png",
+  "name": "Power Plant (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "broadcast_tower",
+  "file": "buildings/mediterranean/broadcast_tower.png",
+  "name": "Broadcast Tower (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "stadium",
+  "file": "buildings/mediterranean/stadium.png",
+  "name": "Stadium (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "airport",
+  "file": "buildings/mediterranean/airport.png",
+  "name": "Airport (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "computer_center",
+  "file": "buildings/mediterranean/computer_center.png",
+  "name": "Computer Center (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "sewer",
+  "file": "buildings/mediterranean/sewer.png",
+  "name": "Sewer (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "shipyard",
+  "file": "buildings/mediterranean/shipyard.png",
+  "name": "Shipyard (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "astronomical_observatory",
+  "file": "buildings/mediterranean/astronomical_observatory.png",
+  "name": "Observatory (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "railway_station",
+  "file": "buildings/mediterranean/railway_station.png",
+  "name": "Railway Station (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "telegraph_office",
+  "file": "buildings/mediterranean/telegraph_office.png",
+  "name": "Telegraph Office (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "nuclear_plant",
+  "file": "buildings/mediterranean/nuclear_plant.png",
+  "name": "Nuclear Plant (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "data_center",
+  "file": "buildings/mediterranean/data_center.png",
+  "name": "Data Center (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "spaceport",
+  "file": "buildings/mediterranean/spaceport.png",
+  "name": "Spaceport (Mediterranean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "settler",
+  "file": "units/european/settler.png",
+  "name": "Settler (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "scout",
+  "file": "units/european/scout.png",
+  "name": "Scout (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "warrior",
+  "file": "units/european/warrior.png",
+  "name": "Warrior (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "slinger",
+  "file": "units/european/slinger.png",
+  "name": "Slinger (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "archer",
+  "file": "units/european/archer.png",
+  "name": "Archer (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "spearman",
+  "file": "units/european/spearman.png",
+  "name": "Spearman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "swordsman",
+  "file": "units/european/swordsman.png",
+  "name": "Swordsman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "horseman",
+  "file": "units/european/horseman.png",
+  "name": "Horseman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "catapult",
+  "file": "units/european/catapult.png",
+  "name": "Catapult (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "galley",
+  "file": "units/european/galley.png",
+  "name": "Galley (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "crossbowman",
+  "file": "units/european/crossbowman.png",
+  "name": "Crossbowman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "pikeman",
+  "file": "units/european/pikeman.png",
+  "name": "Pikeman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "knight",
+  "file": "units/european/knight.png",
+  "name": "Knight (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "musketman",
+  "file": "units/european/musketman.png",
+  "name": "Musketman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "bombard",
+  "file": "units/european/bombard.png",
+  "name": "Bombard (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "caravel",
+  "file": "units/european/caravel.png",
+  "name": "Caravel (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "field_cannon",
+  "file": "units/european/field_cannon.png",
+  "name": "Field Cannon (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "cavalry",
+  "file": "units/european/cavalry.png",
+  "name": "Cavalry (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "rifleman",
+  "file": "units/european/rifleman.png",
+  "name": "Rifleman (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "ironclad",
+  "file": "units/european/ironclad.png",
+  "name": "Ironclad (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "artillery",
+  "file": "units/european/artillery.png",
+  "name": "Artillery (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "infantry",
+  "file": "units/european/infantry.png",
+  "name": "Infantry (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "machine_gun",
+  "file": "units/european/machine_gun.png",
+  "name": "Machine Gun (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "battleship",
+  "file": "units/european/battleship.png",
+  "name": "Battleship (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "tank",
+  "file": "units/european/tank.png",
+  "name": "Tank (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "mech_infantry",
+  "file": "units/european/mech_infantry.png",
+  "name": "Mechanized Infantry (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "rocket_artillery",
+  "file": "units/european/rocket_artillery.png",
+  "name": "Rocket Artillery (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "destroyer",
+  "file": "units/european/destroyer.png",
+  "name": "Destroyer (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "submarine",
+  "file": "units/european/submarine.png",
+  "name": "Submarine (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "modern_armor",
+  "file": "units/european/modern_armor.png",
+  "name": "Modern Armor (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "special_forces",
+  "file": "units/european/special_forces.png",
+  "name": "Special Forces (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "missionary",
+  "file": "units/european/missionary.png",
+  "name": "Missionary (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "apostle",
+  "file": "units/european/apostle.png",
+  "name": "Apostle (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/european",
+  "id": "inquisitor",
+  "file": "units/european/inquisitor.png",
+  "name": "Inquisitor (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "palace",
+  "file": "buildings/european/palace.png",
+  "name": "Palace (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "monument",
+  "file": "buildings/european/monument.png",
+  "name": "Monument (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "granary",
+  "file": "buildings/european/granary.png",
+  "name": "Granary (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "shrine",
+  "file": "buildings/european/shrine.png",
+  "name": "Shrine (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "temple",
+  "file": "buildings/european/temple.png",
+  "name": "Temple (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "walls",
+  "file": "buildings/european/walls.png",
+  "name": "Walls (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "library",
+  "file": "buildings/european/library.png",
+  "name": "Library (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "barracks",
+  "file": "buildings/european/barracks.png",
+  "name": "Barracks (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "water_mill",
+  "file": "buildings/european/water_mill.png",
+  "name": "Water Mill (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "market",
+  "file": "buildings/european/market.png",
+  "name": "Market (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "lighthouse",
+  "file": "buildings/european/lighthouse.png",
+  "name": "Lighthouse (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "amphitheater",
+  "file": "buildings/european/amphitheater.png",
+  "name": "Amphitheater (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "aqueduct",
+  "file": "buildings/european/aqueduct.png",
+  "name": "Aqueduct (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "university",
+  "file": "buildings/european/university.png",
+  "name": "University (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "workshop",
+  "file": "buildings/european/workshop.png",
+  "name": "Workshop (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "harbor",
+  "file": "buildings/european/harbor.png",
+  "name": "Harbor (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "castle",
+  "file": "buildings/european/castle.png",
+  "name": "Castle (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "bank",
+  "file": "buildings/european/bank.png",
+  "name": "Bank (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "museum",
+  "file": "buildings/european/museum.png",
+  "name": "Museum (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "printing_house",
+  "file": "buildings/european/printing_house.png",
+  "name": "Printing House (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "factory",
+  "file": "buildings/european/factory.png",
+  "name": "Factory (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "hospital",
+  "file": "buildings/european/hospital.png",
+  "name": "Hospital (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "stock_exchange",
+  "file": "buildings/european/stock_exchange.png",
+  "name": "Stock Exchange (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "military_academy",
+  "file": "buildings/european/military_academy.png",
+  "name": "Military Academy (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "research_lab",
+  "file": "buildings/european/research_lab.png",
+  "name": "Research Lab (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "power_plant",
+  "file": "buildings/european/power_plant.png",
+  "name": "Power Plant (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "broadcast_tower",
+  "file": "buildings/european/broadcast_tower.png",
+  "name": "Broadcast Tower (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "stadium",
+  "file": "buildings/european/stadium.png",
+  "name": "Stadium (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "airport",
+  "file": "buildings/european/airport.png",
+  "name": "Airport (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "computer_center",
+  "file": "buildings/european/computer_center.png",
+  "name": "Computer Center (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "sewer",
+  "file": "buildings/european/sewer.png",
+  "name": "Sewer (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "shipyard",
+  "file": "buildings/european/shipyard.png",
+  "name": "Shipyard (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "astronomical_observatory",
+  "file": "buildings/european/astronomical_observatory.png",
+  "name": "Observatory (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "railway_station",
+  "file": "buildings/european/railway_station.png",
+  "name": "Railway Station (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "telegraph_office",
+  "file": "buildings/european/telegraph_office.png",
+  "name": "Telegraph Office (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "nuclear_plant",
+  "file": "buildings/european/nuclear_plant.png",
+  "name": "Nuclear Plant (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "data_center",
+  "file": "buildings/european/data_center.png",
+  "name": "Data Center (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "spaceport",
+  "file": "buildings/european/spaceport.png",
+  "name": "Spaceport (European)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "settler",
+  "file": "units/new_world/settler.png",
+  "name": "Settler (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "scout",
+  "file": "units/new_world/scout.png",
+  "name": "Scout (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "warrior",
+  "file": "units/new_world/warrior.png",
+  "name": "Warrior (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "slinger",
+  "file": "units/new_world/slinger.png",
+  "name": "Slinger (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "archer",
+  "file": "units/new_world/archer.png",
+  "name": "Archer (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "spearman",
+  "file": "units/new_world/spearman.png",
+  "name": "Spearman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "swordsman",
+  "file": "units/new_world/swordsman.png",
+  "name": "Swordsman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "horseman",
+  "file": "units/new_world/horseman.png",
+  "name": "Horseman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "catapult",
+  "file": "units/new_world/catapult.png",
+  "name": "Catapult (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "galley",
+  "file": "units/new_world/galley.png",
+  "name": "Galley (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "crossbowman",
+  "file": "units/new_world/crossbowman.png",
+  "name": "Crossbowman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "pikeman",
+  "file": "units/new_world/pikeman.png",
+  "name": "Pikeman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "knight",
+  "file": "units/new_world/knight.png",
+  "name": "Knight (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "musketman",
+  "file": "units/new_world/musketman.png",
+  "name": "Musketman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "bombard",
+  "file": "units/new_world/bombard.png",
+  "name": "Bombard (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "caravel",
+  "file": "units/new_world/caravel.png",
+  "name": "Caravel (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "field_cannon",
+  "file": "units/new_world/field_cannon.png",
+  "name": "Field Cannon (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "cavalry",
+  "file": "units/new_world/cavalry.png",
+  "name": "Cavalry (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "rifleman",
+  "file": "units/new_world/rifleman.png",
+  "name": "Rifleman (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "ironclad",
+  "file": "units/new_world/ironclad.png",
+  "name": "Ironclad (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "artillery",
+  "file": "units/new_world/artillery.png",
+  "name": "Artillery (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "infantry",
+  "file": "units/new_world/infantry.png",
+  "name": "Infantry (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "machine_gun",
+  "file": "units/new_world/machine_gun.png",
+  "name": "Machine Gun (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "battleship",
+  "file": "units/new_world/battleship.png",
+  "name": "Battleship (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "tank",
+  "file": "units/new_world/tank.png",
+  "name": "Tank (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "mech_infantry",
+  "file": "units/new_world/mech_infantry.png",
+  "name": "Mechanized Infantry (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "rocket_artillery",
+  "file": "units/new_world/rocket_artillery.png",
+  "name": "Rocket Artillery (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "destroyer",
+  "file": "units/new_world/destroyer.png",
+  "name": "Destroyer (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "submarine",
+  "file": "units/new_world/submarine.png",
+  "name": "Submarine (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "modern_armor",
+  "file": "units/new_world/modern_armor.png",
+  "name": "Modern Armor (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "special_forces",
+  "file": "units/new_world/special_forces.png",
+  "name": "Special Forces (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "missionary",
+  "file": "units/new_world/missionary.png",
+  "name": "Missionary (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "apostle",
+  "file": "units/new_world/apostle.png",
+  "name": "Apostle (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/new_world",
+  "id": "inquisitor",
+  "file": "units/new_world/inquisitor.png",
+  "name": "Inquisitor (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "palace",
+  "file": "buildings/new_world/palace.png",
+  "name": "Palace (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "monument",
+  "file": "buildings/new_world/monument.png",
+  "name": "Monument (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "granary",
+  "file": "buildings/new_world/granary.png",
+  "name": "Granary (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "shrine",
+  "file": "buildings/new_world/shrine.png",
+  "name": "Shrine (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "temple",
+  "file": "buildings/new_world/temple.png",
+  "name": "Temple (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "walls",
+  "file": "buildings/new_world/walls.png",
+  "name": "Walls (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "library",
+  "file": "buildings/new_world/library.png",
+  "name": "Library (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "barracks",
+  "file": "buildings/new_world/barracks.png",
+  "name": "Barracks (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "water_mill",
+  "file": "buildings/new_world/water_mill.png",
+  "name": "Water Mill (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "market",
+  "file": "buildings/new_world/market.png",
+  "name": "Market (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "lighthouse",
+  "file": "buildings/new_world/lighthouse.png",
+  "name": "Lighthouse (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "amphitheater",
+  "file": "buildings/new_world/amphitheater.png",
+  "name": "Amphitheater (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "aqueduct",
+  "file": "buildings/new_world/aqueduct.png",
+  "name": "Aqueduct (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "university",
+  "file": "buildings/new_world/university.png",
+  "name": "University (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "workshop",
+  "file": "buildings/new_world/workshop.png",
+  "name": "Workshop (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "harbor",
+  "file": "buildings/new_world/harbor.png",
+  "name": "Harbor (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "castle",
+  "file": "buildings/new_world/castle.png",
+  "name": "Castle (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "bank",
+  "file": "buildings/new_world/bank.png",
+  "name": "Bank (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "museum",
+  "file": "buildings/new_world/museum.png",
+  "name": "Museum (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "printing_house",
+  "file": "buildings/new_world/printing_house.png",
+  "name": "Printing House (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "factory",
+  "file": "buildings/new_world/factory.png",
+  "name": "Factory (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "hospital",
+  "file": "buildings/new_world/hospital.png",
+  "name": "Hospital (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "stock_exchange",
+  "file": "buildings/new_world/stock_exchange.png",
+  "name": "Stock Exchange (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "military_academy",
+  "file": "buildings/new_world/military_academy.png",
+  "name": "Military Academy (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "research_lab",
+  "file": "buildings/new_world/research_lab.png",
+  "name": "Research Lab (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "power_plant",
+  "file": "buildings/new_world/power_plant.png",
+  "name": "Power Plant (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "broadcast_tower",
+  "file": "buildings/new_world/broadcast_tower.png",
+  "name": "Broadcast Tower (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "stadium",
+  "file": "buildings/new_world/stadium.png",
+  "name": "Stadium (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "airport",
+  "file": "buildings/new_world/airport.png",
+  "name": "Airport (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "computer_center",
+  "file": "buildings/new_world/computer_center.png",
+  "name": "Computer Center (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "sewer",
+  "file": "buildings/new_world/sewer.png",
+  "name": "Sewer (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "shipyard",
+  "file": "buildings/new_world/shipyard.png",
+  "name": "Shipyard (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "astronomical_observatory",
+  "file": "buildings/new_world/astronomical_observatory.png",
+  "name": "Observatory (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "railway_station",
+  "file": "buildings/new_world/railway_station.png",
+  "name": "Railway Station (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "telegraph_office",
+  "file": "buildings/new_world/telegraph_office.png",
+  "name": "Telegraph Office (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "nuclear_plant",
+  "file": "buildings/new_world/nuclear_plant.png",
+  "name": "Nuclear Plant (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "data_center",
+  "file": "buildings/new_world/data_center.png",
+  "name": "Data Center (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/new_world",
+  "id": "spaceport",
+  "file": "buildings/new_world/spaceport.png",
+  "name": "Spaceport (New World)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "settler",
+  "file": "units/east_asian/settler.png",
+  "name": "Settler (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "scout",
+  "file": "units/east_asian/scout.png",
+  "name": "Scout (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "warrior",
+  "file": "units/east_asian/warrior.png",
+  "name": "Warrior (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "slinger",
+  "file": "units/east_asian/slinger.png",
+  "name": "Slinger (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "archer",
+  "file": "units/east_asian/archer.png",
+  "name": "Archer (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "spearman",
+  "file": "units/east_asian/spearman.png",
+  "name": "Spearman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "swordsman",
+  "file": "units/east_asian/swordsman.png",
+  "name": "Swordsman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "horseman",
+  "file": "units/east_asian/horseman.png",
+  "name": "Horseman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "catapult",
+  "file": "units/east_asian/catapult.png",
+  "name": "Catapult (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "galley",
+  "file": "units/east_asian/galley.png",
+  "name": "Galley (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "crossbowman",
+  "file": "units/east_asian/crossbowman.png",
+  "name": "Crossbowman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "pikeman",
+  "file": "units/east_asian/pikeman.png",
+  "name": "Pikeman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "knight",
+  "file": "units/east_asian/knight.png",
+  "name": "Knight (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "musketman",
+  "file": "units/east_asian/musketman.png",
+  "name": "Musketman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "bombard",
+  "file": "units/east_asian/bombard.png",
+  "name": "Bombard (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "caravel",
+  "file": "units/east_asian/caravel.png",
+  "name": "Caravel (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "field_cannon",
+  "file": "units/east_asian/field_cannon.png",
+  "name": "Field Cannon (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "cavalry",
+  "file": "units/east_asian/cavalry.png",
+  "name": "Cavalry (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "rifleman",
+  "file": "units/east_asian/rifleman.png",
+  "name": "Rifleman (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "ironclad",
+  "file": "units/east_asian/ironclad.png",
+  "name": "Ironclad (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "artillery",
+  "file": "units/east_asian/artillery.png",
+  "name": "Artillery (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "infantry",
+  "file": "units/east_asian/infantry.png",
+  "name": "Infantry (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "machine_gun",
+  "file": "units/east_asian/machine_gun.png",
+  "name": "Machine Gun (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "battleship",
+  "file": "units/east_asian/battleship.png",
+  "name": "Battleship (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "tank",
+  "file": "units/east_asian/tank.png",
+  "name": "Tank (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "mech_infantry",
+  "file": "units/east_asian/mech_infantry.png",
+  "name": "Mechanized Infantry (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "rocket_artillery",
+  "file": "units/east_asian/rocket_artillery.png",
+  "name": "Rocket Artillery (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "destroyer",
+  "file": "units/east_asian/destroyer.png",
+  "name": "Destroyer (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "submarine",
+  "file": "units/east_asian/submarine.png",
+  "name": "Submarine (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "modern_armor",
+  "file": "units/east_asian/modern_armor.png",
+  "name": "Modern Armor (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "special_forces",
+  "file": "units/east_asian/special_forces.png",
+  "name": "Special Forces (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "missionary",
+  "file": "units/east_asian/missionary.png",
+  "name": "Missionary (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "apostle",
+  "file": "units/east_asian/apostle.png",
+  "name": "Apostle (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "inquisitor",
+  "file": "units/east_asian/inquisitor.png",
+  "name": "Inquisitor (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "palace",
+  "file": "buildings/east_asian/palace.png",
+  "name": "Palace (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "monument",
+  "file": "buildings/east_asian/monument.png",
+  "name": "Monument (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "granary",
+  "file": "buildings/east_asian/granary.png",
+  "name": "Granary (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "shrine",
+  "file": "buildings/east_asian/shrine.png",
+  "name": "Shrine (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "temple",
+  "file": "buildings/east_asian/temple.png",
+  "name": "Temple (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "walls",
+  "file": "buildings/east_asian/walls.png",
+  "name": "Walls (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "library",
+  "file": "buildings/east_asian/library.png",
+  "name": "Library (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "barracks",
+  "file": "buildings/east_asian/barracks.png",
+  "name": "Barracks (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "water_mill",
+  "file": "buildings/east_asian/water_mill.png",
+  "name": "Water Mill (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "market",
+  "file": "buildings/east_asian/market.png",
+  "name": "Market (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "lighthouse",
+  "file": "buildings/east_asian/lighthouse.png",
+  "name": "Lighthouse (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "amphitheater",
+  "file": "buildings/east_asian/amphitheater.png",
+  "name": "Amphitheater (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "aqueduct",
+  "file": "buildings/east_asian/aqueduct.png",
+  "name": "Aqueduct (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "university",
+  "file": "buildings/east_asian/university.png",
+  "name": "University (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "workshop",
+  "file": "buildings/east_asian/workshop.png",
+  "name": "Workshop (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "harbor",
+  "file": "buildings/east_asian/harbor.png",
+  "name": "Harbor (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "castle",
+  "file": "buildings/east_asian/castle.png",
+  "name": "Castle (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "bank",
+  "file": "buildings/east_asian/bank.png",
+  "name": "Bank (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "museum",
+  "file": "buildings/east_asian/museum.png",
+  "name": "Museum (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "printing_house",
+  "file": "buildings/east_asian/printing_house.png",
+  "name": "Printing House (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "factory",
+  "file": "buildings/east_asian/factory.png",
+  "name": "Factory (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "hospital",
+  "file": "buildings/east_asian/hospital.png",
+  "name": "Hospital (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "stock_exchange",
+  "file": "buildings/east_asian/stock_exchange.png",
+  "name": "Stock Exchange (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "military_academy",
+  "file": "buildings/east_asian/military_academy.png",
+  "name": "Military Academy (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "research_lab",
+  "file": "buildings/east_asian/research_lab.png",
+  "name": "Research Lab (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "power_plant",
+  "file": "buildings/east_asian/power_plant.png",
+  "name": "Power Plant (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "broadcast_tower",
+  "file": "buildings/east_asian/broadcast_tower.png",
+  "name": "Broadcast Tower (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "stadium",
+  "file": "buildings/east_asian/stadium.png",
+  "name": "Stadium (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "airport",
+  "file": "buildings/east_asian/airport.png",
+  "name": "Airport (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "computer_center",
+  "file": "buildings/east_asian/computer_center.png",
+  "name": "Computer Center (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "sewer",
+  "file": "buildings/east_asian/sewer.png",
+  "name": "Sewer (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "shipyard",
+  "file": "buildings/east_asian/shipyard.png",
+  "name": "Shipyard (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "astronomical_observatory",
+  "file": "buildings/east_asian/astronomical_observatory.png",
+  "name": "Observatory (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "railway_station",
+  "file": "buildings/east_asian/railway_station.png",
+  "name": "Railway Station (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "telegraph_office",
+  "file": "buildings/east_asian/telegraph_office.png",
+  "name": "Telegraph Office (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "nuclear_plant",
+  "file": "buildings/east_asian/nuclear_plant.png",
+  "name": "Nuclear Plant (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "data_center",
+  "file": "buildings/east_asian/data_center.png",
+  "name": "Data Center (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "spaceport",
+  "file": "buildings/east_asian/spaceport.png",
+  "name": "Spaceport (East Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "settler",
+  "file": "units/southeast_asian/settler.png",
+  "name": "Settler (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "scout",
+  "file": "units/southeast_asian/scout.png",
+  "name": "Scout (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "warrior",
+  "file": "units/southeast_asian/warrior.png",
+  "name": "Warrior (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "slinger",
+  "file": "units/southeast_asian/slinger.png",
+  "name": "Slinger (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "archer",
+  "file": "units/southeast_asian/archer.png",
+  "name": "Archer (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "spearman",
+  "file": "units/southeast_asian/spearman.png",
+  "name": "Spearman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "swordsman",
+  "file": "units/southeast_asian/swordsman.png",
+  "name": "Swordsman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "horseman",
+  "file": "units/southeast_asian/horseman.png",
+  "name": "Horseman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "catapult",
+  "file": "units/southeast_asian/catapult.png",
+  "name": "Catapult (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "galley",
+  "file": "units/southeast_asian/galley.png",
+  "name": "Galley (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "crossbowman",
+  "file": "units/southeast_asian/crossbowman.png",
+  "name": "Crossbowman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "pikeman",
+  "file": "units/southeast_asian/pikeman.png",
+  "name": "Pikeman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "knight",
+  "file": "units/southeast_asian/knight.png",
+  "name": "Knight (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "musketman",
+  "file": "units/southeast_asian/musketman.png",
+  "name": "Musketman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "bombard",
+  "file": "units/southeast_asian/bombard.png",
+  "name": "Bombard (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "caravel",
+  "file": "units/southeast_asian/caravel.png",
+  "name": "Caravel (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "field_cannon",
+  "file": "units/southeast_asian/field_cannon.png",
+  "name": "Field Cannon (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "cavalry",
+  "file": "units/southeast_asian/cavalry.png",
+  "name": "Cavalry (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "rifleman",
+  "file": "units/southeast_asian/rifleman.png",
+  "name": "Rifleman (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "ironclad",
+  "file": "units/southeast_asian/ironclad.png",
+  "name": "Ironclad (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "artillery",
+  "file": "units/southeast_asian/artillery.png",
+  "name": "Artillery (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "infantry",
+  "file": "units/southeast_asian/infantry.png",
+  "name": "Infantry (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "machine_gun",
+  "file": "units/southeast_asian/machine_gun.png",
+  "name": "Machine Gun (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "battleship",
+  "file": "units/southeast_asian/battleship.png",
+  "name": "Battleship (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "tank",
+  "file": "units/southeast_asian/tank.png",
+  "name": "Tank (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "mech_infantry",
+  "file": "units/southeast_asian/mech_infantry.png",
+  "name": "Mechanized Infantry (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "rocket_artillery",
+  "file": "units/southeast_asian/rocket_artillery.png",
+  "name": "Rocket Artillery (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "destroyer",
+  "file": "units/southeast_asian/destroyer.png",
+  "name": "Destroyer (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "submarine",
+  "file": "units/southeast_asian/submarine.png",
+  "name": "Submarine (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "modern_armor",
+  "file": "units/southeast_asian/modern_armor.png",
+  "name": "Modern Armor (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "special_forces",
+  "file": "units/southeast_asian/special_forces.png",
+  "name": "Special Forces (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "missionary",
+  "file": "units/southeast_asian/missionary.png",
+  "name": "Missionary (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "apostle",
+  "file": "units/southeast_asian/apostle.png",
+  "name": "Apostle (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/southeast_asian",
+  "id": "inquisitor",
+  "file": "units/southeast_asian/inquisitor.png",
+  "name": "Inquisitor (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "palace",
+  "file": "buildings/southeast_asian/palace.png",
+  "name": "Palace (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "monument",
+  "file": "buildings/southeast_asian/monument.png",
+  "name": "Monument (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "granary",
+  "file": "buildings/southeast_asian/granary.png",
+  "name": "Granary (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "shrine",
+  "file": "buildings/southeast_asian/shrine.png",
+  "name": "Shrine (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "temple",
+  "file": "buildings/southeast_asian/temple.png",
+  "name": "Temple (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "walls",
+  "file": "buildings/southeast_asian/walls.png",
+  "name": "Walls (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "library",
+  "file": "buildings/southeast_asian/library.png",
+  "name": "Library (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "barracks",
+  "file": "buildings/southeast_asian/barracks.png",
+  "name": "Barracks (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "water_mill",
+  "file": "buildings/southeast_asian/water_mill.png",
+  "name": "Water Mill (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "market",
+  "file": "buildings/southeast_asian/market.png",
+  "name": "Market (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "lighthouse",
+  "file": "buildings/southeast_asian/lighthouse.png",
+  "name": "Lighthouse (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "amphitheater",
+  "file": "buildings/southeast_asian/amphitheater.png",
+  "name": "Amphitheater (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "aqueduct",
+  "file": "buildings/southeast_asian/aqueduct.png",
+  "name": "Aqueduct (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "university",
+  "file": "buildings/southeast_asian/university.png",
+  "name": "University (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "workshop",
+  "file": "buildings/southeast_asian/workshop.png",
+  "name": "Workshop (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "harbor",
+  "file": "buildings/southeast_asian/harbor.png",
+  "name": "Harbor (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "castle",
+  "file": "buildings/southeast_asian/castle.png",
+  "name": "Castle (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "bank",
+  "file": "buildings/southeast_asian/bank.png",
+  "name": "Bank (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "museum",
+  "file": "buildings/southeast_asian/museum.png",
+  "name": "Museum (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "printing_house",
+  "file": "buildings/southeast_asian/printing_house.png",
+  "name": "Printing House (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "factory",
+  "file": "buildings/southeast_asian/factory.png",
+  "name": "Factory (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "hospital",
+  "file": "buildings/southeast_asian/hospital.png",
+  "name": "Hospital (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "stock_exchange",
+  "file": "buildings/southeast_asian/stock_exchange.png",
+  "name": "Stock Exchange (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "military_academy",
+  "file": "buildings/southeast_asian/military_academy.png",
+  "name": "Military Academy (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "research_lab",
+  "file": "buildings/southeast_asian/research_lab.png",
+  "name": "Research Lab (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "power_plant",
+  "file": "buildings/southeast_asian/power_plant.png",
+  "name": "Power Plant (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "broadcast_tower",
+  "file": "buildings/southeast_asian/broadcast_tower.png",
+  "name": "Broadcast Tower (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "stadium",
+  "file": "buildings/southeast_asian/stadium.png",
+  "name": "Stadium (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "airport",
+  "file": "buildings/southeast_asian/airport.png",
+  "name": "Airport (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "computer_center",
+  "file": "buildings/southeast_asian/computer_center.png",
+  "name": "Computer Center (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "sewer",
+  "file": "buildings/southeast_asian/sewer.png",
+  "name": "Sewer (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "shipyard",
+  "file": "buildings/southeast_asian/shipyard.png",
+  "name": "Shipyard (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "astronomical_observatory",
+  "file": "buildings/southeast_asian/astronomical_observatory.png",
+  "name": "Observatory (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "railway_station",
+  "file": "buildings/southeast_asian/railway_station.png",
+  "name": "Railway Station (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "telegraph_office",
+  "file": "buildings/southeast_asian/telegraph_office.png",
+  "name": "Telegraph Office (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "nuclear_plant",
+  "file": "buildings/southeast_asian/nuclear_plant.png",
+  "name": "Nuclear Plant (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "data_center",
+  "file": "buildings/southeast_asian/data_center.png",
+  "name": "Data Center (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/southeast_asian",
+  "id": "spaceport",
+  "file": "buildings/southeast_asian/spaceport.png",
+  "name": "Spaceport (Southeast Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "settler",
+  "file": "units/south_asian/settler.png",
+  "name": "Settler (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "scout",
+  "file": "units/south_asian/scout.png",
+  "name": "Scout (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "warrior",
+  "file": "units/south_asian/warrior.png",
+  "name": "Warrior (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "slinger",
+  "file": "units/south_asian/slinger.png",
+  "name": "Slinger (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "archer",
+  "file": "units/south_asian/archer.png",
+  "name": "Archer (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "spearman",
+  "file": "units/south_asian/spearman.png",
+  "name": "Spearman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "swordsman",
+  "file": "units/south_asian/swordsman.png",
+  "name": "Swordsman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "horseman",
+  "file": "units/south_asian/horseman.png",
+  "name": "Horseman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "catapult",
+  "file": "units/south_asian/catapult.png",
+  "name": "Catapult (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "galley",
+  "file": "units/south_asian/galley.png",
+  "name": "Galley (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "crossbowman",
+  "file": "units/south_asian/crossbowman.png",
+  "name": "Crossbowman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "pikeman",
+  "file": "units/south_asian/pikeman.png",
+  "name": "Pikeman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "knight",
+  "file": "units/south_asian/knight.png",
+  "name": "Knight (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "musketman",
+  "file": "units/south_asian/musketman.png",
+  "name": "Musketman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "bombard",
+  "file": "units/south_asian/bombard.png",
+  "name": "Bombard (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "caravel",
+  "file": "units/south_asian/caravel.png",
+  "name": "Caravel (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "field_cannon",
+  "file": "units/south_asian/field_cannon.png",
+  "name": "Field Cannon (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "cavalry",
+  "file": "units/south_asian/cavalry.png",
+  "name": "Cavalry (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "rifleman",
+  "file": "units/south_asian/rifleman.png",
+  "name": "Rifleman (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "ironclad",
+  "file": "units/south_asian/ironclad.png",
+  "name": "Ironclad (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "artillery",
+  "file": "units/south_asian/artillery.png",
+  "name": "Artillery (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "infantry",
+  "file": "units/south_asian/infantry.png",
+  "name": "Infantry (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "machine_gun",
+  "file": "units/south_asian/machine_gun.png",
+  "name": "Machine Gun (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "battleship",
+  "file": "units/south_asian/battleship.png",
+  "name": "Battleship (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "tank",
+  "file": "units/south_asian/tank.png",
+  "name": "Tank (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "mech_infantry",
+  "file": "units/south_asian/mech_infantry.png",
+  "name": "Mechanized Infantry (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "rocket_artillery",
+  "file": "units/south_asian/rocket_artillery.png",
+  "name": "Rocket Artillery (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "destroyer",
+  "file": "units/south_asian/destroyer.png",
+  "name": "Destroyer (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "submarine",
+  "file": "units/south_asian/submarine.png",
+  "name": "Submarine (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "modern_armor",
+  "file": "units/south_asian/modern_armor.png",
+  "name": "Modern Armor (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "special_forces",
+  "file": "units/south_asian/special_forces.png",
+  "name": "Special Forces (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "missionary",
+  "file": "units/south_asian/missionary.png",
+  "name": "Missionary (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "apostle",
+  "file": "units/south_asian/apostle.png",
+  "name": "Apostle (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "inquisitor",
+  "file": "units/south_asian/inquisitor.png",
+  "name": "Inquisitor (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "palace",
+  "file": "buildings/south_asian/palace.png",
+  "name": "Palace (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "monument",
+  "file": "buildings/south_asian/monument.png",
+  "name": "Monument (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "granary",
+  "file": "buildings/south_asian/granary.png",
+  "name": "Granary (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "shrine",
+  "file": "buildings/south_asian/shrine.png",
+  "name": "Shrine (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "temple",
+  "file": "buildings/south_asian/temple.png",
+  "name": "Temple (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "walls",
+  "file": "buildings/south_asian/walls.png",
+  "name": "Walls (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "library",
+  "file": "buildings/south_asian/library.png",
+  "name": "Library (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "barracks",
+  "file": "buildings/south_asian/barracks.png",
+  "name": "Barracks (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "water_mill",
+  "file": "buildings/south_asian/water_mill.png",
+  "name": "Water Mill (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "market",
+  "file": "buildings/south_asian/market.png",
+  "name": "Market (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "lighthouse",
+  "file": "buildings/south_asian/lighthouse.png",
+  "name": "Lighthouse (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "amphitheater",
+  "file": "buildings/south_asian/amphitheater.png",
+  "name": "Amphitheater (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "aqueduct",
+  "file": "buildings/south_asian/aqueduct.png",
+  "name": "Aqueduct (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "university",
+  "file": "buildings/south_asian/university.png",
+  "name": "University (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "workshop",
+  "file": "buildings/south_asian/workshop.png",
+  "name": "Workshop (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "harbor",
+  "file": "buildings/south_asian/harbor.png",
+  "name": "Harbor (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "castle",
+  "file": "buildings/south_asian/castle.png",
+  "name": "Castle (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "bank",
+  "file": "buildings/south_asian/bank.png",
+  "name": "Bank (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "museum",
+  "file": "buildings/south_asian/museum.png",
+  "name": "Museum (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "printing_house",
+  "file": "buildings/south_asian/printing_house.png",
+  "name": "Printing House (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "factory",
+  "file": "buildings/south_asian/factory.png",
+  "name": "Factory (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "hospital",
+  "file": "buildings/south_asian/hospital.png",
+  "name": "Hospital (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "stock_exchange",
+  "file": "buildings/south_asian/stock_exchange.png",
+  "name": "Stock Exchange (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "military_academy",
+  "file": "buildings/south_asian/military_academy.png",
+  "name": "Military Academy (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "research_lab",
+  "file": "buildings/south_asian/research_lab.png",
+  "name": "Research Lab (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "power_plant",
+  "file": "buildings/south_asian/power_plant.png",
+  "name": "Power Plant (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "broadcast_tower",
+  "file": "buildings/south_asian/broadcast_tower.png",
+  "name": "Broadcast Tower (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "stadium",
+  "file": "buildings/south_asian/stadium.png",
+  "name": "Stadium (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "airport",
+  "file": "buildings/south_asian/airport.png",
+  "name": "Airport (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "computer_center",
+  "file": "buildings/south_asian/computer_center.png",
+  "name": "Computer Center (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "sewer",
+  "file": "buildings/south_asian/sewer.png",
+  "name": "Sewer (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "shipyard",
+  "file": "buildings/south_asian/shipyard.png",
+  "name": "Shipyard (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "astronomical_observatory",
+  "file": "buildings/south_asian/astronomical_observatory.png",
+  "name": "Observatory (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "railway_station",
+  "file": "buildings/south_asian/railway_station.png",
+  "name": "Railway Station (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "telegraph_office",
+  "file": "buildings/south_asian/telegraph_office.png",
+  "name": "Telegraph Office (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "nuclear_plant",
+  "file": "buildings/south_asian/nuclear_plant.png",
+  "name": "Nuclear Plant (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "data_center",
+  "file": "buildings/south_asian/data_center.png",
+  "name": "Data Center (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "spaceport",
+  "file": "buildings/south_asian/spaceport.png",
+  "name": "Spaceport (South Asian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "settler",
+  "file": "units/middle_eastern/settler.png",
+  "name": "Settler (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "scout",
+  "file": "units/middle_eastern/scout.png",
+  "name": "Scout (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "warrior",
+  "file": "units/middle_eastern/warrior.png",
+  "name": "Warrior (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "slinger",
+  "file": "units/middle_eastern/slinger.png",
+  "name": "Slinger (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "archer",
+  "file": "units/middle_eastern/archer.png",
+  "name": "Archer (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "spearman",
+  "file": "units/middle_eastern/spearman.png",
+  "name": "Spearman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "swordsman",
+  "file": "units/middle_eastern/swordsman.png",
+  "name": "Swordsman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "horseman",
+  "file": "units/middle_eastern/horseman.png",
+  "name": "Horseman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "catapult",
+  "file": "units/middle_eastern/catapult.png",
+  "name": "Catapult (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "galley",
+  "file": "units/middle_eastern/galley.png",
+  "name": "Galley (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "crossbowman",
+  "file": "units/middle_eastern/crossbowman.png",
+  "name": "Crossbowman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "pikeman",
+  "file": "units/middle_eastern/pikeman.png",
+  "name": "Pikeman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "knight",
+  "file": "units/middle_eastern/knight.png",
+  "name": "Knight (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "musketman",
+  "file": "units/middle_eastern/musketman.png",
+  "name": "Musketman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "bombard",
+  "file": "units/middle_eastern/bombard.png",
+  "name": "Bombard (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "caravel",
+  "file": "units/middle_eastern/caravel.png",
+  "name": "Caravel (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "field_cannon",
+  "file": "units/middle_eastern/field_cannon.png",
+  "name": "Field Cannon (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "cavalry",
+  "file": "units/middle_eastern/cavalry.png",
+  "name": "Cavalry (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "rifleman",
+  "file": "units/middle_eastern/rifleman.png",
+  "name": "Rifleman (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "ironclad",
+  "file": "units/middle_eastern/ironclad.png",
+  "name": "Ironclad (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "artillery",
+  "file": "units/middle_eastern/artillery.png",
+  "name": "Artillery (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "infantry",
+  "file": "units/middle_eastern/infantry.png",
+  "name": "Infantry (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "machine_gun",
+  "file": "units/middle_eastern/machine_gun.png",
+  "name": "Machine Gun (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "battleship",
+  "file": "units/middle_eastern/battleship.png",
+  "name": "Battleship (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "tank",
+  "file": "units/middle_eastern/tank.png",
+  "name": "Tank (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "mech_infantry",
+  "file": "units/middle_eastern/mech_infantry.png",
+  "name": "Mechanized Infantry (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "rocket_artillery",
+  "file": "units/middle_eastern/rocket_artillery.png",
+  "name": "Rocket Artillery (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "destroyer",
+  "file": "units/middle_eastern/destroyer.png",
+  "name": "Destroyer (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "submarine",
+  "file": "units/middle_eastern/submarine.png",
+  "name": "Submarine (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "modern_armor",
+  "file": "units/middle_eastern/modern_armor.png",
+  "name": "Modern Armor (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "special_forces",
+  "file": "units/middle_eastern/special_forces.png",
+  "name": "Special Forces (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "missionary",
+  "file": "units/middle_eastern/missionary.png",
+  "name": "Missionary (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "apostle",
+  "file": "units/middle_eastern/apostle.png",
+  "name": "Apostle (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "inquisitor",
+  "file": "units/middle_eastern/inquisitor.png",
+  "name": "Inquisitor (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "palace",
+  "file": "buildings/middle_eastern/palace.png",
+  "name": "Palace (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "monument",
+  "file": "buildings/middle_eastern/monument.png",
+  "name": "Monument (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "granary",
+  "file": "buildings/middle_eastern/granary.png",
+  "name": "Granary (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "shrine",
+  "file": "buildings/middle_eastern/shrine.png",
+  "name": "Shrine (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "temple",
+  "file": "buildings/middle_eastern/temple.png",
+  "name": "Temple (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "walls",
+  "file": "buildings/middle_eastern/walls.png",
+  "name": "Walls (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "library",
+  "file": "buildings/middle_eastern/library.png",
+  "name": "Library (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "barracks",
+  "file": "buildings/middle_eastern/barracks.png",
+  "name": "Barracks (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "water_mill",
+  "file": "buildings/middle_eastern/water_mill.png",
+  "name": "Water Mill (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "market",
+  "file": "buildings/middle_eastern/market.png",
+  "name": "Market (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "lighthouse",
+  "file": "buildings/middle_eastern/lighthouse.png",
+  "name": "Lighthouse (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "amphitheater",
+  "file": "buildings/middle_eastern/amphitheater.png",
+  "name": "Amphitheater (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "aqueduct",
+  "file": "buildings/middle_eastern/aqueduct.png",
+  "name": "Aqueduct (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "university",
+  "file": "buildings/middle_eastern/university.png",
+  "name": "University (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "workshop",
+  "file": "buildings/middle_eastern/workshop.png",
+  "name": "Workshop (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "harbor",
+  "file": "buildings/middle_eastern/harbor.png",
+  "name": "Harbor (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "castle",
+  "file": "buildings/middle_eastern/castle.png",
+  "name": "Castle (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "bank",
+  "file": "buildings/middle_eastern/bank.png",
+  "name": "Bank (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "museum",
+  "file": "buildings/middle_eastern/museum.png",
+  "name": "Museum (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "printing_house",
+  "file": "buildings/middle_eastern/printing_house.png",
+  "name": "Printing House (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "factory",
+  "file": "buildings/middle_eastern/factory.png",
+  "name": "Factory (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "hospital",
+  "file": "buildings/middle_eastern/hospital.png",
+  "name": "Hospital (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "stock_exchange",
+  "file": "buildings/middle_eastern/stock_exchange.png",
+  "name": "Stock Exchange (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "military_academy",
+  "file": "buildings/middle_eastern/military_academy.png",
+  "name": "Military Academy (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "research_lab",
+  "file": "buildings/middle_eastern/research_lab.png",
+  "name": "Research Lab (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "power_plant",
+  "file": "buildings/middle_eastern/power_plant.png",
+  "name": "Power Plant (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "broadcast_tower",
+  "file": "buildings/middle_eastern/broadcast_tower.png",
+  "name": "Broadcast Tower (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "stadium",
+  "file": "buildings/middle_eastern/stadium.png",
+  "name": "Stadium (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "airport",
+  "file": "buildings/middle_eastern/airport.png",
+  "name": "Airport (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "computer_center",
+  "file": "buildings/middle_eastern/computer_center.png",
+  "name": "Computer Center (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "sewer",
+  "file": "buildings/middle_eastern/sewer.png",
+  "name": "Sewer (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "shipyard",
+  "file": "buildings/middle_eastern/shipyard.png",
+  "name": "Shipyard (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "astronomical_observatory",
+  "file": "buildings/middle_eastern/astronomical_observatory.png",
+  "name": "Observatory (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "railway_station",
+  "file": "buildings/middle_eastern/railway_station.png",
+  "name": "Railway Station (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "telegraph_office",
+  "file": "buildings/middle_eastern/telegraph_office.png",
+  "name": "Telegraph Office (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "nuclear_plant",
+  "file": "buildings/middle_eastern/nuclear_plant.png",
+  "name": "Nuclear Plant (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "data_center",
+  "file": "buildings/middle_eastern/data_center.png",
+  "name": "Data Center (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "spaceport",
+  "file": "buildings/middle_eastern/spaceport.png",
+  "name": "Spaceport (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "settler",
+  "file": "units/african/settler.png",
+  "name": "Settler (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "scout",
+  "file": "units/african/scout.png",
+  "name": "Scout (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "warrior",
+  "file": "units/african/warrior.png",
+  "name": "Warrior (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "slinger",
+  "file": "units/african/slinger.png",
+  "name": "Slinger (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "archer",
+  "file": "units/african/archer.png",
+  "name": "Archer (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "spearman",
+  "file": "units/african/spearman.png",
+  "name": "Spearman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "swordsman",
+  "file": "units/african/swordsman.png",
+  "name": "Swordsman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "horseman",
+  "file": "units/african/horseman.png",
+  "name": "Horseman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "catapult",
+  "file": "units/african/catapult.png",
+  "name": "Catapult (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "galley",
+  "file": "units/african/galley.png",
+  "name": "Galley (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "crossbowman",
+  "file": "units/african/crossbowman.png",
+  "name": "Crossbowman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "pikeman",
+  "file": "units/african/pikeman.png",
+  "name": "Pikeman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "knight",
+  "file": "units/african/knight.png",
+  "name": "Knight (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "musketman",
+  "file": "units/african/musketman.png",
+  "name": "Musketman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "bombard",
+  "file": "units/african/bombard.png",
+  "name": "Bombard (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "caravel",
+  "file": "units/african/caravel.png",
+  "name": "Caravel (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "field_cannon",
+  "file": "units/african/field_cannon.png",
+  "name": "Field Cannon (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "cavalry",
+  "file": "units/african/cavalry.png",
+  "name": "Cavalry (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "rifleman",
+  "file": "units/african/rifleman.png",
+  "name": "Rifleman (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "ironclad",
+  "file": "units/african/ironclad.png",
+  "name": "Ironclad (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "artillery",
+  "file": "units/african/artillery.png",
+  "name": "Artillery (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "infantry",
+  "file": "units/african/infantry.png",
+  "name": "Infantry (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "machine_gun",
+  "file": "units/african/machine_gun.png",
+  "name": "Machine Gun (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "battleship",
+  "file": "units/african/battleship.png",
+  "name": "Battleship (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "tank",
+  "file": "units/african/tank.png",
+  "name": "Tank (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "mech_infantry",
+  "file": "units/african/mech_infantry.png",
+  "name": "Mechanized Infantry (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "rocket_artillery",
+  "file": "units/african/rocket_artillery.png",
+  "name": "Rocket Artillery (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "destroyer",
+  "file": "units/african/destroyer.png",
+  "name": "Destroyer (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "submarine",
+  "file": "units/african/submarine.png",
+  "name": "Submarine (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "modern_armor",
+  "file": "units/african/modern_armor.png",
+  "name": "Modern Armor (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "special_forces",
+  "file": "units/african/special_forces.png",
+  "name": "Special Forces (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "missionary",
+  "file": "units/african/missionary.png",
+  "name": "Missionary (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "apostle",
+  "file": "units/african/apostle.png",
+  "name": "Apostle (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/african",
+  "id": "inquisitor",
+  "file": "units/african/inquisitor.png",
+  "name": "Inquisitor (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "palace",
+  "file": "buildings/african/palace.png",
+  "name": "Palace (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "monument",
+  "file": "buildings/african/monument.png",
+  "name": "Monument (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "granary",
+  "file": "buildings/african/granary.png",
+  "name": "Granary (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "shrine",
+  "file": "buildings/african/shrine.png",
+  "name": "Shrine (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "temple",
+  "file": "buildings/african/temple.png",
+  "name": "Temple (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "walls",
+  "file": "buildings/african/walls.png",
+  "name": "Walls (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "library",
+  "file": "buildings/african/library.png",
+  "name": "Library (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "barracks",
+  "file": "buildings/african/barracks.png",
+  "name": "Barracks (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "water_mill",
+  "file": "buildings/african/water_mill.png",
+  "name": "Water Mill (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "market",
+  "file": "buildings/african/market.png",
+  "name": "Market (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "lighthouse",
+  "file": "buildings/african/lighthouse.png",
+  "name": "Lighthouse (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "amphitheater",
+  "file": "buildings/african/amphitheater.png",
+  "name": "Amphitheater (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "aqueduct",
+  "file": "buildings/african/aqueduct.png",
+  "name": "Aqueduct (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "university",
+  "file": "buildings/african/university.png",
+  "name": "University (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "workshop",
+  "file": "buildings/african/workshop.png",
+  "name": "Workshop (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "harbor",
+  "file": "buildings/african/harbor.png",
+  "name": "Harbor (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "castle",
+  "file": "buildings/african/castle.png",
+  "name": "Castle (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "bank",
+  "file": "buildings/african/bank.png",
+  "name": "Bank (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "museum",
+  "file": "buildings/african/museum.png",
+  "name": "Museum (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "printing_house",
+  "file": "buildings/african/printing_house.png",
+  "name": "Printing House (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "factory",
+  "file": "buildings/african/factory.png",
+  "name": "Factory (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "hospital",
+  "file": "buildings/african/hospital.png",
+  "name": "Hospital (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "stock_exchange",
+  "file": "buildings/african/stock_exchange.png",
+  "name": "Stock Exchange (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "military_academy",
+  "file": "buildings/african/military_academy.png",
+  "name": "Military Academy (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "research_lab",
+  "file": "buildings/african/research_lab.png",
+  "name": "Research Lab (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "power_plant",
+  "file": "buildings/african/power_plant.png",
+  "name": "Power Plant (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "broadcast_tower",
+  "file": "buildings/african/broadcast_tower.png",
+  "name": "Broadcast Tower (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "stadium",
+  "file": "buildings/african/stadium.png",
+  "name": "Stadium (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "airport",
+  "file": "buildings/african/airport.png",
+  "name": "Airport (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "computer_center",
+  "file": "buildings/african/computer_center.png",
+  "name": "Computer Center (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "sewer",
+  "file": "buildings/african/sewer.png",
+  "name": "Sewer (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "shipyard",
+  "file": "buildings/african/shipyard.png",
+  "name": "Shipyard (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "astronomical_observatory",
+  "file": "buildings/african/astronomical_observatory.png",
+  "name": "Observatory (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "railway_station",
+  "file": "buildings/african/railway_station.png",
+  "name": "Railway Station (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "telegraph_office",
+  "file": "buildings/african/telegraph_office.png",
+  "name": "Telegraph Office (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "nuclear_plant",
+  "file": "buildings/african/nuclear_plant.png",
+  "name": "Nuclear Plant (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "data_center",
+  "file": "buildings/african/data_center.png",
+  "name": "Data Center (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "spaceport",
+  "file": "buildings/african/spaceport.png",
+  "name": "Spaceport (African)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "settler",
+  "file": "units/mesoamerican/settler.png",
+  "name": "Settler (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "scout",
+  "file": "units/mesoamerican/scout.png",
+  "name": "Scout (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "warrior",
+  "file": "units/mesoamerican/warrior.png",
+  "name": "Warrior (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "slinger",
+  "file": "units/mesoamerican/slinger.png",
+  "name": "Slinger (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "archer",
+  "file": "units/mesoamerican/archer.png",
+  "name": "Archer (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "spearman",
+  "file": "units/mesoamerican/spearman.png",
+  "name": "Spearman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "swordsman",
+  "file": "units/mesoamerican/swordsman.png",
+  "name": "Swordsman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "horseman",
+  "file": "units/mesoamerican/horseman.png",
+  "name": "Horseman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "catapult",
+  "file": "units/mesoamerican/catapult.png",
+  "name": "Catapult (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "galley",
+  "file": "units/mesoamerican/galley.png",
+  "name": "Galley (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "crossbowman",
+  "file": "units/mesoamerican/crossbowman.png",
+  "name": "Crossbowman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "pikeman",
+  "file": "units/mesoamerican/pikeman.png",
+  "name": "Pikeman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "knight",
+  "file": "units/mesoamerican/knight.png",
+  "name": "Knight (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "musketman",
+  "file": "units/mesoamerican/musketman.png",
+  "name": "Musketman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "bombard",
+  "file": "units/mesoamerican/bombard.png",
+  "name": "Bombard (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "caravel",
+  "file": "units/mesoamerican/caravel.png",
+  "name": "Caravel (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "field_cannon",
+  "file": "units/mesoamerican/field_cannon.png",
+  "name": "Field Cannon (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "cavalry",
+  "file": "units/mesoamerican/cavalry.png",
+  "name": "Cavalry (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "rifleman",
+  "file": "units/mesoamerican/rifleman.png",
+  "name": "Rifleman (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "ironclad",
+  "file": "units/mesoamerican/ironclad.png",
+  "name": "Ironclad (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "artillery",
+  "file": "units/mesoamerican/artillery.png",
+  "name": "Artillery (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "infantry",
+  "file": "units/mesoamerican/infantry.png",
+  "name": "Infantry (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "machine_gun",
+  "file": "units/mesoamerican/machine_gun.png",
+  "name": "Machine Gun (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "battleship",
+  "file": "units/mesoamerican/battleship.png",
+  "name": "Battleship (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "tank",
+  "file": "units/mesoamerican/tank.png",
+  "name": "Tank (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "mech_infantry",
+  "file": "units/mesoamerican/mech_infantry.png",
+  "name": "Mechanized Infantry (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "rocket_artillery",
+  "file": "units/mesoamerican/rocket_artillery.png",
+  "name": "Rocket Artillery (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "destroyer",
+  "file": "units/mesoamerican/destroyer.png",
+  "name": "Destroyer (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "submarine",
+  "file": "units/mesoamerican/submarine.png",
+  "name": "Submarine (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "modern_armor",
+  "file": "units/mesoamerican/modern_armor.png",
+  "name": "Modern Armor (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "special_forces",
+  "file": "units/mesoamerican/special_forces.png",
+  "name": "Special Forces (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "missionary",
+  "file": "units/mesoamerican/missionary.png",
+  "name": "Missionary (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "apostle",
+  "file": "units/mesoamerican/apostle.png",
+  "name": "Apostle (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "inquisitor",
+  "file": "units/mesoamerican/inquisitor.png",
+  "name": "Inquisitor (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "palace",
+  "file": "buildings/mesoamerican/palace.png",
+  "name": "Palace (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "monument",
+  "file": "buildings/mesoamerican/monument.png",
+  "name": "Monument (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "granary",
+  "file": "buildings/mesoamerican/granary.png",
+  "name": "Granary (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "shrine",
+  "file": "buildings/mesoamerican/shrine.png",
+  "name": "Shrine (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "temple",
+  "file": "buildings/mesoamerican/temple.png",
+  "name": "Temple (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "walls",
+  "file": "buildings/mesoamerican/walls.png",
+  "name": "Walls (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "library",
+  "file": "buildings/mesoamerican/library.png",
+  "name": "Library (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "barracks",
+  "file": "buildings/mesoamerican/barracks.png",
+  "name": "Barracks (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "water_mill",
+  "file": "buildings/mesoamerican/water_mill.png",
+  "name": "Water Mill (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "market",
+  "file": "buildings/mesoamerican/market.png",
+  "name": "Market (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "lighthouse",
+  "file": "buildings/mesoamerican/lighthouse.png",
+  "name": "Lighthouse (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "amphitheater",
+  "file": "buildings/mesoamerican/amphitheater.png",
+  "name": "Amphitheater (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "aqueduct",
+  "file": "buildings/mesoamerican/aqueduct.png",
+  "name": "Aqueduct (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "university",
+  "file": "buildings/mesoamerican/university.png",
+  "name": "University (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "workshop",
+  "file": "buildings/mesoamerican/workshop.png",
+  "name": "Workshop (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "harbor",
+  "file": "buildings/mesoamerican/harbor.png",
+  "name": "Harbor (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "castle",
+  "file": "buildings/mesoamerican/castle.png",
+  "name": "Castle (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "bank",
+  "file": "buildings/mesoamerican/bank.png",
+  "name": "Bank (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "museum",
+  "file": "buildings/mesoamerican/museum.png",
+  "name": "Museum (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "printing_house",
+  "file": "buildings/mesoamerican/printing_house.png",
+  "name": "Printing House (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "factory",
+  "file": "buildings/mesoamerican/factory.png",
+  "name": "Factory (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "hospital",
+  "file": "buildings/mesoamerican/hospital.png",
+  "name": "Hospital (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "stock_exchange",
+  "file": "buildings/mesoamerican/stock_exchange.png",
+  "name": "Stock Exchange (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "military_academy",
+  "file": "buildings/mesoamerican/military_academy.png",
+  "name": "Military Academy (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "research_lab",
+  "file": "buildings/mesoamerican/research_lab.png",
+  "name": "Research Lab (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "power_plant",
+  "file": "buildings/mesoamerican/power_plant.png",
+  "name": "Power Plant (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "broadcast_tower",
+  "file": "buildings/mesoamerican/broadcast_tower.png",
+  "name": "Broadcast Tower (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "stadium",
+  "file": "buildings/mesoamerican/stadium.png",
+  "name": "Stadium (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "airport",
+  "file": "buildings/mesoamerican/airport.png",
+  "name": "Airport (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "computer_center",
+  "file": "buildings/mesoamerican/computer_center.png",
+  "name": "Computer Center (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "sewer",
+  "file": "buildings/mesoamerican/sewer.png",
+  "name": "Sewer (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "shipyard",
+  "file": "buildings/mesoamerican/shipyard.png",
+  "name": "Shipyard (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "astronomical_observatory",
+  "file": "buildings/mesoamerican/astronomical_observatory.png",
+  "name": "Observatory (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "railway_station",
+  "file": "buildings/mesoamerican/railway_station.png",
+  "name": "Railway Station (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "telegraph_office",
+  "file": "buildings/mesoamerican/telegraph_office.png",
+  "name": "Telegraph Office (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "nuclear_plant",
+  "file": "buildings/mesoamerican/nuclear_plant.png",
+  "name": "Nuclear Plant (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "data_center",
+  "file": "buildings/mesoamerican/data_center.png",
+  "name": "Data Center (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "spaceport",
+  "file": "buildings/mesoamerican/spaceport.png",
+  "name": "Spaceport (Mesoamerican and Andean)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "settler",
+  "file": "units/native_american/settler.png",
+  "name": "Settler (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "scout",
+  "file": "units/native_american/scout.png",
+  "name": "Scout (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "warrior",
+  "file": "units/native_american/warrior.png",
+  "name": "Warrior (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "slinger",
+  "file": "units/native_american/slinger.png",
+  "name": "Slinger (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "archer",
+  "file": "units/native_american/archer.png",
+  "name": "Archer (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "spearman",
+  "file": "units/native_american/spearman.png",
+  "name": "Spearman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "swordsman",
+  "file": "units/native_american/swordsman.png",
+  "name": "Swordsman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "horseman",
+  "file": "units/native_american/horseman.png",
+  "name": "Horseman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "catapult",
+  "file": "units/native_american/catapult.png",
+  "name": "Catapult (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "galley",
+  "file": "units/native_american/galley.png",
+  "name": "Galley (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "crossbowman",
+  "file": "units/native_american/crossbowman.png",
+  "name": "Crossbowman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "pikeman",
+  "file": "units/native_american/pikeman.png",
+  "name": "Pikeman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "knight",
+  "file": "units/native_american/knight.png",
+  "name": "Knight (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "musketman",
+  "file": "units/native_american/musketman.png",
+  "name": "Musketman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "bombard",
+  "file": "units/native_american/bombard.png",
+  "name": "Bombard (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "caravel",
+  "file": "units/native_american/caravel.png",
+  "name": "Caravel (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "field_cannon",
+  "file": "units/native_american/field_cannon.png",
+  "name": "Field Cannon (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "cavalry",
+  "file": "units/native_american/cavalry.png",
+  "name": "Cavalry (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "rifleman",
+  "file": "units/native_american/rifleman.png",
+  "name": "Rifleman (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "ironclad",
+  "file": "units/native_american/ironclad.png",
+  "name": "Ironclad (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "artillery",
+  "file": "units/native_american/artillery.png",
+  "name": "Artillery (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "infantry",
+  "file": "units/native_american/infantry.png",
+  "name": "Infantry (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "machine_gun",
+  "file": "units/native_american/machine_gun.png",
+  "name": "Machine Gun (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "battleship",
+  "file": "units/native_american/battleship.png",
+  "name": "Battleship (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "tank",
+  "file": "units/native_american/tank.png",
+  "name": "Tank (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "mech_infantry",
+  "file": "units/native_american/mech_infantry.png",
+  "name": "Mechanized Infantry (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "rocket_artillery",
+  "file": "units/native_american/rocket_artillery.png",
+  "name": "Rocket Artillery (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "destroyer",
+  "file": "units/native_american/destroyer.png",
+  "name": "Destroyer (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "submarine",
+  "file": "units/native_american/submarine.png",
+  "name": "Submarine (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "modern_armor",
+  "file": "units/native_american/modern_armor.png",
+  "name": "Modern Armor (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "special_forces",
+  "file": "units/native_american/special_forces.png",
+  "name": "Special Forces (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "missionary",
+  "file": "units/native_american/missionary.png",
+  "name": "Missionary (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "apostle",
+  "file": "units/native_american/apostle.png",
+  "name": "Apostle (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/native_american",
+  "id": "inquisitor",
+  "file": "units/native_american/inquisitor.png",
+  "name": "Inquisitor (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "palace",
+  "file": "buildings/native_american/palace.png",
+  "name": "Palace (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "monument",
+  "file": "buildings/native_american/monument.png",
+  "name": "Monument (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "granary",
+  "file": "buildings/native_american/granary.png",
+  "name": "Granary (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "shrine",
+  "file": "buildings/native_american/shrine.png",
+  "name": "Shrine (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "temple",
+  "file": "buildings/native_american/temple.png",
+  "name": "Temple (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "walls",
+  "file": "buildings/native_american/walls.png",
+  "name": "Walls (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "library",
+  "file": "buildings/native_american/library.png",
+  "name": "Library (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "barracks",
+  "file": "buildings/native_american/barracks.png",
+  "name": "Barracks (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "water_mill",
+  "file": "buildings/native_american/water_mill.png",
+  "name": "Water Mill (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "market",
+  "file": "buildings/native_american/market.png",
+  "name": "Market (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "lighthouse",
+  "file": "buildings/native_american/lighthouse.png",
+  "name": "Lighthouse (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "amphitheater",
+  "file": "buildings/native_american/amphitheater.png",
+  "name": "Amphitheater (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "aqueduct",
+  "file": "buildings/native_american/aqueduct.png",
+  "name": "Aqueduct (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "university",
+  "file": "buildings/native_american/university.png",
+  "name": "University (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "workshop",
+  "file": "buildings/native_american/workshop.png",
+  "name": "Workshop (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "harbor",
+  "file": "buildings/native_american/harbor.png",
+  "name": "Harbor (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "castle",
+  "file": "buildings/native_american/castle.png",
+  "name": "Castle (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "bank",
+  "file": "buildings/native_american/bank.png",
+  "name": "Bank (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "museum",
+  "file": "buildings/native_american/museum.png",
+  "name": "Museum (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "printing_house",
+  "file": "buildings/native_american/printing_house.png",
+  "name": "Printing House (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "factory",
+  "file": "buildings/native_american/factory.png",
+  "name": "Factory (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "hospital",
+  "file": "buildings/native_american/hospital.png",
+  "name": "Hospital (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "stock_exchange",
+  "file": "buildings/native_american/stock_exchange.png",
+  "name": "Stock Exchange (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "military_academy",
+  "file": "buildings/native_american/military_academy.png",
+  "name": "Military Academy (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "research_lab",
+  "file": "buildings/native_american/research_lab.png",
+  "name": "Research Lab (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "power_plant",
+  "file": "buildings/native_american/power_plant.png",
+  "name": "Power Plant (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "broadcast_tower",
+  "file": "buildings/native_american/broadcast_tower.png",
+  "name": "Broadcast Tower (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "stadium",
+  "file": "buildings/native_american/stadium.png",
+  "name": "Stadium (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "airport",
+  "file": "buildings/native_american/airport.png",
+  "name": "Airport (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "computer_center",
+  "file": "buildings/native_american/computer_center.png",
+  "name": "Computer Center (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "sewer",
+  "file": "buildings/native_american/sewer.png",
+  "name": "Sewer (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "shipyard",
+  "file": "buildings/native_american/shipyard.png",
+  "name": "Shipyard (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "astronomical_observatory",
+  "file": "buildings/native_american/astronomical_observatory.png",
+  "name": "Observatory (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "railway_station",
+  "file": "buildings/native_american/railway_station.png",
+  "name": "Railway Station (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "telegraph_office",
+  "file": "buildings/native_american/telegraph_office.png",
+  "name": "Telegraph Office (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "nuclear_plant",
+  "file": "buildings/native_american/nuclear_plant.png",
+  "name": "Nuclear Plant (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "data_center",
+  "file": "buildings/native_american/data_center.png",
+  "name": "Data Center (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/native_american",
+  "id": "spaceport",
+  "file": "buildings/native_american/spaceport.png",
+  "name": "Spaceport (Native American)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "settler",
+  "file": "units/polynesian/settler.png",
+  "name": "Settler (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "scout",
+  "file": "units/polynesian/scout.png",
+  "name": "Scout (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "warrior",
+  "file": "units/polynesian/warrior.png",
+  "name": "Warrior (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "slinger",
+  "file": "units/polynesian/slinger.png",
+  "name": "Slinger (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "archer",
+  "file": "units/polynesian/archer.png",
+  "name": "Archer (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "spearman",
+  "file": "units/polynesian/spearman.png",
+  "name": "Spearman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "swordsman",
+  "file": "units/polynesian/swordsman.png",
+  "name": "Swordsman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "horseman",
+  "file": "units/polynesian/horseman.png",
+  "name": "Horseman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "catapult",
+  "file": "units/polynesian/catapult.png",
+  "name": "Catapult (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "galley",
+  "file": "units/polynesian/galley.png",
+  "name": "Galley (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "crossbowman",
+  "file": "units/polynesian/crossbowman.png",
+  "name": "Crossbowman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "pikeman",
+  "file": "units/polynesian/pikeman.png",
+  "name": "Pikeman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "knight",
+  "file": "units/polynesian/knight.png",
+  "name": "Knight (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "musketman",
+  "file": "units/polynesian/musketman.png",
+  "name": "Musketman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "bombard",
+  "file": "units/polynesian/bombard.png",
+  "name": "Bombard (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "caravel",
+  "file": "units/polynesian/caravel.png",
+  "name": "Caravel (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "field_cannon",
+  "file": "units/polynesian/field_cannon.png",
+  "name": "Field Cannon (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "cavalry",
+  "file": "units/polynesian/cavalry.png",
+  "name": "Cavalry (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "rifleman",
+  "file": "units/polynesian/rifleman.png",
+  "name": "Rifleman (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "ironclad",
+  "file": "units/polynesian/ironclad.png",
+  "name": "Ironclad (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "artillery",
+  "file": "units/polynesian/artillery.png",
+  "name": "Artillery (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "infantry",
+  "file": "units/polynesian/infantry.png",
+  "name": "Infantry (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "machine_gun",
+  "file": "units/polynesian/machine_gun.png",
+  "name": "Machine Gun (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "battleship",
+  "file": "units/polynesian/battleship.png",
+  "name": "Battleship (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "tank",
+  "file": "units/polynesian/tank.png",
+  "name": "Tank (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "mech_infantry",
+  "file": "units/polynesian/mech_infantry.png",
+  "name": "Mechanized Infantry (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "rocket_artillery",
+  "file": "units/polynesian/rocket_artillery.png",
+  "name": "Rocket Artillery (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "destroyer",
+  "file": "units/polynesian/destroyer.png",
+  "name": "Destroyer (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "submarine",
+  "file": "units/polynesian/submarine.png",
+  "name": "Submarine (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "modern_armor",
+  "file": "units/polynesian/modern_armor.png",
+  "name": "Modern Armor (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "special_forces",
+  "file": "units/polynesian/special_forces.png",
+  "name": "Special Forces (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "missionary",
+  "file": "units/polynesian/missionary.png",
+  "name": "Missionary (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "apostle",
+  "file": "units/polynesian/apostle.png",
+  "name": "Apostle (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units/polynesian",
+  "id": "inquisitor",
+  "file": "units/polynesian/inquisitor.png",
+  "name": "Inquisitor (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "palace",
+  "file": "buildings/polynesian/palace.png",
+  "name": "Palace (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "monument",
+  "file": "buildings/polynesian/monument.png",
+  "name": "Monument (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "granary",
+  "file": "buildings/polynesian/granary.png",
+  "name": "Granary (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "shrine",
+  "file": "buildings/polynesian/shrine.png",
+  "name": "Shrine (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "temple",
+  "file": "buildings/polynesian/temple.png",
+  "name": "Temple (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "walls",
+  "file": "buildings/polynesian/walls.png",
+  "name": "Walls (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "library",
+  "file": "buildings/polynesian/library.png",
+  "name": "Library (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "barracks",
+  "file": "buildings/polynesian/barracks.png",
+  "name": "Barracks (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "water_mill",
+  "file": "buildings/polynesian/water_mill.png",
+  "name": "Water Mill (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "market",
+  "file": "buildings/polynesian/market.png",
+  "name": "Market (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "lighthouse",
+  "file": "buildings/polynesian/lighthouse.png",
+  "name": "Lighthouse (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "amphitheater",
+  "file": "buildings/polynesian/amphitheater.png",
+  "name": "Amphitheater (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "aqueduct",
+  "file": "buildings/polynesian/aqueduct.png",
+  "name": "Aqueduct (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "university",
+  "file": "buildings/polynesian/university.png",
+  "name": "University (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "workshop",
+  "file": "buildings/polynesian/workshop.png",
+  "name": "Workshop (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "harbor",
+  "file": "buildings/polynesian/harbor.png",
+  "name": "Harbor (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "castle",
+  "file": "buildings/polynesian/castle.png",
+  "name": "Castle (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "bank",
+  "file": "buildings/polynesian/bank.png",
+  "name": "Bank (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "museum",
+  "file": "buildings/polynesian/museum.png",
+  "name": "Museum (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "printing_house",
+  "file": "buildings/polynesian/printing_house.png",
+  "name": "Printing House (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "factory",
+  "file": "buildings/polynesian/factory.png",
+  "name": "Factory (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "hospital",
+  "file": "buildings/polynesian/hospital.png",
+  "name": "Hospital (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "stock_exchange",
+  "file": "buildings/polynesian/stock_exchange.png",
+  "name": "Stock Exchange (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "military_academy",
+  "file": "buildings/polynesian/military_academy.png",
+  "name": "Military Academy (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "research_lab",
+  "file": "buildings/polynesian/research_lab.png",
+  "name": "Research Lab (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "power_plant",
+  "file": "buildings/polynesian/power_plant.png",
+  "name": "Power Plant (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "broadcast_tower",
+  "file": "buildings/polynesian/broadcast_tower.png",
+  "name": "Broadcast Tower (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "stadium",
+  "file": "buildings/polynesian/stadium.png",
+  "name": "Stadium (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "airport",
+  "file": "buildings/polynesian/airport.png",
+  "name": "Airport (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "computer_center",
+  "file": "buildings/polynesian/computer_center.png",
+  "name": "Computer Center (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "sewer",
+  "file": "buildings/polynesian/sewer.png",
+  "name": "Sewer (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "shipyard",
+  "file": "buildings/polynesian/shipyard.png",
+  "name": "Shipyard (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "astronomical_observatory",
+  "file": "buildings/polynesian/astronomical_observatory.png",
+  "name": "Observatory (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "railway_station",
+  "file": "buildings/polynesian/railway_station.png",
+  "name": "Railway Station (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "telegraph_office",
+  "file": "buildings/polynesian/telegraph_office.png",
+  "name": "Telegraph Office (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "nuclear_plant",
+  "file": "buildings/polynesian/nuclear_plant.png",
+  "name": "Nuclear Plant (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "data_center",
+  "file": "buildings/polynesian/data_center.png",
+  "name": "Data Center (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings/polynesian",
+  "id": "spaceport",
+  "file": "buildings/polynesian/spaceport.png",
+  "name": "Spaceport (Polynesian)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
   "kind": "techs",
   "id": "pottery",
   "file": "techs/pottery.png",

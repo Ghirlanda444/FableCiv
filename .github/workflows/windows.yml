@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "20"
       - name: Single-file HTML
-        run: node tools/bundle-html.js CHIBIlization.html
+        run: node tools/bundle-html.js Chibilization.html
       - name: Prepare desktop app
         shell: bash
         run: |
@@ -35,12 +35,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: windows-latest
-          name: "CHIBIlization (latest Windows build)"
+          name: "Chibilization (latest Windows build)"
           prerelease: true
           files: |
-            desktop/dist/CHIBIlization-windows.exe
-            CHIBIlization.html
+            desktop/dist/Chibilization-windows.exe
+            Chibilization.html
           body: |
-            CHIBIlization-windows.exe: portable Windows app, no install (double-click; Windows SmartScreen may ask you to confirm the first time because it is unsigned).
-            CHIBIlization.html: the whole game in one file, opens in any modern browser on Windows, Mac or Linux.
+            Chibilization-windows.exe: portable Windows app, no install (double-click; Windows SmartScreen may ask you to confirm the first time because it is unsigned).
+            Chibilization.html: the whole game in one file, opens in any modern browser on Windows, Mac or Linux.
             Built from commit ${{ github.sha }}.

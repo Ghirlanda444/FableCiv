@@ -1,8 +1,8 @@
 {
   "name": "chibilization",
-  "productName": "CHIBIlization",
+  "productName": "Chibilization",
   "version": "0.3.0",
-  "description": "CHIBIlization, a cute Civilization-style 4X game",
+  "description": "Chibilization, a cute Civilization-style 4X game",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -16,12 +16,12 @@
   },
   "build": {
     "appId": "com.ghirlanda.fableciv",
-    "productName": "CHIBIlization",
-    "artifactName": "CHIBIlization-${os}-${arch}.${ext}",
+    "productName": "Chibilization",
+    "artifactName": "Chibilization-${os}-${arch}.${ext}",
     "directories": { "output": "dist" },
     "files": ["main.js", "web/**/*"],
     "win": { "target": ["portable"], "icon": "icon.ico" },
     "linux": { "target": ["AppImage"], "category": "Game" },
-    "portable": { "artifactName": "CHIBIlization-windows.exe" }
+    "portable": { "artifactName": "Chibilization-windows.exe" }
   }
 }

@@ -1,4 +1,4 @@
-# CHIBIlization (repo FableCiv)
+# Chibilization (repo FableCiv)
 
 A single-player 4X strategy game for Android (and any modern browser) in the spirit of the
 Civilization series: a hybrid that keeps the classic "one civilization from start to finish"
@@ -56,9 +56,9 @@ tests/      headless engine simulation (Node) and Playwright UI smoke tests
 
 ## Play on Windows, Mac or Linux
 
-- **Windows app:** download `CHIBIlization-windows.exe` from the `windows-latest` release and double-click
+- **Windows app:** download `Chibilization-windows.exe` from the `windows-latest` release and double-click
   it (portable, no install). It is unsigned, so Windows SmartScreen may ask you to confirm once.
-- **Any browser:** download `CHIBIlization.html` from the same release and open it in Chrome, Edge or
+- **Any browser:** download `Chibilization.html` from the same release and open it in Chrome, Edge or
   Firefox. The whole game is in that one file.
 - **From source:** open `web/index.html` directly, or serve the folder (`npx http-server web`).
 

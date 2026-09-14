@@ -348,9 +348,9 @@
     factory: ['factory', 'dark'], hospital: ['barn', 'marble'], stock_exchange: ['tower', 'marble'], military_academy: ['keep', 'stone'], research_lab: ['dome', 'dark'], power_plant: ['factory', 'dark'],
     broadcast_tower: ['spire', 'dark'], stadium: ['arena', 'marble'], airport: ['barn', 'dark'], computer_center: ['tower', 'dark'], palace: ['palace', 'gold']
   };
-  P.buildingMesh = function (id, isWonder) {
+  P.buildingMesh = function (id, isWonder, culture) {
     var T = window.THREE, geo = this.geo, mat = this.mat, grp = new T.Group();
-    var art = AU.Assets.texture(isWonder ? (AU.NATIONAL[id] ? 'national' : 'wonders') : 'buildings', id);
+    var art = isWonder ? AU.Assets.texture(AU.NATIONAL[id] ? 'national' : 'wonders', id) : AU.Assets.textureFor('buildings', id, culture);
     if (art) { var img = art.image, aspect = img.width / img.height, bh = R * (isWonder ? 0.8 : 0.55); var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(bh * aspect, bh, 1); pic.position.y = bh / 2; grp.add(pic); grp.userData.isSprite = true; return grp; }
     var def = SHAPES[id] || (isWonder ? ['wonder', 'gold'] : ['barn', 'stone']);
     var shape = def[0], m = mat[def[1]] || mat.stone, s = R * (isWonder ? 0.42 : 0.26);
@@ -389,7 +389,8 @@
     for (var k2 = 0; k2 < 12; k2++) { var a2 = k2 * Math.PI / 6; slots.push([Math.cos(a2) * R * 0.74, Math.sin(a2) * R * 0.74, a2]); }
     var slot = 0, wonders = [];
     // town hall / palace at the centre
-    if (s.isCapital) { var pal = this.buildingMesh('palace'); pal.position.y = 1; grp.add(pal); }
+    var cul = AU.cultureOf(g.civs[s.civ]);
+    if (s.isCapital) { var pal = this.buildingMesh('palace', false, cul); pal.position.y = 1; grp.add(pal); }
     else if (s.isCity) { var hall = new T.Group(); var hb = new T.Mesh(geo.box, mat.marble); hb.scale.set(R * 0.36, R * 0.24, R * 0.3); hb.position.y = R * 0.12 + 1; hb.castShadow = true; hall.add(hb); var hr = new T.Mesh(geo.roof, civMat); hr.scale.set(R * 0.34, R * 0.16, R * 0.28); hr.position.y = R * 0.32 + 1; hall.add(hr); grp.add(hall); }
     else { var hut = new T.Mesh(geo.roof, mat.roofBrown); hut.scale.set(R * 0.22, R * 0.2, R * 0.22); hut.position.y = R * 0.1 + 1; hut.castShadow = true; grp.add(hut); }
     s.buildings.forEach(function (b) {
@@ -397,7 +398,7 @@
       if (AU.WONDERS[b]) { wonders.push(b); return; }
       if (b === 'walls' || b === 'castle') return;
       if (slot >= slots.length) return;
-      var mesh = self.buildingMesh(b, false), sl = slots[slot++];
+      var mesh = self.buildingMesh(b, false, cul), sl = slots[slot++];
       mesh.position.set(sl[0], 1, sl[1]); mesh.rotation.y = -sl[2] + Math.PI / 2; grp.add(mesh);
     });
     // population houses fill the remaining slots
@@ -463,7 +464,7 @@
       if (!node) {
         var grp = new T.Group();
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
-        var art = AU.Assets.texture('units', u.type);
+        var art = AU.Assets.textureFor('units', u.type, u.civ >= 0 ? AU.cultureOf(g.civs[u.civ]) : null);
         if (art) { // painted unit as a billboard standing on its base
           var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 0.82 : 0.68);
           var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);

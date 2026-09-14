@@ -46,9 +46,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: android-latest
-          name: "CHIBIlization (latest Android build)"
+          name: "Chibilization (latest Android build)"
           prerelease: true
           files: android/app/build/outputs/apk/debug/*.apk
           body: |
-            Automated debug build of the CHIBIlization Android app from commit ${{ github.sha }}.
+            Automated debug build of the Chibilization Android app from commit ${{ github.sha }}.
             Install the APK on a device with "Install unknown apps" enabled.

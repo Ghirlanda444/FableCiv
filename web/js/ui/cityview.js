@@ -38,8 +38,9 @@
     [[6, 1.05], [10, 1.85], [14, 2.5]].forEach(function (ring) { for (var k = 0; k < ring[0]; k++) { var a = k * Math.PI * 2 / ring[0] + ring[1]; slots.push([Math.cos(a) * R * ring[1], Math.sin(a) * R * ring[1], a]); } });
     var slot = 0, wonders = [], BS = 3.4;
     function put(mesh, x, z, rotY, scale) { if (mesh.userData.isSprite) scale = scale * 0.62; mesh.position.set(x, 0, z); mesh.rotation.y = rotY; mesh.scale.set(scale, scale, scale); scene.add(mesh); }
-    if (s.isCapital) put(h.buildingMesh('palace'), 0, 0, 0, BS * 1.2);
-    else if (s.isCity) { var hall = h.buildingMesh('keep'); put(hall, 0, 0, 0, BS); }
+    var cul = AU.cultureOf(g.civs[s.civ]);
+    if (s.isCapital) put(h.buildingMesh('palace', false, cul), 0, 0, 0, BS * 1.2);
+    else if (s.isCity) { var hall = h.buildingMesh('keep', false, cul); put(hall, 0, 0, 0, BS); }
     else { var hut = new T.Mesh(h.geo.roof, h.mat.roofBrown); hut.scale.set(R * 0.7, R * 0.6, R * 0.7); hut.position.y = R * 0.3; hut.castShadow = true; scene.add(hut); }
     var plaza = new T.Mesh(h.geo.disc, s.isCity ? h.mat.stone : h.mat.wood); plaza.scale.set(2.4, 1, 2.4); plaza.position.y = 0.5; plaza.receiveShadow = true; scene.add(plaza);
     s.buildings.forEach(function (b) { if (b === 'palace' || b === 'walls' || b === 'castle') return; if (AU.WONDERS[b] || AU.NATIONAL[b]) { wonders.push(b); return; } if (slot >= slots.length) return; var sl = slots[slot++]; put(h.buildingMesh(b, false), sl[0], sl[1], -sl[2] + Math.PI / 2, BS); });

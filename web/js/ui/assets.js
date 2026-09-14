@@ -22,6 +22,21 @@
       return e.ok ? e.img : null;
     },
     has: function (kind, id) { return !!A.get(kind, id); },
+    // Culture-specific variant (kind/<culture>/<id>) when it exists, otherwise the shared picture.
+    _state: function (kind, id) { return cache[A.key(kind, id)]; },
+    getFor: function (kind, id, culture) {
+      if (!culture) return A.get(kind, id);
+      var ck = kind + '/' + culture, img = A.get(ck, id); if (img) return img;
+      var e = A._state(ck, id); if (e && e.failed) return A.get(kind, id);
+      return null; // still loading
+    },
+    urlFor: function (kind, id, culture) { if (!culture) return A.url(kind, id); var ck = kind + '/' + culture, e = A._state(ck, id); return e && e.ok ? A.url(ck, id) : A.url(kind, id); },
+    textureFor: function (kind, id, culture) {
+      if (!culture) return A.texture(kind, id);
+      var ck = kind + '/' + culture, tex = A.texture(ck, id); if (tex) return tex;
+      var e = A._state(ck, id); if (e && e.failed) return A.texture(kind, id);
+      return null;
+    },
     url: function (kind, id) { var k = A.key(kind, id); return (AU.ASSET_DATA && AU.ASSET_DATA[k]) ? AU.ASSET_DATA[k] : A.base + k + '.png'; },
     usable3D: function (kind, id) { var e = cache[A.key(kind, id)]; return !!(e && e.ok && !e.tainted); },
     texture: function (kind, id) {
