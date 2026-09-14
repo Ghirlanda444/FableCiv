@@ -15,6 +15,10 @@ on:
         description: "Image generator: pollinations (free) or xai (Grok Imagine, uses the XAI_API_KEY secret)"
         required: false
         default: "pollinations"
+      skip:
+        description: "Kind prefixes to leave out unless named in kinds (default: the per-culture unit/building variants)"
+        required: false
+        default: "units/,buildings/"
 
 permissions:
   contents: write
@@ -45,6 +49,7 @@ jobs:
           KINDS: ${{ github.event.inputs.kinds }}
           LIMIT: ${{ github.event.inputs.limit }}
           ART_PROVIDER: ${{ github.event.inputs.provider }}
+          SKIP_KINDS: ${{ github.event.inputs.skip }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           XAI_IMAGE_MODEL: ${{ vars.XAI_IMAGE_MODEL }}
         run: |
