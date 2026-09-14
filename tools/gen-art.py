@@ -150,6 +150,26 @@ def main():
         quad = [ImageStat.Stat(im.crop(b)).mean for b in ((0, 0, 32, 32), (32, 0, 64, 32), (0, 32, 32, 64), (32, 32, 64, 64))]
         qd = max(math.sqrt(sum((a[k] - b[k]) ** 2 for k in range(3))) for a in quad for b in quad)
         return max(rd, qd * 0.9)
+    def figure_count(img):
+        # number of separate large opaque blobs: a unit picture must be one lone character
+        try:
+            im = img.convert('RGBA').resize((96, 96)); a = im.split()[3].load()
+        except Exception:
+            return 1
+        W = H = 96; seen = [[False] * W for _ in range(H)]; sizes = []
+        for y in range(H):
+            for x in range(W):
+                if seen[y][x] or a[x, y] < 40: continue
+                stack = [(x, y)]; seen[y][x] = True; n = 0
+                while stack:
+                    cx, cy = stack.pop(); n += 1
+                    for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                        nx, ny = cx + dx, cy + dy
+                        if 0 <= nx < W and 0 <= ny < H and not seen[ny][nx] and a[nx, ny] >= 40:
+                            seen[ny][nx] = True; stack.append((nx, ny))
+                sizes.append(n)
+        sizes.sort(reverse=True)
+        return sum(1 for n in sizes if n > W * H * 0.06 and n > sizes[0] * 0.25) if sizes else 0
     def work(it):
         path = os.path.join(ROOT, it['file'])
         prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
@@ -174,6 +194,15 @@ def main():
                         if best is None or -focus > best[0]: best = (-focus, img)
                         if attempt < 2:
                             print('  %s is a scene, not a repeating texture (focus %.0f), retrying' % (it['file'], focus), flush=True)
+                            time.sleep(args.delay)
+                            continue
+                        img = best[1]
+                if it['kind'].startswith('units') and not it.get('nobg'):
+                    figs = figure_count(img)
+                    if figs >= 2:
+                        if best is None or -figs > best[0]: best = (-figs, img)
+                        if attempt < 2:
+                            print('  %s shows %d separate figures, retrying' % (it['file'], figs), flush=True)
                             time.sleep(args.delay)
                             continue
                         img = best[1]
