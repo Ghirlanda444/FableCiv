@@ -53,7 +53,9 @@
 
   // ---------- tile sprites ----------
   // Painted mode: generated terrain textures and feature sprites (web/assets/terrain, web/assets/features) when they exist.
-  Renderer.prototype.terrainTexture = function (terrain) {
+  // Terrain is painted, not photographed: generated textures looked like photos and broke the continuity of the map.
+  Renderer.prototype.terrainTexture = function (terrain) { return null; };
+  Renderer.prototype._terrainTextureUnused = function (terrain) {
     var id = terrain === 'mountain' ? 'tundra' : terrain; if (id === 'ocean' || id === 'coast' || id === 'lake') return null; if (!AU.TERRAIN[id] && ['forest', 'jungle', 'marsh', 'hills'].indexOf(id) < 0) return null; var img = AU.Assets.get('terrain', id);
     if (!img && id === 'plains') { var gcv = this.terrainTexture('grassland'); if (!gcv) return null; this.texCanvases = this.texCanvases || {}; if (!this.texCanvases.plains) { var pc = document.createElement('canvas'); pc.width = gcv.width; pc.height = gcv.height; var pcx = pc.getContext('2d'); pcx.drawImage(gcv, 0, 0); pcx.fillStyle = 'rgba(214,176,70,0.5)'; pcx.fillRect(0, 0, pc.width, pc.height); this.texCanvases.plains = pc; } return this.texCanvases.plains; }
     if (!img) return null;

@@ -67,13 +67,7 @@ const RESOURCE_DESC = {
 };
 for (const [id, r] of Object.entries(AU.RESOURCES)) items.push({ kind: 'resources', id, name: r.name, size: '512x512', prompt: `Cartoon game inventory icon: ${RESOURCE_DESC[id] || 'a ' + r.name}, one chunky object with a thick clean outline, bright saturated colours, soft cel shading, large and centred, isolated on a plain white background, no text, no characters, no people.` });
 for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '512x512', prompt: `Round game emblem badge of the ${c.name} civilization: one bold, instantly recognisable symbol filling the centre: ${CIV_SYMBOLS[c.id] || 'a bold symbol associated with ' + c.name}. Flat bright colours, ${c.color} background, thick gold rim, thick clean outlines, symmetrical and centred, chibi cartoon vector sticker style, no text, no letters, no extra people, isolated on a plain white background. ${SCENE_STYLE}` });
-const TERRAIN_DESC = {
-  grassland: 'lush green meadow grass with a few tiny scattered wildflowers', plains: 'dry golden-yellow savanna grass with a few darker tufts', desert: 'warm pale sand with soft low dune ripples',
-  tundra: 'cold grey-green moss and lichen with small patches of frost', snow: 'clean white snow with soft pale-blue shadows and tiny sparkles',
-  forest: 'dense bright green tree tops, many round chunky pine and oak canopies packed edge to edge', jungle: 'dense bright rainforest canopy, huge glossy leaves and palm fronds packed edge to edge',
-  marsh: 'swampy wet grass with reeds, cattails, lily pads and small dark puddles', hills: 'rolling grassy hills with soft rounded bumps and gentle shading'
-};
-for (const [id, d] of Object.entries(TERRAIN_DESC)) items.push({ kind: 'terrain', id, name: (AU.TERRAIN[id] ? AU.TERRAIN[id].name : AU.FEATURES[id] ? AU.FEATURES[id].name : 'Hills') + ' texture', size: '512x512', nobg: true, prompt: `Seamless tileable repeating game texture of ${d}, photographed straight down from directly above, an even field that fills the whole square uniformly edge to edge with no focal point, no central object, no island, no pond, no path, no horizon, no sky, no border, no frame, no vignette, no text. ${SCENE_STYLE}` });
+// Terrain is painted procedurally by the renderer (generated textures looked like photos and broke the map's continuity).
 const FEATURE_DESC = {
   oasis: 'a small cartoon oasis pond with three palm trees', mountain: 'a chunky cartoon rocky mountain with a snowy peak', raider_camp: 'a small barbarian raider camp with hide tents, a campfire and a wooden palisade',
   farm: 'a small cartoon farm with wheat field rows and a tiny farmhouse', mine: 'a cartoon mine entrance in a rocky mound with a minecart and wooden supports', woodcutter: 'a cartoon lumber camp with a sawmill hut, log pile and stumps', pasture: 'a cartoon pasture with a wooden fence and two cows',

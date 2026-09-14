@@ -14,7 +14,7 @@
   }
   function artHas(kind, id) { return !!artIndex()[kind + '/' + id]; }
   function thumb(kind, id, label, big) { return '<div class="art-thumb' + (big ? ' big' : '') + '"><img loading="lazy" src="' + AU.Assets.url(kind, id) + '" alt=""><small>' + label + '</small></div>'; }
-  var ART_KINDS = [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'], ['natural', 'Natural Wonders'], ['leaders', 'Leaders'], ['civs', 'Civilization emblems'], ['resources', 'Resources'], ['features', 'Features & improvements'], ['terrain', 'Terrain textures'], ['techs', 'Technology cards'], ['civics', 'Civic cards'], ['thrones', 'Throne rooms'], ['palace', 'Palace pieces']];
+  var ART_KINDS = [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'], ['natural', 'Natural Wonders'], ['leaders', 'Leaders'], ['civs', 'Civilization emblems'], ['resources', 'Resources'], ['features', 'Features & improvements'], ['techs', 'Technology cards'], ['civics', 'Civic cards'], ['thrones', 'Throne rooms'], ['palace', 'Palace pieces']];
   function artKindCount(kind) { var n = 0, ix = artIndex(); for (var k in ix) if (k.indexOf(kind + '/') === 0) n++; return n; }
   // every version of one unit or building: the shared picture plus one per cultural art group
   function variantsHtml(kind, id) {
