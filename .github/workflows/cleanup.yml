@@ -1,0 +1,30 @@
+name: Clean up Actions storage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    name: Delete old artifacts and caches
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete all workflow artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api --paginate "repos/${{ github.repository }}/actions/artifacts?per_page=100" -q '.artifacts[].id'); do
+            gh api -X DELETE "repos/${{ github.repository }}/actions/artifacts/$id" && echo "deleted artifact $id"
+          done
+      - name: Delete all caches
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh api --paginate "repos/${{ github.repository }}/actions/caches?per_page=100" -q '.actions_caches[].id'); do
+            gh api -X DELETE "repos/${{ github.repository }}/actions/caches/$id" && echo "deleted cache $id"
+          done

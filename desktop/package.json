@@ -1,8 +1,8 @@
 {
-  "name": "fableciv",
-  "productName": "FableCiv",
+  "name": "chibilization",
+  "productName": "CHIBIlization",
   "version": "0.3.0",
-  "description": "FableCiv - Ages Unbroken, a Civilization-style 4X game",
+  "description": "CHIBIlization, a cute Civilization-style 4X game",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -16,12 +16,12 @@
   },
   "build": {
     "appId": "com.ghirlanda.fableciv",
-    "productName": "FableCiv",
-    "artifactName": "FableCiv-${os}-${arch}.${ext}",
+    "productName": "CHIBIlization",
+    "artifactName": "CHIBIlization-${os}-${arch}.${ext}",
     "directories": { "output": "dist" },
     "files": ["main.js", "web/**/*"],
     "win": { "target": ["portable"], "icon": "icon.ico" },
     "linux": { "target": ["AppImage"], "category": "Game" },
-    "portable": { "artifactName": "FableCiv-windows.exe" }
+    "portable": { "artifactName": "CHIBIlization-windows.exe" }
   }
 }

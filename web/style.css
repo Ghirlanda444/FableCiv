@@ -162,3 +162,6 @@ button.gold { border-color: var(--gold); background: #4a3a10; }
 .tip { position: absolute; z-index: 30; max-width: 240px; background: rgba(14,18,28,.96); border: 1px solid var(--gold); border-radius: 10px; padding: 8px 10px; font-size: 13px; pointer-events: none; box-shadow: 0 6px 20px rgba(0,0,0,.5); }
 .tip .tip-res { margin: 4px 0; font-size: 14px; }
 .tip .tip-nat { color: #ffe08a; margin: 3px 0; }
+
+.techpic { width: 46px; height: 46px; border-radius: 8px; object-fit: cover; flex: none; }
+.pedia-pic { float: right; width: 120px; height: 120px; border-radius: 12px; object-fit: cover; margin: 0 0 8px 12px; }

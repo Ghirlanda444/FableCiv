@@ -17,7 +17,7 @@ def fetch(url, timeout=120):
 
 _SESSION = {}
 _BG_LOCK = None
-def remove_bg(data, keep_bg=False):
+def remove_bg(data, keep_bg=False, crop=True):
     from PIL import Image
     import threading
     global _BG_LOCK
@@ -25,7 +25,7 @@ def remove_bg(data, keep_bg=False):
     img = Image.open(io.BytesIO(data)).convert('RGBA')
     # the free service stamps a small logo in the bottom-right corner: drop the bottom strip
     w, h = img.size
-    img = img.crop((0, 0, w, int(h * 0.93)))
+    if crop: img = img.crop((0, 0, w, int(h * 0.93)))
     if keep_bg:  # textures: keep the picture, restore the square size
         return img.resize((w, h), Image.LANCZOS)
     try:
@@ -44,6 +44,20 @@ def remove_bg(data, keep_bg=False):
                     px[x, y] = (r, g, b, 0)
         return img
 
+def fetch_xai(prompt, w, h):
+    """xAI image generation (Grok Imagine): OpenAI-compatible endpoint, returns the image bytes."""
+    key = os.environ.get('XAI_API_KEY')
+    if not key: raise RuntimeError('XAI_API_KEY is not set')
+    model = os.environ.get('XAI_IMAGE_MODEL') or 'grok-2-image-1212'
+    body = json.dumps({'model': model, 'prompt': prompt, 'n': 1, 'response_format': 'b64_json'}).encode('utf-8')
+    req = urllib.request.Request('https://api.x.ai/v1/images/generations', data=body, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'CHIBIlization-art/1.0'})
+    with urllib.request.urlopen(req, timeout=180) as r:
+        out = json.loads(r.read().decode('utf-8'))
+    import base64
+    d = out['data'][0]
+    if d.get('b64_json'): return base64.b64decode(d['b64_json']), 'image/jpeg'
+    return fetch(d['url'])
+
 def coverage(img):
     """Fraction of visibly opaque pixels; a cut-out that lost its subject is nearly empty."""
     try:
@@ -59,6 +73,7 @@ def main():
     ap.add_argument('--kinds', default='')
     ap.add_argument('--seed', type=int, default=7)
     ap.add_argument('--delay', type=float, default=4.0)
+    ap.add_argument('--provider', default=os.environ.get('ART_PROVIDER') or 'pollinations', help='pollinations (free) or xai (Grok Imagine, needs XAI_API_KEY)')
     args = ap.parse_args()
     items = json.load(open(os.path.join(ROOT, 'manifest.json')))
     prompts = {}
@@ -71,7 +86,7 @@ def main():
         elif line.startswith('  > ') and cur:
             prompts[cur] = line[4:].strip()
     kinds = [k for k in args.kinds.split(',') if k]
-    order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs']
+    order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs', 'techs', 'civics']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []
     for it in items:
@@ -92,10 +107,13 @@ def main():
                 seed = args.seed + attempt * 101  # a fresh seed each attempt so a hollow cut-out gets a different picture
                 url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, seed)
                 print('%s (%s) seed %d' % (it['file'], it['name'], seed), flush=True)
-                data, ctype = fetch(url)
+                if args.provider == 'xai':
+                    data, ctype = fetch_xai(prompt, w, h)
+                else:
+                    data, ctype = fetch(url)
                 if len(data) < 5000 or 'image' not in ctype:
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
-                img = remove_bg(data, keep_bg=bool(it.get('nobg')))
+                img = remove_bg(data, keep_bg=bool(it.get('nobg')), crop=(args.provider != 'xai'))
                 cov = coverage(img) if not it.get('nobg') else 1.0
                 if cov < 0.08:
                     if best is None or cov > best[0]: best = (cov, img)

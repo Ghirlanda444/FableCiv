@@ -365,20 +365,31 @@
         }
       }
     }
-    // pass 4b: tile yields (option)
-    if (this.showYields && rz >= 14) {
-      var ys = Math.max(7, rz * 0.26), YI = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭' };
+    // pass 4b: tile yields (option): Civ 6 style, small icons clustered in the tile, one icon per point (a number above 3)
+    if (this.showYields && rz >= 11) {
+      var YC = { food: ['#5ec45e', '#1f5a1f'], production: ['#e8923a', '#6b3a0a'], gold: ['#f0d040', '#7a5a00'], science: ['#4aa8ff', '#0b3d75'], culture: ['#c27bff', '#4a1a7a'], faith: ['#f4f0ff', '#6a5a9a'] };
+      var dot = Math.max(2.2, rz * 0.11), gap = dot * 2.35;
       for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
         i = r * g.W + c; t = g.tiles[i];
-        if (!explored[i] || AU.TERRAIN[t.terrain].impassable && !t.natural) continue;
+        if (!explored[i] || (AU.TERRAIN[t.terrain].impassable && !t.natural) || t.settlement != null) continue;
         var so = t.owner >= 0 ? g.settlements[t.owner] : null;
         var yy = so ? G.tileYields(g, t, so) : AU.baseTileYields(t, player);
-        var parts = []; for (var yk in YI) if (yy[yk] >= 1) parts.push([YI[yk], Math.floor(yy[yk])]);
-        if (!parts.length) continue;
-        cc = S(t); var totalW = parts.length * ys * 1.55, x0 = cc[0] - totalW / 2 + ys * 0.75, yy0 = cc[1] + rz * 0.62 * isoY;
-        ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.fillRect(cc[0] - totalW / 2 - 2, yy0 - ys * 0.6, totalW + 4, ys * 1.2);
-        ctx.font = 'bold ' + Math.round(ys * 0.9) + 'px system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff';
-        for (var pi2 = 0; pi2 < parts.length; pi2++) { this.drawGlyph(ctx, parts[pi2][0], x0 + pi2 * ys * 1.55 - ys * 0.3, yy0, ys * 0.85); ctx.fillText(parts[pi2][1], x0 + pi2 * ys * 1.55 + ys * 0.15, yy0 + 0.5); }
+        var groups = []; for (var yk in YC) { var nv = Math.floor(yy[yk] || 0); if (nv >= 1) groups.push([yk, nv]); }
+        if (!groups.length) continue;
+        cc = S(t);
+        var rows = groups.length > 3 ? 2 : 1, perRow = Math.ceil(groups.length / rows), gy = cc[1] + rz * 0.42 * isoY - (rows - 1) * gap * 0.55;
+        function groupW(gr) { return Math.min(gr[1], 3) * dot * 2.1 + (gr[1] > 3 ? dot * 2.2 : 0); }
+        for (var rowI = 0; rowI < rows; rowI++) {
+          var rowGroups = groups.slice(rowI * perRow, rowI * perRow + perRow), gw = 0;
+          rowGroups.forEach(function (gr) { gw += groupW(gr) + gap * 0.6; });
+          var gx = cc[0] - gw / 2 + gap * 0.3, yPos = gy + rowI * gap * 1.1;
+          rowGroups.forEach(function (gr) {
+            var n = gr[1], shown = Math.min(n, 3), col2 = YC[gr[0]];
+            for (var k2 = 0; k2 < shown; k2++) { var dx = gx + k2 * dot * 2.1 + dot; ctx.fillStyle = col2[1]; ctx.beginPath(); ctx.arc(dx, yPos, dot + 0.8, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = col2[0]; ctx.beginPath(); ctx.arc(dx, yPos, dot, 0, Math.PI * 2); ctx.fill(); }
+            if (n > 3) { ctx.font = 'bold ' + Math.round(dot * 2.2) + 'px system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText(String(n), gx + shown * dot * 2.1 + dot * 0.3, yPos); ctx.fillStyle = col2[0]; ctx.fillText(String(n), gx + shown * dot * 2.1 + dot * 0.3, yPos); }
+            gx += groupW(gr) + gap * 0.6;
+          });
+        }
       }
     }
     // pass 5: highlights

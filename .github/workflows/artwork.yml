@@ -4,13 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       kinds:
-        description: "Comma-separated kinds to generate (terrain,features,units,leaders,buildings,wonders,national,natural,resources,civs). Empty = all."
+        description: "Comma-separated kinds to generate (terrain,features,units,leaders,buildings,wonders,national,natural,resources,civs,techs,civics). Empty = all."
         required: false
         default: ""
       limit:
         description: "Maximum number of pictures this run (0 = all missing)"
         required: false
         default: "0"
+      provider:
+        description: "Image generator: pollinations (free) or xai (Grok Imagine, uses the XAI_API_KEY secret)"
+        required: false
+        default: "pollinations"
 
 permissions:
   contents: write
@@ -40,6 +44,9 @@ jobs:
         env:
           KINDS: ${{ github.event.inputs.kinds }}
           LIMIT: ${{ github.event.inputs.limit }}
+          ART_PROVIDER: ${{ github.event.inputs.provider }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_IMAGE_MODEL: ${{ vars.XAI_IMAGE_MODEL }}
         run: |
           git config user.name "fableciv-art-bot"
           git config user.email "art-bot@users.noreply.github.com"

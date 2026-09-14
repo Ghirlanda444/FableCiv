@@ -2662,5 +2662,1317 @@
   "name": "clearing sprite",
   "size": "512x512",
   "nobg": false
+ },
+ {
+  "kind": "techs",
+  "id": "pottery",
+  "file": "techs/pottery.png",
+  "name": "Pottery",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "animal_husbandry",
+  "file": "techs/animal_husbandry.png",
+  "name": "Animal Husbandry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "mining",
+  "file": "techs/mining.png",
+  "name": "Mining",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "hunting",
+  "file": "techs/hunting.png",
+  "name": "Hunting",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "fishing",
+  "file": "techs/fishing.png",
+  "name": "Fishing",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "sailing",
+  "file": "techs/sailing.png",
+  "name": "Sailing",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "mysticism",
+  "file": "techs/mysticism.png",
+  "name": "Mysticism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "irrigation",
+  "file": "techs/irrigation.png",
+  "name": "Irrigation",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "archery",
+  "file": "techs/archery.png",
+  "name": "Archery",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "writing",
+  "file": "techs/writing.png",
+  "name": "Writing",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "masonry",
+  "file": "techs/masonry.png",
+  "name": "Masonry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "bronze_working",
+  "file": "techs/bronze_working.png",
+  "name": "Bronze Working",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "wheel",
+  "file": "techs/wheel.png",
+  "name": "The Wheel",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "celestial_navigation",
+  "file": "techs/celestial_navigation.png",
+  "name": "Celestial Navigation",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "currency",
+  "file": "techs/currency.png",
+  "name": "Currency",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "horseback_riding",
+  "file": "techs/horseback_riding.png",
+  "name": "Horseback Riding",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "iron_working",
+  "file": "techs/iron_working.png",
+  "name": "Iron Working",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "calendar",
+  "file": "techs/calendar.png",
+  "name": "Calendar",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "shipbuilding",
+  "file": "techs/shipbuilding.png",
+  "name": "Shipbuilding",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "mathematics",
+  "file": "techs/mathematics.png",
+  "name": "Mathematics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "roads",
+  "file": "techs/roads.png",
+  "name": "Roads",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "construction",
+  "file": "techs/construction.png",
+  "name": "Construction",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "engineering",
+  "file": "techs/engineering.png",
+  "name": "Engineering",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "optics",
+  "file": "techs/optics.png",
+  "name": "Optics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "herbalism",
+  "file": "techs/herbalism.png",
+  "name": "Herbalism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "metallurgy",
+  "file": "techs/metallurgy.png",
+  "name": "Metallurgy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "military_tactics",
+  "file": "techs/military_tactics.png",
+  "name": "Military Tactics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "apprenticeship",
+  "file": "techs/apprenticeship.png",
+  "name": "Apprenticeship",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "machinery",
+  "file": "techs/machinery.png",
+  "name": "Machinery",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "compass",
+  "file": "techs/compass.png",
+  "name": "Compass",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "education",
+  "file": "techs/education.png",
+  "name": "Education",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "paper",
+  "file": "techs/paper.png",
+  "name": "Paper",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "stirrups",
+  "file": "techs/stirrups.png",
+  "name": "Stirrups",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "three_field_system",
+  "file": "techs/three_field_system.png",
+  "name": "Three-Field System",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "military_engineering",
+  "file": "techs/military_engineering.png",
+  "name": "Military Engineering",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "castles",
+  "file": "techs/castles.png",
+  "name": "Castles",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "alchemy",
+  "file": "techs/alchemy.png",
+  "name": "Alchemy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "heraldry",
+  "file": "techs/heraldry.png",
+  "name": "Heraldry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "clockwork",
+  "file": "techs/clockwork.png",
+  "name": "Clockwork",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "cartography",
+  "file": "techs/cartography.png",
+  "name": "Cartography",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "mass_production",
+  "file": "techs/mass_production.png",
+  "name": "Mass Production",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "banking",
+  "file": "techs/banking.png",
+  "name": "Banking",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "gunpowder",
+  "file": "techs/gunpowder.png",
+  "name": "Gunpowder",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "printing",
+  "file": "techs/printing.png",
+  "name": "Printing",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "astronomy",
+  "file": "techs/astronomy.png",
+  "name": "Astronomy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "square_rigging",
+  "file": "techs/square_rigging.png",
+  "name": "Square Rigging",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "metal_casting",
+  "file": "techs/metal_casting.png",
+  "name": "Metal Casting",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "anatomy",
+  "file": "techs/anatomy.png",
+  "name": "Anatomy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "siege_tactics",
+  "file": "techs/siege_tactics.png",
+  "name": "Siege Tactics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "scientific_method",
+  "file": "techs/scientific_method.png",
+  "name": "Scientific Method",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "joint_stock",
+  "file": "techs/joint_stock.png",
+  "name": "Joint-Stock Companies",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "fortification",
+  "file": "techs/fortification.png",
+  "name": "Fortification",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "industrialization",
+  "file": "techs/industrialization.png",
+  "name": "Industrialization",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "scientific_theory",
+  "file": "techs/scientific_theory.png",
+  "name": "Scientific Theory",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "ballistics",
+  "file": "techs/ballistics.png",
+  "name": "Ballistics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "military_science",
+  "file": "techs/military_science.png",
+  "name": "Military Science",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "steam_power",
+  "file": "techs/steam_power.png",
+  "name": "Steam Power",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "sanitation",
+  "file": "techs/sanitation.png",
+  "name": "Sanitation",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "economics",
+  "file": "techs/economics.png",
+  "name": "Economics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "rifling",
+  "file": "techs/rifling.png",
+  "name": "Rifling",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "railroad",
+  "file": "techs/railroad.png",
+  "name": "Railroad",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "telegraph",
+  "file": "techs/telegraph.png",
+  "name": "Telegraph",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "mass_agriculture",
+  "file": "techs/mass_agriculture.png",
+  "name": "Mass Agriculture",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "explosives",
+  "file": "techs/explosives.png",
+  "name": "Explosives",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "refining",
+  "file": "techs/refining.png",
+  "name": "Refining",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "electricity",
+  "file": "techs/electricity.png",
+  "name": "Electricity",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "radio",
+  "file": "techs/radio.png",
+  "name": "Radio",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "chemistry",
+  "file": "techs/chemistry.png",
+  "name": "Chemistry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "steel",
+  "file": "techs/steel.png",
+  "name": "Steel",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "replaceable_parts",
+  "file": "techs/replaceable_parts.png",
+  "name": "Replaceable Parts",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "flight",
+  "file": "techs/flight.png",
+  "name": "Flight",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "ideology_tech",
+  "file": "techs/ideology_tech.png",
+  "name": "Mass Politics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "refrigeration",
+  "file": "techs/refrigeration.png",
+  "name": "Refrigeration",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "automobile",
+  "file": "techs/automobile.png",
+  "name": "Automobile",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "combustion",
+  "file": "techs/combustion.png",
+  "name": "Combustion",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "electronics",
+  "file": "techs/electronics.png",
+  "name": "Electronics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "advanced_ballistics",
+  "file": "techs/advanced_ballistics.png",
+  "name": "Advanced Ballistics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "telecommunications",
+  "file": "techs/telecommunications.png",
+  "name": "Telecommunications",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "plastics",
+  "file": "techs/plastics.png",
+  "name": "Plastics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "computers",
+  "file": "techs/computers.png",
+  "name": "Computers",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "rocketry",
+  "file": "techs/rocketry.png",
+  "name": "Rocketry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "radar",
+  "file": "techs/radar.png",
+  "name": "Radar",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "penicillin",
+  "file": "techs/penicillin.png",
+  "name": "Penicillin",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "nuclear_fission",
+  "file": "techs/nuclear_fission.png",
+  "name": "Nuclear Fission",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "combined_arms",
+  "file": "techs/combined_arms.png",
+  "name": "Combined Arms",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "synthetic_materials",
+  "file": "techs/synthetic_materials.png",
+  "name": "Synthetic Materials",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "television",
+  "file": "techs/television.png",
+  "name": "Television",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "advanced_flight",
+  "file": "techs/advanced_flight.png",
+  "name": "Advanced Flight",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "jet_engines",
+  "file": "techs/jet_engines.png",
+  "name": "Jet Engines",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "satellites",
+  "file": "techs/satellites.png",
+  "name": "Satellites",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "nuclear_power",
+  "file": "techs/nuclear_power.png",
+  "name": "Nuclear Power",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "spaceflight",
+  "file": "techs/spaceflight.png",
+  "name": "Spaceflight",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "robotics",
+  "file": "techs/robotics.png",
+  "name": "Robotics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "lasers",
+  "file": "techs/lasers.png",
+  "name": "Lasers",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "the_internet",
+  "file": "techs/the_internet.png",
+  "name": "The Internet",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "genetics",
+  "file": "techs/genetics.png",
+  "name": "Genetics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "composites",
+  "file": "techs/composites.png",
+  "name": "Composites",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "stealth",
+  "file": "techs/stealth.png",
+  "name": "Stealth",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "guidance_systems",
+  "file": "techs/guidance_systems.png",
+  "name": "Guidance Systems",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "nanotechnology",
+  "file": "techs/nanotechnology.png",
+  "name": "Nanotechnology",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "artificial_intelligence",
+  "file": "techs/artificial_intelligence.png",
+  "name": "Artificial Intelligence",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "fusion",
+  "file": "techs/fusion.png",
+  "name": "Fusion",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "quantum_computing",
+  "file": "techs/quantum_computing.png",
+  "name": "Quantum Computing",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "techs",
+  "id": "future_tech",
+  "file": "techs/future_tech.png",
+  "name": "Future Technology",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "code_of_laws",
+  "file": "civics/code_of_laws.png",
+  "name": "Code of Laws",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "craftsmanship",
+  "file": "civics/craftsmanship.png",
+  "name": "Craftsmanship",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "foreign_trade",
+  "file": "civics/foreign_trade.png",
+  "name": "Foreign Trade",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "military_tradition",
+  "file": "civics/military_tradition.png",
+  "name": "Military Tradition",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "state_workforce",
+  "file": "civics/state_workforce.png",
+  "name": "State Workforce",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "early_empire",
+  "file": "civics/early_empire.png",
+  "name": "Early Empire",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "rituals",
+  "file": "civics/rituals.png",
+  "name": "Rituals",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "oral_tradition",
+  "file": "civics/oral_tradition.png",
+  "name": "Oral Tradition",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "political_philosophy",
+  "file": "civics/political_philosophy.png",
+  "name": "Political Philosophy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "games_recreation",
+  "file": "civics/games_recreation.png",
+  "name": "Games and Recreation",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "drama_poetry",
+  "file": "civics/drama_poetry.png",
+  "name": "Drama and Poetry",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "military_training",
+  "file": "civics/military_training.png",
+  "name": "Military Training",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "recorded_history",
+  "file": "civics/recorded_history.png",
+  "name": "Recorded History",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "defensive_tactics",
+  "file": "civics/defensive_tactics.png",
+  "name": "Defensive Tactics",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "mysticism_civic",
+  "file": "civics/mysticism_civic.png",
+  "name": "Theology",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "trade_league",
+  "file": "civics/trade_league.png",
+  "name": "Trade League",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "feudalism",
+  "file": "civics/feudalism.png",
+  "name": "Feudalism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "civil_service",
+  "file": "civics/civil_service.png",
+  "name": "Civil Service",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "mercenaries",
+  "file": "civics/mercenaries.png",
+  "name": "Mercenaries",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "guilds",
+  "file": "civics/guilds.png",
+  "name": "Guilds",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "divine_right",
+  "file": "civics/divine_right.png",
+  "name": "Divine Right",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "naval_tradition",
+  "file": "civics/naval_tradition.png",
+  "name": "Naval Tradition",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "exploration",
+  "file": "civics/exploration.png",
+  "name": "Exploration",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "medieval_faires",
+  "file": "civics/medieval_faires.png",
+  "name": "Medieval Faires",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "humanism",
+  "file": "civics/humanism.png",
+  "name": "Humanism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "diplomatic_service",
+  "file": "civics/diplomatic_service.png",
+  "name": "Diplomatic Service",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "reformed_church",
+  "file": "civics/reformed_church.png",
+  "name": "Reformed Church",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "mercantilism",
+  "file": "civics/mercantilism.png",
+  "name": "Mercantilism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "enlightenment",
+  "file": "civics/enlightenment.png",
+  "name": "The Enlightenment",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "colonialism",
+  "file": "civics/colonialism.png",
+  "name": "Colonialism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "absolutism",
+  "file": "civics/absolutism.png",
+  "name": "Absolutism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "the_arts",
+  "file": "civics/the_arts.png",
+  "name": "Patronage of the Arts",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "civil_engineering",
+  "file": "civics/civil_engineering.png",
+  "name": "Civil Engineering",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "nationalism",
+  "file": "civics/nationalism.png",
+  "name": "Nationalism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "opera_ballet",
+  "file": "civics/opera_ballet.png",
+  "name": "Opera and Ballet",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "natural_history",
+  "file": "civics/natural_history.png",
+  "name": "Natural History",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "urbanization",
+  "file": "civics/urbanization.png",
+  "name": "Urbanization",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "scorched_earth",
+  "file": "civics/scorched_earth.png",
+  "name": "Scorched Earth",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "capitalism",
+  "file": "civics/capitalism.png",
+  "name": "Capitalism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "conservation",
+  "file": "civics/conservation.png",
+  "name": "Conservation",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "ideology",
+  "file": "civics/ideology.png",
+  "name": "Ideology",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "mass_media",
+  "file": "civics/mass_media.png",
+  "name": "Mass Media",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "mobilization",
+  "file": "civics/mobilization.png",
+  "name": "Mobilization",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "suffrage",
+  "file": "civics/suffrage.png",
+  "name": "Suffrage",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "totalitarianism",
+  "file": "civics/totalitarianism.png",
+  "name": "Totalitarianism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "class_struggle",
+  "file": "civics/class_struggle.png",
+  "name": "Class Struggle",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "cultural_heritage",
+  "file": "civics/cultural_heritage.png",
+  "name": "Cultural Heritage",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "cold_war",
+  "file": "civics/cold_war.png",
+  "name": "Cold War",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "professional_sports",
+  "file": "civics/professional_sports.png",
+  "name": "Professional Sports",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "rapid_deployment",
+  "file": "civics/rapid_deployment.png",
+  "name": "Rapid Deployment",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "space_race",
+  "file": "civics/space_race.png",
+  "name": "Space Race",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "environmentalism",
+  "file": "civics/environmentalism.png",
+  "name": "Environmentalism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "globalization",
+  "file": "civics/globalization.png",
+  "name": "Globalization",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "social_media",
+  "file": "civics/social_media.png",
+  "name": "Social Media",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "digital_democracy",
+  "file": "civics/digital_democracy.png",
+  "name": "Digital Democracy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "corporate_libertarianism",
+  "file": "civics/corporate_libertarianism.png",
+  "name": "Corporate Libertarianism",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "synthetic_technocracy",
+  "file": "civics/synthetic_technocracy.png",
+  "name": "Synthetic Technocracy",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "smart_power",
+  "file": "civics/smart_power.png",
+  "name": "Smart Power",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "exodus_imperative",
+  "file": "civics/exodus_imperative.png",
+  "name": "Exodus Imperative",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "civics",
+  "id": "cultural_hegemony",
+  "file": "civics/cultural_hegemony.png",
+  "name": "Cultural Hegemony",
+  "size": "512x512",
+  "nobg": true
  }
 ]

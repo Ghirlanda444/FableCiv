@@ -69,6 +69,9 @@ const FEATURE_DESC = {
   plantation: 'a cartoon plantation with neat rows of bushes and a small hut', quarry: 'a cartoon stone quarry with cut blocks and a crane', camp: 'a cartoon hunting camp with a tent, drying racks and a campfire', fishing: 'two cartoon wooden fishing boats with nets', well: 'a cartoon stone water well with a bucket and a small palm', clearing: 'a cartoon cleared meadow with stumps and a small garden'
 };
 for (const [id, d] of Object.entries(FEATURE_DESC)) items.push({ kind: 'features', id, name: id.replace('_', ' ') + ' sprite', size: '512x512', prompt: `${d}, seen from above at a 3/4 angle as one compact clump, sitting on a small round patch of ground, isolated on a plain white background. ${SCENE_STYLE}` });
+const CARD_STYLE = 'Cute chibi cartoon illustration, chunky rounded shapes, thick clean outlines, bright saturated colours, soft cel shading, cheerful, a small scene filling the whole square, no text, no letters, no watermark, no border.';
+for (const t of AU.TECHS) items.push({ kind: 'techs', id: t.id, name: t.name, size: '512x512', nobg: true, prompt: `Square game card picture for the technology "${t.name}" (${ERA_HINT[t.era]} era): a tiny chibi person or object that represents ${t.name}. ${CARD_STYLE}` });
+for (const c of AU.CIVICS) items.push({ kind: 'civics', id: c.id, name: c.name, size: '512x512', nobg: true, prompt: `Square game card picture for the civic "${c.name}" (${ERA_HINT[c.era]} era): a tiny chibi scene of people that represents ${c.name}. ${CARD_STYLE}` });
 const outDir = path.join(__dirname, '..', 'web', 'assets');
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(items.map(i => ({ kind: i.kind, id: i.id, file: `${i.kind}/${i.id}.png`, name: i.name, size: i.size, nobg: !!i.nobg })), null, 1));
