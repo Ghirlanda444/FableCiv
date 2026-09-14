@@ -315,7 +315,8 @@
         L('hotu', 'Hotu Matu\'a', 'Ariki', 'Moai', 'Each Wonder yields +3 Culture; settlements on Coast +2 Culture; Monuments +1 Culture.', { culturePerWonder: 3, coastalSettlementYields: { culture: 2 }, buildingBonus: { monument: { culture: 1 } } }, { aggression: 0.3, expansion: 0.6, science: 0.4, culture: 0.8 })
       ] }
   ];
-  AU.CIV_BY_ID = {}; AU.LEADER_BY_ID = {};
-  AU.CIVS.forEach(function (c) { AU.CIV_BY_ID[c.id] = c; c.leaders.forEach(function (l) { l.civId = c.id; AU.LEADER_BY_ID[l.id] = l; }); });
+  // Rebuilds the lookup tables; extra civilization files (civs2.js) push into AU.CIVS and call this again.
+  AU.indexCivs = function () { AU.CIV_BY_ID = {}; AU.LEADER_BY_ID = {}; AU.CIVS.forEach(function (c) { AU.CIV_BY_ID[c.id] = c; c.leaders.forEach(function (l) { l.civId = c.id; AU.LEADER_BY_ID[l.id] = l; }); }); };
+  AU.indexCivs();
   AU.leadersOf = function (civId) { return AU.CIV_BY_ID[civId].leaders; };
 })(globalThis.AU = globalThis.AU || {});
