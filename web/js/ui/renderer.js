@@ -60,6 +60,18 @@
     var cv = this.texCanvases[id];
     if (!cv) { // mirrored 2x2 copy: always seamless whatever the generator produced
       var w = img.width, h = img.height; cv = document.createElement('canvas'); cv.width = w * 2; cv.height = h * 2; var c = cv.getContext('2d');
+      // flatten the generator's lighting (vignettes make the mirrored seams visible): divide by a heavily blurred copy
+      var flat = document.createElement('canvas'); flat.width = w; flat.height = h; var fc = flat.getContext('2d');
+      try {
+        fc.drawImage(img, 0, 0, w, h); var src = fc.getImageData(0, 0, w, h), sd = src.data;
+        var lo = document.createElement('canvas'); lo.width = 8; lo.height = 8; var lc = lo.getContext('2d'); lc.drawImage(img, 0, 0, 8, 8);
+        var blur = document.createElement('canvas'); blur.width = w; blur.height = h; var bc = blur.getContext('2d'); bc.imageSmoothingEnabled = true; bc.drawImage(lo, 0, 0, w, h);
+        var bd = bc.getImageData(0, 0, w, h).data, sum = 0, n = w * h;
+        for (var k = 0; k < n; k++) sum += bd[k * 4] * 0.3 + bd[k * 4 + 1] * 0.59 + bd[k * 4 + 2] * 0.11;
+        var mean = sum / n;
+        for (var q = 0; q < n; q++) { var lum = bd[q * 4] * 0.3 + bd[q * 4 + 1] * 0.59 + bd[q * 4 + 2] * 0.11, f = Math.max(0.6, Math.min(1.6, mean / Math.max(20, lum))); sd[q * 4] = Math.min(255, sd[q * 4] * f); sd[q * 4 + 1] = Math.min(255, sd[q * 4 + 1] * f); sd[q * 4 + 2] = Math.min(255, sd[q * 4 + 2] * f); }
+        fc.putImageData(src, 0, 0); img = flat;
+      } catch (e) { /* tainted image (file://): use it as is */ }
       c.drawImage(img, 0, 0); c.save(); c.translate(w * 2, 0); c.scale(-1, 1); c.drawImage(img, 0, 0); c.restore();
       c.save(); c.translate(0, h * 2); c.scale(1, -1); c.drawImage(img, 0, 0); c.restore(); c.save(); c.translate(w * 2, h * 2); c.scale(-1, -1); c.drawImage(img, 0, 0); c.restore();
       this.texCanvases[id] = cv;
