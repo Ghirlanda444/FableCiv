@@ -5,7 +5,7 @@ remove the background (rembg, with a chroma-key fallback) and save PNGs with tra
 Usage: python3 tools/gen-art.py [--limit N] [--kinds units,leaders] [--seed 7]
 Exits 0 even when some images fail; a later run retries whatever is still missing.
 """
-import argparse, io, json, os, sys, time, urllib.parse, urllib.request
+import argparse, io, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'web', 'assets')
 BG_HINT = ''
@@ -44,16 +44,49 @@ def remove_bg(data, keep_bg=False, crop=True):
                     px[x, y] = (r, g, b, 0)
         return img
 
-def fetch_xai(prompt, w, h):
-    """xAI image generation (Grok Imagine): OpenAI-compatible endpoint, returns the image bytes."""
+_XAI = {}
+def xai_request(path, body=None):
     key = os.environ.get('XAI_API_KEY')
     if not key: raise RuntimeError('XAI_API_KEY is not set')
-    model = os.environ.get('XAI_IMAGE_MODEL') or 'grok-2-image-1212'
-    body = json.dumps({'model': model, 'prompt': prompt, 'n': 1, 'response_format': 'b64_json'}).encode('utf-8')
-    req = urllib.request.Request('https://api.x.ai/v1/images/generations', data=body, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'Chibilization-art/1.0'})
-    with urllib.request.urlopen(req, timeout=180) as r:
-        out = json.loads(r.read().decode('utf-8'))
+    data = json.dumps(body).encode('utf-8') if body is not None else None
+    req = urllib.request.Request('https://api.x.ai/v1/' + path, data=data, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'Chibilization-art/1.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=180) as r:
+            return json.loads(r.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        detail = ''
+        try: detail = e.read().decode('utf-8', 'replace')[:400]
+        except Exception: pass
+        raise RuntimeError('xAI HTTP %s on %s: %s' % (e.code, path, detail))
+
+def xai_model():
+    """Pick the image model: the XAI_IMAGE_MODEL variable if set, else the first image model the account can use."""
+    if 'model' in _XAI: return _XAI['model']
+    forced = os.environ.get('XAI_IMAGE_MODEL')
+    if forced: _XAI['model'] = forced; return forced
+    ids = []
+    try:
+        out = xai_request('image-generation-models')
+        ids = [m.get('id') for m in out.get('models', []) if m.get('id')]
+        print('  xAI image models available: %s' % ', '.join(ids), flush=True)
+    except Exception as e:
+        print('  could not list xAI image models (%s)' % e, flush=True)
+    pref = [i for i in ids if 'imagine' in i] + [i for i in ids if 'image' in i] + ids
+    _XAI['model'] = pref[0] if pref else 'grok-2-image-1212'
+    return _XAI['model']
+
+def fetch_xai(prompt, w, h):
+    """xAI image generation (Grok Imagine): OpenAI-compatible endpoint, returns the image bytes."""
     import base64
+    model = xai_model()
+    body = {'model': model, 'prompt': prompt, 'n': 1, 'response_format': 'b64_json'}
+    try:
+        out = xai_request('images/generations', body)
+    except RuntimeError as e:
+        if 'response_format' in str(e) or 'HTTP 400' in str(e):
+            body.pop('response_format', None)
+            out = xai_request('images/generations', body)
+        else: raise
     d = out['data'][0]
     if d.get('b64_json'): return base64.b64decode(d['b64_json']), 'image/jpeg'
     return fetch(d['url'])
