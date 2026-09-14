@@ -144,6 +144,7 @@
     G.unitsAt(g, t.i).forEach(function (o) { if (o.civ < 0) G.removeUnit(g, o); });
     G.notify(g, civ, { kind: 'camp', text: u.name + ' dispersed an independent camp: +' + gold + ' Gold.', tile: t.i });
     G.log(g, G.civData(civ).name + ' dispersed a camp.', civ.idx);
+    var cfx0 = G.civFx(g, civ); if (cfx0.campFaith) civ.bonusFaith = (civ.bonusFaith || 0) + cfx0.campFaith;
   };
   U.followPath = function (g, u) {
     while (u.path && u.path.length && u.moves > 0) {
@@ -176,6 +177,7 @@
     }
     if (u.fortify > 0 && u.fortify < 2 && !moved) u.fortify++;
     u.moves = G.maxMoves(g, u.civ, u.type, u);
+    if (def.religious && civ) u.moves += G.civFx(g, civ).religiousMoves || 0;
     u.attacksLeft = def.extraAttack ? 2 : 1;
     if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
     if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
@@ -229,6 +231,12 @@
     if (cls === 'cavalry' && fx.cavalryBonus) str += fx.cavalryBonus;
     if ((cls === 'melee' || cls === 'antcav' || cls === 'cavalry') && fx.meleeBonus) str += fx.meleeBonus;
     if (fx.combatBonus) str += fx.combatBonus;
+    if (civ && AU.Religion && (fx.combatBonusOwnReligion || fx.combatBonusVsOtherReligion || fx.combatBonusVsFollowerSettlements)) {
+      var relId = civ.religion;
+      if (fx.combatBonusOwnReligion && relId) { var nearRel = G.settlementAt(g, u.tile); var okRel = nearRel && nearRel.religion === relId; if (!okRel) okRel = G.neighbors(g, t).some(function (n) { var ns = G.settlementAt(g, n); return ns && ns.religion === relId; }); if (okRel) str += fx.combatBonusOwnReligion; }
+      if (fx.combatBonusVsOtherReligion && vsUnit && vsUnit.civ >= 0 && g.civs[vsUnit.civ].religion !== relId) str += fx.combatBonusVsOtherReligion;
+      if (fx.combatBonusVsFollowerSettlements && ctx && ctx.attacking && vsSet && vsSet.religion === relId && vsSet.civ !== u.civ) str += fx.combatBonusVsFollowerSettlements;
+    }
     if (fx.strPerLuxury && civ) str += Math.min(5, G.luxuryCount(g, civ).luxuries.length * fx.strPerLuxury);
     var ownerCiv = G.tileOwnerCiv(g, t);
     if (civ && ownerCiv === u.civ && fx.combatBonusHome) str += fx.combatBonusHome;
@@ -326,10 +334,11 @@
       if (v.hp <= 0) {
         result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
         U.killRewards(g, u, def, v);
+        if (civ) { var kf = G.civFx(g, civ); if (kf.faithFromKills) civ.bonusFaith = (civ.bonusFaith || 0) + kf.faithFromKills; }
         if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
-        if (!G.isMilitary(v) && !ranged && U.canCapture(u)) { // capture civilian: convert
+        if (!G.isMilitary(v) && !ranged && U.canCapture(u) && !AU.UNITS[v.type].religious) { // capture civilian: convert
           v.civ = u.civ; v.hp = 100; v.moves = 0; result.capturedUnit = v.id; G.notify(g, civ, { kind: 'capture', text: 'Captured an enemy ' + v.name + '!', tile: v.tile });
         } else {
           G.removeUnit(g, v);

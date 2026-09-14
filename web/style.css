@@ -151,3 +151,6 @@ button.gold { border-color: var(--gold); background: #4a3a10; }
 .quote-box.natural h2 { color: #a8f0c8; }
 @keyframes quoteIn { from { transform: scale(.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes artIn { from { transform: scale(1.25); filter: brightness(2) blur(6px); opacity: 0; } 40% { opacity: 1; } to { transform: scale(1); filter: none; } }
+
+.faith { color: #d9c9ff; }
+.row.selected { border-color: var(--gold); }

@@ -31,7 +31,10 @@
     destroyer:   { name: 'Destroyer',   cls: 'navalRanged', cost: 520, moves: 6, strength: 70, ranged: 75, range: 2, tech: 'combustion', resource: 'oil', icon: '⚓', ocean: true },
     submarine:   { name: 'Submarine',   cls: 'naval',    cost: 560, moves: 5, strength: 85, tech: 'radar', resource: 'oil', icon: '🛥️', ocean: true },
     modern_armor:{ name: 'Modern Armor', cls: 'cavalry', cost: 700, moves: 5, strength: 100, tech: 'composites', resource: 'oil', icon: '🛡️' },
-    special_forces:{ name: 'Special Forces', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' }
+    special_forces:{ name: 'Special Forces', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' },
+    missionary:  { name: 'Missionary',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Faith in a settlement with a Shrine.' },
+    apostle:     { name: 'Apostle',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Faith in a settlement with a Temple.' },
+    inquisitor:  { name: 'Inquisitor',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Faith in a settlement with a Temple.' }
   };
   // The barbarian roster by era index
   AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank'], ['mech_infantry', 'modern_armor']];

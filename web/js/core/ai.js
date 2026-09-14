@@ -9,6 +9,7 @@
       AI.chooseResearch(g, civ);
       AI.chooseGovernment(g, civ);
       AI.choosePolicies(g, civ);
+      AI.religion(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
     } catch (e) { G.log(g, 'AI error for ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
@@ -251,11 +252,54 @@
     units.forEach(function (u) {
       if (!g.units[u.id]) return;
       if (u.type === 'settler') return AI.moveSettler(g, civ, u);
+      if (AU.UNITS[u.type].religious) return AI.moveReligious(g, civ, u);
       if (!G.isMilitary(u)) return;
       if (AU.UNITS[u.type].cls === 'recon' && g.turn < 80) return AI.explore(g, civ, u);
       if (U.isNaval(u)) return AI.moveNaval(g, civ, u);
       AI.moveMilitary(g, civ, u, garrisoned, sets);
     });
+  };
+  // ---------- Religion ----------
+  AI.religion = function (g, civ) {
+    var R = AU.Religion; if (!R) return;
+    var tr = civ.ai || {}, piety = tr.religion !== undefined ? tr.religion : 0.5;
+    if (R.canChoosePantheon(g, civ)) {
+      var opts = R.availablePantheons(g); if (opts.length) {
+        var sets = G.civSettlements(g, civ.idx), score = {};
+        opts.forEach(function (p) { var sc = G.rng(g) * 2; var w = p.fx.tileBonus ? p.fx.tileBonus[0].when : null;
+          if (w) sets.forEach(function (s) { s.tiles.forEach(function (i) { var t = g.tiles[i]; if ((w === 'desert' && t.terrain === 'desert') || (w === 'cold' && (t.terrain === 'tundra' || t.terrain === 'snow')) || (w === 'jungle' && (t.feature === 'jungle' || t.feature === 'marsh')) || (w === 'fishing' && G.isWater(t)) || (w === 'camp' && t.resource) || (w === 'mine' && t.hills) || (w === 'quarry' && t.resource === 'stone') || (w === 'sacred' && t.natural)) sc += 1; }); });
+          if (p.id === 'fertility_rites' || p.id === 'religious_settlements') sc += 3; if (p.id === 'god_forge') sc += (tr.aggression || 0) * 4; if (p.id === 'monument_gods') sc += (tr.culture || 0) * 4;
+          score[p.id] = sc; });
+        opts.sort(function (x, y) { return score[y.id] - score[x.id]; }); R.choosePantheon(g, civ, opts[0].id);
+      }
+    }
+    if (R.canFound(g, civ) && (piety > 0.3 || G.rng(g) < 0.3)) {
+      var names = R.availableNames(g), pref = AU.RELIGION_PREF[civ.civId], nm = names.filter(function (n) { return n.id === pref; })[0] || names[Math.floor(G.rng(g) * names.length)];
+      var fol = R.availableBeliefs(g, 'follower'), fdr = R.availableBeliefs(g, 'founder');
+      if (nm && fol.length && fdr.length) R.found(g, civ, nm.id, fol[Math.floor(G.rng(g) * fol.length)].id, fdr[Math.floor(G.rng(g) * fdr.length)].id);
+    }
+    if (R.canEnhance(g, civ)) { var en = R.availableBeliefs(g, 'enhancer'), fol2 = R.availableBeliefs(g, 'follower'); if (en.length && fol2.length) R.enhance(g, civ, en[Math.floor(G.rng(g) * en.length)].id, fol2[Math.floor(G.rng(g) * fol2.length)].id); }
+    // buy missionaries when there is something to convert
+    if (civ.religion && piety > 0.25) {
+      var mine = G.civUnits(g, civ.idx).filter(function (u) { return AU.UNITS[u.type].religious; }).length;
+      if (mine < 2) {
+        var targets = AI.conversionTargets(g, civ);
+        if (targets.length) { var home = G.civSettlements(g, civ.idx).filter(function (s) { return R.canBuyUnit(g, s, 'missionary'); })[0]; if (home) R.buyUnit(g, home, 'missionary'); }
+      }
+    }
+  };
+  AI.conversionTargets = function (g, civ) {
+    var out = [];
+    for (var id in g.settlements) { var s = g.settlements[id]; if (s.religion === civ.religion) continue; if (s.civ !== civ.idx && (G.atWar(g, civ.idx, s.civ) || !civ.met[s.civ])) continue; out.push(s); }
+    return out;
+  };
+  AI.moveReligious = function (g, civ, u) {
+    var R = AU.Religion;
+    if (R.canSpread(g, u)) { var here = G.settlementAt(g, u.tile); if (here && here.religion !== u.religion) { R.spread(g, u); return; } }
+    if (R.canInquisition(g, u)) { R.inquisition(g, u); return; }
+    var targets = AI.conversionTargets(g, civ), t = g.tiles[u.tile], best = null, bd = 1e9;
+    targets.forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]) + (s.civ === civ.idx ? 0 : 3); if (d < bd) { bd = d; best = s; } });
+    if (best) { if (!U.orderMove(g, u, best.tile)) U.skip(g, u); } else U.skip(g, u);
   };
   AI.moveSettler = function (g, civ, u) {
     var t = g.tiles[u.tile];

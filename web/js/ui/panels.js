@@ -6,7 +6,7 @@
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function yieldsHtml(y, opts) {
     var parts = [];
-    var map = { food: ['🌾', 'food'], production: ['⚙️', 'prod'], gold: ['💰', 'goldc'], science: ['🔬', 'sci'], culture: ['🎭', 'cult'], happiness: ['😊', ''] };
+    var map = { food: ['🌾', 'food'], production: ['⚙️', 'prod'], gold: ['💰', 'goldc'], science: ['🔬', 'sci'], culture: ['🎭', 'cult'], faith: ['🕊️', 'faith'], happiness: ['😊', ''] };
     AU.YIELD_KEYS.forEach(function (k) { if (y[k] && (!opts || !opts.skip || opts.skip.indexOf(k) < 0)) parts.push('<span class="' + map[k][1] + '">' + map[k][0] + (y[k] > 0 && opts && opts.plus ? '+' : '') + (Math.round(y[k] * 10) / 10) + '</span>'); });
     return parts.join(' ');
   }
@@ -73,7 +73,17 @@
     html += '<div class="section"><div class="yields">' + yieldsHtml(y, { skip: ['happiness'] }) + '<span>' + (y.happiness < 0 ? '😠 ' : '😊 ') + y.happiness + '</span></div>';
     html += '<p class="stat">Population ' + s.pop + (s.specialists ? ' (' + s.specialists + ' specialists)' : '') + ' · Food ' + Math.floor(s.food) + '/' + growthCost + ' (' + (s.specialization && !s.isCity ? 'sends surplus to ' + (G.nearestCity(g, s) ? G.nearestCity(g, s).name : 'no city') : surplus > 0 ? 'grows in ' + turns(growthCost, s.food, surplus * (fx.growthMult || 1)) : surplus < 0 ? 'starving!' : 'stagnant') + ')' +
       ' · Defense ' + G.settlementStrength(g, s) + ' · HP ' + s.hp + '/' + G.settlementMaxHp(g, s) + (y.happiness < 0 ? ' · <b style="color:#e05252">Unhappy: yields reduced</b>' : '') + '</p>';
-    html += '<div class="progress"><i style="width:' + Math.min(100, s.food / growthCost * 100) + '%;background:var(--food)"></i></div></div>';
+    html += '<div class="progress"><i style="width:' + Math.min(100, s.food / growthCost * 100) + '%;background:var(--food)"></i></div>';
+    if (AU.Religion) {
+      var Rl = AU.Religion, pr = s.pressure || {}, rows = Object.keys(pr).filter(function (k) { return pr[k] > 0 && g.religions[k]; }).sort(function (a2, b2) { return pr[b2] - pr[a2]; });
+      html += '<p class="stat">' + (s.religion ? Rl.icon(g, s.religion) + ' Follows <b>' + Rl.name(g, s.religion) + '</b>' + (g.religions[s.religion] && g.religions[s.religion].holyCity === s.id ? ' (Holy City)' : '') : '🕊️ No majority religion') + (rows.length ? ' · pressure: ' + rows.map(function (k) { return Rl.icon(g, k) + ' ' + Math.round(pr[k]); }).join(', ') : '') + '</p>';
+      if (s.civ === p.idx && (p.religion || p.pantheon)) {
+        var fu = ['missionary', 'apostle', 'inquisitor'].filter(function (id) { var d0 = AU.UNITS[id]; return (id === 'missionary' ? (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple')) && p.religion : G.hasBuilding(s, 'temple') && p.religion); });
+        if (fu.length) html += '<div class="actions">' + fu.map(function (id) { var c0 = Rl.unitCost(g, p, id); return '<button class="small" data-action="buyfaith" data-id="' + s.id + '" data-item="' + id + '" ' + (Rl.canBuyUnit(g, s, id) ? '' : 'disabled') + '>' + AU.UNITS[id].icon + ' ' + AU.UNITS[id].name + ' ' + c0 + ' 🕊️</button>'; }).join('') + '</div>';
+        else if (!p.religion) html += '<p class="stat">Found a religion to buy Missionaries here (needs a Shrine).</p>';
+      }
+    }
+    html += '</div>';
     if (s.pendingGrowth > 0) html += '<div class="row" style="border-color:var(--food)"><div class="grow"><b>🌱 ' + s.name + ' can expand (' + s.pendingGrowth + ')</b><small>Each new citizen claims and works one more tile.</small></div><button class="small primary" data-action="expand" data-id="' + s.id + '">Choose tile</button><button class="small" data-action="autoexpand" data-id="' + s.id + '">Auto</button></div>';
 
     if (!s.isCity) {
@@ -273,6 +283,48 @@
       '<h3>Controls</h3><p>Drag to pan, pinch or scroll to zoom. Tap the yields at the top to open panels. Enter = end turn, N = next unit, F = fortify, Space = skip. The game autosaves every turn.</p></div>';
     return { title: 'How to play', html: html };
   };
+  // ---------- Religion ----------
+  P.render_religion = function (app, g, data) {
+    var Rl = AU.Religion, p = G.player(g), y = G.civYields(g, p), html = '', sel = app.panelData;
+    html += '<div class="section"><div class="yields"><span class="faith">🕊️ ' + Math.floor(p.faith) + ' Faith</span><span>+' + (y.faith || 0) + ' per turn</span></div>';
+    html += '<p class="stat">Faith comes from Shrines, Temples, pantheon beliefs, holy cities and some wonders. Spend it on a pantheon (' + Rl.PANTHEON_COST + '), founding a religion (' + Rl.foundCost(g) + '), enhancing it (' + Rl.enhanceCost(g) + ') and religious units bought in settlements with a Shrine or Temple.</p></div>';
+    // pantheon
+    if (!p.pantheon) {
+      html += '<div class="section"><h3>Pantheon</h3>' + (Rl.canChoosePantheon(g, p) ? '<p class="stat">Choose one belief. It is yours for the whole game.</p>' : '<p class="stat">Needs ' + Rl.PANTHEON_COST + ' Faith.</p>');
+      Rl.availablePantheons(g).forEach(function (b) { html += '<div class="row"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small primary" data-action="pantheon" data-id="' + b.id + '" ' + (Rl.canChoosePantheon(g, p) ? '' : 'disabled') + '>Choose</button></div>'; });
+      html += '</div>';
+    } else html += '<div class="section"><h3>Pantheon: ' + AU.BELIEF_BY_ID[p.pantheon].name + '</h3><p class="stat">' + AU.BELIEF_BY_ID[p.pantheon].desc + '</p></div>';
+    var rel = Rl.rel(g, p.religion);
+    if (!rel && p.pantheon) {
+      var slotsLeft = Rl.maxReligions(g) - Rl.religionsFounded(g);
+      html += '<div class="section"><h3>Found a religion</h3><p class="stat">' + (slotsLeft > 0 ? slotsLeft + ' religion' + (slotsLeft > 1 ? 's' : '') + ' can still be founded in this world. Pick a name, one Follower belief and one Founder belief, then found it in your capital for ' + Rl.foundCost(g) + ' Faith.' : 'Every religion of this world has already been founded.') + '</p>';
+      if (slotsLeft > 0) {
+        html += '<p><b>Name</b></p><div class="actions">' + Rl.availableNames(g).map(function (n) { return '<button class="small' + (sel.relName === n.id ? ' primary' : '') + '" data-action="relpick" data-what="relName" data-id="' + n.id + '">' + n.icon + ' ' + n.name + '</button>'; }).join('') + '</div>';
+        html += '<p><b>Follower belief</b> (every settlement of the religion)</p>' + Rl.availableBeliefs(g, 'follower').map(function (b) { return '<div class="row' + (sel.relFollower === b.id ? ' selected' : '') + '"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small' + (sel.relFollower === b.id ? ' primary' : '') + '" data-action="relpick" data-what="relFollower" data-id="' + b.id + '">' + (sel.relFollower === b.id ? 'Chosen' : 'Pick') + '</button></div>'; }).join('');
+        html += '<p><b>Founder belief</b> (only for you)</p>' + Rl.availableBeliefs(g, 'founder').map(function (b) { return '<div class="row' + (sel.relFounder === b.id ? ' selected' : '') + '"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small' + (sel.relFounder === b.id ? ' primary' : '') + '" data-action="relpick" data-what="relFounder" data-id="' + b.id + '">' + (sel.relFounder === b.id ? 'Chosen' : 'Pick') + '</button></div>'; }).join('');
+        html += '<br><button class="big primary" data-action="foundrel" ' + (Rl.canFound(g, p) && sel.relName && sel.relFollower && sel.relFounder ? '' : 'disabled') + '>Found religion (' + Rl.foundCost(g) + ' 🕊️)</button>';
+      }
+      html += '</div>';
+    }
+    if (rel) {
+      html += '<div class="section"><h3>' + rel.icon + ' ' + rel.name + (rel.founder === p.idx ? ' (founded by you)' : ' (founded by ' + G.civData(g.civs[rel.founder]).name + ')') + '</h3>';
+      html += '<p class="stat">Holy city: ' + (g.settlements[rel.holyCity] ? g.settlements[rel.holyCity].name : '—') + ' · followers: ' + Rl.followerCount(g, rel.id) + ' settlements.</p>';
+      rel.beliefs.forEach(function (bid) { var b = AU.BELIEF_BY_ID[bid]; if (b) html += '<div class="row"><div class="grow"><b>' + b.name + '</b> <span class="pill">' + b.type + '</span><small>' + b.desc + '</small></div></div>'; });
+      if (rel.founder === p.idx && !rel.enhanced) {
+        html += '<h3>Enhance (' + Rl.enhanceCost(g) + ' 🕊️)</h3><p><b>Enhancer belief</b></p>' + Rl.availableBeliefs(g, 'enhancer').map(function (b) { return '<div class="row"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small' + (sel.relEnh === b.id ? ' primary' : '') + '" data-action="relpick" data-what="relEnh" data-id="' + b.id + '">' + (sel.relEnh === b.id ? 'Chosen' : 'Pick') + '</button></div>'; }).join('');
+        html += '<p><b>Second follower belief</b></p>' + Rl.availableBeliefs(g, 'follower').map(function (b) { return '<div class="row"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small' + (sel.relFollower2 === b.id ? ' primary' : '') + '" data-action="relpick" data-what="relFollower2" data-id="' + b.id + '">' + (sel.relFollower2 === b.id ? 'Chosen' : 'Pick') + '</button></div>'; }).join('');
+        html += '<br><button class="big primary" data-action="enhancerel" ' + (Rl.canEnhance(g, p) && sel.relEnh && sel.relFollower2 ? '' : 'disabled') + '>Enhance ' + rel.name + '</button>';
+      }
+      var vp = Rl.victoryProgress(g, p);
+      if (vp) html += '<h3>Religious victory</h3><p class="stat">Win when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
+      html += '</div>';
+    }
+    // world religions
+    var ids = Object.keys(g.religions || {});
+    html += '<div class="section"><h3>Religions of the world</h3>' + (ids.length ? ids.map(function (id) { var r = g.religions[id]; return '<div class="row"><div class="grow"><b>' + r.icon + ' ' + r.name + '</b><small>' + G.civData(g.civs[r.founder]).name + ' · ' + Rl.followerCount(g, id) + ' settlements · ' + r.beliefs.map(function (b) { return AU.BELIEF_BY_ID[b] ? AU.BELIEF_BY_ID[b].name : b; }).join(', ') + '</small></div></div>'; }).join('') : '<p class="stat">No religion has been founded yet. ' + Rl.maxReligions(g) + ' can exist in this world.</p>') + '</div>';
+    html += '<div class="section"><h3>Your settlements</h3>' + G.civSettlements(g, p.idx).map(function (s) { return '<div class="row clickable" data-action="city" data-id="' + s.id + '"><div class="grow">' + s.name + '</div><small>' + (s.religion ? Rl.icon(g, s.religion) + ' ' + Rl.name(g, s.religion) : '—') + '</small></div>'; }).join('') + '</div>';
+    return { title: 'Religion', html: html };
+  };
   P.render_victory = function (app, g) {
     var p = G.player(g), v = g.victory, html = '<div class="victory">';
     if (!p.alive) html += '<h1>Defeat</h1><p>Your civilization has been destroyed on turn ' + g.turn + '.</p>';
@@ -303,6 +355,11 @@
       case 'quit': app.confirm('Quit to the title screen? Your game is saved.', function () { app.save(true); app.panel = null; $('panel').hidden = true; app.g = null; app.showTitle(); }); break;
       case 'help': app.openPanel('help'); break;
       case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
+      case 'relpick': app.panelData[d.what] = d.id; app.refreshPanel(); break;
+      case 'pantheon': if (AU.Religion.choosePantheon(g, p, d.id)) { app.toast('Pantheon: ' + AU.BELIEF_BY_ID[d.id].name + '.'); app.refreshPanel(); app.refreshHud(); } break;
+      case 'foundrel': { var pdx = app.panelData; if (AU.Religion.found(g, p, pdx.relName, pdx.relFollower, pdx.relFounder)) { app.toast('Religion founded!'); app.refreshPanel(); app.refreshHud(); app.showQuotes(); } break; }
+      case 'enhancerel': { var pd2 = app.panelData; if (AU.Religion.enhance(g, p, pd2.relEnh, pd2.relFollower2)) { app.toast('Religion enhanced.'); app.refreshPanel(); app.refreshHud(); } break; }
+      case 'buyfaith': s = g.settlements[+d.id]; if (s) { var ru = AU.Religion.buyUnit(g, s, d.item); if (ru) { app.toast(ru.name + ' purchased with Faith.'); app.refreshPanel(); app.refreshHud(); } } break;
       case 'pediasearch': break;
       case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.refreshPanel(); app.refreshHud(); break;
       case 'policyremove': G.setPolicies(g, p, (p.policies || []).filter(function (x) { return x !== d.id; })); app.refreshPanel(); app.refreshHud(); break;

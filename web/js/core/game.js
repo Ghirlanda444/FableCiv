@@ -2,7 +2,7 @@
 (function (AU) {
   var Hex = AU.Hex;
   var G = AU.G = {};
-  var YIELD_KEYS = ['food', 'production', 'gold', 'science', 'culture', 'happiness'];
+  var YIELD_KEYS = ['food', 'production', 'gold', 'science', 'culture', 'faith', 'happiness'];
   AU.YIELD_KEYS = YIELD_KEYS;
 
   function zeroYields() { return { food: 0, production: 0, gold: 0, science: 0, culture: 0, happiness: 0 }; }
@@ -48,7 +48,7 @@
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
-      wonders: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
+      wonders: {}, religions: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
       playerIdx: 0, rngState: rng.s, speed: speed, mapType: opts.mapType || 'continents'
     };
     // pick civs: player's chosen one first, then random others
@@ -61,7 +61,7 @@
       var civ = { idx: idx, civId: id, leaderId: leader, isPlayer: idx === 0, alive: true, gold: 0, techs: {}, civics: {}, currentTech: null, currentCivic: null,
         techProgress: {}, civicProgress: {}, government: 'chiefdom', explored: new Array(g.W * g.H).fill(0), visible: null, rel: {},
         capital: null, originalCapital: null, cityNameIdx: 0, era: 0, score: 0, met: {}, unitsBuilt: 0, stats: { kills: 0, captures: 0 },
-        ai: idx === 0 ? null : Object.assign({}, AU.LEADER_BY_ID[leader].ai), flags: {}, bonusScience: 0, bonusCulture: 0 };
+        ai: idx === 0 ? null : Object.assign({}, AU.LEADER_BY_ID[leader].ai), flags: {}, bonusScience: 0, bonusCulture: 0, faith: 0, faithTotal: 0, pantheon: null, religion: null };
       g.civs.push(civ);
     });
     g.civs.forEach(function (a) { g.civs.forEach(function (b) { if (a !== b) a.rel[b.idx] = { war: false, attitude: (G.civFx(g, b).attitudeBonus || 0), warSince: -1, peaceUntil: -1 }; }); });
@@ -152,12 +152,14 @@
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
     (civ.policies || []).forEach(function (pid) { var pc = AU.POLICIES[pid]; if (pc) mergeFx(fx, pc.fx); });
+    if (AU.Religion) AU.Religion.civFx(g, civ).forEach(function (rf) { mergeFx(fx, rf); });
     G.civSettlements(g, civ.idx).forEach(function (st) { st.buildings.forEach(function (b) { var nw = AU.NATIONAL[b]; if (!nw || !nw.fx) return; var nf = {}; for (var k in nw.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'freeUpkeep' || k === 'culturePerWonder' || k === 'purchaseMult' || k === 'projectCostMult') nf[k] = nw.fx[k]; if (nw.fx.empireLandBonus) nf.landBonus = nw.fx.empireLandBonus; mergeFx(fx, nf); }); });
     for (var wid in g.wonders) { var s = g.settlements[g.wonders[wid]]; if (s && s.civ === civ.idx) { var w = AU.WONDERS[wid]; var wf = {}; for (var k in w.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'empireCulture' || k === 'empireGold' || k === 'growthMult' || k === 'navalMoves' || k === 'landBonus' || k === 'freeExpansion') wf[k] = w.fx[k]; mergeFx(fx, wf); } }
     civ._fx = fx; civ._fxTurn = g.turn; civ._fxKey = G.fxKey(g, civ);
     return fx;
   };
-  G.fxKey = function (g, civ) { return civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(civ.techs).length + '|' + Object.keys(g.wonders).length + '|' + (civ.policies || []).join(',') + '|' + (civ.nationalCount || 0); };
+  G.mergeFx = mergeFx;
+  G.fxKey = function (g, civ) { return (AU.Religion ? AU.Religion.fxKey(g, civ) : '') + civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(civ.techs).length + '|' + Object.keys(g.wonders).length + '|' + (civ.policies || []).join(',') + '|' + (civ.nationalCount || 0); };
 
   // ---------- Units (creation; movement/combat live in units.js) ----------
   G.unitType = function (g, civ, typeId) {
@@ -325,7 +327,10 @@
         (b.when === 'camp' && imp === 'camp') || (b.when === 'fishing' && imp === 'fishing') || (b.when === 'plantation' && imp === 'plantation') || (b.when === 'mine' && imp === 'mine') || (b.when === 'pasture' && imp === 'pasture') ||
         (b.when === 'jungle' && (t.feature === 'jungle' || t.feature === 'marsh')) || (b.when === 'desert' && t.terrain === 'desert') ||
         (b.when === 'cold' && (t.terrain === 'tundra' || t.terrain === 'snow')) ||
-        (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm');
+        (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm') || (b.when === 'quarry' && imp === 'quarry') || (b.when === 'woodcutter' && imp === 'woodcutter') ||
+        (b.when === 'wet' && (t.feature === 'marsh' || t.feature === 'oasis')) || (b.when === 'coast' && t.terrain === 'coast') || (b.when === 'lake' && t.terrain === 'lake') ||
+        (b.when === 'plains' && t.terrain === 'plains') || (b.when === 'grassland' && t.terrain === 'grassland') || (b.when === 'tundra' && t.terrain === 'tundra') || (b.when === 'snow' && t.terrain === 'snow') ||
+        (b.when === 'sacred' && G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.natural || nt.terrain === 'mountain'; })) || (b.when === 'strategic' && t.resource && AU.RESOURCES[t.resource].type === 'strategic') || (b.when === 'luxury' && t.resource && AU.RESOURCES[t.resource].type === 'luxury');
       if (ok) add(y, b.yields);
     });
     // wonders located in this settlement affecting its tiles
@@ -406,6 +411,17 @@
     y.science += 2 * s.specialists; y.culture += 2 * s.specialists;
     if (s.specialization === 'trade') y.gold += 4;
     y.gold += fx.goldPerSettlement || 0; y.culture += fx.culturePerSettlement || 0; y.science += fx.sciencePerSettlement || 0;
+    y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
+    if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
+    var rfx = AU.Religion ? AU.Religion.settlementFx(g, s) : null;
+    if (rfx) {
+      y.gold += rfx.goldPerSettlement || 0; y.culture += rfx.culturePerSettlement || 0; y.happiness += rfx.happinessBonus || 0;
+      y.faith += (rfx.faithPerWonder || 0) * wondersHere;
+      if (rfx.productionPerPop) y.production += rfx.productionPerPop * s.pop;
+      if (rfx.buildingBonus) s.buildings.forEach(function (b) { if (rfx.buildingBonus[b]) add(y, rfx.buildingBonus[b]); });
+      if (rfx.yieldMult) for (var rk0 in rfx.yieldMult) if (y[rk0] !== undefined) y[rk0] *= rfx.yieldMult[rk0];
+    }
+    if (s.religion && AU.Religion && g.religions[s.religion] && g.religions[s.religion].holyCity === s.id) y.faith += 2;
     y.culture += fx.empireCulture || 0; y.gold += fx.empireGold || 0;
     if (fx.happinessPerWonder) y.happiness += fx.happinessPerWonder * wondersHere;
     var coastal = G.isCoastal(g, s);
@@ -451,7 +467,7 @@
   };
   G.civYields = function (g, civ) {
     var tot = zeroYields();
-    G.civSettlements(g, civ.idx).forEach(function (s) { var y = G.settlementYields(g, s); add(tot, { gold: y.gold, science: y.science, culture: y.culture, production: y.production, food: y.food }); });
+    G.civSettlements(g, civ.idx).forEach(function (s) { var y = G.settlementYields(g, s); add(tot, { gold: y.gold, science: y.science, culture: y.culture, production: y.production, food: y.food, faith: y.faith || 0 }); });
     tot.upkeep = G.unitUpkeep(g, civ);
     tot.gold -= tot.upkeep;
     tot.gold = Math.round(tot.gold * 10) / 10;
@@ -827,6 +843,7 @@
       for (var j = 0; j < g.civs.length; j++) { var oc = g.settlements[g.civs[j].originalCapital]; if (!oc || oc.civ !== c.idx) { all = false; break; } }
       if (all) { g.victory = { type: 'domination', civ: c.idx, turn: g.turn }; return g.victory; }
     }
+    if (AU.Religion) { var rv = AU.Religion.checkVictory(g); if (rv) { g.victory = rv; return rv; } }
     for (var k = 0; k < alive.length; k++) { if (alive.length > 1 && G.cultureProgress(g, alive[k]).ready) { g.victory = { type: 'culture', civ: alive[k].idx, turn: g.turn }; return g.victory; } }
     if (g.turn >= g.maxTurns) {
       var best = alive.slice().sort(function (a, b) { return G.score(g, b) - G.score(g, a); })[0];
@@ -861,6 +878,7 @@
       if (s.queue.length) {
         var item = s.queue[0], key = item.kind + ':' + item.id;
         if (item.kind === 'unit' && y.unitProductionPct) prod *= 1 + y.unitProductionPct / 100;
+        if (item.kind === 'unit' && fx.pctUnitProductionEarly) { var ut0 = AU.UNITS[item.id], ue = ut0 && ut0.tech && AU.TECH_BY_ID[ut0.tech] ? AU.TECH_BY_ID[ut0.tech].era : 0; if (ue <= 1 && ut0.cls !== 'civilian') prod *= 1 + fx.pctUnitProductionEarly / 100; }
         s.progress[key] = (s.progress[key] || 0) + prod;
         var cost2 = G.itemCost(g, civ, item.kind, item.id, s);
         if (s.progress[key] >= cost2) {
@@ -878,7 +896,7 @@
       }
     }
     civ.gold += y.gold;
-    civ._turnScience = (civ._turnScience || 0) + y.science;
+    civ._turnScience = (civ._turnScience || 0) + y.science; civ._turnFaith = (civ._turnFaith || 0) + (y.faith || 0);
     civ._turnCulture = (civ._turnCulture || 0) + y.culture;
     // heal settlement
     if (s.attackedTurn !== g.turn) s.hp = Math.min(G.settlementMaxHp(g, s), s.hp + 15);
@@ -925,7 +943,7 @@
 
   G.processCiv = function (g, civ) {
     if (!civ.alive) return;
-    civ._turnScience = 0; civ._turnCulture = 0;
+    civ._turnScience = 0; civ._turnCulture = 0; civ._turnFaith = 0;
     var sets = G.civSettlements(g, civ.idx);
     var foodFor = {};
     // specialized towns first, so their food reaches cities this turn
@@ -944,6 +962,7 @@
     // research
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
+    if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
     G.checkBoosts(g, civ);
     if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (civ.currentTech) {
@@ -978,6 +997,7 @@
     for (var sid in g.settlements) AU.U.settlementAttack(g, g.settlements[sid]);
     // economy
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
+    if (AU.Religion) AU.Religion.spreadTurn(g);
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);

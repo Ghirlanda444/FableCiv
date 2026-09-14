@@ -1,6 +1,8 @@
 // Quotes shown when you learn a technology, adopt a civic, discover a natural wonder or complete a wonder.
 (function (AU) {
-  var Q = AU.QUOTES = { tech: {}, civic: {}, natural: {}, wonder: {}, national: {} };
+  var Q = AU.QUOTES = { tech: {}, civic: {}, natural: {}, wonder: {}, national: {}, religion: {} };
+  Q.religion.founded = { text: 'Religion is the sigh of the oppressed creature, the heart of a heartless world, and the soul of soulless conditions.', by: 'Karl Marx' };
+  Q.religion.pantheon = { text: 'The gods too are fond of a joke.', by: 'Aristotle' };
   function add(cat, id, text, by) { Q[cat][id] = { text: text, by: by }; }
   var t = function (id, text, by) { add('tech', id, text, by); };
   t('pottery', 'Hath not the potter power over the clay, of the same lump to make one vessel unto honour, and another unto dishonour?', 'Romans 9:21');

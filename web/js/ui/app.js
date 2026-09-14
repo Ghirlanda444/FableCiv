@@ -153,6 +153,7 @@
         '<span class="y" data-panel="empire">💰 <b>' + Math.floor(p.gold) + '</b><small>' + (y.gold >= 0 ? '+' : '') + y.gold.toFixed(1) + '</small></span>' +
         '<span class="y" data-panel="tech">🔬 <b>' + y.science.toFixed(1) + '</b><small>' + techTxt + '</small></span>' +
         '<span class="y" data-panel="civics">🎭 <b>' + y.culture.toFixed(1) + '</b><small>' + civTxt + '</small></span>' +
+        '<span class="y" data-panel="religion">🕊️ <b>' + Math.floor(p.faith || 0) + '</b><small>+' + (y.faith || 0) + (p.religion && g.religions[p.religion] ? ' ' + g.religions[p.religion].icon : '') + '</small></span>' +
         '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>';
       $('top-turn').innerHTML = '<b>Turn ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' Era';
       this.refreshNotifs();
@@ -175,6 +176,11 @@
         if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: 'Production: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
         if (s.pendingGrowth > 0) list.push({ icon: '🌱', text: 'Choose tile: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
+      if (AU.Religion) {
+        if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: 'Choose a pantheon', go: function () { self.openPanel('religion'); } });
+        if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: 'Found a religion', go: function () { self.openPanel('religion'); } });
+        if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: 'Enhance your religion', go: function () { self.openPanel('religion'); } });
+      }
       if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
       if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
       var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics'); } });
@@ -187,7 +193,7 @@
     doTodo: function (i) { var it = (this._todo || [])[i]; if (it) { it.go(); this.refreshHud(); this.invalidate(); } },
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
-      var ICON = { growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐' };
+      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐' };
       var list = g.notifications.slice(-14).reverse();
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
@@ -273,6 +279,13 @@
         if (own) {
           html += '<div class="actions">';
           if (this.pendingAttack != null) { var pa = this.previewAttack(u, this.pendingAttack); html += '<button class="small danger" data-action="attack" data-tile="' + this.pendingAttack + '">⚔️ Attack: ' + pa + '</button>'; }
+          if (AU.UNITS[u.type].religious) {
+            var Rl = AU.Religion, sHere = G.settlementAt(g, u.tile);
+            html += '<small class="stat">' + AU.UNITS[u.type].icon + ' ' + u.charges + ' charge' + (u.charges === 1 ? '' : 's') + (u.religion ? ' · ' + Rl.icon(g, u.religion) + ' ' + Rl.name(g, u.religion) : '') + '</small>';
+            if (u.type !== 'inquisitor') html += '<button class="small primary" data-action="spread" ' + (Rl.canSpread(g, u) ? '' : 'disabled') + '>Spread religion' + (sHere ? ' in ' + sHere.name : '') + '</button>';
+            else html += '<button class="small primary" data-action="inquisition" ' + (Rl.canInquisition(g, u) ? '' : 'disabled') + '>Remove heresy' + (sHere ? ' in ' + sHere.name : '') + '</button>';
+            Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">Debate ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
+          }
           if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? 'Found Town' : 'Found Capital') + '</button>' + (!can ? '<small class="stat">Too close to another settlement or invalid terrain.</small>' : ''); }
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
@@ -327,6 +340,9 @@
       if (!g) { if (name === 'pedia' || name === 'help' || name === 'togglegraphics' || name === 'toggleyields') AU.Panels.action(this, name, d); return; }
       var p = G.player(g), u = this.sel.unit ? g.units[this.sel.unit] : null, s;
       switch (name) {
+        case 'spread': if (u && AU.Religion.spread(g, u)) { this.toast('Religion spread.'); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
+        case 'inquisition': if (u && AU.Religion.inquisition(g, u)) { this.toast('Heresy removed.'); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
+        case 'debate': if (u) { var tgt = g.units[+d.id]; var res = tgt && AU.Religion.debate(g, u, tgt); if (res) { this.toast(res.win ? 'Debate won!' : 'Debate lost…'); if (g.units[u.id]) this.selectUnit(u); else this.deselect(); this.refreshHud(); this.invalidate(); } } break;
         case 'dopromote': if (u && U.promote(g, u, d.id)) { this.toast(u.name + ' promoted: ' + AU.PROMO_BY_ID[d.id].name + '.'); this.afterUnitAction(u, true); } break;
         case 'todo': this.doTodo(+d.i); break;
         case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
