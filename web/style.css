@@ -178,3 +178,11 @@ button.gold { border-color: var(--gold); background: #4a3a10; }
 .leader-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 4px; }
 .leader-actions button { flex: 1 1 46%; }
 .leader-actions select { flex: 1 1 100%; background: #0c1018; color: #eee; border: 1px solid var(--line); border-radius: 8px; padding: 6px; }
+
+/* civilopedia art gallery */
+.art-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+.art-thumb { width: 84px; text-align: center; font-size: 11px; color: #c9c4b8; }
+.art-thumb img { width: 84px; height: 84px; object-fit: contain; border-radius: 10px; background: linear-gradient(135deg, #2a3242, #1a2030); border: 1px solid var(--line); display: block; }
+.art-thumb.big { width: 132px; } .art-thumb.big img { width: 132px; height: 132px; object-fit: cover; }
+.art-thumb small { display: block; line-height: 1.2; margin-top: 3px; }
+.pedia-entry h4 { margin: 12px 0 4px; color: var(--gold); font-size: 14px; }

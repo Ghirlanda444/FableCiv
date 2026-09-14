@@ -4,11 +4,55 @@
   var $ = function (id) { return document.getElementById(id); };
   function y(o, plus) { if (!o) return ''; var map = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' }; return AU.YIELD_KEYS.filter(function (k) { return o[k]; }).map(function (k) { return map[k] + (plus && o[k] > 0 ? '+' : '') + o[k]; }).join(' '); }
   function link(cat, id, text) { return '<a class="plink" data-action="pedia" data-cat="' + cat + '" data-id="' + id + '">' + text + '</a>'; }
+  // ---- artwork helpers: what pictures exist (from the generated asset list or the inlined data) ----
+  var artSet = null;
+  function artIndex() {
+    if (artSet) return artSet; artSet = {};
+    (AU.ASSET_LIST || []).forEach(function (pth) { artSet[pth.replace(/^assets\//, '').replace(/\.(png|jpg)$/, '')] = true; });
+    if (AU.ASSET_DATA) for (var k in AU.ASSET_DATA) artSet[k] = true;
+    return artSet;
+  }
+  function artHas(kind, id) { return !!artIndex()[kind + '/' + id]; }
+  function thumb(kind, id, label, big) { return '<div class="art-thumb' + (big ? ' big' : '') + '"><img loading="lazy" src="' + AU.Assets.url(kind, id) + '" alt=""><small>' + label + '</small></div>'; }
+  var ART_KINDS = [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'], ['natural', 'Natural Wonders'], ['leaders', 'Leaders'], ['civs', 'Civilization emblems'], ['resources', 'Resources'], ['features', 'Features & improvements'], ['terrain', 'Terrain textures'], ['techs', 'Technology cards'], ['civics', 'Civic cards'], ['thrones', 'Throne rooms'], ['palace', 'Palace pieces']];
+  function artKindCount(kind) { var n = 0, ix = artIndex(); for (var k in ix) if (k.indexOf(kind + '/') === 0) n++; return n; }
+  // every version of one unit or building: the shared picture plus one per cultural art group
+  function variantsHtml(kind, id) {
+    var out = ''; if (artHas(kind, id)) out += thumb(kind, id, 'Shared');
+    for (var c in AU.CULTURES) if (artHas(kind + '/' + c, id)) out += thumb(kind + '/' + c, id, AU.CULTURES[c].name);
+    return out ? '<div class="art-grid">' + out + '</div>' : '';
+  }
+  function artEntry(kind) {
+    var h = '', ix = artIndex();
+    if (kind === 'units' || kind === 'buildings') {
+      var src = kind === 'units' ? AU.UNITS : AU.BUILDINGS;
+      for (var id in src) { var v = variantsHtml(kind, id); if (v) h += '<h4>' + (src[id].icon ? src[id].icon + ' ' : '') + src[id].name + '</h4>' + v; }
+    } else if (kind === 'palace') {
+      for (var st in AU.PALACE_STYLES) { var row = ''; AU.PALACE_PIECES.forEach(function (pc) { if (artHas('palace/' + st, pc.id)) row += thumb('palace/' + st, pc.id, pc.name); }); if (row) h += '<h4>' + AU.PALACE_STYLES[st].name + ' style</h4><div class="art-grid">' + row + '</div>'; }
+    } else {
+      var names = {};
+      if (kind === 'wonders') for (var w in AU.WONDERS) names[w] = AU.WONDERS[w].name;
+      if (kind === 'national') for (var nw in AU.NATIONAL) names[nw] = AU.NATIONAL[nw].name;
+      if (kind === 'natural') for (var na in AU.NATURAL_WONDERS) names[na] = AU.NATURAL_WONDERS[na].name;
+      if (kind === 'leaders') for (var l in AU.LEADER_BY_ID) names[l] = AU.LEADER_BY_ID[l].name + ' (' + AU.CIV_BY_ID[AU.LEADER_BY_ID[l].civId].name + ')';
+      if (kind === 'civs') for (var cv in AU.CIV_BY_ID) names[cv] = AU.CIV_BY_ID[cv].name;
+      if (kind === 'resources') for (var r in AU.RESOURCES) names[r] = AU.RESOURCES[r].name;
+      if (kind === 'features') { for (var f in AU.FEATURES) names[f] = AU.FEATURES[f].name; for (var im in AU.IMPROVEMENTS) names[im] = AU.IMPROVEMENTS[im].name; names.mountain = 'Mountain'; names.hills = 'Hills'; names.raider_camp = 'Raider camp'; }
+      if (kind === 'terrain') { for (var t in AU.TERRAIN) names[t] = AU.TERRAIN[t].name; for (var f2 in AU.FEATURES) names[f2] = AU.FEATURES[f2].name; names.hills = 'Hills'; }
+      if (kind === 'techs') AU.TECHS.forEach(function (t) { names[t.id] = t.name; });
+      if (kind === 'civics') AU.CIVICS.forEach(function (c) { names[c.id] = c.name; });
+      if (kind === 'thrones') for (var cu in AU.CULTURES) names[cu] = AU.CULTURES[cu].name;
+      var row2 = '', big = kind === 'leaders' || kind === 'natural' || kind === 'wonders' || kind === 'national' || kind === 'thrones' || kind === 'techs' || kind === 'civics';
+      for (var k in ix) { if (k.indexOf(kind + '/') !== 0 || k.slice(kind.length + 1).indexOf('/') >= 0) continue; var id2 = k.slice(kind.length + 1); row2 += thumb(kind, id2, names[id2] || id2, big); }
+      if (row2) h += '<div class="art-grid">' + row2 + '</div>';
+    }
+    return h || '<p class="stat">No pictures of this kind yet. They appear here as soon as they are generated.</p>';
+  }
   function fxText(fx) { return AU.civicFxText({ fx: fx }) || ''; }
   function quoteOf(cat, id) { var q = AU.QUOTES && AU.QUOTES[cat] && AU.QUOTES[cat][id]; return q ? '<blockquote class="pquote">“' + q.text + '”<div class="quote-by">— ' + q.by + '</div></blockquote>' : ''; }
 
   var CATS = [
-    ['concepts', 'Concepts'], ['civs', 'Civilizations'], ['leaders', 'Leaders'], ['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'],
+    ['concepts', 'Concepts'], ['art', 'Art gallery'], ['civs', 'Civilizations'], ['leaders', 'Leaders'], ['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'],
     ['natural', 'Natural Wonders'], ['techs', 'Technologies'], ['civics', 'Civics'], ['governments', 'Governments'], ['policies', 'Policy Cards'], ['terrain', 'Terrain & Features'], ['resources', 'Resources'], ['improvements', 'Improvements'], ['specializations', 'Town Specializations'], ['promotions', 'Promotions'], ['pantheons', 'Pantheons'], ['beliefs', 'Religious Beliefs'], ['citystates', 'City-States']
   ];
   var CONCEPTS = {
@@ -37,6 +81,7 @@
       case 'concepts': for (var c in CONCEPTS) out.push({ id: c, name: CONCEPTS[c][0] }); break;
       case 'civs': AU.CIVS.forEach(function (c) { out.push({ id: c.id, name: c.name }); }); break;
       case 'leaders': AU.CIVS.forEach(function (c) { c.leaders.forEach(function (l) { out.push({ id: l.id, name: l.name + ' (' + c.name + ')' }); }); }); break;
+      case 'art': ART_KINDS.forEach(function (k) { var n = artKindCount(k[0]); out.push({ id: k[0], name: k[1], sub: n + (n === 1 ? ' picture' : ' pictures') }); }); break;
       case 'units': for (var u in AU.UNITS) out.push({ id: u, name: AU.UNITS[u].name }); break;
       case 'promotions': AU.PROMOTIONS.forEach(function (pr) { out.push({ id: pr.id, name: pr.name }); }); break;
       case 'citystates': AU.CITY_STATES.forEach(function (c) { out.push({ id: c.id, name: c.name }); }); break;
@@ -63,16 +108,18 @@
     var h = '';
     switch (cat) {
       case 'concepts': { var c = CONCEPTS[id]; if (!c) return ''; h = '<h3>' + c[0] + '</h3><p>' + c[1] + '</p>'; break; }
+      case 'art': { var ak = ART_KINDS.filter(function (k) { return k[0] === id; })[0]; if (!ak) return ''; h = '<h3>🎨 ' + ak[1] + ' <span class="pill">' + artKindCount(id) + ' pictures</span></h3><p class="stat">Every picture the game currently has of this kind. Units and buildings show the shared picture and each cultural version (the game picks the version of the civilization\'s art group).</p>' + artEntry(id); break; }
       case 'civs': { var cv = AU.CIV_BY_ID[id]; if (!cv) return ''; h = '<h3><span class="swatch" style="display:inline-block;width:14px;height:14px;background:' + cv.color + ';border:2px solid ' + cv.color2 + ';border-radius:3px"></span> ' + cv.name + '</h3><p><span class="pill">' + (AU.CULTURES[cv.culture] ? AU.CULTURES[cv.culture].name + ' art group' : '') + '</span> <span class="pill">' + (cv.difficulty || 'medium') + '</span></p><p><b>' + cv.ability.name + ':</b> ' + cv.ability.desc + '</p><p><b>Unique unit:</b> ' + link('units', cv.uu.replaces, cv.uu.name) + ' (replaces ' + AU.UNITS[cv.uu.replaces].name + ', ' + cv.uu.desc + ').</p><p><b>Unique building:</b> ' + link('buildings', cv.ub.replaces, cv.ub.name) + ' (replaces ' + AU.BUILDINGS[cv.ub.replaces].name + ', ' + cv.ub.desc + ').</p><p><b>Leaders:</b> ' + cv.leaders.map(function (l) { return link('leaders', l.id, l.name); }).join(', ') + '</p><p><b>Settlement names:</b> ' + cv.cities.join(', ') + '</p>'; break; }
-      case 'leaders': { var l = AU.LEADER_BY_ID[id]; if (!l) return ''; var lc = AU.CIV_BY_ID[l.civId]; h = '<h3>' + l.name + '</h3><p>' + l.title + ' of ' + link('civs', lc.id, lc.name) + '. A leader can only rule their own civilization.</p><p><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</p><p><b>Civilization ability, ' + lc.ability.name + ':</b> ' + lc.ability.desc + '</p><p class="stat">AI personality: aggression ' + Math.round(l.ai.aggression * 100) + '%, expansion ' + Math.round(l.ai.expansion * 100) + '%, science ' + Math.round(l.ai.science * 100) + '%, culture ' + Math.round(l.ai.culture * 100) + '%.</p>'; break; }
+      case 'leaders': { var l = AU.LEADER_BY_ID[id]; if (!l) return ''; var lc = AU.CIV_BY_ID[l.civId]; h = (artHas('leaders', id) ? '<img class="pedia-pic" src="' + AU.Assets.url('leaders', id) + '" alt="">' : '') + '<h3>' + l.name + '</h3><p>' + l.title + ' of ' + link('civs', lc.id, lc.name) + '. A leader can only rule their own civilization.</p><p><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</p><p><b>Civilization ability, ' + lc.ability.name + ':</b> ' + lc.ability.desc + '</p><p class="stat">AI personality: aggression ' + Math.round(l.ai.aggression * 100) + '%, expansion ' + Math.round(l.ai.expansion * 100) + '%, science ' + Math.round(l.ai.science * 100) + '%, culture ' + Math.round(l.ai.culture * 100) + '%.</p>'; break; }
       case 'citystates': { var cs = AU.CITY_STATE_BY_ID[id]; if (!cs) return ''; var T = AU.CITY_STATE_TYPES[cs.type]; h = '<h3>' + T.icon + ' ' + cs.name + '</h3><p>' + T.name + ' city-state.</p><p>' + AU.ENVOY_TIERS(cs.type).map(function (t) { return t.n + ' envoy' + (t.n > 1 ? 's' : '') + ': ' + t.desc; }).join('. ') + '.</p><p><b>' + cs.ability.name + ':</b> ' + cs.ability.desc + '</p>'; break; }
       case 'pantheons': case 'beliefs': { var bl = AU.BELIEF_BY_ID[id]; if (!bl) return ''; h = '<h3>🕊️ ' + bl.name + '</h3><p>' + ({ pantheon: 'Pantheon belief', follower: 'Follower belief', founder: 'Founder belief', enhancer: 'Enhancer belief' }[bl.type]) + '.</p><p>' + bl.desc + '</p>'; break; }
       case 'promotions': { var pr = AU.PROMO_BY_ID[id]; if (!pr) return ''; h = '<h3>⭐ ' + pr.name + '</h3><p>' + ({ melee: 'Melee and anti-cavalry', ranged: 'Ranged and siege', cavalry: 'Cavalry', naval: 'Naval', recon: 'Recon' }[pr.fam]) + ' promotion, tier ' + pr.tier + ' (available from level ' + pr.tier + ').</p><p>' + AU.modsText(pr.mods) + '.</p>'; break; }
       case 'units': { var u = AU.UNITS[id]; if (!u) return ''; h = '<h3>' + u.icon + ' ' + u.name + '</h3><p>Class ' + (u.religious ? 'religious' : u.cls) + ' · ' + (u.religious ? 'Cost ' + u.faithCost + ' 🕊️ Faith' : 'Cost ' + u.cost + ' ⚙️') + ' · Moves ' + u.moves + (u.strength ? ' · Strength ' + u.strength : '') + (u.ranged ? ' · Ranged ' + u.ranged + ' (range ' + u.range + ')' : '') + (u.sight ? ' · Sight ' + u.sight : '') + '</p><p>' + (u.religious ? (id === 'missionary' ? 'Requires a founded religion and a Shrine or Temple in the settlement; bought with Faith, never built' : 'Requires a founded religion and a Temple in the settlement; bought with Faith, never built') : unitReq(u)) + '.' + (u.upgradesTo ? ' Upgrades to ' + link('units', u.upgradesTo, AU.UNITS[u.upgradesTo].name) + '.' : '') + (u.desc ? ' ' + u.desc : '') + '</p>';
+        var uv = variantsHtml('units', id); if (uv) h += '<p><b>Artwork:</b></p>' + uv;
         var uniques = AU.CIVS.filter(function (cc) { return cc.uu.replaces === id; }); if (uniques.length) h += '<p><b>Unique versions:</b> ' + uniques.map(function (cc) { return cc.uu.name + ' (' + link('civs', cc.id, cc.name) + ': ' + cc.uu.desc + ')'; }).join('; ') + '</p>'; break; }
       case 'buildings': { var b = AU.BUILDINGS[id]; if (!b) return ''; h = '<h3>' + b.name + '</h3><p>' + y(b.yields, true) + ' · Cost ' + b.cost + ' ⚙️</p><p>' + (b.tech ? 'Requires ' + link('techs', b.tech, AU.TECH_BY_ID[b.tech].name) : b.civic ? 'Requires civic ' + link('civics', b.civic, AU.CIVIC_BY_ID[b.civic].name) : 'Available from the start') + (b.requires ? ', needs ' + link('buildings', b.requires, AU.BUILDINGS[b.requires].name) : '') + (b.needs ? ', settlement must have ' + b.needs : '') + (b.resource ? ', needs ' + link('resources', b.resource, AU.RESOURCES[b.resource].name) : '') + '.</p>' + (b.desc ? '<p>' + b.desc + '</p>' : '') + (b.perPop ? '<p>+' + b.perPop.science + ' Science per population.</p>' : '') + (b.pct ? '<p>+' + Object.values(b.pct)[0] + '% ' + Object.keys(b.pct)[0] + '.</p>' : '');
         var ubs = AU.CIVS.filter(function (cc) { return cc.ub.replaces === id; }); if (ubs.length) h += '<p><b>Unique versions:</b> ' + ubs.map(function (cc) { return cc.ub.name + ' (' + link('civs', cc.id, cc.name) + ': ' + cc.ub.desc + ')'; }).join('; ') + '</p>';
-        var nat = Object.keys(AU.NATIONAL).filter(function (n) { return AU.NATIONAL[n].requiresCount && AU.NATIONAL[n].requiresCount[0] === id; }); if (nat.length) h += '<p>Counts toward ' + nat.map(function (n) { return link('national', n, AU.NATIONAL[n].name); }).join(', ') + '.</p>'; break; }
+        var nat = Object.keys(AU.NATIONAL).filter(function (n) { return AU.NATIONAL[n].requiresCount && AU.NATIONAL[n].requiresCount[0] === id; }); if (nat.length) h += '<p>Counts toward ' + nat.map(function (n) { return link('national', n, AU.NATIONAL[n].name); }).join(', ') + '.</p>'; var bv = variantsHtml('buildings', id); if (bv) h += '<p><b>Artwork:</b></p>' + bv; break; }
       case 'wonders': { var w = AU.WONDERS[id]; if (!w) return ''; h = '<h3>🏛️ ' + w.name + '</h3><p>' + y(w.yields, true) + ' · Cost ' + w.cost + ' ⚙️ · ' + (w.tech ? 'Requires ' + link('techs', w.tech, AU.TECH_BY_ID[w.tech].name) : 'Requires civic ' + link('civics', w.civic, AU.CIVIC_BY_ID[w.civic].name)) + (w.needs ? ' · Needs ' + w.needs : '') + '</p><p>' + w.desc + '</p><p class="stat">World wonder: only one can exist in the whole world.</p>' + quoteOf('wonder', id); break; }
       case 'national': { var nw = AU.NATIONAL[id]; if (!nw) return ''; h = '<h3>🏯 ' + nw.name + '</h3><p>' + y(nw.yields, true) + ' · Cost ' + nw.cost + ' ⚙️ · ' + (nw.tech ? 'Requires ' + link('techs', nw.tech, AU.TECH_BY_ID[nw.tech].name) : 'Requires civic ' + link('civics', nw.civic, AU.CIVIC_BY_ID[nw.civic].name)) + (nw.requiresCount ? ' · Needs ' + nw.requiresCount[1] + '× ' + link('buildings', nw.requiresCount[0], AU.BUILDINGS[nw.requiresCount[0]].name) : '') + '</p><p>' + nw.desc + '</p><p class="stat">National wonder: one per civilization, Cities only.</p>' + quoteOf('national', id); break; }
       case 'natural': { var nn = AU.NATURAL_WONDERS[id]; if (!nn) return ''; h = '<h3>' + nn.icon + ' ' + nn.name + '</h3><p>Found on ' + nn.terrain + (nn.hills ? ' hills' : '') + ' · Tile yields ' + y(nn.yields) + ' · Adjacent worked tiles ' + y(nn.adjacent, true) + '</p><p>' + nn.desc + '</p><p class="stat">Discovering it grants Science and Culture (double for the first civilization).</p>' + quoteOf('natural', id); break; }

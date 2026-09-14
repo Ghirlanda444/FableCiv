@@ -3,6 +3,7 @@
 const fs = require('fs'), path = require('path');
 require('../tests/load');
 const LEADER_LOOKS = require('./leader-looks');
+const CIV_SYMBOLS = require('./civ-symbols');
 const AU = globalThis.AU;
 const STYLE = 'Cute chibi 3D game render in the style of Clash of Clans and Kingshot: chunky exaggerated proportions, smooth rounded 3D shapes with glossy toy-like shading, soft studio lighting with a warm rim light and subtle ambient occlusion, bright saturated colours, cheerful and readable, isolated on a plain white background, no text, no watermark, no frame.';
 const SCENE_STYLE = 'Colourful 3D-rendered cartoon game art like Clash of Clans and Kingshot: chunky rounded shapes with soft glossy shading and subtle ambient occlusion, bright saturated colours, cheerful, no text, no watermark.';
@@ -54,7 +55,7 @@ const RESOURCE_DESC = {
   horses: 'a brown horse', iron: 'a pile of dark grey iron ore chunks with a metal ingot', niter: 'a white crystalline mineral pile with a small gunpowder barrel', coal: 'a pile of black coal lumps', oil: 'a black oil barrel with an oil drop'
 };
 for (const [id, r] of Object.entries(AU.RESOURCES)) items.push({ kind: 'resources', id, name: r.name, size: '512x512', prompt: `Cartoon game inventory icon: ${RESOURCE_DESC[id] || 'a ' + r.name}, one chunky object with a thick clean outline, bright saturated colours, soft cel shading, large and centred, isolated on a plain white background, no text, no characters, no people.` });
-for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '512x512', prompt: `Flat vector game emblem: a round shield badge symbolising the ${c.name} civilization with one bold symbol associated with ${c.name} (an animal, plant, weapon, crown, building or sun), gold rim and ${c.color} background, thick clean outlines, no people, no faces, no characters, no text, isolated on a plain white background.` });
+for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '512x512', prompt: `Round game emblem badge of the ${c.name} civilization: one bold, instantly recognisable symbol filling the centre: ${CIV_SYMBOLS[c.id] || 'a bold symbol associated with ' + c.name}. Flat bright colours, ${c.color} background, thick gold rim, thick clean outlines, symmetrical and centred, chibi cartoon vector sticker style, no text, no letters, no extra people, isolated on a plain white background. ${SCENE_STYLE}` });
 const TERRAIN_DESC = {
   grassland: 'lush green meadow grass with a few tiny scattered wildflowers', plains: 'dry golden-yellow savanna grass with a few darker tufts', desert: 'warm pale sand with soft low dune ripples',
   tundra: 'cold grey-green moss and lichen with small patches of frost', snow: 'clean white snow with soft pale-blue shadows and tiny sparkles',
