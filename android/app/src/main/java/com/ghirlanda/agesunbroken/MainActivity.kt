@@ -71,7 +71,8 @@ class MainActivity : AppCompatActivity() {
 
         val restored = savedInstanceState?.let { webView.restoreState(it) }
         if (restored == null) {
-            webView.loadUrl(START_URL)
+            // The hosted version updates itself (service worker); the bundled copy is the offline fallback.
+            webView.loadUrl(if (REMOTE_URL.isNotEmpty()) REMOTE_URL else START_URL)
         }
     }
 
@@ -163,15 +164,22 @@ class MainActivity : AppCompatActivity() {
             return assetLoader.shouldInterceptRequest(request.url)
         }
 
+        override fun onReceivedError(view: WebView, request: WebResourceRequest, error: android.webkit.WebResourceError) {
+            // hosted version unreachable (offline, first run): use the copy packaged in the app
+            if (request.isForMainFrame && request.url.toString().startsWith(REMOTE_URL) && REMOTE_URL.isNotEmpty()) view.loadUrl(START_URL)
+        }
+
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             // Only allow navigation within the packaged game; ignore everything else.
             val host = request.url.host
-            return host != ASSET_DOMAIN
+            return host != ASSET_DOMAIN && !(REMOTE_URL.isNotEmpty() && request.url.toString().startsWith(REMOTE_URL))
         }
     }
 
     companion object {
         private const val ASSET_DOMAIN = "appassets.androidplatform.net"
         private const val START_URL = "https://$ASSET_DOMAIN/assets/index.html"
+        /** Hosted copy of the game (GitHub Pages). Empty string = always use the bundled copy. */
+        private const val REMOTE_URL = "https://ghirlanda444.github.io/FableCiv/"
     }
 }

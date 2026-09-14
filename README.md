@@ -83,3 +83,13 @@ node tests/sim.js 150 12345 small     # AI-vs-AI simulation, prints empire stats
 node tests/e2e.js                      # Playwright: plays the first 30 turns through the UI
 node tests/e2e-long.js 200             # Playwright: AI plays the human seat for 200 turns, re-rendering every panel
 ```
+
+## Playing the hosted version (no downloads)
+
+The web version can be published with GitHub Pages: enable Pages for the repository (Settings > Pages > Source:
+GitHub Actions) and set the repository variable `PAGES_ENABLED` to `true`. Every push then publishes
+https://ghirlanda444.github.io/FableCiv/ automatically. Open it in Chrome (phone) or Edge/Chrome (PC) and use
+"Add to Home screen" / "Install app": it works offline after the first visit and picks up new versions by itself
+(the menu shows the build and offers a restart when an update is ready). The Android and Windows apps also load the
+hosted version when online and fall back to their bundled copy otherwise. Note: GitHub Pages is free only for
+public repositories.

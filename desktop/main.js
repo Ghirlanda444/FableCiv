@@ -15,7 +15,11 @@ function createWindow() {
     autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
-  win.loadURL('app://game/index.html');
+  // The hosted version updates itself; fall back to the bundled copy when it cannot be reached.
+  const REMOTE_URL = 'https://ghirlanda444.github.io/FableCiv/';
+  let fellBack = false;
+  win.webContents.on('did-fail-load', (e, code, desc, url, isMainFrame) => { if (isMainFrame && !fellBack && url && url.startsWith(REMOTE_URL)) { fellBack = true; win.loadURL('app://game/index.html'); } });
+  if (REMOTE_URL && net.isOnline()) win.loadURL(REMOTE_URL); else win.loadURL('app://game/index.html');
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' }; });
   win.webContents.on('before-input-event', (event, input) => {
     if (input.key === 'F11' && input.type === 'keyDown') { win.setFullScreen(!win.isFullScreen()); event.preventDefault(); }

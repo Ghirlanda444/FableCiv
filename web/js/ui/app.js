@@ -31,6 +31,7 @@
       window.addEventListener('resize', function () { App.renderer.resize(); App.invalidate(); });
       window.__androidBack = function () { return App.back() ? 'true' : 'false'; };
       this.showTitle();
+      this.setupUpdates();
       this.loop();
     },
     loop: function () { if (App.dirty && App.g && !$('game').hidden) { App.dirty = false; App.renderer.draw(App.g, App); } requestAnimationFrame(App.loop); },
@@ -217,6 +218,23 @@
       else if (n.unit && this.g.units[n.unit]) { this.selectUnit(this.g.units[n.unit]); this.renderer.centerOn(this.g, n.tile); }
       else if (n.tile != null) { this.renderer.centerOn(this.g, n.tile); this.sel.tile = n.tile; }
       this.refreshHud(); this.invalidate();
+    },
+    // Hosted version: service worker for offline play and automatic updates (only over http/https).
+    setupUpdates: function () {
+      if (!('serviceWorker' in navigator) || !/^https?:/.test(location.protocol)) return;
+      var self = this;
+      navigator.serviceWorker.register('sw.js').then(function (reg) {
+        // artwork warm-up so the game also works offline later
+        if (reg.active && AU.ASSET_LIST) reg.active.postMessage({ type: 'precache', urls: AU.ASSET_LIST });
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing; if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast('A new version of Chibilization is ready. It loads the next time you open the game (or from Menu).', 6000); if (self.panel === 'menu') self.refreshPanel(); }
+          });
+        });
+      }).catch(function () {});
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () { if (refreshing) return; refreshing = true; if (!self.g) location.reload(); });
     },
     // Long-press tooltip: what is on this tile (terrain, feature, resource, yields, owner).
     showTileTip: function (tileIdx, x, y) {

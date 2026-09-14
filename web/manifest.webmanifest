@@ -1,0 +1,12 @@
+{
+  "name": "Chibilization",
+  "short_name": "Chibilization",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "description": "A cute Civilization-style 4X game: 50 civilizations, religion, city-states, towns and cities.",
+  "icons": [{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}

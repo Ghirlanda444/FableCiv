@@ -279,6 +279,8 @@
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
     html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D painted map') + ' (switch)</button><br><br>';
     if (app.settings.graphics !== '3d') html += '<button class="big ghost" data-action="toggleiso">View: ' + (app.settings.iso !== false ? 'Isometric (Civ 3 style)' : 'Top-down') + ' (switch)</button><br><br>';
+    html += '<p class="stat">Chibilization ' + (AU.VERSION && AU.VERSION !== '__VERSION__' ? 'build ' + AU.VERSION.slice(0, 7) : 'local build') + (app.updateReady ? ' · <b>update ready</b>' : '') + '</p>';
+    if (app.updateReady) html += '<button class="big primary" data-action="applyupdate">Restart with the new version</button><br><br>';
     html += '<button class="big ghost" data-action="toggleyields">' + (app.settings.yields ? 'Hide' : 'Show') + ' tile yields on the map (Y)</button><br><br>';
     html += '<button class="big ghost" data-action="togglestrict">End Turn button: ' + (app.settings.strictTurn ? 'must clear the to-do list first' : 'to-do first, Pass anytime') + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
@@ -385,6 +387,7 @@
       case 'togglegrid': app.renderer.showGrid = !app.renderer.showGrid; app.invalidate(); app.refreshPanel(); break;
       case 'toggleyields': app.settings.yields = !app.settings.yields; app.saveSettings(); if (app.renderer) app.renderer.showYields = app.settings.yields; app.invalidate(); if (app.panel === 'menu') app.refreshPanel(); if (g) app.toast('Tile yields ' + (app.settings.yields ? 'shown' : 'hidden') + '.'); break;
       case 'toggleiso': app.settings.iso = app.settings.iso === false; app.saveSettings(); if (app.renderer) { app.renderer.iso = app.settings.iso; app.renderer.sprites = {}; app.renderer.spriteCount = 0; } app.invalidate(); app.refreshPanel(); break;
+      case 'applyupdate': app.save(true); location.reload(); break;
       case 'togglestrict': app.settings.strictTurn = !app.settings.strictTurn; app.saveSettings(); app.refreshPanel(); break;
       case 'togglegraphics': app.settings.graphics = app.settings.graphics === '3d' ? '2d' : '3d'; app.saveSettings(); app.makeRenderer(); app.refreshPanel(); break;
       case 'continueplaying': app.closePanel(); break;
