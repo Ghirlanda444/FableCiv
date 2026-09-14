@@ -2513,14 +2513,6 @@
  },
  {
   "kind": "terrain",
-  "id": "plains",
-  "file": "terrain/plains.png",
-  "name": "Plains texture",
-  "size": "512x512",
-  "nobg": true
- },
- {
-  "kind": "terrain",
   "id": "desert",
   "file": "terrain/desert.png",
   "name": "Desert texture",
@@ -2564,14 +2556,6 @@
   "id": "marsh",
   "file": "terrain/marsh.png",
   "name": "Marsh texture",
-  "size": "512x512",
-  "nobg": true
- },
- {
-  "kind": "terrain",
-  "id": "hills",
-  "file": "terrain/hills.png",
-  "name": "Hills texture",
   "size": "512x512",
   "nobg": true
  },
