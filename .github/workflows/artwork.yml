@@ -56,7 +56,7 @@ jobs:
           git config user.name "fableciv-art-bot"
           git config user.email "art-bot@users.noreply.github.com"
           limit=${LIMIT:-0}; remaining=$limit
-          for batch in $(seq 1 40); do
+          for batch in $(seq 1 80); do
             if [ "$limit" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
             step=12
             if [ "$limit" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
