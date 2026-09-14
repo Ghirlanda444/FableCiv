@@ -5,6 +5,8 @@
   var Art = AU.PalaceArt = {};
   function lcg(seed) { var s = (seed * 2654435761) >>> 0 || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
 
+  // how wide each generated piece is drawn relative to its layout width (cropped pictures need less room)
+  var PIECE_SCALE = { hall: 1.15, left_wing: 1.0, right_wing: 1.0, dome: 0.55, tower_left: 0.8, tower_right: 0.8, gate: 0.9, walls: 1.0, gardens: 0.9, fountain: 0.8, statue: 0.8, banners: 1.0 };
   Art.paint = function (cv, g, civ, preview) {
     var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, st = Pal.state(civ), color = G.civColor(civ), color2 = G.civData(civ).color2;
     // sky, hills, lawn
@@ -18,7 +20,12 @@
       var style = preview && preview.id === pc.id ? preview.style : st.pieces[pc.id];
       var img = AU.Assets.getFor('palace', pc.id, style);
       if (preview && preview.id === pc.id) ctx.globalAlpha = 0.85;
-      if (img) { var h = pc.w * img.height / img.width; ctx.drawImage(img, pc.x - pc.w / 2, pc.y - h, pc.w, h); }
+      if (img) { // crop the transparent margin of the generated picture so pieces sit on the ground at a useful size
+        var bb = img._bbox; if (!bb) { try { var tc = document.createElement('canvas'); tc.width = tc.height = 64; var tx = tc.getContext('2d'); tx.drawImage(img, 0, 0, 64, 64); var d = tx.getImageData(0, 0, 64, 64).data, x0 = 64, y0 = 64, x1 = 0, y1 = 0; for (var yy = 0; yy < 64; yy++) for (var xx = 0; xx < 64; xx++) if (d[(yy * 64 + xx) * 4 + 3] > 30) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; } bb = x1 >= x0 ? [x0 / 64, y0 / 64, (x1 + 1) / 64, (y1 + 1) / 64] : [0, 0, 1, 1]; } catch (e) { bb = [0, 0, 1, 1]; } img._bbox = bb; }
+        var sx = bb[0] * img.width, sy = bb[1] * img.height, sw = (bb[2] - bb[0]) * img.width, sh = (bb[3] - bb[1]) * img.height;
+        var dw = pc.w * PIECE_SCALE[pc.id] || pc.w, dh = dw * sh / sw; if (dh > pc.maxH) { dh = pc.maxH; dw = dh * sw / sh; }
+        ctx.drawImage(img, sx, sy, sw, sh, pc.x - dw / 2, pc.y - dh, dw, dh);
+      }
       else Art.drawPiece(ctx, pc, AU.PALACE_STYLES[style], color, color2, lcg(pc.id.length * 31 + style.length));
       ctx.globalAlpha = 1;
     });

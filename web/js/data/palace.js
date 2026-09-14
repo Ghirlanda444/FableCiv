@@ -3,18 +3,18 @@
 (function (AU) {
   // Pieces in build order. x/y/w are layout positions on a 640x400 canvas (bottom-anchored), z is draw order.
   AU.PALACE_PIECES = [
-    { id: 'hall',        name: 'Great Hall',      desc: 'The heart of the palace.',                  x: 320, y: 300, w: 200, z: 5, needs: [] },
-    { id: 'left_wing',   name: 'West Wing',       desc: 'Apartments and audience rooms.',           x: 200, y: 305, w: 150, z: 4, needs: ['hall'] },
-    { id: 'right_wing',  name: 'East Wing',       desc: 'The treasury and the archives.',           x: 440, y: 305, w: 150, z: 4, needs: ['hall'] },
-    { id: 'dome',        name: 'Crown',           desc: 'Dome, pagoda roof or spire over the hall.', x: 320, y: 205, w: 150, z: 6, needs: ['hall'] },
-    { id: 'tower_left',  name: 'West Tower',      desc: 'A watchtower over the gardens.',           x: 120, y: 300, w: 90,  z: 3, needs: ['left_wing'] },
-    { id: 'tower_right', name: 'East Tower',      desc: 'A bell tower or minaret.',                 x: 520, y: 300, w: 90,  z: 3, needs: ['right_wing'] },
-    { id: 'gate',        name: 'Grand Gate',      desc: 'The ceremonial entrance.',                 x: 320, y: 350, w: 120, z: 8, needs: ['hall'] },
-    { id: 'walls',       name: 'Outer Walls',     desc: 'Walls and battlements around the grounds.', x: 320, y: 352, w: 560, z: 7, needs: ['gate'] },
-    { id: 'gardens',     name: 'Gardens',         desc: 'Trees, hedges and flower beds.',           x: 150, y: 385, w: 190, z: 9, needs: ['left_wing'] },
-    { id: 'fountain',    name: 'Fountain',        desc: 'A fountain or reflecting pool.',           x: 490, y: 385, w: 150, z: 9, needs: ['right_wing'] },
-    { id: 'statue',      name: 'Monument',        desc: 'A statue of the founder.',                 x: 320, y: 392, w: 70,  z: 10, needs: ['gate'] },
-    { id: 'banners',     name: 'Banners',         desc: 'Flags and banners in your colours.',       x: 320, y: 170, w: 240, z: 11, needs: ['dome'] }
+    { id: 'hall',        name: 'Great Hall',      desc: 'The heart of the palace.',                  x: 320, y: 305, w: 210, z: 5, maxH: 210, needs: [] },
+    { id: 'left_wing',   name: 'West Wing',       desc: 'Apartments and audience rooms.',           x: 185, y: 312, w: 150, z: 4, maxH: 130, needs: ['hall'] },
+    { id: 'right_wing',  name: 'East Wing',       desc: 'The treasury and the archives.',           x: 455, y: 312, w: 150, z: 4, maxH: 130, needs: ['hall'] },
+    { id: 'dome',        name: 'Crown',           desc: 'Dome, pagoda roof or spire over the hall.', x: 320, y: 128, w: 150, z: 6, maxH: 62, needs: ['hall'] },
+    { id: 'tower_left',  name: 'West Tower',      desc: 'A watchtower over the gardens.',           x: 95, y: 312, w: 90,  z: 3, maxH: 200, needs: ['left_wing'] },
+    { id: 'tower_right', name: 'East Tower',      desc: 'A bell tower or minaret.',                 x: 545, y: 312, w: 90,  z: 3, maxH: 200, needs: ['right_wing'] },
+    { id: 'gate',        name: 'Grand Gate',      desc: 'The ceremonial entrance.',                 x: 320, y: 358, w: 120, z: 8, maxH: 90, needs: ['hall'] },
+    { id: 'walls',       name: 'Outer Walls',     desc: 'Walls and battlements around the grounds.', x: 320, y: 356, w: 560, z: 7, maxH: 70, needs: ['gate'] },
+    { id: 'gardens',     name: 'Gardens',         desc: 'Trees, hedges and flower beds.',           x: 150, y: 392, w: 190, z: 9, maxH: 90, needs: ['left_wing'] },
+    { id: 'fountain',    name: 'Fountain',        desc: 'A fountain or reflecting pool.',           x: 490, y: 392, w: 150, z: 9, maxH: 90, needs: ['right_wing'] },
+    { id: 'statue',      name: 'Monument',        desc: 'A statue of the founder.',                 x: 320, y: 396, w: 70,  z: 10, maxH: 80, needs: ['gate'] },
+    { id: 'banners',     name: 'Banners',         desc: 'Flags and banners in your colours.',       x: 320, y: 112, w: 240, z: 11, maxH: 48, needs: ['dome'] }
   ];
   AU.PALACE_PIECE_BY_ID = {}; AU.PALACE_PIECES.forEach(function (p) { AU.PALACE_PIECE_BY_ID[p.id] = p; });
   // Architectural styles: one per cultural art group, with the colours the fallback painter uses.
