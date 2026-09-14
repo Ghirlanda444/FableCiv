@@ -16,17 +16,20 @@
     ctx.fillStyle = '#6fae4f'; ctx.fillRect(0, 300, W, H - 300);
     ctx.fillStyle = '#d9c78f'; ctx.beginPath(); ctx.moveTo(280, 400); ctx.lineTo(360, 400); ctx.lineTo(345, 350); ctx.lineTo(295, 350); ctx.closePath(); ctx.fill();
     var pieces = AU.PALACE_PIECES.filter(function (pc) { return st.pieces[pc.id] || (preview && preview.id === pc.id); }).slice().sort(function (a, b) { return a.z - b.z; });
+    var drawnTop = {};
     pieces.forEach(function (pc) {
       var style = preview && preview.id === pc.id ? preview.style : st.pieces[pc.id];
+      // the crown sits on the hall's roof and the banners fly just above it, wherever the hall picture ends
+      var baseY = pc.y; if (pc.id === 'dome' && drawnTop.hall !== undefined) baseY = drawnTop.hall + 22; if (pc.id === 'banners' && drawnTop.hall !== undefined) baseY = (drawnTop.dome !== undefined ? drawnTop.dome : drawnTop.hall) + 6;
       var img = AU.Assets.getFor('palace', pc.id, style);
       if (preview && preview.id === pc.id) ctx.globalAlpha = 0.85;
       if (img) { // crop the transparent margin of the generated picture so pieces sit on the ground at a useful size
         var bb = img._bbox; if (!bb) { try { var tc = document.createElement('canvas'); tc.width = tc.height = 64; var tx = tc.getContext('2d'); tx.drawImage(img, 0, 0, 64, 64); var d = tx.getImageData(0, 0, 64, 64).data, x0 = 64, y0 = 64, x1 = 0, y1 = 0; for (var yy = 0; yy < 64; yy++) for (var xx = 0; xx < 64; xx++) if (d[(yy * 64 + xx) * 4 + 3] > 30) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; } bb = x1 >= x0 ? [x0 / 64, y0 / 64, (x1 + 1) / 64, (y1 + 1) / 64] : [0, 0, 1, 1]; } catch (e) { bb = [0, 0, 1, 1]; } img._bbox = bb; }
         var sx = bb[0] * img.width, sy = bb[1] * img.height, sw = (bb[2] - bb[0]) * img.width, sh = (bb[3] - bb[1]) * img.height;
         var dw = pc.w * PIECE_SCALE[pc.id] || pc.w, dh = dw * sh / sw; if (dh > pc.maxH) { dh = pc.maxH; dw = dh * sw / sh; }
-        ctx.drawImage(img, sx, sy, sw, sh, pc.x - dw / 2, pc.y - dh, dw, dh);
+        ctx.drawImage(img, sx, sy, sw, sh, pc.x - dw / 2, baseY - dh, dw, dh); drawnTop[pc.id] = baseY - dh;
       }
-      else Art.drawPiece(ctx, pc, AU.PALACE_STYLES[style], color, color2, lcg(pc.id.length * 31 + style.length));
+      else { Art.drawPiece(ctx, pc, AU.PALACE_STYLES[style], color, color2, lcg(pc.id.length * 31 + style.length)); if (pc.id === 'hall') drawnTop.hall = pc.y - 135; }
       ctx.globalAlpha = 1;
     });
     if (!pieces.length) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.font = 'bold 18px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('An empty hilltop awaits your palace', W / 2, 250); }
