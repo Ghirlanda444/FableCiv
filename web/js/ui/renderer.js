@@ -234,6 +234,12 @@
     ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = Math.max(1, rz * 0.05); ctx.setLineDash([rz * 0.15, rz * 0.12]); ctx.beginPath(); ctx.ellipse(c, c, rz * 0.62, rz * 0.5, rnd(), 0, Math.PI * 2); ctx.stroke();
     this.sprites[key] = cv; this.spriteCount++; return cv;
   };
+  Renderer.prototype.mottleSprites = function (rz) {
+    var key = 'MOT|' + rz, sp = this.sprites[key]; if (sp) return sp;
+    var out = [];
+    ['rgba(255,250,200,1)', 'rgba(20,50,20,1)'].forEach(function (col) { var r = rz * 1.5, w = Math.ceil(r * 2) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = w; var ctx = cv.getContext('2d'), c = w / 2; var g = ctx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, col); g.addColorStop(1, col.replace(',1)', ',0)')); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.fill(); out.push(cv); });
+    this.sprites[key] = out; this.spriteCount++; return out;
+  };
   // Unexplored tiles: a soft dark blob so the edge of the known world fades out instead of ending in hexagons.
   Renderer.prototype.fogSprite = function (rz) {
     var key = 'FOG|' + rz, sp = this.sprites[key]; if (sp) return sp;
@@ -379,6 +385,50 @@
     }
     // pass 1b: land tiles with soft irregular edges (rows back to front so the overlaps read as a painted map)
     for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
+    if (!lowDetail) { // slow colour drift across the land (lighter and darker patches, like a painted map)
+      var mot = this.mottleSprites(Math.round(rzs));
+      for (var lm = 0; lm < landTiles.length; lm++) { t = landTiles[lm]; var mv = Math.sin(t.col * 0.55 + t.row * 0.31) * Math.cos(t.row * 0.47 - t.col * 0.19) + Math.sin(t.col * 0.17 + t.row * 0.9) * 0.5; if (Math.abs(mv) < 0.25) continue; ctx.globalAlpha = Math.min(0.16, Math.abs(mv) * 0.12); drawSprite(mv > 0 ? mot[0] : mot[1], S(t)); }
+      ctx.globalAlpha = 1;
+    }
+    // pass 2: rivers, drawn into the land before the coast foam and the trees so they belong to the landscape:
+    // a smooth centre line with small meanders, a soft green bank, dark teal water widening towards the mouth,
+    // a pale highlight. Navigable reaches are simply the wide, slow end of the same river.
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    function riverLine(path) { // screen points along the river with meanders; each carries its width factor
+      var ctrl = [], k;
+      for (k = 0; k < path.length; k++) { var pt = g.tiles[path[k]]; if (!pt) break; var sp0 = S(pt); ctrl.push([sp0[0] + Math.sin(pt.i * 1.7) * rzs * 0.16, sp0[1] + Math.cos(pt.i * 2.3) * rzs * 0.14 * isoY, pt]); }
+      if (ctrl.length < 2) return null;
+      var out = [], n = ctrl.length, steps = lowDetail ? 3 : 7;
+      function at(u) { // smooth curve through the control points (Catmull-Rom)
+        var i0 = Math.floor(u), f = u - i0, p0 = ctrl[Math.max(0, i0 - 1)], p1 = ctrl[i0], p2 = ctrl[Math.min(n - 1, i0 + 1)], p3 = ctrl[Math.min(n - 1, i0 + 2)];
+        function cr(a, b, c, d) { return 0.5 * ((2 * b) + (-a + c) * f + (2 * a - 5 * b + 4 * c - d) * f * f + (-a + 3 * b - 3 * c + d) * f * f * f); }
+        return [cr(p0[0], p1[0], p2[0], p3[0]), cr(p0[1], p1[1], p2[1], p3[1])];
+      }
+      var wobSeed = path[0] * 0.37;
+      for (k = 0; k < (n - 1) * steps; k++) {
+        var u = k / steps, a = at(u), b = at(Math.min(n - 1, u + 0.05)), dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy) || 1;
+        var m = Math.sin(u * 5.1 + wobSeed) * 0.5 + Math.sin(u * 11.3 + wobSeed * 2) * 0.3 + Math.sin(u * 23 + wobSeed) * 0.15; // meander
+        var amp = rzs * 0.13 * (k < steps ? k / steps : 1);
+        var ti = ctrl[Math.min(n - 1, Math.round(u))][2];
+        out.push([a[0] - dy / len * m * amp, a[1] + dx / len * m * amp * isoY, ti.navigable ? 1 : 0, u / (n - 1), explored[ti.i]]);
+      }
+      var last = at(n - 1); out.push([last[0], last[1], ctrl[n - 1][2].navigable ? 1 : 0, 1, explored[ctrl[n - 1][2].i]]);
+      return out;
+    }
+    function strokeRiver(pts, widthAt, style) { // varying width: many short segments
+      ctx.strokeStyle = style;
+      for (var k = 1; k < pts.length; k++) { if (!pts[k][4] && !pts[k - 1][4]) continue; ctx.lineWidth = widthAt(pts[k]); ctx.beginPath(); ctx.moveTo(pts[k - 1][0], pts[k - 1][1]); ctx.lineTo(pts[k][0], pts[k][1]); ctx.stroke(); }
+    }
+    (g.rivers || []).forEach(function (path) {
+      var vis = false; for (var q = 0; q < path.length; q++) { var pt = g.tiles[path[q]]; if (pt && explored[pt.i] && pt.row >= r0 - 2 && pt.row <= r1 + 2 && pt.col >= c0 - 2 && pt.col <= c1 + 2) { vis = true; break; } }
+      if (!vis) return;
+      var pts = riverLine(path); if (!pts) return;
+      function wf(p) { return rzs * (0.05 + 0.06 * p[3] + (p[2] ? 0.2 : 0)); } // stream 0.05..0.11 rz, navigable ~0.3 rz
+      if (!lowDetail) strokeRiver(pts, function (p) { return wf(p) * 3.2 + rzs * 0.06; }, 'rgba(70,120,55,0.28)'); // damp green bank
+      strokeRiver(pts, function (p) { return wf(p) * 1.5 + 1; }, 'rgba(22,70,95,0.7)');                          // dark edge
+      strokeRiver(pts, function (p) { return wf(p) + 0.6; }, 'rgb(58,150,190)');                                   // water
+      if (!lowDetail) strokeRiver(pts, function (p) { return Math.max(0.7, wf(p) * 0.3); }, 'rgba(210,240,255,0.5)'); // glint
+    });
     // pass 1c: reefs and foam lines hugging the wobbly coast
     if (!lowDetail) {
       for (var ri = 0; ri < reefs.length; ri++) drawSprite(this.reefSprite(Math.round(rzs), reefs[ri].i % 4), S(reefs[ri]));
@@ -400,33 +450,6 @@
       var fsp = this.featureSprite(t, Math.round(rzs)); if (!fsp) continue;
       var pf = S(t); ctx.drawImage(fsp, Math.round(pf[0] - fsp.width / 2), Math.round(pf[1] - fsp.anchorY));
     }
-    // pass 2: rivers. Thin streams for ordinary rivers; navigable reaches are wide, with sandy banks.
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    var riverRuns = [];
-    (g.rivers || []).forEach(function (path) {
-      var pts = [], anyVisible = false;
-      for (var k = 0; k < path.length; k++) { var pt = g.tiles[path[k]]; if (!pt) return; if (explored[pt.i] && pt.row >= r0 - 1 && pt.row <= r1 + 1 && pt.col >= c0 - 1 && pt.col <= c1 + 1) anyVisible = true; var sp0 = S(pt); pts.push([sp0[0] + Math.sin(pt.i * 1.7) * rzs * 0.12, sp0[1] + Math.cos(pt.i * 2.3) * rzs * 0.1 * isoY, !!pt.navigable]); }
-      if (!anyVisible || pts.length < 2) return;
-      // split into runs: the wide navigable part starts one point before the first navigable tile so the join is smooth
-      var firstNav = -1; for (var q = 0; q < pts.length; q++) if (pts[q][2]) { firstNav = q; break; }
-      if (firstNav < 0) riverRuns.push([pts, false]); else { riverRuns.push([pts.slice(0, firstNav + 1), false]); riverRuns.push([pts.slice(Math.max(0, firstNav - 1)), true]); }
-    });
-    function strokePath(ctx, pts) {
-      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
-      for (var m = 1; m < pts.length - 1; m++) { var mx = (pts[m][0] + pts[m + 1][0]) / 2, my = (pts[m][1] + pts[m + 1][1]) / 2; ctx.quadraticCurveTo(pts[m][0], pts[m][1], mx, my); }
-      ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); ctx.stroke();
-    }
-    riverRuns.forEach(function (run) { if (run[1] || run[0].length < 2) return; var pts = run[0];
-      ctx.strokeStyle = 'rgba(20,60,110,0.45)'; ctx.lineWidth = Math.max(2, rzs * 0.2); strokePath(ctx, pts);
-      ctx.strokeStyle = rgb(RIVERC); ctx.lineWidth = Math.max(1.2, rzs * 0.12); strokePath(ctx, pts);
-      if (!lowDetail) { ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = Math.max(0.8, rzs * 0.035); strokePath(ctx, pts); }
-    });
-    riverRuns.forEach(function (run) { if (!run[1] || run[0].length < 2) return; var pts = run[0];
-      ctx.strokeStyle = rgb(SAND); ctx.lineWidth = Math.max(4, rzs * 0.62); strokePath(ctx, pts);
-      ctx.strokeStyle = rgb(SAND_WET, 1, 0.6); ctx.lineWidth = Math.max(3, rzs * 0.5); strokePath(ctx, pts);
-      ctx.strokeStyle = rgb(mix(COASTC, SHALLOW, 0.35)); ctx.lineWidth = Math.max(2.5, rzs * 0.42); strokePath(ctx, pts);
-      if (!lowDetail) { ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = Math.max(1, rzs * 0.06); ctx.setLineDash([rzs * 0.5, rzs * 0.7]); strokePath(ctx, pts); ctx.setLineDash([]); }
-    });
     // cover unexplored tiles again (rivers and blended edges may reach into them): soft dark fog
     var fogSp = this.fogSprite(Math.round(rzs));
     for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) { i = r * g.W + c; if (explored[i]) continue; drawSprite(fogSp, S(g.tiles[i])); }

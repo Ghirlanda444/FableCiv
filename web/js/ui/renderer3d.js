@@ -63,7 +63,7 @@
     m.trunk = new T.MeshLambertMaterial({ color: 0x5a3b1e });
     m.bush = new T.MeshLambertMaterial({ color: 0x2e8b3d });
     m.reed = new T.MeshLambertMaterial({ color: 0x4e7d2a });
-    m.river = new T.MeshLambertMaterial({ color: 0x48b0f0, emissive: 0x0b2d4d });
+    m.river = new T.MeshLambertMaterial({ color: 0x3a96be, emissive: 0x0b2d4d });
     m.reef = new T.MeshLambertMaterial({ color: 0xff8a5b }); m.rock = new T.MeshLambertMaterial({ color: 0x8a8378 }); m.mangrove = new T.MeshLambertMaterial({ color: 0x2f6a3a });
     m.border = new T.MeshBasicMaterial({});
     m.stone = new T.MeshLambertMaterial({ color: 0xd9d2c3 });
@@ -203,10 +203,10 @@
     var lines = [], corners, ci, a, bpt;
     for (var ti = 0; ti < g.tiles.length; ti++) {
       var tt2 = g.tiles[ti], p2 = tileXZ(tt2); corners = Hex.corners(p2[0], p2[1], R);
-      for (ci = 0; ci < 3; ci++) { a = corners[ci]; bpt = corners[ci + 1]; for (var seg = 0; seg < 2; seg++) { var x1 = a[0] + (bpt[0] - a[0]) * seg / 2, z1 = a[1] + (bpt[1] - a[1]) * seg / 2, x2 = a[0] + (bpt[0] - a[0]) * (seg + 1) / 2, z2 = a[1] + (bpt[1] - a[1]) * (seg + 1) / 2; lines.push(x1, Math.max(0.3, this.heightAt(x1, z1)) + 0.35, z1, x2, Math.max(0.3, this.heightAt(x2, z2)) + 0.35, z2); } }
+      for (ci = 0; ci < 3; ci++) { a = corners[ci]; bpt = corners[ci + 1]; for (var seg = 0; seg < 2; seg++) { var x1 = a[0] + (bpt[0] - a[0]) * seg / 2, z1 = a[1] + (bpt[1] - a[1]) * seg / 2, x2 = a[0] + (bpt[0] - a[0]) * (seg + 1) / 2, z2 = a[1] + (bpt[1] - a[1]) * (seg + 1) / 2; lines.push(x1, Math.max(0.3, this.heightAt(x1, z1)) + 0.7, z1, x2, Math.max(0.3, this.heightAt(x2, z2)) + 0.7, z2); } }
     }
     var lgeo = new T.BufferGeometry(); lgeo.setAttribute('position', new T.BufferAttribute(new Float32Array(lines), 3));
-    var grid = new T.LineSegments(lgeo, new T.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.13 })); grid.visible = this.showGrid; group.add(grid); this.world.grid = grid; this.world.gridLines = lines;
+    var grid = new T.LineSegments(lgeo, new T.LineBasicMaterial({ color: 0xfff6d0, transparent: true, opacity: 0.55, depthWrite: false })); grid.visible = this.showGrid; group.add(grid); this.world.grid = grid; this.world.gridLines = lines;
     // --- forests and jungles as many small trees on the height field
     var treeList = [], bushList = [], reedList = [], palmList = [];
     for (var i2 = 0; i2 < g.tiles.length; i2++) {
@@ -307,8 +307,8 @@
       for (var k = 0; k < path.length; k++) {
         var t = g.tiles[path[k]]; if (!t) break;
         if (!explored[t.i] || (t.navigable && k > 0)) { if (pts.length >= 2 + (t.navigable ? -1 : 0)) { if (t.navigable && explored[t.i]) { var pn = tileXZ(t); pts.push(new T.Vector3(pn[0], 0.6, pn[1])); } if (pts.length >= 2) addTube(pts); } pts = []; if (t.navigable) break; continue; }
-        var p = tileXZ(t);
-        if (pts.length) { var prev = pts[pts.length - 1]; var mx = (prev.x + p[0]) / 2, mz = (prev.z + p[1]) / 2; pts.push(new T.Vector3(mx, Math.max(-1, self.heightAt(mx, mz)) + 0.9, mz)); }
+        var p = tileXZ(t), jx = Math.sin(t.i * 1.7) * R * 0.16, jz = Math.cos(t.i * 2.3) * R * 0.14; p = [p[0] + jx, p[1] + jz];
+        if (pts.length) { var prev = pts[pts.length - 1]; var mx = (prev.x + p[0]) / 2, mz = (prev.z + p[1]) / 2, ddx = p[0] - prev.x, ddz = p[1] - prev.z, dl = Math.hypot(ddx, ddz) || 1, mw = Math.sin(t.i * 3.1 + k) * R * 0.14; mx += -ddz / dl * mw; mz += ddx / dl * mw; pts.push(new T.Vector3(mx, Math.max(-1, self.heightAt(mx, mz)) + 0.9, mz)); }
         pts.push(new T.Vector3(p[0], Math.max(-1, self.heightAt(p[0], p[1])) + 0.9, p[1]));
       }
       if (pts.length >= 2) addTube(pts);
