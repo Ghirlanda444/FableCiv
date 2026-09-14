@@ -8,7 +8,7 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
-    settings: { graphics: '2d', yields: false }, pediaState: { cat: 'concepts' },
+    settings: { graphics: '2d', yields: false, iso: true }, pediaState: { cat: 'concepts' },
     loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); if (!s.v || s.v < 2) { s.graphics = '2d'; s.v = 2; } Object.assign(this.settings, s); } catch (e) {} },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
@@ -21,7 +21,7 @@
       try { this.renderer = use3d ? new AU.Renderer3D(cv) : new AU.Renderer(cv); }
       catch (e) { console.warn('3D renderer failed, falling back to 2D', e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
       if (cam) this.renderer.cam = cam;
-      this.renderer.showYields = !!this.settings.yields;
+      this.renderer.showYields = !!this.settings.yields; this.renderer.iso = this.settings.iso !== false;
       this.renderer.resize(); this.bindInput(); this.invalidate();
     },
     init: function () {
@@ -217,6 +217,28 @@
       else if (n.unit && this.g.units[n.unit]) { this.selectUnit(this.g.units[n.unit]); this.renderer.centerOn(this.g, n.tile); }
       else if (n.tile != null) { this.renderer.centerOn(this.g, n.tile); this.sel.tile = n.tile; }
       this.refreshHud(); this.invalidate();
+    },
+    // Long-press tooltip: what is on this tile (terrain, feature, resource, yields, owner).
+    showTileTip: function (tileIdx, x, y) {
+      var g = this.g, p = G.player(g), t = g.tiles[tileIdx], tip = $('tip');
+      if (!p.explored[tileIdx]) { tip.hidden = true; return; }
+      var owner = t.owner >= 0 && g.settlements[t.owner] ? g.settlements[t.owner] : null;
+      var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
+      var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
+      var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
+      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.river ? ' · River' : '') + '</b>';
+      if (t.natural) html += '<div class="tip-nat">' + AU.NATURAL_WONDERS[t.natural].icon + ' ' + AU.NATURAL_WONDERS[t.natural].name + '</div>';
+      if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
+      else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
+      html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
+      if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
+      if (t.camp) html += '<div class="stat">Independent camp</div>';
+      var us = p.visible[tileIdx] ? G.unitsAt(g, tileIdx) : []; if (us.length) html += '<div class="stat">' + us.map(function (u) { return AU.UNITS[u.type].icon + ' ' + u.name; }).join(', ') + '</div>';
+      tip.innerHTML = html; tip.hidden = false;
+      var rect = $('map').getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      tip.style.left = Math.max(6, Math.min(rect.width - tw - 6, x - rect.left - tw / 2)) + 'px'; tip.style.top = Math.max(6, y - rect.top - th - 24) + 'px';
+      clearTimeout(this._tipT); var self = this; this._tipT = setTimeout(function () { tip.hidden = true; }, 3500);
+      this.sel.tile = tileIdx; this.renderer.highlights.selTile = tileIdx; this.invalidate();
     },
     showQuotes: function () {
       var g = this.g; if (!g || !g.quoteQueue || !g.quoteQueue.length) return;
@@ -470,13 +492,14 @@
     // ---------- Input ----------
     bindInput: function () {
       var cv = $('map'), r = this.renderer, self = this;
-      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0, dragUnit = null, dragTarget = -1;
+      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0, dragUnit = null, dragTarget = -1, pressTimer = null, longPressed = false;
       cv.addEventListener('pointerdown', function (e) {
         cv.setPointerCapture(e.pointerId);
         pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
         var keys = Object.keys(pointers);
         if (keys.length === 1) {
-          dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; dragUnit = null;
+          dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; dragUnit = null; longPressed = false;
+          clearTimeout(pressTimer); pressTimer = setTimeout(function () { if (!moved && Object.keys(pointers).length === 1 && self.g) { var rc = cv.getBoundingClientRect(); var ti = r.tileAtScreen(self.g, e.clientX - rc.left, e.clientY - rc.top); if (ti >= 0) { longPressed = true; dragUnit = null; self.showTileTip(ti, e.clientX, e.clientY); } } }, 420);
           if (self.g && self.mode !== 'expand') { var rect0 = cv.getBoundingClientRect(); var idx0 = r.tileAtScreen(self.g, e.clientX - rect0.left, e.clientY - rect0.top); var pl = G.player(self.g); if (idx0 >= 0) { var own = G.unitsAt(self.g, idx0).filter(function (o) { return o.civ === pl.idx && o.moves > 0; }); var cur = self.sel.unit && self.g.units[self.sel.unit]; if (cur && cur.tile === idx0 && cur.moves > 0) dragUnit = cur; else if (own.length) dragUnit = own[0]; } }
         }
         else if (keys.length === 2) { var a = pointers[keys[0]], b = pointers[keys[1]]; lastDist = Math.hypot(a.x - b.x, a.y - b.y); }
@@ -491,7 +514,7 @@
           lastDist = dist; moved = true;
         } else if (dragging) {
           var dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
-          if (Math.hypot(e.clientX - startX, e.clientY - startY) > 6) moved = true;
+          if (Math.hypot(e.clientX - startX, e.clientY - startY) > 6) { moved = true; clearTimeout(pressTimer); }
           if (moved && dragUnit && self.g.units[dragUnit.id]) {
             if (self.sel.unit !== dragUnit.id) self.selectUnit(dragUnit);
             var rect1 = cv.getBoundingClientRect(); var idx1 = r.tileAtScreen(self.g, e.clientX - rect1.left, e.clientY - rect1.top);
@@ -500,8 +523,9 @@
         }
       });
       function up(e) {
-        var was = pointers[e.pointerId]; delete pointers[e.pointerId];
+        var was = pointers[e.pointerId]; delete pointers[e.pointerId]; clearTimeout(pressTimer);
         if (!was) return;
+        if (longPressed) { longPressed = false; dragging = false; dragUnit = null; return; }
         if (Object.keys(pointers).length === 0) {
           if (dragging && !moved && self.g) { var rect = cv.getBoundingClientRect(); var idx = r.tileAtScreen(self.g, e.clientX - rect.left, e.clientY - rect.top); self.onTap(idx); self.refreshHud(); self.invalidate(); }
           else if (dragging && moved && dragUnit && self.g && self.g.units[dragUnit.id]) { r.highlights.dragTile = -1; if (dragTarget >= 0 && dragTarget !== dragUnit.tile) { self.sel.unit = dragUnit.id; self.onTap(dragTarget); } else self.selectUnit(dragUnit); self.refreshHud(); self.invalidate(); }

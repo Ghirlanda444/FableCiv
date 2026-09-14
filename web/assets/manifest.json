@@ -248,6 +248,30 @@
   "nobg": false
  },
  {
+  "kind": "units",
+  "id": "missionary",
+  "file": "units/missionary.png",
+  "name": "Missionary",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "apostle",
+  "file": "units/apostle.png",
+  "name": "Apostle",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "inquisitor",
+  "file": "units/inquisitor.png",
+  "name": "Inquisitor",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
   "kind": "buildings",
   "id": "monument",
   "file": "buildings/monument.png",
@@ -268,6 +292,14 @@
   "id": "shrine",
   "file": "buildings/shrine.png",
   "name": "Shrine",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "buildings",
+  "id": "temple",
+  "file": "buildings/temple.png",
+  "name": "Temple",
   "size": "512x512",
   "nobg": false
  },
@@ -1488,6 +1520,358 @@
   "nobg": false
  },
  {
+  "kind": "leaders",
+  "id": "hannibal",
+  "file": "leaders/hannibal.png",
+  "name": "Hannibal Barca (Carthage)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "dido",
+  "file": "leaders/dido.png",
+  "name": "Dido (Carthage)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "justinian",
+  "file": "leaders/justinian.png",
+  "name": "Justinian I (Byzantium)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "theodora",
+  "file": "leaders/theodora.png",
+  "name": "Theodora (Byzantium)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "basil",
+  "file": "leaders/basil.png",
+  "name": "Basil II (Byzantium)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "casimir",
+  "file": "leaders/casimir.png",
+  "name": "Casimir III (Poland)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "jadwiga",
+  "file": "leaders/jadwiga.png",
+  "name": "Jadwiga (Poland)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "sobieski",
+  "file": "leaders/sobieski.png",
+  "name": "Jan III Sobieski (Poland)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "gilgamesh",
+  "file": "leaders/gilgamesh.png",
+  "name": "Gilgamesh (Sumer)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "urnammu",
+  "file": "leaders/urnammu.png",
+  "name": "Ur-Nammu (Sumer)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "suppiluliuma",
+  "file": "leaders/suppiluliuma.png",
+  "name": "Suppiluliuma I (Hittites)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "hattusili",
+  "file": "leaders/hattusili.png",
+  "name": "Hattusili III (Hittites)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "ashurbanipal",
+  "file": "leaders/ashurbanipal.png",
+  "name": "Ashurbanipal (Assyria)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "tiglath",
+  "file": "leaders/tiglath.png",
+  "name": "Tiglath-Pileser III (Assyria)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "amanirenas",
+  "file": "leaders/amanirenas.png",
+  "name": "Amanirenas (Nubia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "piye",
+  "file": "leaders/piye.png",
+  "name": "Piye (Nubia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "charlemagne",
+  "file": "leaders/charlemagne.png",
+  "name": "Charlemagne (Holy Roman Empire)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "otto",
+  "file": "leaders/otto.png",
+  "name": "Otto I (Holy Roman Empire)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "charles_v",
+  "file": "leaders/charles_v.png",
+  "name": "Charles V (Holy Roman Empire)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "henry_navigator",
+  "file": "leaders/henry_navigator.png",
+  "name": "Henry the Navigator (Portugal)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "joao",
+  "file": "leaders/joao.png",
+  "name": "João II (Portugal)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "william_orange",
+  "file": "leaders/william_orange.png",
+  "name": "William of Orange (Netherlands)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "dewitt",
+  "file": "leaders/dewitt.png",
+  "name": "Johan de Witt (Netherlands)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "gustavus",
+  "file": "leaders/gustavus.png",
+  "name": "Gustavus Adolphus (Sweden)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "kristina",
+  "file": "leaders/kristina.png",
+  "name": "Kristina (Sweden)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "pedro",
+  "file": "leaders/pedro.png",
+  "name": "Pedro II (Brazil)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "vargas",
+  "file": "leaders/vargas.png",
+  "name": "Getúlio Vargas (Brazil)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "jayavarman",
+  "file": "leaders/jayavarman.png",
+  "name": "Jayavarman VII (Khmer)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "suryavarman",
+  "file": "leaders/suryavarman.png",
+  "name": "Suryavarman II (Khmer)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "ramkhamhaeng",
+  "file": "leaders/ramkhamhaeng.png",
+  "name": "Ramkhamhaeng (Siam)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "naresuan",
+  "file": "leaders/naresuan.png",
+  "name": "Naresuan (Siam)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "franz_joseph",
+  "file": "leaders/franz_joseph.png",
+  "name": "Franz Joseph I (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "maria_theresa",
+  "file": "leaders/maria_theresa.png",
+  "name": "Maria Theresa (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "sisi",
+  "file": "leaders/sisi.png",
+  "name": "Elisabeth (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "bruce",
+  "file": "leaders/bruce.png",
+  "name": "Robert the Bruce (Scotland)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "james_iv",
+  "file": "leaders/james_iv.png",
+  "name": "James IV (Scotland)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "nzinga",
+  "file": "leaders/nzinga.png",
+  "name": "Nzinga Mbande (Kongo)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "afonso",
+  "file": "leaders/afonso.png",
+  "name": "Afonso I (Kongo)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "lautaro",
+  "file": "leaders/lautaro.png",
+  "name": "Lautaro (Mapuche)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "galvarino",
+  "file": "leaders/galvarino.png",
+  "name": "Galvarino (Mapuche)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "curtin",
+  "file": "leaders/curtin.png",
+  "name": "John Curtin (Australia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "menzies",
+  "file": "leaders/menzies.png",
+  "name": "Robert Menzies (Australia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "tamar",
+  "file": "leaders/tamar.png",
+  "name": "Tamar (Georgia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
+  "kind": "leaders",
+  "id": "david_builder",
+  "file": "leaders/david_builder.png",
+  "name": "David IV (Georgia)",
+  "size": "512x640",
+  "nobg": false
+ },
+ {
   "kind": "resources",
   "id": "wheat",
   "file": "resources/wheat.png",
@@ -1932,6 +2316,166 @@
   "id": "polynesia",
   "file": "civs/polynesia.png",
   "name": "Polynesia emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "carthage",
+  "file": "civs/carthage.png",
+  "name": "Carthage emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "byzantium",
+  "file": "civs/byzantium.png",
+  "name": "Byzantium emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "poland",
+  "file": "civs/poland.png",
+  "name": "Poland emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "sumer",
+  "file": "civs/sumer.png",
+  "name": "Sumer emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "hittites",
+  "file": "civs/hittites.png",
+  "name": "Hittites emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "assyria",
+  "file": "civs/assyria.png",
+  "name": "Assyria emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "nubia",
+  "file": "civs/nubia.png",
+  "name": "Nubia emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "holy_roman_empire",
+  "file": "civs/holy_roman_empire.png",
+  "name": "Holy Roman Empire emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "portugal",
+  "file": "civs/portugal.png",
+  "name": "Portugal emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "netherlands",
+  "file": "civs/netherlands.png",
+  "name": "Netherlands emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "sweden",
+  "file": "civs/sweden.png",
+  "name": "Sweden emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "brazil",
+  "file": "civs/brazil.png",
+  "name": "Brazil emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "khmer",
+  "file": "civs/khmer.png",
+  "name": "Khmer emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "siam",
+  "file": "civs/siam.png",
+  "name": "Siam emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "austria_hungary",
+  "file": "civs/austria_hungary.png",
+  "name": "Austria-Hungary emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "scotland",
+  "file": "civs/scotland.png",
+  "name": "Scotland emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "kongo",
+  "file": "civs/kongo.png",
+  "name": "Kongo emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "mapuche",
+  "file": "civs/mapuche.png",
+  "name": "Mapuche emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "australia",
+  "file": "civs/australia.png",
+  "name": "Australia emblem",
+  "size": "256x256",
+  "nobg": false
+ },
+ {
+  "kind": "civs",
+  "id": "georgia",
+  "file": "civs/georgia.png",
+  "name": "Georgia emblem",
   "size": "256x256",
   "nobg": false
  },

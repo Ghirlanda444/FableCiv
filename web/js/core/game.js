@@ -358,7 +358,7 @@
         (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm') || (b.when === 'quarry' && imp === 'quarry') || (b.when === 'woodcutter' && imp === 'woodcutter') ||
         (b.when === 'wet' && (t.feature === 'marsh' || t.feature === 'oasis')) || (b.when === 'coast' && t.terrain === 'coast') || (b.when === 'lake' && t.terrain === 'lake') ||
         (b.when === 'plains' && t.terrain === 'plains') || (b.when === 'grassland' && t.terrain === 'grassland') || (b.when === 'tundra' && t.terrain === 'tundra') || (b.when === 'snow' && t.terrain === 'snow') ||
-        (b.when === 'sacred' && G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.natural || nt.terrain === 'mountain'; })) || (b.when === 'strategic' && t.resource && AU.RESOURCES[t.resource].type === 'strategic') || (b.when === 'luxury' && t.resource && AU.RESOURCES[t.resource].type === 'luxury');
+        (b.when === 'sacred' && G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.natural || nt.terrain === 'mountain'; })) || (b.when === 'strategic' && t.resource && AU.RESOURCES[t.resource].kind === 'strategic') || (b.when === 'luxury' && t.resource && AU.RESOURCES[t.resource].kind === 'luxury');
       if (ok) add(y, b.yields);
     });
     // wonders located in this settlement affecting its tiles

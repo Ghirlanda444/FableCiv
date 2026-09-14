@@ -10,7 +10,7 @@
     this.cam = { x: 0, y: 0, zoom: 1 };
     this.dpr = 1; this.w = 0; this.h = 0;
     this.highlights = { reach: null, attack: null, expand: null, path: null, selTile: -1 };
-    this.showGrid = false; this.showYields = false;
+    this.showGrid = false; this.showYields = false; this.iso = true;
     this.sprites = {}; this.spriteCount = 0; this.glyphs = {}; this.maxZoom = 2.8;
   }
   Renderer.prototype.resize = function () {
@@ -19,8 +19,9 @@
     this.canvas.width = Math.round(w * dpr); this.canvas.height = Math.round(h * dpr);
     this.dpr = dpr; this.w = w; this.h = h;
   };
-  Renderer.prototype.worldToScreen = function (wx, wy) { return [(wx - this.cam.x) * this.cam.zoom + this.w / 2, (wy - this.cam.y) * this.cam.zoom + this.h / 2]; };
-  Renderer.prototype.screenToWorld = function (sx, sy) { return [(sx - this.w / 2) / this.cam.zoom + this.cam.x, (sy - this.h / 2) / this.cam.zoom + this.cam.y]; };
+  Renderer.prototype.isoY = function () { return this.iso ? ISO : 1; };
+  Renderer.prototype.worldToScreen = function (wx, wy) { return [(wx - this.cam.x) * this.cam.zoom + this.w / 2, (wy - this.cam.y) * this.cam.zoom * this.isoY() + this.h / 2]; };
+  Renderer.prototype.screenToWorld = function (sx, sy) { return [(sx - this.w / 2) / this.cam.zoom + this.cam.x, (sy - this.h / 2) / (this.cam.zoom * this.isoY()) + this.cam.y]; };
   Renderer.prototype.tileAtScreen = function (g, sx, sy) {
     var w = this.screenToWorld(sx, sy), o = Hex.fromPixel(w[0], w[1], R);
     if (o[0] < 0 || o[0] >= g.W || o[1] < 0 || o[1] >= g.H) return -1;
@@ -42,9 +43,10 @@
     ocean: [22, 66, 120], coast: [46, 132, 190], lake: [64, 150, 214],
     grassland: [98, 156, 66], plains: [176, 160, 82], desert: [222, 200, 140], tundra: [140, 146, 120], snow: [230, 236, 240], mountain: [120, 116, 110]
   };
-  function hexPath(ctx, cx, cy, r) {
-    ctx.beginPath();
-    for (var i = 0; i < 6; i++) { var a = Math.PI / 180 * (60 * i - 30); var x = cx + r * Math.cos(a), y = cy + r * Math.sin(a); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+  var ISO = 0.62; // vertical squash of the isometric (Civ 3 style) view
+  function hexPath(ctx, cx, cy, r, sy) {
+    sy = sy || 1; ctx.beginPath();
+    for (var i = 0; i < 6; i++) { var a = Math.PI / 180 * (60 * i - 30); var x = cx + r * Math.cos(a), y = cy + r * Math.sin(a) * sy; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
     ctx.closePath();
   }
   function lcg(seed) { var s = (seed * 2654435761) >>> 0 || 1; return function () { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; return s / 4294967296; }; }
@@ -66,16 +68,44 @@
   };
   Renderer.prototype.featureArt = function (id) { return AU.Assets.get('features', id); };
   Renderer.prototype.drawArt = function (ctx, img, x, y, w, anchorY) { var h = w * img.height / img.width; ctx.drawImage(img, x - w / 2, y - h * (anchorY === undefined ? 0.5 : anchorY), w, h); };
-  Renderer.prototype.tileSprite = function (t, rz) {
+  Renderer.prototype.tileSprite = function (t, rz, groundOnly) {
     var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
-    var key = t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
+    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
     var sp = this.sprites[key];
     if (sp) return sp;
     if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
-    sp = this.paintTile(t, rz); this.sprites[key] = sp; this.spriteCount++;
+    sp = this.paintTile(t, rz, groundOnly); this.sprites[key] = sp; this.spriteCount++;
     return sp;
   };
-  Renderer.prototype.paintTile = function (t, rz) {
+  // Upright feature sprite (hills, mountains, trees...) for the isometric view, drawn after the squashed ground.
+  Renderer.prototype.featureSprite = function (t, rz) {
+    if (!t.hills && !t.feature && t.terrain !== 'mountain') return null;
+    var feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
+    var key = 'F|' + t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
+    var sp = this.sprites[key]; if (sp) return sp;
+    if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
+    var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2.6) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    var ctx = cv.getContext('2d'), cx = w / 2, cy = h - rz - 1, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0)), base = PAL[t.terrain], detail = rz >= 14;
+    this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtn, feat, true);
+    cv.anchorY = cy; this.sprites[key] = cv; this.spriteCount++;
+    return cv;
+  };
+  Renderer.prototype.paintFeatures = function (ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, noClip) {
+    function clipped(fn) { if (noClip) { fn(); return; } ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); fn(); ctx.restore(); }
+    var self = this;
+    if (t.hills && t.terrain !== 'mountain') { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else clipped(function () { self.paintHills(ctx, cx, cy, rz, base, rnd, detail); }); }
+    if (t.terrain === 'mountain') { if (mtnArt) this.drawArt(ctx, mtnArt, cx, cy, rz * 2.05, 0.55); else clipped(function () { self.paintMountain(ctx, cx, cy, rz, rnd, detail); }); }
+    if (t.feature) {
+      if (featArt) this.drawArt(ctx, featArt, cx, cy - (t.hills ? rz * 0.12 : 0), rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
+      else clipped(function () {
+        if (t.feature === 'forest') self.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
+        if (t.feature === 'jungle') self.paintTrees(ctx, cx, cy, rz, rnd, detail, true, t.hills);
+        if (t.feature === 'marsh') self.paintMarsh(ctx, cx, cy, rz, rnd, detail);
+        if (t.feature === 'oasis') self.paintOasis(ctx, cx, cy, rz, rnd, detail);
+      });
+    }
+  };
+  Renderer.prototype.paintTile = function (t, rz, groundOnly) {
     var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2) + 2;
     var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
     var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
@@ -116,17 +146,7 @@
     }
     var hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtnArt = t.terrain === 'mountain' ? this.featureArt('mountain') : null, featArt = t.feature ? this.featureArt(t.feature) : null;
     ctx.restore(); // sprites may overhang the hex a little
-    if (t.hills && t.terrain !== 'mountain') { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); this.paintHills(ctx, cx, cy, rz, base, rnd, detail); ctx.restore(); } }
-    if (t.terrain === 'mountain') { if (mtnArt) this.drawArt(ctx, mtnArt, cx, cy, rz * 2.05, 0.55); else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); this.paintMountain(ctx, cx, cy, rz, rnd, detail); ctx.restore(); } }
-    if (t.feature) {
-      if (featArt) this.drawArt(ctx, featArt, cx, cy - (t.hills ? rz * 0.12 : 0), rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
-      else { ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip();
-        if (t.feature === 'forest') this.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
-        if (t.feature === 'jungle') this.paintTrees(ctx, cx, cy, rz, rnd, detail, true, t.hills);
-        if (t.feature === 'marsh') this.paintMarsh(ctx, cx, cy, rz, rnd, detail);
-        if (t.feature === 'oasis') this.paintOasis(ctx, cx, cy, rz, rnd, detail);
-        ctx.restore(); }
-    }
+    if (!groundOnly) this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, false);
     // subtle edge shading for a tiled look
     ctx.strokeStyle = water ? 'rgba(0,20,60,0.18)' : 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1; hexPath(ctx, cx, cy, rz - 0.5); ctx.stroke();
     return cv;
@@ -193,6 +213,7 @@
   };
   Renderer.prototype.drawGlyph = function (ctx, ch, x, y, size) { var gp = this.glyph(ch, Math.max(6, Math.round(size))); ctx.drawImage(gp, x - gp.width / 2, y - gp.height / 2); };
 
+  var hexPathBase = hexPath;
   // ---------- main draw ----------
   Renderer.prototype.draw = function (g, app) {
     var ctx = this.ctx, z = this.cam.zoom, dpr = this.dpr, self = this;
@@ -209,13 +230,24 @@
     var r, c, i, t, cc, sx, sy;
     function S(t) { var p = Hex.center(t.col, t.row, R); return self.worldToScreen(p[0], p[1]); }
     var rzs = rz; // screen radius
+    var isoY = this.isoY(), iso = this.iso;
+    var hexPath = function (ctx, cx, cy, rr) { hexPathBase(ctx, cx, cy, rr, isoY); };
+    var cornersI = function (cx, cy, rr) { return Hex.corners(cx, cy, rr).map(function (pt) { return [pt[0], cy + (pt[1] - cy) * isoY]; }); };
     // pass 1: terrain sprites
     for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
       i = r * g.W + c; t = g.tiles[i];
       if (!explored[i]) continue;
       var p = this.worldToScreen(R * SQ3 * (c + 0.5 * (r & 1)), R * 1.5 * r);
-      var sp = this.tileSprite(t, Math.round(rzs));
-      ctx.drawImage(sp, Math.round(p[0] - sp.width / 2), Math.round(p[1] - sp.height / 2));
+      var sp = this.tileSprite(t, Math.round(rzs), iso);
+      if (iso) ctx.drawImage(sp, Math.round(p[0] - sp.width / 2), Math.round(p[1] - sp.height * isoY / 2), sp.width, Math.round(sp.height * isoY) + 1);
+      else ctx.drawImage(sp, Math.round(p[0] - sp.width / 2), Math.round(p[1] - sp.height / 2));
+    }
+    // pass 1a: upright features (isometric view), back to front
+    if (iso) for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
+      i = r * g.W + c; t = g.tiles[i];
+      if (!explored[i]) continue;
+      var fsp = this.featureSprite(t, Math.round(rzs)); if (!fsp) continue;
+      var pf = S(t); ctx.drawImage(fsp, Math.round(pf[0] - fsp.width / 2), Math.round(pf[1] - fsp.anchorY));
     }
     // pass 1b: coast foam where water meets land
     if (!lowDetail) {
@@ -223,7 +255,7 @@
       for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
         i = r * g.W + c; t = g.tiles[i];
         if (!explored[i] || !G.isWater(t)) continue;
-        var pc = S(t), corners = Hex.corners(pc[0], pc[1], rzs * 0.86);
+        var pc = S(t), corners = cornersI(pc[0], pc[1], rzs * 0.86);
         var d = (r & 1) ? [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]] : [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]];
         var dirCorner = [[0, 1], [5, 0], [4, 5], [3, 4], [2, 3], [1, 2]];
         for (var e = 0; e < 6; e++) {
@@ -263,7 +295,7 @@
       var civ = g.civs[s.civ], data = G.civData(civ), col = hexToRgb(G.civColor(civ));
       cc = S(t);
       ctx.fillStyle = rgb(col, 1, t.worked && t.settlement == null ? 0.16 : 0.07); hexPath(ctx, cc[0], cc[1], rzs); ctx.fill();
-      var corners2 = Hex.corners(cc[0], cc[1], rzs - Math.max(1, rzs * 0.08));
+      var corners2 = cornersI(cc[0], cc[1], rzs - Math.max(1, rzs * 0.08));
       var dd = (r & 1) ? dirs.odd : dirs.even;
       for (var e2 = 0; e2 < 6; e2++) {
         var nc3 = c + dd[e2][0], nr3 = r + dd[e2][1], same = false;
@@ -314,7 +346,7 @@
         var yy = so ? G.tileYields(g, t, so) : AU.baseTileYields(t, player);
         var parts = []; for (var yk in YI) if (yy[yk] >= 1) parts.push([YI[yk], Math.floor(yy[yk])]);
         if (!parts.length) continue;
-        cc = S(t); var totalW = parts.length * ys * 1.55, x0 = cc[0] - totalW / 2 + ys * 0.75, yy0 = cc[1] + rz * 0.62;
+        cc = S(t); var totalW = parts.length * ys * 1.55, x0 = cc[0] - totalW / 2 + ys * 0.75, yy0 = cc[1] + rz * 0.62 * isoY;
         ctx.fillStyle = 'rgba(0,0,0,0.42)'; ctx.fillRect(cc[0] - totalW / 2 - 2, yy0 - ys * 0.6, totalW + 4, ys * 1.2);
         ctx.font = 'bold ' + Math.round(ys * 0.9) + 'px system-ui, sans-serif'; ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = '#fff';
         for (var pi2 = 0; pi2 < parts.length; pi2++) { this.drawGlyph(ctx, parts[pi2][0], x0 + pi2 * ys * 1.55 - ys * 0.3, yy0, ys * 0.85); ctx.fillText(parts[pi2][1], x0 + pi2 * ys * 1.55 + ys * 0.15, yy0 + 0.5); }
@@ -407,7 +439,7 @@
     if (u.hp < 100) { ctx.fillStyle = '#222'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2, 3); ctx.fillStyle = u.hp > 50 ? '#4caf50' : u.hp > 25 ? '#e6b422' : '#e05252'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2 * u.hp / 100, 3); }
     if (u.fortify && mil) { ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1; ctx.strokeRect(ux - ur - 2, uy - ur - 2, ur * 2 + 4, ur * 2 + 4); }
     if (U.level(u) > 0) { ctx.fillStyle = '#f5d76e'; for (var k = 0; k < U.level(u); k++) { ctx.beginPath(); ctx.arc(ux - ur * 0.6 + k * ur * 0.6, uy - ur - 3, Math.max(1.5, ur * 0.12), 0, Math.PI * 2); ctx.fill(); } }
-    if (isSel) { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2; hexPath(ctx, cc[0], cc[1], rz - 1); ctx.stroke(); }
+    if (isSel) { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2; hexPath(ctx, cc[0], cc[1], rz - 1, this.isoY()); ctx.stroke(); }
   };
   AU.Renderer = Renderer;
   AU.HEX_R = R;
