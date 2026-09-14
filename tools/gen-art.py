@@ -120,7 +120,7 @@ def main():
         elif line.startswith('  > ') and cur:
             prompts[cur] = line[4:].strip()
     kinds = [k for k in args.kinds.split(',') if k]
-    skips = [k for k in args.skip.split(',') if k]
+    skips = [k for k in args.skip.split(',') if k and k.lower() != 'none']  # 'none' = generate everything, cultural variants included
     order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs', 'techs', 'civics']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []

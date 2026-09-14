@@ -16,7 +16,7 @@ on:
         required: false
         default: "pollinations"
       skip:
-        description: "Kind prefixes to leave out unless named in kinds (default: the per-culture unit/building variants)"
+        description: "Kind prefixes to leave out unless named in kinds (default: the per-culture unit/building variants; write none to generate everything)"
         required: false
         default: "units/,buildings/"
 
@@ -60,9 +60,9 @@ jobs:
             if [ "$limit" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
             step=12
             if [ "$limit" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
-            before=$(find web/assets -name '*.png' | wc -l)
+            before=$(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)
             python3 tools/gen-art.py --limit $step --kinds "$KINDS" || true
-            after=$(find web/assets -name '*.png' | wc -l)
+            after=$(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)
             if [ "$after" -gt "$before" ]; then
               git add web/assets
               git commit -q -m "Artwork: $((after-before)) generated pictures (total $after) [skip ci]" || true
@@ -72,9 +72,9 @@ jobs:
             if [ "$after" -eq "$before" ]; then echo "no new pictures in this batch, stopping"; break; fi
             if [ "$limit" != "0" ]; then remaining=$((remaining-step)); fi
           done
-          echo "pictures now: $(find web/assets -name '*.png' | wc -l)"
+          echo "pictures now: $(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)"
           git pull --rebase -q origin main || true
-          git commit --allow-empty -q -m "Artwork: rebuild apps with $(find web/assets -name '*.png' | wc -l) pictures" && git push -q origin HEAD:main || true
+          git commit --allow-empty -q -m "Artwork: rebuild apps with $(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l) pictures" && git push -q origin HEAD:main || true
       - name: Rebuild the apps with the new artwork
         # pushes made with the workflow token do not start other workflows, so dispatch them explicitly
         env:
