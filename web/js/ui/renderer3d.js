@@ -479,13 +479,13 @@
       var ox = mil ? -R * 0.18 : R * 0.3, oz = mil ? R * 0.05 : R * 0.3;
       if (t.settlement != null) { ox = mil ? -R * 0.6 : R * 0.6; oz = -R * 0.45; }
       var color = u.civ >= 0 ? G.civColor(g.civs[u.civ]) : '#2b2b2b', color2 = u.civ >= 0 ? G.civData(g.civs[u.civ]).color2 : '#e33';
-      var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0) + '|' + (AU.Assets.usable3D('units', u.type) ? 'a' : 'p');
+      var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0) + '|' + (AU.Assets.usable3D('units', u.type) ? 'a' : 'p') + (u.civ >= 0 && AU.Assets.usable3D('units', G.unitArtId(g, g.civs[u.civ], u.type)) ? 'u' : '');
       var node = this.unitNodes[id];
       if (node && node.sig !== sig) { this.scene.remove(node.group); node = null; }
       if (!node) {
         var grp = new T.Group();
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
-        var art = AU.Assets.textureFor('units', u.type, u.civ >= 0 ? AU.cultureOf(g.civs[u.civ]) : null);
+        var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.textureChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
         if (art) { // painted unit as a billboard standing on its base
           var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 0.82 : 0.68);
           var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);

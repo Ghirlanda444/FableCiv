@@ -177,6 +177,8 @@
   G.fxKey = function (g, civ) { return (g.fxGen || 0) + '|' + civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(civ.techs).length + '|' + Object.keys(g.wonders).length + '|' + (civ.policies || []).join(',') + '|' + (civ.nationalCount || 0); };
 
   // ---------- Units (creation; movement/combat live in units.js) ----------
+  // Picture id of a unit: the civilization's unique unit id when it replaces this type, else the base type.
+  G.unitArtId = function (g, civ, typeId) { var d = civ ? G.civData(civ) : null; return d && d.uu && d.uu.replaces === typeId ? d.uu.id : typeId; };
   G.unitType = function (g, civ, typeId) {
     // returns the effective unit definition for this civ (unique unit replacement applied)
     var base = AU.UNITS[typeId];

@@ -4,6 +4,7 @@ const fs = require('fs'), path = require('path');
 require('../tests/load');
 const LEADER_LOOKS = require('./leader-looks');
 const CIV_SYMBOLS = require('./civ-symbols');
+const UU_LOOKS = require('./uu-looks');
 const AU = globalThis.AU;
 const STYLE = 'Cute chibi 3D game render in the style of Clash of Clans and Kingshot: chunky exaggerated proportions, smooth rounded 3D shapes with glossy toy-like shading, soft studio lighting with a warm rim light and subtle ambient occlusion, bright saturated colours, cheerful and readable, isolated on a plain white background, no text, no watermark, no frame.';
 const SCENE_STYLE = 'Colourful 3D-rendered cartoon game art like Clash of Clans and Kingshot: chunky rounded shapes with soft glossy shading and subtle ambient occlusion, bright saturated colours, cheerful, no text, no watermark.';
@@ -17,33 +18,43 @@ const UNIT_DESC = {
   swordsman: 'an iron-age swordsman with a short sword, helmet and rectangular shield',
   horseman: 'a light cavalryman on a galloping horse with a spear',
   catapult: 'a wooden torsion catapult siege engine with a crew of two',
-  galley: 'an ancient wooden galley warship with oars and a single square sail',
+  galley: 'an ancient wooden galley warship with oars and a single square sail, ship only, no people',
   crossbowman: 'a medieval crossbowman in a gambeson and kettle helmet',
   pikeman: 'a medieval pikeman with a very long pike and a breastplate',
   knight: 'an armoured medieval knight on a barded warhorse with a lance',
   musketman: 'a 17th-century musketeer with a matchlock musket and wide-brim hat',
   bombard: 'a medieval bronze bombard cannon on a wooden carriage',
-  caravel: 'a renaissance caravel sailing ship with lateen sails',
+  caravel: 'a renaissance caravel sailing ship with lateen sails, ship only, no people',
   field_cannon: 'an 18th-century field cannon with two artillerymen',
   cavalry: 'a napoleonic hussar cavalryman on a horse with a sabre',
   rifleman: 'a 19th-century rifleman in a blue uniform with a rifle and shako',
-  ironclad: 'a 19th-century ironclad steam warship with a smokestack',
+  ironclad: 'a 19th-century ironclad steam warship with a smokestack, ship only, no people',
   artillery: 'a World War One era howitzer artillery gun with crew',
   infantry: 'a World War One infantry soldier with rifle, helmet and backpack',
   machine_gun: 'a World War One machine gun crew behind a tripod gun',
-  battleship: 'an early 20th-century dreadnought battleship with big gun turrets',
+  battleship: 'an early 20th-century dreadnought battleship with big gun turrets, ship only, no people',
   tank: 'a World War Two era medium tank',
   mech_infantry: 'modern infantry soldier next to an armoured personnel carrier',
   rocket_artillery: 'a modern multiple rocket launcher truck',
-  destroyer: 'a modern naval destroyer warship',
-  submarine: 'a modern submarine surfaced on the water',
+  destroyer: 'a modern naval destroyer warship, ship only, no people',
+  submarine: 'a modern submarine surfaced on the water, ship only, no people',
   modern_armor: 'a modern main battle tank',
-  special_forces: 'a modern special forces soldier with night vision and a carbine'
+  special_forces: 'a modern special forces soldier with night vision and a carbine',
+  fighter: 'a World War One biplane fighter aircraft in flight, seen from the side and slightly above, no people',
+  bomber: 'a World War Two four-engine heavy bomber aircraft in flight, seen from the side and slightly above, no people',
+  jet_fighter: 'a modern jet fighter aircraft in flight, seen from the side and slightly above, no people'
 };
 const ERA_HINT = ['ancient', 'classical', 'medieval', 'renaissance', 'industrial', 'modern', 'atomic', 'futuristic'];
 function eraOf(tech, civic) { if (tech && AU.TECH_BY_ID[tech]) return ERA_HINT[AU.TECH_BY_ID[tech].era]; if (civic && AU.CIVIC_BY_ID[civic]) return ERA_HINT[AU.CIVIC_BY_ID[civic].era]; return 'ancient'; }
 const items = [];
+// Ships, aircraft, guns and vehicles: one shared picture, no cultural versions (a machine looks the same everywhere)
+const VEHICLE = new Set(['galley', 'caravel', 'ironclad', 'battleship', 'destroyer', 'submarine', 'catapult', 'bombard', 'field_cannon', 'artillery', 'machine_gun', 'rocket_artillery', 'tank', 'modern_armor', 'fighter', 'bomber', 'jet_fighter']);
+const isVehicle = id => VEHICLE.has(id) || (AU.UNITS[id] && (AU.UNITS[id].cls === 'naval' || AU.UNITS[id].cls === 'navalRanged' || AU.UNITS[id].cls === 'air'));
+const unitEra = id => AU.UNITS[id] && AU.UNITS[id].tech && AU.TECH_BY_ID[AU.UNITS[id].tech] ? AU.TECH_BY_ID[AU.UNITS[id].tech].era : 0;
+// From the industrial era on, soldiers wear period-correct uniforms everywhere; only the person changes with the culture
+const UNIFORM = { 4: '19th-century military uniform with a shako or kepi', 5: 'World War One era uniform with a steel helmet', 6: 'mid-20th-century combat fatigues and helmet', 7: 'modern camouflage battle dress with body armour' };
 for (const [id, u] of Object.entries(AU.UNITS)) items.push({ kind: 'units', id, name: u.name, size: '512x512', prompt: `Chibi 3D game character: ${UNIT_DESC[id] || u.name}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
+for (const c of AU.CIVS) items.push({ kind: 'units', id: c.uu.id, name: c.uu.name + ' (' + c.name + ' unique unit)', size: '512x512', prompt: `Chibi 3D game character: ${UU_LOOKS[c.uu.id] || c.uu.name}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
 for (const [id, b] of Object.entries(AU.BUILDINGS)) if (!b.noBuild) items.push({ kind: 'buildings', id, name: b.name, size: '512x512', prompt: `A single cute cartoon ${eraOf(b.tech, b.civic)} ${b.name} building for a city-builder game, chunky and rounded, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
 for (const [id, w] of Object.entries(AU.WONDERS)) items.push({ kind: 'wonders', id, name: w.name, size: '768x512', prompt: `The ${w.name}, the famous historical monument, as a cute chunky cartoon game building standing on a small round patch of green ground, bright daylight, large and centred in the frame, seen from a 3/4 bird's-eye view. ${STYLE}` });
 for (const [id, n] of Object.entries(AU.NATIONAL)) items.push({ kind: 'national', id, name: n.name, size: '512x512', prompt: `A grand cartoon ${eraOf(n.tech, n.civic)} civic building called ${n.name}, chunky and rounded, standing on a small round patch of green ground, bright daylight, large and centred in the frame, seen from a 3/4 bird's-eye view. ${STYLE}` });
@@ -76,7 +87,12 @@ const PALACE_DESC = { hall: 'the great central hall of a palace, a wide grand bu
 for (const [sid, S] of Object.entries(AU.PALACE_STYLES)) for (const [pid, d] of Object.entries(PALACE_DESC)) items.push({ kind: 'palace/' + sid, id: pid, name: S.name + ' ' + pid.replace('_', ' '), size: '512x512', prompt: `${d}, ${S.look}, ${S.name} architecture, cute chunky chibi cartoon building seen from the front at a slight angle from above, isolated on a plain white background, no ground, no text. ${SCENE_STYLE}` });
 // Per-culture variants of every unit and building (Civ 4 style art groups)
 for (const [cid, cu] of Object.entries(AU.CULTURES)) {
-  for (const [id, u] of Object.entries(AU.UNITS)) items.push({ kind: 'units/' + cid, id, name: u.name + ' (' + cu.name + ')', size: '512x512', prompt: `Chibi 3D game character: ${UNIT_DESC[id] || u.name}, a ${cu.name} person with ${cu.people}, equipment and clothing in ${cu.gear}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
+  for (const [id, u] of Object.entries(AU.UNITS)) {
+    if (isVehicle(id)) continue;
+    const era = unitEra(id), modern = era >= 4;
+    const outfit = modern ? `wearing a period-correct ${UNIFORM[era] || UNIFORM[7]} (absolutely no ancient armour, no tunic, no shield) with only a small ${cu.name} detail such as a badge or sash` : `equipment and clothing in ${cu.gear}`;
+    items.push({ kind: 'units/' + cid, id, name: u.name + ' (' + cu.name + ')', size: '512x512', prompt: `Chibi 3D game character: ${UNIT_DESC[id] || u.name}, a ${cu.name} person with ${cu.people}, ${outfit}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
+  }
   for (const [id, b] of Object.entries(AU.BUILDINGS)) if (!b.noBuild || id === 'palace') items.push({ kind: 'buildings/' + cid, id, name: b.name + ' (' + cu.name + ')', size: '512x512', prompt: `A single cute cartoon ${eraOf(b.tech, b.civic)} ${b.name} building for a city-builder game in ${cu.arch}, chunky and rounded, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
 }
 const CARD_STYLE = 'Cute chibi 3D-rendered mobile strategy game illustration, chunky rounded shapes with glossy toy-like shading, bright saturated colours, cheerful, a small scene filling the whole square. Absolutely no text, no words, no letters, no numbers, no titles, no logos, no badges, no watermark, no border.';

@@ -32,6 +32,11 @@
       var e = A._state(ck, id); if (e && e.failed) return A.get(kind, id);
       return null; // still loading
     },
+    // First picture that exists in a preference list: [[kind,id], ...]. null while an earlier candidate is still loading.
+    getChain: function (list) { for (var i = 0; i < list.length; i++) { var img = A.get(list[i][0], list[i][1]); if (img) return img; var e = A._state(list[i][0], list[i][1]); if (!e || !e.failed) return null; } return null; },
+    textureChain: function (list) { for (var i = 0; i < list.length; i++) { var tex = A.texture(list[i][0], list[i][1]); if (tex) return tex; var e = A._state(list[i][0], list[i][1]); if (!e || !e.failed) return null; } return null; },
+    // Unit picture: unique-unit art, then the cultural version of the base type, then the shared picture.
+    unitChain: function (artId, baseId, culture) { var l = []; if (artId !== baseId) l.push(['units', artId]); if (culture) l.push(['units/' + culture, baseId]); l.push(['units', baseId]); return l; },
     urlFor: function (kind, id, culture) { if (!culture) return A.url(kind, id); var ck = kind + '/' + culture, e = A._state(ck, id); return e && e.ok ? A.url(ck, id) : A.url(kind, id); },
     textureFor: function (kind, id, culture) {
       if (!culture) return A.texture(kind, id);

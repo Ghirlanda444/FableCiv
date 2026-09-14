@@ -32,6 +32,9 @@
     submarine:   { name: 'Submarine',   cls: 'naval',    cost: 560, moves: 5, strength: 85, tech: 'radar', resource: 'oil', icon: '🛥️', ocean: true },
     modern_armor:{ name: 'Modern Armor', cls: 'cavalry', cost: 700, moves: 5, strength: 100, tech: 'composites', resource: 'oil', icon: '🛡️' },
     special_forces:{ name: 'Special Forces', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' },
+    fighter:     { name: 'Biplane',     cls: 'air',      cost: 420, moves: 8,  strength: 55, ranged: 60, range: 2, tech: 'flight', resource: 'oil', icon: '✈️', flying: true, sight: 3, upgradesTo: 'jet_fighter', desc: 'Flies over any terrain and water; attacks from 2 tiles. Cannot capture.' },
+    bomber:      { name: 'Bomber',      cls: 'air',      cost: 520, moves: 8,  strength: 45, ranged: 85, range: 2, tech: 'advanced_flight', resource: 'oil', icon: '🛩️', flying: true, sight: 3, vsSettlements: 15, desc: 'Heavy bomber: flies over anything, +15 vs settlements. Cannot capture.' },
+    jet_fighter: { name: 'Jet Fighter', cls: 'air',      cost: 680, moves: 10, strength: 90, ranged: 95, range: 2, tech: 'jet_engines', resource: 'oil', icon: '🛫', flying: true, sight: 4, desc: 'Fast jet: flies over anything, attacks from 2 tiles. Cannot capture.' },
     missionary:  { name: 'Missionary',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Faith in a settlement with a Shrine.' },
     apostle:     { name: 'Apostle',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Faith in a settlement with a Temple.' },
     inquisitor:  { name: 'Inquisitor',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Faith in a settlement with a Temple.' }
@@ -154,5 +157,5 @@
     PR('camouflage', 'Camouflage', 'recon', { defVsRanged: 10, defense: 3 }, 2)
   ];
   AU.PROMO_BY_ID = {}; AU.PROMOTIONS.forEach(function (p) { AU.PROMO_BY_ID[p.id] = p; });
-  AU.promoFamily = function (cls) { return cls === 'antcav' ? 'melee' : cls === 'siege' ? 'ranged' : cls === 'navalRanged' ? 'naval' : cls; };
+  AU.promoFamily = function (cls) { return cls === 'antcav' ? 'melee' : cls === 'siege' || cls === 'air' ? 'ranged' : cls === 'navalRanged' ? 'naval' : cls; };
 })(globalThis.AU = globalThis.AU || {});

@@ -30,8 +30,9 @@
     return true;
   };
   U.isNaval = function (u) { var c = AU.UNITS[u.type].cls; return c === 'naval' || c === 'navalRanged'; };
-  U.isRanged = function (u) { var c = AU.UNITS[u.type].cls; return c === 'ranged' || c === 'siege' || c === 'navalRanged'; };
-  U.isEmbarked = function (g, u) { return !U.isNaval(u) && G.isWater(g.tiles[u.tile]); };
+  U.isRanged = function (u) { var c = AU.UNITS[u.type].cls; return c === 'ranged' || c === 'siege' || c === 'navalRanged' || c === 'air'; };
+  U.isAir = function (u) { return !!AU.UNITS[u.type].flying; };
+  U.isEmbarked = function (g, u) { return !U.isNaval(u) && !U.isAir(u) && G.isWater(g.tiles[u.tile]); };
   U.canCapture = function (u) { if (u.civ < 0) return false; var c = AU.UNITS[u.type].cls; return c === 'melee' || c === 'antcav' || c === 'cavalry' || c === 'recon'; };
   U.civ = function (g, u) { return u.civ >= 0 ? g.civs[u.civ] : null; };
 
@@ -39,6 +40,7 @@
   U.enterCost = function (g, u, to, from) {
     var T = AU.TERRAIN[to.terrain];
     var civ = U.civ(g, u), fx = civ ? G.civFx(g, civ) : {};
+    if (AU.UNITS[u.type].flying) { var ownerA = G.tileOwnerCiv(g, to); if (ownerA >= 0 && ownerA !== u.civ && !G.atWar(g, u.civ, ownerA) && !(AU.Diplo && AU.Diplo.hasOpenBorders(g, u.civ, ownerA))) return Infinity; return 1; }
     if (T.impassable && !fx.mountainsPassable) return Infinity;
     var naval = U.isNaval(u);
     if (naval) {
@@ -282,7 +284,7 @@
     if (d !== 1) return false;
     // melee: must be able to enter target terrain
     if (U.isNaval(u) && !G.isWater(to) && !to.navigable) return false;
-    if (!U.isNaval(u) && G.isWater(to)) return false;
+    if (!U.isNaval(u) && !U.isAir(u) && G.isWater(to)) return false;
     if (AU.TERRAIN[to.terrain].impassable) return false;
     return true;
   };

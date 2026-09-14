@@ -249,6 +249,30 @@
  },
  {
   "kind": "units",
+  "id": "fighter",
+  "file": "units/fighter.png",
+  "name": "Biplane",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "bomber",
+  "file": "units/bomber.png",
+  "name": "Bomber",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "jet_fighter",
+  "file": "units/jet_fighter.png",
+  "name": "Jet Fighter",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
   "id": "missionary",
   "file": "units/missionary.png",
   "name": "Missionary",
@@ -268,6 +292,406 @@
   "id": "inquisitor",
   "file": "units/inquisitor.png",
   "name": "Inquisitor",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "legion",
+  "file": "units/legion.png",
+  "name": "Legion (Rome unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "samurai",
+  "file": "units/samurai.png",
+  "name": "Samurai (Japan unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "crouching_tiger",
+  "file": "units/crouching_tiger.png",
+  "name": "Crouching Tiger (China unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "minuteman",
+  "file": "units/minuteman.png",
+  "name": "Minuteman (America unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "varu",
+  "file": "units/varu.png",
+  "name": "War Elephant (India unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "jong",
+  "file": "units/jong.png",
+  "name": "Jong (Indonesia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "keshig",
+  "file": "units/keshig.png",
+  "name": "Keshig (Mongolia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "impi",
+  "file": "units/impi.png",
+  "name": "Impi (Zulu unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "immortal",
+  "file": "units/immortal.png",
+  "name": "Immortal (Persia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "maryannu",
+  "file": "units/maryannu.png",
+  "name": "Chariot Archer (Egypt unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "gaesatae",
+  "file": "units/gaesatae.png",
+  "name": "Gaesatae (Celts unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "mamluk",
+  "file": "units/mamluk.png",
+  "name": "Mamluk (Arabia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "garde_imperiale",
+  "file": "units/garde_imperiale.png",
+  "name": "Garde Impériale (France unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "redcoat",
+  "file": "units/redcoat.png",
+  "name": "Redcoat (England unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "eagle_warrior",
+  "file": "units/eagle_warrior.png",
+  "name": "Eagle Warrior (Aztec unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "warakaq",
+  "file": "units/warakaq.png",
+  "name": "Warak'aq (Inca unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "hulche",
+  "file": "units/hulche.png",
+  "name": "Hul'che (Maya unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "kispoko",
+  "file": "units/kispoko.png",
+  "name": "Kispoko Warrior (Shawnee unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "hoplite",
+  "file": "units/hoplite.png",
+  "name": "Hoplite (Greece unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "landsknecht",
+  "file": "units/landsknecht.png",
+  "name": "Landsknecht (Germany unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "cossack",
+  "file": "units/cossack.png",
+  "name": "Cossack (Russia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "tercio",
+  "file": "units/tercio.png",
+  "name": "Tercio (Spain unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "janissary",
+  "file": "units/janissary.png",
+  "name": "Janissary (Ottomans unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "hwacha",
+  "file": "units/hwacha.png",
+  "name": "Hwacha (Korea unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "voi_chien",
+  "file": "units/voi_chien.png",
+  "name": "Voi Chiến (Vietnam unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "shotel",
+  "file": "units/shotel.png",
+  "name": "Shotel Warrior (Ethiopia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "sofa",
+  "file": "units/sofa.png",
+  "name": "Sofa (Mali unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "berserker",
+  "file": "units/berserker.png",
+  "name": "Berserker (Norway unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "sabum",
+  "file": "units/sabum.png",
+  "name": "Sabum Kibittum (Babylon unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "maori_warrior",
+  "file": "units/maori_warrior.png",
+  "name": "Toa (Polynesia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "quinquereme",
+  "file": "units/quinquereme.png",
+  "name": "Quinquereme (Carthage unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "dromon",
+  "file": "units/dromon.png",
+  "name": "Dromon (Byzantium unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "winged_hussar",
+  "file": "units/winged_hussar.png",
+  "name": "Winged Hussar (Poland unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "war_cart",
+  "file": "units/war_cart.png",
+  "name": "War Cart (Sumer unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "three_man_chariot",
+  "file": "units/three_man_chariot.png",
+  "name": "Three-Man Chariot (Hittites unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "assyrian_slinger",
+  "file": "units/assyrian_slinger.png",
+  "name": "Assyrian Slinger (Assyria unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "pitati",
+  "file": "units/pitati.png",
+  "name": "Pitati Archer (Nubia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "genoese_crossbowman",
+  "file": "units/genoese_crossbowman.png",
+  "name": "Genoese Crossbowman (Holy Roman Empire unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "nau",
+  "file": "units/nau.png",
+  "name": "Nau (Portugal unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "sea_beggar",
+  "file": "units/sea_beggar.png",
+  "name": "Sea Beggar (Netherlands unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "carolean",
+  "file": "units/carolean.png",
+  "name": "Carolean (Sweden unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "minas_geraes",
+  "file": "units/minas_geraes.png",
+  "name": "Minas Geraes (Brazil unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "domrey",
+  "file": "units/domrey.png",
+  "name": "Domrey (Khmer unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "wild_tiger",
+  "file": "units/wild_tiger.png",
+  "name": "Wild Tiger Corps (Siam unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "kuk_field_gun",
+  "file": "units/kuk_field_gun.png",
+  "name": "k.u.k. Field Gun (Austria-Hungary unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "highlander",
+  "file": "units/highlander.png",
+  "name": "Highlander (Scotland unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "ngao_mbebe",
+  "file": "units/ngao_mbebe.png",
+  "name": "Ngao Mbebe (Kongo unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "malon_raider",
+  "file": "units/malon_raider.png",
+  "name": "Malón Raider (Mapuche unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "light_horse",
+  "file": "units/light_horse.png",
+  "name": "Light Horse (Australia unique unit)",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "units",
+  "id": "monaspa",
+  "file": "units/monaspa.png",
+  "name": "Monaspa (Georgia unique unit)",
   "size": "512x512",
   "nobg": false
  },
@@ -3865,22 +4289,6 @@
  },
  {
   "kind": "units/mediterranean",
-  "id": "catapult",
-  "file": "units/mediterranean/catapult.png",
-  "name": "Catapult (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "galley",
-  "file": "units/mediterranean/galley.png",
-  "name": "Galley (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
   "id": "crossbowman",
   "file": "units/mediterranean/crossbowman.png",
   "name": "Crossbowman (Mediterranean)",
@@ -3913,30 +4321,6 @@
  },
  {
   "kind": "units/mediterranean",
-  "id": "bombard",
-  "file": "units/mediterranean/bombard.png",
-  "name": "Bombard (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "caravel",
-  "file": "units/mediterranean/caravel.png",
-  "name": "Caravel (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "field_cannon",
-  "file": "units/mediterranean/field_cannon.png",
-  "name": "Field Cannon (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
   "id": "cavalry",
   "file": "units/mediterranean/cavalry.png",
   "name": "Cavalry (Mediterranean)",
@@ -3953,22 +4337,6 @@
  },
  {
   "kind": "units/mediterranean",
-  "id": "ironclad",
-  "file": "units/mediterranean/ironclad.png",
-  "name": "Ironclad (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "artillery",
-  "file": "units/mediterranean/artillery.png",
-  "name": "Artillery (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
   "id": "infantry",
   "file": "units/mediterranean/infantry.png",
   "name": "Infantry (Mediterranean)",
@@ -3977,65 +4345,9 @@
  },
  {
   "kind": "units/mediterranean",
-  "id": "machine_gun",
-  "file": "units/mediterranean/machine_gun.png",
-  "name": "Machine Gun (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "battleship",
-  "file": "units/mediterranean/battleship.png",
-  "name": "Battleship (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "tank",
-  "file": "units/mediterranean/tank.png",
-  "name": "Tank (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
   "id": "mech_infantry",
   "file": "units/mediterranean/mech_infantry.png",
   "name": "Mechanized Infantry (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "rocket_artillery",
-  "file": "units/mediterranean/rocket_artillery.png",
-  "name": "Rocket Artillery (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "destroyer",
-  "file": "units/mediterranean/destroyer.png",
-  "name": "Destroyer (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "submarine",
-  "file": "units/mediterranean/submarine.png",
-  "name": "Submarine (Mediterranean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mediterranean",
-  "id": "modern_armor",
-  "file": "units/mediterranean/modern_armor.png",
-  "name": "Modern Armor (Mediterranean)",
   "size": "512x512",
   "nobg": false
  },
@@ -4441,22 +4753,6 @@
  },
  {
   "kind": "units/european",
-  "id": "catapult",
-  "file": "units/european/catapult.png",
-  "name": "Catapult (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "galley",
-  "file": "units/european/galley.png",
-  "name": "Galley (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
   "id": "crossbowman",
   "file": "units/european/crossbowman.png",
   "name": "Crossbowman (European)",
@@ -4489,30 +4785,6 @@
  },
  {
   "kind": "units/european",
-  "id": "bombard",
-  "file": "units/european/bombard.png",
-  "name": "Bombard (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "caravel",
-  "file": "units/european/caravel.png",
-  "name": "Caravel (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "field_cannon",
-  "file": "units/european/field_cannon.png",
-  "name": "Field Cannon (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
   "id": "cavalry",
   "file": "units/european/cavalry.png",
   "name": "Cavalry (European)",
@@ -4529,22 +4801,6 @@
  },
  {
   "kind": "units/european",
-  "id": "ironclad",
-  "file": "units/european/ironclad.png",
-  "name": "Ironclad (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "artillery",
-  "file": "units/european/artillery.png",
-  "name": "Artillery (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
   "id": "infantry",
   "file": "units/european/infantry.png",
   "name": "Infantry (European)",
@@ -4553,65 +4809,9 @@
  },
  {
   "kind": "units/european",
-  "id": "machine_gun",
-  "file": "units/european/machine_gun.png",
-  "name": "Machine Gun (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "battleship",
-  "file": "units/european/battleship.png",
-  "name": "Battleship (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "tank",
-  "file": "units/european/tank.png",
-  "name": "Tank (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
   "id": "mech_infantry",
   "file": "units/european/mech_infantry.png",
   "name": "Mechanized Infantry (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "rocket_artillery",
-  "file": "units/european/rocket_artillery.png",
-  "name": "Rocket Artillery (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "destroyer",
-  "file": "units/european/destroyer.png",
-  "name": "Destroyer (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "submarine",
-  "file": "units/european/submarine.png",
-  "name": "Submarine (European)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/european",
-  "id": "modern_armor",
-  "file": "units/european/modern_armor.png",
-  "name": "Modern Armor (European)",
   "size": "512x512",
   "nobg": false
  },
@@ -5017,22 +5217,6 @@
  },
  {
   "kind": "units/new_world",
-  "id": "catapult",
-  "file": "units/new_world/catapult.png",
-  "name": "Catapult (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "galley",
-  "file": "units/new_world/galley.png",
-  "name": "Galley (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
   "id": "crossbowman",
   "file": "units/new_world/crossbowman.png",
   "name": "Crossbowman (New World)",
@@ -5065,30 +5249,6 @@
  },
  {
   "kind": "units/new_world",
-  "id": "bombard",
-  "file": "units/new_world/bombard.png",
-  "name": "Bombard (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "caravel",
-  "file": "units/new_world/caravel.png",
-  "name": "Caravel (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "field_cannon",
-  "file": "units/new_world/field_cannon.png",
-  "name": "Field Cannon (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
   "id": "cavalry",
   "file": "units/new_world/cavalry.png",
   "name": "Cavalry (New World)",
@@ -5105,22 +5265,6 @@
  },
  {
   "kind": "units/new_world",
-  "id": "ironclad",
-  "file": "units/new_world/ironclad.png",
-  "name": "Ironclad (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "artillery",
-  "file": "units/new_world/artillery.png",
-  "name": "Artillery (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
   "id": "infantry",
   "file": "units/new_world/infantry.png",
   "name": "Infantry (New World)",
@@ -5129,65 +5273,9 @@
  },
  {
   "kind": "units/new_world",
-  "id": "machine_gun",
-  "file": "units/new_world/machine_gun.png",
-  "name": "Machine Gun (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "battleship",
-  "file": "units/new_world/battleship.png",
-  "name": "Battleship (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "tank",
-  "file": "units/new_world/tank.png",
-  "name": "Tank (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
   "id": "mech_infantry",
   "file": "units/new_world/mech_infantry.png",
   "name": "Mechanized Infantry (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "rocket_artillery",
-  "file": "units/new_world/rocket_artillery.png",
-  "name": "Rocket Artillery (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "destroyer",
-  "file": "units/new_world/destroyer.png",
-  "name": "Destroyer (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "submarine",
-  "file": "units/new_world/submarine.png",
-  "name": "Submarine (New World)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/new_world",
-  "id": "modern_armor",
-  "file": "units/new_world/modern_armor.png",
-  "name": "Modern Armor (New World)",
   "size": "512x512",
   "nobg": false
  },
@@ -5593,22 +5681,6 @@
  },
  {
   "kind": "units/east_asian",
-  "id": "catapult",
-  "file": "units/east_asian/catapult.png",
-  "name": "Catapult (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "galley",
-  "file": "units/east_asian/galley.png",
-  "name": "Galley (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
   "id": "crossbowman",
   "file": "units/east_asian/crossbowman.png",
   "name": "Crossbowman (East Asian)",
@@ -5641,30 +5713,6 @@
  },
  {
   "kind": "units/east_asian",
-  "id": "bombard",
-  "file": "units/east_asian/bombard.png",
-  "name": "Bombard (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "caravel",
-  "file": "units/east_asian/caravel.png",
-  "name": "Caravel (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "field_cannon",
-  "file": "units/east_asian/field_cannon.png",
-  "name": "Field Cannon (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
   "id": "cavalry",
   "file": "units/east_asian/cavalry.png",
   "name": "Cavalry (East Asian)",
@@ -5681,22 +5729,6 @@
  },
  {
   "kind": "units/east_asian",
-  "id": "ironclad",
-  "file": "units/east_asian/ironclad.png",
-  "name": "Ironclad (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "artillery",
-  "file": "units/east_asian/artillery.png",
-  "name": "Artillery (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
   "id": "infantry",
   "file": "units/east_asian/infantry.png",
   "name": "Infantry (East Asian)",
@@ -5705,65 +5737,9 @@
  },
  {
   "kind": "units/east_asian",
-  "id": "machine_gun",
-  "file": "units/east_asian/machine_gun.png",
-  "name": "Machine Gun (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "battleship",
-  "file": "units/east_asian/battleship.png",
-  "name": "Battleship (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "tank",
-  "file": "units/east_asian/tank.png",
-  "name": "Tank (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
   "id": "mech_infantry",
   "file": "units/east_asian/mech_infantry.png",
   "name": "Mechanized Infantry (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "rocket_artillery",
-  "file": "units/east_asian/rocket_artillery.png",
-  "name": "Rocket Artillery (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "destroyer",
-  "file": "units/east_asian/destroyer.png",
-  "name": "Destroyer (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "submarine",
-  "file": "units/east_asian/submarine.png",
-  "name": "Submarine (East Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/east_asian",
-  "id": "modern_armor",
-  "file": "units/east_asian/modern_armor.png",
-  "name": "Modern Armor (East Asian)",
   "size": "512x512",
   "nobg": false
  },
@@ -6169,22 +6145,6 @@
  },
  {
   "kind": "units/southeast_asian",
-  "id": "catapult",
-  "file": "units/southeast_asian/catapult.png",
-  "name": "Catapult (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "galley",
-  "file": "units/southeast_asian/galley.png",
-  "name": "Galley (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
   "id": "crossbowman",
   "file": "units/southeast_asian/crossbowman.png",
   "name": "Crossbowman (Southeast Asian)",
@@ -6217,30 +6177,6 @@
  },
  {
   "kind": "units/southeast_asian",
-  "id": "bombard",
-  "file": "units/southeast_asian/bombard.png",
-  "name": "Bombard (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "caravel",
-  "file": "units/southeast_asian/caravel.png",
-  "name": "Caravel (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "field_cannon",
-  "file": "units/southeast_asian/field_cannon.png",
-  "name": "Field Cannon (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
   "id": "cavalry",
   "file": "units/southeast_asian/cavalry.png",
   "name": "Cavalry (Southeast Asian)",
@@ -6257,22 +6193,6 @@
  },
  {
   "kind": "units/southeast_asian",
-  "id": "ironclad",
-  "file": "units/southeast_asian/ironclad.png",
-  "name": "Ironclad (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "artillery",
-  "file": "units/southeast_asian/artillery.png",
-  "name": "Artillery (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
   "id": "infantry",
   "file": "units/southeast_asian/infantry.png",
   "name": "Infantry (Southeast Asian)",
@@ -6281,65 +6201,9 @@
  },
  {
   "kind": "units/southeast_asian",
-  "id": "machine_gun",
-  "file": "units/southeast_asian/machine_gun.png",
-  "name": "Machine Gun (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "battleship",
-  "file": "units/southeast_asian/battleship.png",
-  "name": "Battleship (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "tank",
-  "file": "units/southeast_asian/tank.png",
-  "name": "Tank (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
   "id": "mech_infantry",
   "file": "units/southeast_asian/mech_infantry.png",
   "name": "Mechanized Infantry (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "rocket_artillery",
-  "file": "units/southeast_asian/rocket_artillery.png",
-  "name": "Rocket Artillery (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "destroyer",
-  "file": "units/southeast_asian/destroyer.png",
-  "name": "Destroyer (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "submarine",
-  "file": "units/southeast_asian/submarine.png",
-  "name": "Submarine (Southeast Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/southeast_asian",
-  "id": "modern_armor",
-  "file": "units/southeast_asian/modern_armor.png",
-  "name": "Modern Armor (Southeast Asian)",
   "size": "512x512",
   "nobg": false
  },
@@ -6745,22 +6609,6 @@
  },
  {
   "kind": "units/south_asian",
-  "id": "catapult",
-  "file": "units/south_asian/catapult.png",
-  "name": "Catapult (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "galley",
-  "file": "units/south_asian/galley.png",
-  "name": "Galley (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
   "id": "crossbowman",
   "file": "units/south_asian/crossbowman.png",
   "name": "Crossbowman (South Asian)",
@@ -6793,30 +6641,6 @@
  },
  {
   "kind": "units/south_asian",
-  "id": "bombard",
-  "file": "units/south_asian/bombard.png",
-  "name": "Bombard (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "caravel",
-  "file": "units/south_asian/caravel.png",
-  "name": "Caravel (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "field_cannon",
-  "file": "units/south_asian/field_cannon.png",
-  "name": "Field Cannon (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
   "id": "cavalry",
   "file": "units/south_asian/cavalry.png",
   "name": "Cavalry (South Asian)",
@@ -6833,22 +6657,6 @@
  },
  {
   "kind": "units/south_asian",
-  "id": "ironclad",
-  "file": "units/south_asian/ironclad.png",
-  "name": "Ironclad (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "artillery",
-  "file": "units/south_asian/artillery.png",
-  "name": "Artillery (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
   "id": "infantry",
   "file": "units/south_asian/infantry.png",
   "name": "Infantry (South Asian)",
@@ -6857,65 +6665,9 @@
  },
  {
   "kind": "units/south_asian",
-  "id": "machine_gun",
-  "file": "units/south_asian/machine_gun.png",
-  "name": "Machine Gun (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "battleship",
-  "file": "units/south_asian/battleship.png",
-  "name": "Battleship (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "tank",
-  "file": "units/south_asian/tank.png",
-  "name": "Tank (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
   "id": "mech_infantry",
   "file": "units/south_asian/mech_infantry.png",
   "name": "Mechanized Infantry (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "rocket_artillery",
-  "file": "units/south_asian/rocket_artillery.png",
-  "name": "Rocket Artillery (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "destroyer",
-  "file": "units/south_asian/destroyer.png",
-  "name": "Destroyer (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "submarine",
-  "file": "units/south_asian/submarine.png",
-  "name": "Submarine (South Asian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/south_asian",
-  "id": "modern_armor",
-  "file": "units/south_asian/modern_armor.png",
-  "name": "Modern Armor (South Asian)",
   "size": "512x512",
   "nobg": false
  },
@@ -7321,22 +7073,6 @@
  },
  {
   "kind": "units/middle_eastern",
-  "id": "catapult",
-  "file": "units/middle_eastern/catapult.png",
-  "name": "Catapult (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "galley",
-  "file": "units/middle_eastern/galley.png",
-  "name": "Galley (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
   "id": "crossbowman",
   "file": "units/middle_eastern/crossbowman.png",
   "name": "Crossbowman (Middle Eastern)",
@@ -7369,30 +7105,6 @@
  },
  {
   "kind": "units/middle_eastern",
-  "id": "bombard",
-  "file": "units/middle_eastern/bombard.png",
-  "name": "Bombard (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "caravel",
-  "file": "units/middle_eastern/caravel.png",
-  "name": "Caravel (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "field_cannon",
-  "file": "units/middle_eastern/field_cannon.png",
-  "name": "Field Cannon (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
   "id": "cavalry",
   "file": "units/middle_eastern/cavalry.png",
   "name": "Cavalry (Middle Eastern)",
@@ -7409,22 +7121,6 @@
  },
  {
   "kind": "units/middle_eastern",
-  "id": "ironclad",
-  "file": "units/middle_eastern/ironclad.png",
-  "name": "Ironclad (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "artillery",
-  "file": "units/middle_eastern/artillery.png",
-  "name": "Artillery (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
   "id": "infantry",
   "file": "units/middle_eastern/infantry.png",
   "name": "Infantry (Middle Eastern)",
@@ -7433,65 +7129,9 @@
  },
  {
   "kind": "units/middle_eastern",
-  "id": "machine_gun",
-  "file": "units/middle_eastern/machine_gun.png",
-  "name": "Machine Gun (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "battleship",
-  "file": "units/middle_eastern/battleship.png",
-  "name": "Battleship (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "tank",
-  "file": "units/middle_eastern/tank.png",
-  "name": "Tank (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
   "id": "mech_infantry",
   "file": "units/middle_eastern/mech_infantry.png",
   "name": "Mechanized Infantry (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "rocket_artillery",
-  "file": "units/middle_eastern/rocket_artillery.png",
-  "name": "Rocket Artillery (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "destroyer",
-  "file": "units/middle_eastern/destroyer.png",
-  "name": "Destroyer (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "submarine",
-  "file": "units/middle_eastern/submarine.png",
-  "name": "Submarine (Middle Eastern)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/middle_eastern",
-  "id": "modern_armor",
-  "file": "units/middle_eastern/modern_armor.png",
-  "name": "Modern Armor (Middle Eastern)",
   "size": "512x512",
   "nobg": false
  },
@@ -7897,22 +7537,6 @@
  },
  {
   "kind": "units/african",
-  "id": "catapult",
-  "file": "units/african/catapult.png",
-  "name": "Catapult (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "galley",
-  "file": "units/african/galley.png",
-  "name": "Galley (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
   "id": "crossbowman",
   "file": "units/african/crossbowman.png",
   "name": "Crossbowman (African)",
@@ -7945,30 +7569,6 @@
  },
  {
   "kind": "units/african",
-  "id": "bombard",
-  "file": "units/african/bombard.png",
-  "name": "Bombard (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "caravel",
-  "file": "units/african/caravel.png",
-  "name": "Caravel (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "field_cannon",
-  "file": "units/african/field_cannon.png",
-  "name": "Field Cannon (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
   "id": "cavalry",
   "file": "units/african/cavalry.png",
   "name": "Cavalry (African)",
@@ -7985,22 +7585,6 @@
  },
  {
   "kind": "units/african",
-  "id": "ironclad",
-  "file": "units/african/ironclad.png",
-  "name": "Ironclad (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "artillery",
-  "file": "units/african/artillery.png",
-  "name": "Artillery (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
   "id": "infantry",
   "file": "units/african/infantry.png",
   "name": "Infantry (African)",
@@ -8009,65 +7593,9 @@
  },
  {
   "kind": "units/african",
-  "id": "machine_gun",
-  "file": "units/african/machine_gun.png",
-  "name": "Machine Gun (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "battleship",
-  "file": "units/african/battleship.png",
-  "name": "Battleship (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "tank",
-  "file": "units/african/tank.png",
-  "name": "Tank (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
   "id": "mech_infantry",
   "file": "units/african/mech_infantry.png",
   "name": "Mechanized Infantry (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "rocket_artillery",
-  "file": "units/african/rocket_artillery.png",
-  "name": "Rocket Artillery (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "destroyer",
-  "file": "units/african/destroyer.png",
-  "name": "Destroyer (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "submarine",
-  "file": "units/african/submarine.png",
-  "name": "Submarine (African)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/african",
-  "id": "modern_armor",
-  "file": "units/african/modern_armor.png",
-  "name": "Modern Armor (African)",
   "size": "512x512",
   "nobg": false
  },
@@ -8473,22 +8001,6 @@
  },
  {
   "kind": "units/mesoamerican",
-  "id": "catapult",
-  "file": "units/mesoamerican/catapult.png",
-  "name": "Catapult (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "galley",
-  "file": "units/mesoamerican/galley.png",
-  "name": "Galley (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
   "id": "crossbowman",
   "file": "units/mesoamerican/crossbowman.png",
   "name": "Crossbowman (Mesoamerican and Andean)",
@@ -8521,30 +8033,6 @@
  },
  {
   "kind": "units/mesoamerican",
-  "id": "bombard",
-  "file": "units/mesoamerican/bombard.png",
-  "name": "Bombard (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "caravel",
-  "file": "units/mesoamerican/caravel.png",
-  "name": "Caravel (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "field_cannon",
-  "file": "units/mesoamerican/field_cannon.png",
-  "name": "Field Cannon (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
   "id": "cavalry",
   "file": "units/mesoamerican/cavalry.png",
   "name": "Cavalry (Mesoamerican and Andean)",
@@ -8561,22 +8049,6 @@
  },
  {
   "kind": "units/mesoamerican",
-  "id": "ironclad",
-  "file": "units/mesoamerican/ironclad.png",
-  "name": "Ironclad (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "artillery",
-  "file": "units/mesoamerican/artillery.png",
-  "name": "Artillery (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
   "id": "infantry",
   "file": "units/mesoamerican/infantry.png",
   "name": "Infantry (Mesoamerican and Andean)",
@@ -8585,65 +8057,9 @@
  },
  {
   "kind": "units/mesoamerican",
-  "id": "machine_gun",
-  "file": "units/mesoamerican/machine_gun.png",
-  "name": "Machine Gun (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "battleship",
-  "file": "units/mesoamerican/battleship.png",
-  "name": "Battleship (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "tank",
-  "file": "units/mesoamerican/tank.png",
-  "name": "Tank (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
   "id": "mech_infantry",
   "file": "units/mesoamerican/mech_infantry.png",
   "name": "Mechanized Infantry (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "rocket_artillery",
-  "file": "units/mesoamerican/rocket_artillery.png",
-  "name": "Rocket Artillery (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "destroyer",
-  "file": "units/mesoamerican/destroyer.png",
-  "name": "Destroyer (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "submarine",
-  "file": "units/mesoamerican/submarine.png",
-  "name": "Submarine (Mesoamerican and Andean)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/mesoamerican",
-  "id": "modern_armor",
-  "file": "units/mesoamerican/modern_armor.png",
-  "name": "Modern Armor (Mesoamerican and Andean)",
   "size": "512x512",
   "nobg": false
  },
@@ -9049,22 +8465,6 @@
  },
  {
   "kind": "units/native_american",
-  "id": "catapult",
-  "file": "units/native_american/catapult.png",
-  "name": "Catapult (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "galley",
-  "file": "units/native_american/galley.png",
-  "name": "Galley (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
   "id": "crossbowman",
   "file": "units/native_american/crossbowman.png",
   "name": "Crossbowman (Native American)",
@@ -9097,30 +8497,6 @@
  },
  {
   "kind": "units/native_american",
-  "id": "bombard",
-  "file": "units/native_american/bombard.png",
-  "name": "Bombard (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "caravel",
-  "file": "units/native_american/caravel.png",
-  "name": "Caravel (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "field_cannon",
-  "file": "units/native_american/field_cannon.png",
-  "name": "Field Cannon (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
   "id": "cavalry",
   "file": "units/native_american/cavalry.png",
   "name": "Cavalry (Native American)",
@@ -9137,22 +8513,6 @@
  },
  {
   "kind": "units/native_american",
-  "id": "ironclad",
-  "file": "units/native_american/ironclad.png",
-  "name": "Ironclad (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "artillery",
-  "file": "units/native_american/artillery.png",
-  "name": "Artillery (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
   "id": "infantry",
   "file": "units/native_american/infantry.png",
   "name": "Infantry (Native American)",
@@ -9161,65 +8521,9 @@
  },
  {
   "kind": "units/native_american",
-  "id": "machine_gun",
-  "file": "units/native_american/machine_gun.png",
-  "name": "Machine Gun (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "battleship",
-  "file": "units/native_american/battleship.png",
-  "name": "Battleship (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "tank",
-  "file": "units/native_american/tank.png",
-  "name": "Tank (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
   "id": "mech_infantry",
   "file": "units/native_american/mech_infantry.png",
   "name": "Mechanized Infantry (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "rocket_artillery",
-  "file": "units/native_american/rocket_artillery.png",
-  "name": "Rocket Artillery (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "destroyer",
-  "file": "units/native_american/destroyer.png",
-  "name": "Destroyer (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "submarine",
-  "file": "units/native_american/submarine.png",
-  "name": "Submarine (Native American)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/native_american",
-  "id": "modern_armor",
-  "file": "units/native_american/modern_armor.png",
-  "name": "Modern Armor (Native American)",
   "size": "512x512",
   "nobg": false
  },
@@ -9625,22 +8929,6 @@
  },
  {
   "kind": "units/polynesian",
-  "id": "catapult",
-  "file": "units/polynesian/catapult.png",
-  "name": "Catapult (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "galley",
-  "file": "units/polynesian/galley.png",
-  "name": "Galley (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
   "id": "crossbowman",
   "file": "units/polynesian/crossbowman.png",
   "name": "Crossbowman (Polynesian)",
@@ -9673,30 +8961,6 @@
  },
  {
   "kind": "units/polynesian",
-  "id": "bombard",
-  "file": "units/polynesian/bombard.png",
-  "name": "Bombard (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "caravel",
-  "file": "units/polynesian/caravel.png",
-  "name": "Caravel (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "field_cannon",
-  "file": "units/polynesian/field_cannon.png",
-  "name": "Field Cannon (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
   "id": "cavalry",
   "file": "units/polynesian/cavalry.png",
   "name": "Cavalry (Polynesian)",
@@ -9713,22 +8977,6 @@
  },
  {
   "kind": "units/polynesian",
-  "id": "ironclad",
-  "file": "units/polynesian/ironclad.png",
-  "name": "Ironclad (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "artillery",
-  "file": "units/polynesian/artillery.png",
-  "name": "Artillery (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
   "id": "infantry",
   "file": "units/polynesian/infantry.png",
   "name": "Infantry (Polynesian)",
@@ -9737,65 +8985,9 @@
  },
  {
   "kind": "units/polynesian",
-  "id": "machine_gun",
-  "file": "units/polynesian/machine_gun.png",
-  "name": "Machine Gun (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "battleship",
-  "file": "units/polynesian/battleship.png",
-  "name": "Battleship (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "tank",
-  "file": "units/polynesian/tank.png",
-  "name": "Tank (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
   "id": "mech_infantry",
   "file": "units/polynesian/mech_infantry.png",
   "name": "Mechanized Infantry (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "rocket_artillery",
-  "file": "units/polynesian/rocket_artillery.png",
-  "name": "Rocket Artillery (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "destroyer",
-  "file": "units/polynesian/destroyer.png",
-  "name": "Destroyer (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "submarine",
-  "file": "units/polynesian/submarine.png",
-  "name": "Submarine (Polynesian)",
-  "size": "512x512",
-  "nobg": false
- },
- {
-  "kind": "units/polynesian",
-  "id": "modern_armor",
-  "file": "units/polynesian/modern_armor.png",
-  "name": "Modern Armor (Polynesian)",
   "size": "512x512",
   "nobg": false
  },
