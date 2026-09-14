@@ -177,6 +177,20 @@
       }
       if (ok && path.length >= 2) { path.forEach(function (p) { tiles[p].river = true; }); riverPaths.push([riverSources[s]].concat(path, [mouth])); made++; }
     }
+    // Navigable rivers (Civ 7 style): the lower reach of every long river is wide enough for ships.
+    // Land units cross it as land; naval units sail it; settlements next to it count as coastal.
+    riverPaths.forEach(function (rp) {
+      var body = rp.slice(1, rp.length - 1); if (body.length < 6) return;
+      var from = Math.ceil(body.length * 0.45);
+      for (var k = from; k < body.length; k++) { var nt = tiles[body[k]]; if (nt.natural || AU.TERRAIN[nt.terrain].water) continue; nt.navigable = true; nt.hills = false; }
+    });
+    // Shorelines: what a coast looks like where land meets water (beach, rocky shore, reef, mangrove/marsh)
+    for (i = 0; i < tiles.length; i++) {
+      var st = tiles[i], stW = AU.TERRAIN[st.terrain].water;
+      var nbW = 0, nbL = 0; Hex.neighborsOf(st.col, st.row, W, H).forEach(function (n) { if (AU.TERRAIN[tiles[n].terrain].water) nbW++; else nbL++; });
+      if (!stW && nbW) st.shore = st.hills ? (rng.next() < 0.7 ? 'cliff' : 'beach') : st.terrain === 'snow' || st.terrain === 'tundra' ? 'rocks' : st.feature === 'marsh' || st.feature === 'jungle' ? 'mangrove' : rng.next() < 0.8 ? 'beach' : 'rocks';
+      else if (stW && st.terrain === 'coast' && nbL && !st.natural && rng.next() < 0.22) st.shore = 'reef';
+    }
 
     // Resources
     var resIds = Object.keys(AU.RESOURCES);
@@ -306,6 +320,7 @@
     if (t.hills) y.production += 1;
     if (t.feature) add(y, AU.FEATURES[t.feature].yields);
     if (t.river && !T.water) y.food += 1;
+    if (t.navigable) y.gold += 1;
     if (t.natural) add(y, AU.NATURAL_WONDERS[t.natural].yields);
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];

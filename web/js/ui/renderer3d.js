@@ -64,6 +64,7 @@
     m.bush = new T.MeshLambertMaterial({ color: 0x2e8b3d });
     m.reed = new T.MeshLambertMaterial({ color: 0x4e7d2a });
     m.river = new T.MeshLambertMaterial({ color: 0x48b0f0, emissive: 0x0b2d4d });
+    m.reef = new T.MeshLambertMaterial({ color: 0xff8a5b }); m.rock = new T.MeshLambertMaterial({ color: 0x8a8378 }); m.mangrove = new T.MeshLambertMaterial({ color: 0x2f6a3a });
     m.border = new T.MeshBasicMaterial({});
     m.stone = new T.MeshLambertMaterial({ color: 0xd9d2c3 });
     m.wall = new T.MeshLambertMaterial({ color: 0x8f877a });
@@ -152,7 +153,7 @@
     for (var q = 0; q < out.length; q++) out[q][1] /= sum;
     return out;
   };
-  P.baseHeight = function (t) { if (G.isWater(t)) return BASE_H[t.terrain]; if (t.terrain === 'mountain') return BASE_H.mountain; return t.hills ? BASE_H.hills : BASE_H.land; };
+  P.baseHeight = function (t) { if (G.isWater(t)) return BASE_H[t.terrain]; if (t.navigable) return -3.4; if (t.terrain === 'mountain') return BASE_H.mountain; return t.hills ? BASE_H.hills : BASE_H.land; };
   P.heightAt = function (x, z) {
     var g = this.world && this.world.g; if (!g) return LAND_H;
     var ws = this.hexWeights(g, x, z), h = 0, amp = 0;
@@ -184,7 +185,8 @@
       heights[i] = h; pos.setY(i, h);
       // colour: seabed sand near the shore, dark deep water, rock and snow on peaks, a little grain everywhere
       var grain = 0.92 + (this.noise(x / 5, z / 5) + 0.5) * 0.16;
-      if (h < 0) { var depthF = Math.min(1, -h / 12); r = (0.55 * (1 - depthF) + 0.10 * depthF) * grain; gg = (0.58 * (1 - depthF) + 0.22 * depthF) * grain; b = (0.50 * (1 - depthF) + 0.36 * depthF) * grain; }
+      if (h < 0) { var depthF = Math.min(1, -h / 12); r = (0.74 * (1 - depthF) + 0.10 * depthF) * grain; gg = (0.70 * (1 - depthF) + 0.22 * depthF) * grain; b = (0.52 * (1 - depthF) + 0.36 * depthF) * grain; if (h > -1.6) { var foam = 1 - (-h / 1.6); r = r * (1 - foam * 0.5) + 0.95 * foam * 0.5; gg = gg * (1 - foam * 0.5) + 0.97 * foam * 0.5; b = b * (1 - foam * 0.5) + 0.95 * foam * 0.5; } }
+      else if (h < 3.2) { var sandF = Math.pow(1 - h / 3.2, 0.7) * 0.9, sr = 0.86, sg = 0.79, sb = 0.56; if (h < 0.9) { var wet = 1 - h / 0.9; sr -= 0.1 * wet; sg -= 0.08 * wet; sb -= 0.06 * wet; } r = (r * (1 - sandF) + sr * sandF) * grain; gg = (gg * (1 - sandF) + sg * sandF) * grain; b = (b * (1 - sandF) + sb * sandF) * grain; }
       else { if (h > 22) { var rock = Math.min(1, (h - 22) / 12); r = r * (1 - rock) + 0.46 * rock; gg = gg * (1 - rock) + 0.44 * rock; b = b * (1 - rock) + 0.42 * rock; } if (h > 36) { var snow = Math.min(1, (h - 36) / 8); r = r * (1 - snow) + 0.94 * snow; gg = gg * (1 - snow) + 0.95 * snow; b = b * (1 - snow) + 0.97 * snow; } r *= grain; gg *= grain; b *= grain; }
       vBase[i * 3] = r; vBase[i * 3 + 1] = gg; vBase[i * 3 + 2] = b;
     }
@@ -223,6 +225,24 @@
     this.world.reeds = inst('reed', 'reed', reedList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.14, e[3], 1, 1, 1); });
     this.world.palms = inst('tree', 'bush', palmList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.25 * e[4], e[3], e[4] * 1.2, e[4] * 0.5, e[4] * 1.2, k); });
     this.world.treeList = treeList; this.world.bushList = bushList; this.world.reedList = reedList; this.world.palmList = palmList;
+    // shorelines: coral reefs just under the surface, rocks and mangroves at the water's edge
+    var reefList = [], rockList = [], mangList = [], EDGE_ANG3 = [0, -Math.PI / 3, -2 * Math.PI / 3, Math.PI, 2 * Math.PI / 3, Math.PI / 3];
+    var DIRS_E3 = [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]], DIRS_O3 = [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]];
+    for (var i4 = 0; i4 < g.tiles.length; i4++) {
+      var t4 = g.tiles[i4]; if (!t4.shore) continue;
+      var rnd4 = lcg(i4 + 41), p4 = tileXZ(t4), k4;
+      if (t4.shore === 'reef') { for (k4 = 0; k4 < 8; k4++) { var rx = p4[0] + (rnd4() - 0.5) * R * 1.1, rz2 = p4[1] + (rnd4() - 0.5) * R * 1.1; reefList.push([i4, rx, -1.4 + rnd4() * 1.2, rz2, 0.35 + rnd4() * 0.45, k4]); } continue; }
+      if (t4.shore !== 'rocks' && t4.shore !== 'cliff' && t4.shore !== 'mangrove') continue;
+      for (var e4 = 0; e4 < 6; e4++) {
+        var d4 = (t4.row & 1) ? DIRS_O3[e4] : DIRS_E3[e4], nc4 = t4.col + d4[0], nr4 = t4.row + d4[1]; if (nc4 < 0 || nc4 >= g.W || nr4 < 0 || nr4 >= g.H) continue;
+        if (!G.isWater(g.tiles[nr4 * g.W + nc4])) continue;
+        for (k4 = 0; k4 < 3; k4++) { var a4 = EDGE_ANG3[e4] + (rnd4() - 0.5) * 0.7, dd4 = R * (0.62 + rnd4() * 0.3), sx4 = p4[0] + Math.cos(a4) * dd4, sz4 = p4[1] + Math.sin(a4) * dd4; var hy = this.heightAt(sx4, sz4); if (t4.shore === 'mangrove') mangList.push([i4, sx4, Math.max(-0.5, hy), sz4, 0.7 + rnd4() * 0.6]); else rockList.push([i4, sx4, Math.max(-0.6, hy) - 0.5, sz4, (t4.shore === 'cliff' ? 0.9 : 0.5) + rnd4() * 0.5]); }
+      }
+    }
+    this.world.reefs = inst('bush', 'reef', reefList, function (e, k, m) { place(m, k, e[1], e[2], e[3], e[4], e[4] * 0.6, e[4], k); });
+    this.world.rocks = inst('bush', 'rock', rockList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.06 * e[4], e[3], e[4] * 1.3, e[4] * 0.8, e[4], k * 0.7); });
+    this.world.mangroves = inst('bush', 'mangrove', mangList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.12 * e[4], e[3], e[4], e[4] * 0.7, e[4], k); });
+    this.world.reefList = reefList; this.world.rockList = rockList; this.world.mangList = mangList;
     // natural wonders: one landmark mesh + a label, per style
     var natGroup = new T.Group(); group.add(natGroup); var self2 = this;
     g.tiles.forEach(function (t) {
@@ -273,6 +293,7 @@
       mesh.instanceColor.needsUpdate = true; mesh.instanceMatrix.needsUpdate = true;
     }
     tintInst(w.trees, w.treeList, 0x2f7a36, 0x1f5e2c); tintInst(w.trunks, w.treeList, 0x5a3b1e, 0x4a2e14); tintInst(w.bushes, w.bushList, 0x3aa04a, 0x1f6b2e); tintInst(w.reeds, w.reedList, 0x4e7d2a, 0x6a9a3a); tintInst(w.palms, w.palmList, 0x2e8b3d, 0x2e8b3d);
+    tintInst(w.reefs, w.reefList, 0xff8a5b, 0x2ee6c8); tintInst(w.rocks, w.rockList, 0x8a8378, 0x6e6860); tintInst(w.mangroves, w.mangList, 0x2f6a3a, 0x3d8a4a);
     this.rebuildRivers(g);
   };
   P.rebuildRivers = function (g) {
@@ -285,7 +306,7 @@
       var pts = [];
       for (var k = 0; k < path.length; k++) {
         var t = g.tiles[path[k]]; if (!t) break;
-        if (!explored[t.i]) { if (pts.length >= 2) addTube(pts); pts = []; continue; }
+        if (!explored[t.i] || (t.navigable && k > 0)) { if (pts.length >= 2 + (t.navigable ? -1 : 0)) { if (t.navigable && explored[t.i]) { var pn = tileXZ(t); pts.push(new T.Vector3(pn[0], 0.6, pn[1])); } if (pts.length >= 2) addTube(pts); } pts = []; if (t.navigable) break; continue; }
         var p = tileXZ(t);
         if (pts.length) { var prev = pts[pts.length - 1]; var mx = (prev.x + p[0]) / 2, mz = (prev.z + p[1]) / 2; pts.push(new T.Vector3(mx, Math.max(-1, self.heightAt(mx, mz)) + 0.9, mz)); }
         pts.push(new T.Vector3(p[0], Math.max(-1, self.heightAt(p[0], p[1])) + 0.9, p[1]));
@@ -378,7 +399,7 @@
   P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
   P.buildSettlement = function (g, s) {
     var T = window.THREE, geo = this.geo, mat = this.mat, self = this;
-    var t = g.tiles[s.tile], p = tileXZ(t), top = this.tileTop(t), civ = g.civs[s.civ], color = G.civColor(civ);
+    var t = g.tiles[s.tile], p = tileXZ(t), top = t.navigable ? Math.max(this.tileTop(t), 1.2) : this.tileTop(t), civ = g.civs[s.civ], color = G.civColor(civ);
     var grp = new T.Group(); grp.position.set(p[0], top, p[1]);
     var civMat = new T.MeshLambertMaterial({ color: color });
     // plaza
@@ -480,7 +501,7 @@
         this.scene.add(grp);
         node = this.unitNodes[id] = { group: grp, sig: sig };
       }
-      node.group.position.set(p[0] + ox, top, p[1] + oz);
+      node.group.position.set(p[0] + ox, (G.isWater(t) || t.navigable) ? Math.max(top, 0.4) : top, p[1] + oz);
     }
     for (var uid in this.unitNodes) if (!seen[uid]) { this.scene.remove(this.unitNodes[uid].group); delete this.unitNodes[uid]; }
   };

@@ -2481,33 +2481,17 @@
  },
  {
   "kind": "terrain",
-  "id": "ocean",
-  "file": "terrain/ocean.jpg",
-  "name": "Ocean texture",
-  "size": "512x512",
-  "nobg": true
- },
- {
-  "kind": "terrain",
-  "id": "coast",
-  "file": "terrain/coast.jpg",
-  "name": "Coast texture",
-  "size": "512x512",
-  "nobg": true
- },
- {
-  "kind": "terrain",
-  "id": "lake",
-  "file": "terrain/lake.jpg",
-  "name": "Lake texture",
-  "size": "512x512",
-  "nobg": true
- },
- {
-  "kind": "terrain",
   "id": "grassland",
   "file": "terrain/grassland.jpg",
   "name": "Grassland texture",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "terrain",
+  "id": "plains",
+  "file": "terrain/plains.jpg",
+  "name": "Plains texture",
   "size": "512x512",
   "nobg": true
  },
@@ -2556,6 +2540,14 @@
   "id": "marsh",
   "file": "terrain/marsh.jpg",
   "name": "Marsh texture",
+  "size": "512x512",
+  "nobg": true
+ },
+ {
+  "kind": "terrain",
+  "id": "hills",
+  "file": "terrain/hills.jpg",
+  "name": "Hills texture",
   "size": "512x512",
   "nobg": true
  },

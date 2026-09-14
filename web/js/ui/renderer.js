@@ -54,7 +54,7 @@
   // ---------- tile sprites ----------
   // Painted mode: generated terrain textures and feature sprites (web/assets/terrain, web/assets/features) when they exist.
   Renderer.prototype.terrainTexture = function (terrain) {
-    var id = terrain === 'mountain' ? 'tundra' : terrain; if (!AU.TERRAIN[id] && ['forest', 'jungle', 'marsh', 'hills'].indexOf(id) < 0) return null; var img = AU.Assets.get('terrain', id);
+    var id = terrain === 'mountain' ? 'tundra' : terrain; if (id === 'ocean' || id === 'coast' || id === 'lake') return null; if (!AU.TERRAIN[id] && ['forest', 'jungle', 'marsh', 'hills'].indexOf(id) < 0) return null; var img = AU.Assets.get('terrain', id);
     if (!img && id === 'plains') { var gcv = this.terrainTexture('grassland'); if (!gcv) return null; this.texCanvases = this.texCanvases || {}; if (!this.texCanvases.plains) { var pc = document.createElement('canvas'); pc.width = gcv.width; pc.height = gcv.height; var pcx = pc.getContext('2d'); pcx.drawImage(gcv, 0, 0); pcx.fillStyle = 'rgba(214,176,70,0.5)'; pcx.fillRect(0, 0, pc.width, pc.height); this.texCanvases.plains = pc; } return this.texCanvases.plains; }
     if (!img) return null;
     this.texCanvases = this.texCanvases || {};
@@ -84,10 +84,10 @@
   Renderer.prototype.tileSprite = function (t, rz, groundOnly) {
     var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
     var ftex = t.feature ? this.terrainTexture(t.feature) : null, htex = t.hills ? this.terrainTexture('hills') : null;
-    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.hills ? 'h' : '') + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0) + (ftex ? 1 : 0) + (htex ? 1 : 0);
+    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.hills ? 'h' : '') + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0) + (ftex ? 1 : 0) + (htex ? 1 : 0) + '|' + (this._wsh ? Math.max(0, this._wsh[t.i]) : 0);
     var sp = this.sprites[key];
     if (sp) return sp;
-    if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
+    if (this.spriteCount > 2400) { this.sprites = {}; this.spriteCount = 0; }
     sp = this.paintTile(t, rz, groundOnly); this.sprites[key] = sp; this.spriteCount++;
     return sp;
   };
@@ -99,7 +99,7 @@
     var feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
     var key = 'F|' + t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
     var sp = this.sprites[key]; if (sp) return sp;
-    if (this.spriteCount > 900) { this.sprites = {}; this.spriteCount = 0; }
+    if (this.spriteCount > 2400) { this.sprites = {}; this.spriteCount = 0; }
     var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2.6) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
     var ctx = cv.getContext('2d'), cx = w / 2, cy = h - rz - 1, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0)), base = PAL[t.terrain], detail = rz >= 14;
     this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtn, feat, true);
@@ -122,22 +122,34 @@
       });
     }
   };
+  // Organic tile outline: a hexagon whose radius wobbles with the angle (deterministic per variant), so land
+  // edges are never straight and neighbouring tiles overlap and blend like a painted map.
+  var WOB_PH = [[0.3, 1.9], [2.1, 0.4], [4.0, 3.3], [5.2, 1.1]];
+  function wob(variant, a) { var ph = WOB_PH[variant & 3]; return 1 + 0.085 * Math.sin(3 * a + ph[0]) + 0.05 * Math.sin(7 * a + ph[1]) + 0.03 * Math.sin(11 * a + ph[0] * 2); }
+  function wobblyPath(ctx, cx, cy, r, variant, sy) {
+    sy = sy || 1; ctx.beginPath();
+    for (var k = 0; k < 24; k++) { var a = Math.PI * 2 * k / 24 - Math.PI / 6, rr = r * wob(variant, a); var x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a) * sy; if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+    ctx.closePath();
+  }
+  var LAND_OVER = 1.14; // land sprites reach this far beyond the hex radius (they overlap and blend)
+  var SAND = [222, 204, 150], SAND_WET = [196, 178, 122], ROCK = [118, 112, 104], MANGROVE = [52, 96, 56], SHALLOW = [86, 196, 214], DEEP = [14, 44, 88], COASTC = [26, 86, 148], LAKEC = [56, 150, 210], RIVERC = [64, 160, 222];
   Renderer.prototype.paintTile = function (t, rz, groundOnly) {
-    var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2) + 2;
+    var water = AU.TERRAIN[t.terrain].water;
+    if (water) return this.paintWater(t, rz);
+    var Rw = rz * LAND_OVER, w = Math.ceil(Rw * 2.3) + 2, h = w;
     var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
-    var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
-    var base = PAL[t.terrain], water = AU.TERRAIN[t.terrain].water, detail = rz >= 14;
-    hexPath(ctx, cx, cy, rz + 0.8); ctx.save(); ctx.clip();
-    // base fill with a soft radial light
+    var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, variant = t.i % 4, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
+    var base = PAL[t.terrain], detail = rz >= 14;
+    ctx.save(); wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.clip();
     var tex = this.terrainTexture(t.terrain), painted = !!tex;
     if (painted) {
       var pat = ctx.createPattern(tex, 'repeat'), sc = rz / R * 0.36, v = t.i % 4;
       if (pat.setTransform && typeof DOMMatrix !== 'undefined') pat.setTransform(new DOMMatrix().translate(cx - (137 * v + 40) * sc, cy - (89 * v + 30) * sc).scale(sc));
       ctx.fillStyle = pat; ctx.fillRect(0, 0, w, h);
-      var lt = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.25); lt.addColorStop(0, 'rgba(255,255,255,0.08)'); lt.addColorStop(1, 'rgba(0,0,0,0.10)'); ctx.fillStyle = lt; ctx.fillRect(0, 0, w, h);
+      var lt = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.35); lt.addColorStop(0, 'rgba(255,255,255,0.07)'); lt.addColorStop(1, 'rgba(0,0,0,0.07)'); ctx.fillStyle = lt; ctx.fillRect(0, 0, w, h);
     } else {
-      var grad = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.2);
-      grad.addColorStop(0, rgb(base, water ? 1.12 : 1.08)); grad.addColorStop(1, rgb(base, water ? 0.88 : 0.9));
+      var grad = ctx.createRadialGradient(cx - rz * 0.3, cy - rz * 0.35, rz * 0.2, cx, cy, rz * 1.3);
+      grad.addColorStop(0, rgb(base, 1.08)); grad.addColorStop(1, rgb(base, 0.9));
       ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
     }
     var self0 = this;
@@ -146,26 +158,18 @@
       var pt = ctx.createPattern(tx, 'repeat'), sc2 = rz / R * (scaleK || 0.3), v2 = (t.i * 7) % 4;
       if (pt.setTransform && typeof DOMMatrix !== 'undefined') pt.setTransform(new DOMMatrix().translate(cx - (151 * v2 + 60) * sc2, cy - (97 * v2 + 20) * sc2).scale(sc2));
       ctx.save(); ctx.globalAlpha = alphaMax; ctx.fillStyle = pt; ctx.fillRect(0, 0, w, h); ctx.restore();
-      var edge = ctx.createRadialGradient(cx, cy, rz * 0.55, cx, cy, rz * 1.05); edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,0.22)'); ctx.fillStyle = edge; ctx.fillRect(0, 0, w, h);
+      var edge = ctx.createRadialGradient(cx, cy, rz * 0.55, cx, cy, rz * 1.15); edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,0.2)'); ctx.fillStyle = edge; ctx.fillRect(0, 0, w, h);
       return true;
     }
     t._texFeat = false; t._texHills = false;
     if (t.hills && t.terrain !== 'mountain' && overlayTex('hills', 0.85, 0.34)) t._texHills = true;
     if (t.feature && (t.feature === 'forest' || t.feature === 'jungle' || t.feature === 'marsh') && overlayTex(t.feature, 0.95, 0.3)) t._texFeat = true;
     if (detail && !painted) {
-      // texture: speckles
       var n = Math.round(rz * 1.2);
-      for (var k = 0; k < n; k++) {
-        var px = cx + (rnd() - 0.5) * rz * 1.7, py = cy + (rnd() - 0.5) * rz * 1.9;
-        ctx.fillStyle = rgb(base, 0.8 + rnd() * 0.45, 0.35);
-        ctx.fillRect(px, py, 1 + rnd() * 2, 1 + rnd() * 1.5);
-      }
-      if (water) {
-        ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = Math.max(1, rz * 0.05);
-        for (var wv = 0; wv < 3; wv++) { var wx = cx + (rnd() - 0.5) * rz, wy = cy + (rnd() - 0.5) * rz * 1.4, wl = rz * (0.25 + rnd() * 0.3); ctx.beginPath(); ctx.moveTo(wx - wl / 2, wy); ctx.quadraticCurveTo(wx, wy - rz * 0.08, wx + wl / 2, wy); ctx.stroke(); }
-      } else if (t.terrain === 'grassland' || t.terrain === 'plains' || t.terrain === 'tundra') {
+      for (var k = 0; k < n; k++) { var px = cx + (rnd() - 0.5) * rz * 1.9, py = cy + (rnd() - 0.5) * rz * 2.0; ctx.fillStyle = rgb(base, 0.8 + rnd() * 0.45, 0.35); ctx.fillRect(px, py, 1 + rnd() * 2, 1 + rnd() * 1.5); }
+      if (t.terrain === 'grassland' || t.terrain === 'plains' || t.terrain === 'tundra') {
         ctx.strokeStyle = rgb(base, 0.72, 0.5); ctx.lineWidth = Math.max(1, rz * 0.045);
-        for (var gt = 0; gt < 7; gt++) { var gx = cx + (rnd() - 0.5) * rz * 1.5, gy = cy + (rnd() - 0.5) * rz * 1.5; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - rz * 0.06, gy - rz * 0.14); ctx.moveTo(gx, gy); ctx.lineTo(gx + rz * 0.07, gy - rz * 0.12); ctx.stroke(); }
+        for (var gt = 0; gt < 7; gt++) { var gx = cx + (rnd() - 0.5) * rz * 1.6, gy = cy + (rnd() - 0.5) * rz * 1.6; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx - rz * 0.06, gy - rz * 0.14); ctx.moveTo(gx, gy); ctx.lineTo(gx + rz * 0.07, gy - rz * 0.12); ctx.stroke(); }
       } else if (t.terrain === 'desert') {
         ctx.strokeStyle = rgb(base, 0.85, 0.7); ctx.lineWidth = Math.max(1, rz * 0.05);
         for (var dn = 0; dn < 3; dn++) { var dx = cx + (rnd() - 0.5) * rz, dy = cy + (rnd() - 0.5) * rz * 1.3; ctx.beginPath(); ctx.moveTo(dx - rz * 0.35, dy); ctx.quadraticCurveTo(dx, dy - rz * 0.15, dx + rz * 0.35, dy); ctx.stroke(); }
@@ -173,12 +177,69 @@
         ctx.fillStyle = 'rgba(160,190,230,0.25)'; for (var sn = 0; sn < 4; sn++) { ctx.beginPath(); ctx.ellipse(cx + (rnd() - 0.5) * rz, cy + (rnd() - 0.5) * rz, rz * 0.3, rz * 0.12, 0, 0, Math.PI * 2); ctx.fill(); }
       }
     }
+    ctx.restore();
+    // soft, irregular edge: fade the rim out so neighbouring tiles blend into each other
+    ctx.save(); ctx.globalCompositeOperation = 'destination-in';
+    var mask = ctx.createRadialGradient(cx, cy, Rw * 0.78, cx, cy, Rw * 1.1); mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = mask; wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.fill(); ctx.restore();
     var hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtnArt = t.terrain === 'mountain' ? this.featureArt('mountain') : null, featArt = t.feature ? this.featureArt(t.feature) : null;
-    ctx.restore(); // sprites may overhang the hex a little
     if (!groundOnly) this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, false);
-    // subtle edge shading for a tiled look
-    ctx.strokeStyle = water ? 'rgba(0,20,60,0.18)' : 'rgba(0,0,0,0.16)'; ctx.lineWidth = 1; hexPath(ctx, cx, cy, rz - 0.5); ctx.stroke();
     return cv;
+  };
+  // Water is painted procedurally (no photo textures): deep ocean, lighter coast, bright shallows next to land,
+  // with a few wave crests. Overlaps its neighbours slightly so no hex seams show.
+  // Water caches (per game): number of land neighbours and the blended colour of every water tile.
+  Renderer.prototype.waterCache = function (g) { if (this._wg !== g) { this._wg = g; this._wsh = new Int8Array(g.tiles.length).fill(-1); this._wcol = new Array(g.tiles.length); } };
+  Renderer.prototype.shallowOf = function (g, t) {
+    var v = this._wsh[t.i]; if (v >= 0) return v;
+    var ln = 0, nbs = Hex.neighborsOf(t.col, t.row, g.W, g.H); for (var k = 0; k < nbs.length; k++) if (!G.isWater(g.tiles[nbs[k]])) ln++;
+    this._wsh[t.i] = ln; return ln;
+  };
+  Renderer.prototype.waterColor = function (g, t) { var c = this._wcol[t.i]; if (c) return c; var base = t.terrain === 'ocean' ? DEEP : t.terrain === 'lake' ? LAKEC : COASTC; c = mix(base, SHALLOW, Math.min(0.55, this.shallowOf(g, t) * 0.16)); this._wcol[t.i] = c; return c; };
+  Renderer.prototype.paintWater = function (t, rz) {
+    var Rw = rz * 1.08, w = Math.ceil(Rw * 2.3) + 2, h = w, cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
+    var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, rnd = lcg(t.i % 4 + 31), variant = t.i % 4;
+    var shallow = this._wsh ? Math.max(0, this._wsh[t.i]) : 0, col = this._wcol && this._wcol[t.i] ? this._wcol[t.i] : COASTC; // shallow = number of land neighbours
+    ctx.fillStyle = rgb(col, 1, 0.35); ctx.fillRect(0, 0, w, h); // mostly transparent: the blended flat fill below carries the colour
+    if (rz >= 12) { // wave crests
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.14 + shallow * 0.03) + ')'; ctx.lineWidth = Math.max(1, rz * 0.045); ctx.lineCap = 'round';
+      for (var wv = 0; wv < 4; wv++) { var wx = cx + (rnd() - 0.5) * rz * 1.4, wy = cy + (rnd() - 0.5) * rz * 1.5, wl = rz * (0.3 + rnd() * 0.35); ctx.beginPath(); ctx.moveTo(wx - wl / 2, wy); ctx.quadraticCurveTo(wx - wl * 0.25, wy - rz * 0.07, wx, wy); ctx.quadraticCurveTo(wx + wl * 0.25, wy + rz * 0.07, wx + wl / 2, wy); ctx.stroke(); }
+      if (t.terrain === 'ocean' && shallow === 0) { ctx.fillStyle = 'rgba(0,0,30,0.08)'; for (var dk = 0; dk < 3; dk++) { ctx.beginPath(); ctx.ellipse(cx + (rnd() - 0.5) * rz, cy + (rnd() - 0.5) * rz, rz * 0.5, rz * 0.25, rnd() * 3, 0, Math.PI * 2); ctx.fill(); } }
+    }
+    ctx.save(); ctx.globalCompositeOperation = 'destination-in';
+    var mask = ctx.createRadialGradient(cx, cy, Rw * 0.6, cx, cy, Rw * 1.08); mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = mask; wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.fill(); ctx.restore();
+    return cv;
+  };
+  // Soft round blobs placed on the water-facing edges of a land tile (beach sand, rocks, mangroves) or on the
+  // land-facing edges of a water tile (bright shallows). One cached sprite per kind and zoom.
+  Renderer.prototype.haloSprite = function (kind, rz) {
+    var key = 'H|' + kind + '|' + rz, sp = this.sprites[key]; if (sp) return sp;
+    var r = rz * (kind === 'shallow' ? 0.95 : 0.78), w = Math.ceil(r * 2) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = w;
+    var ctx = cv.getContext('2d'), c = w / 2, col = kind === 'shallow' ? SHALLOW : kind === 'rocks' || kind === 'cliff' ? ROCK : kind === 'mangrove' ? MANGROVE : SAND, rnd = lcg(kind.length * 13 + rz);
+    var g = ctx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, rgb(col, 1, kind === 'shallow' ? 0.75 : 1)); g.addColorStop(kind === 'shallow' ? 0.35 : 0.55, rgb(col, 1, kind === 'shallow' ? 0.55 : 1)); g.addColorStop(1, rgb(col, 1, 0));
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.fill();
+    if (rz >= 12 && (kind === 'rocks' || kind === 'cliff')) { for (var k = 0; k < 6; k++) { var rx = c + (rnd() - 0.5) * r * 1.1, ry = c + (rnd() - 0.5) * r * 1.1, rs = r * (0.08 + rnd() * 0.1); ctx.fillStyle = rgb(ROCK, 0.55 + rnd() * 0.3); ctx.beginPath(); ctx.ellipse(rx, ry, rs * 1.3, rs, rnd() * 3, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = rgb(ROCK, 1.35, 0.7); ctx.beginPath(); ctx.ellipse(rx - rs * 0.3, ry - rs * 0.3, rs * 0.6, rs * 0.4, 0, 0, Math.PI * 2); ctx.fill(); } }
+    if (rz >= 12 && kind === 'mangrove') { ctx.fillStyle = 'rgba(70,130,60,0.9)'; for (var m = 0; m < 7; m++) { ctx.beginPath(); ctx.arc(c + (rnd() - 0.5) * r * 1.2, c + (rnd() - 0.5) * r * 1.2, r * (0.1 + rnd() * 0.1), 0, Math.PI * 2); ctx.fill(); } }
+    if (rz >= 12 && kind === 'beach') { ctx.fillStyle = rgb(SAND_WET, 1, 0.45); for (var b = 0; b < 5; b++) { ctx.beginPath(); ctx.ellipse(c + (rnd() - 0.5) * r * 1.2, c + (rnd() - 0.5) * r * 1.2, r * 0.18, r * 0.07, rnd() * 3, 0, Math.PI * 2); ctx.fill(); } }
+    this.sprites[key] = cv; this.spriteCount++; return cv;
+  };
+  // A coral reef inside a coast tile: pale sand patch with coral clumps and a foam ring.
+  Renderer.prototype.reefSprite = function (rz, variant) {
+    var key = 'RF|' + rz + '|' + variant, sp = this.sprites[key]; if (sp) return sp;
+    var w = Math.ceil(rz * 2) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = w; var ctx = cv.getContext('2d'), c = w / 2, rnd = lcg(variant * 7 + 5);
+    var g = ctx.createRadialGradient(c, c, 0, c, c, rz * 0.8); g.addColorStop(0, 'rgba(150,225,215,0.85)'); g.addColorStop(0.6, 'rgba(120,205,205,0.55)'); g.addColorStop(1, 'rgba(120,205,205,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, rz * 0.8, 0, Math.PI * 2); ctx.fill();
+    var cols = ['#e9805a', '#f2b64f', '#6ad0b0', '#d85f8a', '#f0e39a'];
+    for (var k = 0; k < 9; k++) { var a = rnd() * Math.PI * 2, d = rz * (0.12 + rnd() * 0.42), x = c + Math.cos(a) * d, y = c + Math.sin(a) * d * 0.8, rr = rz * (0.05 + rnd() * 0.07); ctx.fillStyle = cols[k % cols.length]; ctx.beginPath(); ctx.arc(x, y, rr, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(x - rr * 0.3, y - rr * 0.3, rr * 0.4, 0, Math.PI * 2); ctx.fill(); }
+    ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = Math.max(1, rz * 0.05); ctx.setLineDash([rz * 0.15, rz * 0.12]); ctx.beginPath(); ctx.ellipse(c, c, rz * 0.62, rz * 0.5, rnd(), 0, Math.PI * 2); ctx.stroke();
+    this.sprites[key] = cv; this.spriteCount++; return cv;
+  };
+  // Unexplored tiles: a soft dark blob so the edge of the known world fades out instead of ending in hexagons.
+  Renderer.prototype.fogSprite = function (rz) {
+    var key = 'FOG|' + rz, sp = this.sprites[key]; if (sp) return sp;
+    var r = rz * 1.35, w = Math.ceil(r * 2) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = w; var ctx = cv.getContext('2d'), c = w / 2;
+    var g = ctx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, 'rgba(6,12,22,1)'); g.addColorStop(0.72, 'rgba(6,12,22,1)'); g.addColorStop(1, 'rgba(6,12,22,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.fill();
+    this.sprites[key] = cv; this.spriteCount++; return cv;
   };
   Renderer.prototype.paintHills = function (ctx, cx, cy, rz, base, rnd, detail) {
     var n = 3;
@@ -262,58 +323,113 @@
     var isoY = this.isoY(), iso = this.iso;
     var hexPath = function (ctx, cx, cy, rr) { hexPathBase(ctx, cx, cy, rr, isoY); };
     var cornersI = function (cx, cy, rr) { return Hex.corners(cx, cy, rr).map(function (pt) { return [pt[0], cy + (pt[1] - cy) * isoY]; }); };
-    // pass 1: terrain sprites
+    // neighbour directions (odd-r offset) and the hex corners each edge joins
+    var DIRS_E = [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]], DIRS_O = [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]];
+    var EDGE_ANG = [0, -Math.PI / 3, -2 * Math.PI / 3, Math.PI, 2 * Math.PI / 3, Math.PI / 3]; // direction of each edge's midpoint
+    function nbAt(c, r, e) { var d = (r & 1) ? DIRS_O[e] : DIRS_E[e], nc = c + d[0], nr = r + d[1]; if (nc < 0 || nc >= g.W || nr < 0 || nr >= g.H) return null; return g.tiles[nr * g.W + nc]; }
+    function drawSprite(sp, p, scale) { scale = scale || 1; var sw = sp.width * scale, sh = sp.height * scale; if (iso) ctx.drawImage(sp, Math.round(p[0] - sw / 2), Math.round(p[1] - sh * isoY / 2), sw, Math.round(sh * isoY) + 1); else ctx.drawImage(sp, Math.round(p[0] - sw / 2), Math.round(p[1] - sh / 2), sw, sh); }
+    this.waterCache(g);
+    // pass 1: water, flat fills first (the number of land neighbours drives the shallow tint)
+    var landTiles = [], coastLand = [], reefs = [], waterTiles = [];
     for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
       i = r * g.W + c; t = g.tiles[i];
       if (!explored[i]) continue;
-      var p = this.worldToScreen(R * SQ3 * (c + 0.5 * (r & 1)), R * 1.5 * r);
-      var sp = this.tileSprite(t, Math.round(rzs), iso);
-      if (iso) ctx.drawImage(sp, Math.round(p[0] - sp.width / 2), Math.round(p[1] - sp.height * isoY / 2), sp.width, Math.round(sp.height * isoY) + 1);
-      else ctx.drawImage(sp, Math.round(p[0] - sp.width / 2), Math.round(p[1] - sp.height / 2));
+      if (!G.isWater(t)) { landTiles.push(t); continue; }
+      var pw = S(t); ctx.fillStyle = rgb(this.waterColor(g, t)); hexPath(ctx, pw[0], pw[1], rzs * 1.04); ctx.fill();
+      waterTiles.push(t); if (t.shore === 'reef') reefs.push(t);
     }
-    // pass 1a: upright features (isometric view), back to front
+    // pass 1w: smooth colour transitions between water tiles (deep ocean -> coast -> shallows) and the wave sprites
+    for (var wi = 0; wi < waterTiles.length; wi++) {
+      t = waterTiles[wi]; var pw2 = S(t), cA = this.waterColor(g, t);
+      for (var we = 0; we < 6; we++) {
+        var wn = nbAt(t.col, t.row, we); if (!wn || !G.isWater(wn) || wn.i < t.i || !explored[wn.i]) continue;
+        var cB = this.waterColor(g, wn); if (Math.abs(cA[0] - cB[0]) + Math.abs(cA[1] - cB[1]) + Math.abs(cA[2] - cB[2]) < 6) continue;
+        var ang2 = EDGE_ANG[we], dxu = Math.cos(ang2), dyu = Math.sin(ang2) * isoY, mx2 = pw2[0] + dxu * rzs * SQ3 / 2, my2 = pw2[1] + dyu * rzs * SQ3 / 2;
+        var half = rzs * 0.42, gr2 = ctx.createLinearGradient(mx2 - dxu * half, my2 - dyu * half, mx2 + dxu * half, my2 + dyu * half); gr2.addColorStop(0, rgb(cA)); gr2.addColorStop(1, rgb(cB));
+        var px2 = -Math.sin(ang2) * rzs * 0.52, py2 = Math.cos(ang2) * rzs * 0.52 * isoY;
+        ctx.fillStyle = gr2; ctx.beginPath(); ctx.moveTo(mx2 - dxu * half + px2, my2 - dyu * half + py2); ctx.lineTo(mx2 + dxu * half + px2, my2 + dyu * half + py2); ctx.lineTo(mx2 + dxu * half - px2, my2 + dyu * half - py2); ctx.lineTo(mx2 - dxu * half - px2, my2 - dyu * half - py2); ctx.closePath(); ctx.fill();
+      }
+    }
+    for (var wj = 0; wj < waterTiles.length; wj++) drawSprite(this.tileSprite(waterTiles[wj], Math.round(rzs), iso), S(waterTiles[wj]));
+    // pass 1a: shallows and the shore (beach sand, rocks, mangroves) as bands hugging the wobbly coastline
+    var self1 = this;
+    function coastPath(t, edges, radius, extraWob) { // one path along the given edges of the tile's wobbly outline
+      var p = S(t), v = t.i % 4; ctx.beginPath();
+      for (var q = 0; q < edges.length; q++) {
+        var e = edges[q], a0 = EDGE_ANG[e] - Math.PI / 6, a1 = EDGE_ANG[e] + Math.PI / 6, cont = q > 0 && ((edges[q - 1] + 1) % 6 === e || (e + 1) % 6 === edges[q - 1]);
+        for (var sm = 0; sm <= 6; sm++) { var aa = a0 + (a1 - a0) * sm / 6, wr = radius * rzs * wob(v, aa) + (extraWob ? Math.sin(aa * 9 + v) * rzs * extraWob : 0); var fx = p[0] + Math.cos(aa) * wr, fy = p[1] + Math.sin(aa) * wr * isoY; if (sm === 0 && !cont) ctx.moveTo(fx, fy); else ctx.lineTo(fx, fy); }
+      }
+    }
+    if (!lowDetail) {
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (var li = 0; li < landTiles.length; li++) {
+        t = landTiles[li]; if (!t.shore) continue;
+        var edges = []; for (var e1 = 0; e1 < 6; e1++) { var nb1 = nbAt(t.col, t.row, e1); if (nb1 && G.isWater(nb1)) edges.push(e1); }
+        if (!edges.length) continue;
+        // edge order: start after a gap so contiguous runs join into one stroke
+        var startE = 0; for (var q0 = 0; q0 < 6; q0++) if (edges.indexOf(q0) >= 0 && edges.indexOf((q0 + 5) % 6) < 0) { startE = q0; break; }
+        edges.sort(function (a, b) { return ((a - startE + 6) % 6) - ((b - startE + 6) % 6); });
+        coastPath(t, edges, 1.26, 0); ctx.strokeStyle = rgb(SHALLOW, 1, 0.5); ctx.lineWidth = Math.max(2, rzs * 0.55); ctx.stroke();
+        var shoreCol = t.shore === 'beach' ? SAND : t.shore === 'mangrove' ? MANGROVE : ROCK;
+        coastPath(t, edges, 1.1, 0.02); ctx.strokeStyle = rgb(shoreCol, 1, 0.95); ctx.lineWidth = Math.max(1.5, rzs * (t.shore === 'cliff' ? 0.2 : 0.28)); ctx.stroke();
+        if (t.shore === 'beach') { coastPath(t, edges, 1.17, 0.015); ctx.strokeStyle = rgb(SAND_WET, 1, 0.55); ctx.lineWidth = Math.max(1, rzs * 0.1); ctx.stroke(); }
+        if (t.shore !== 'beach') { var pl = S(t), halo = this.haloSprite(t.shore, Math.round(rzs)); for (var q1 = 0; q1 < edges.length; q1++) { var ang = EDGE_ANG[edges[q1]]; drawSprite(halo, [pl[0] + Math.cos(ang) * rzs * 0.98, pl[1] + Math.sin(ang) * rzs * 0.98 * isoY], 0.55); } }
+        for (var q2 = 0; q2 < edges.length; q2++) coastLand.push([t, edges[q2]]);
+      }
+    }
+    // pass 1b: land tiles with soft irregular edges (rows back to front so the overlaps read as a painted map)
+    for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
+    // pass 1c: reefs and foam lines hugging the wobbly coast
+    if (!lowDetail) {
+      for (var ri = 0; ri < reefs.length; ri++) drawSprite(this.reefSprite(Math.round(rzs), reefs[ri].i % 4), S(reefs[ri]));
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (var fi = 0; fi < coastLand.length; fi++) {
+        var ft = coastLand[fi][0], fe = coastLand[fi][1], fp = S(ft), fv = ft.i % 4, a0 = EDGE_ANG[fe] - Math.PI / 6, a1 = EDGE_ANG[fe] + Math.PI / 6;
+        for (var ring = 0; ring < 2; ring++) {
+          var rr = rzs * (ring ? 1.36 : 1.17); ctx.strokeStyle = ring ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.5)'; ctx.lineWidth = Math.max(1, rzs * (ring ? 0.05 : 0.07));
+          ctx.beginPath();
+          for (var sm = 0; sm <= 6; sm++) { var aa = a0 + (a1 - a0) * sm / 6, wr = rr * wob(fv, aa) + (ring ? Math.sin(aa * 9 + fv) * rzs * 0.04 : 0); var fx = fp[0] + Math.cos(aa) * wr, fy = fp[1] + Math.sin(aa) * wr * isoY; if (sm === 0) ctx.moveTo(fx, fy); else ctx.lineTo(fx, fy); }
+          ctx.stroke();
+        }
+      }
+    }
+    // pass 1d: upright features (isometric view), back to front
     if (iso) for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
       i = r * g.W + c; t = g.tiles[i];
       if (!explored[i]) continue;
       var fsp = this.featureSprite(t, Math.round(rzs)); if (!fsp) continue;
       var pf = S(t); ctx.drawImage(fsp, Math.round(pf[0] - fsp.width / 2), Math.round(pf[1] - fsp.anchorY));
     }
-    // pass 1b: coast foam where water meets land
-    if (!lowDetail) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = Math.max(1, rzs * 0.08); ctx.lineCap = 'round';
-      for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
-        i = r * g.W + c; t = g.tiles[i];
-        if (!explored[i] || !G.isWater(t)) continue;
-        var pc = S(t), corners = cornersI(pc[0], pc[1], rzs * 0.86);
-        var d = (r & 1) ? [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]] : [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]];
-        var dirCorner = [[0, 1], [5, 0], [4, 5], [3, 4], [2, 3], [1, 2]];
-        for (var e = 0; e < 6; e++) {
-          var nc2 = c + d[e][0], nr2 = r + d[e][1];
-          if (nc2 < 0 || nc2 >= g.W || nr2 < 0 || nr2 >= g.H) continue;
-          var nt = g.tiles[nr2 * g.W + nc2]; if (G.isWater(nt)) continue;
-          var a = corners[dirCorner[e][0]], b = corners[dirCorner[e][1]];
-          ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-        }
-      }
-    }
-    // pass 2: rivers
-    ctx.strokeStyle = '#3aa0e6'; ctx.lineWidth = Math.max(1.2, rzs * 0.2); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    // pass 2: rivers. Thin streams for ordinary rivers; navigable reaches are wide, with sandy banks.
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    var riverRuns = [];
     (g.rivers || []).forEach(function (path) {
       var pts = [], anyVisible = false;
-      for (var k = 0; k < path.length; k++) { var pt = g.tiles[path[k]]; if (!pt) return; if (explored[pt.i] && pt.row >= r0 - 1 && pt.row <= r1 + 1 && pt.col >= c0 - 1 && pt.col <= c1 + 1) anyVisible = true; pts.push(S(pt)); }
+      for (var k = 0; k < path.length; k++) { var pt = g.tiles[path[k]]; if (!pt) return; if (explored[pt.i] && pt.row >= r0 - 1 && pt.row <= r1 + 1 && pt.col >= c0 - 1 && pt.col <= c1 + 1) anyVisible = true; var sp0 = S(pt); pts.push([sp0[0] + Math.sin(pt.i * 1.7) * rzs * 0.12, sp0[1] + Math.cos(pt.i * 2.3) * rzs * 0.1 * isoY, !!pt.navigable]); }
       if (!anyVisible || pts.length < 2) return;
-      ctx.strokeStyle = 'rgba(20,60,110,0.5)'; ctx.lineWidth = Math.max(2, rzs * 0.28);
-      strokePath(ctx, pts);
-      ctx.strokeStyle = '#48b0f0'; ctx.lineWidth = Math.max(1.2, rzs * 0.17);
-      strokePath(ctx, pts);
+      // split into runs: the wide navigable part starts one point before the first navigable tile so the join is smooth
+      var firstNav = -1; for (var q = 0; q < pts.length; q++) if (pts[q][2]) { firstNav = q; break; }
+      if (firstNav < 0) riverRuns.push([pts, false]); else { riverRuns.push([pts.slice(0, firstNav + 1), false]); riverRuns.push([pts.slice(Math.max(0, firstNav - 1)), true]); }
     });
     function strokePath(ctx, pts) {
       ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
       for (var m = 1; m < pts.length - 1; m++) { var mx = (pts[m][0] + pts[m + 1][0]) / 2, my = (pts[m][1] + pts[m + 1][1]) / 2; ctx.quadraticCurveTo(pts[m][0], pts[m][1], mx, my); }
       ctx.lineTo(pts[pts.length - 1][0], pts[pts.length - 1][1]); ctx.stroke();
     }
-    // cover unexplored tiles again (rivers may cross them)
-    for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) { i = r * g.W + c; if (explored[i]) continue; t = g.tiles[i]; cc = S(t); ctx.fillStyle = '#060c16'; hexPath(ctx, cc[0], cc[1], rzs + 1); ctx.fill(); }
+    riverRuns.forEach(function (run) { if (run[1] || run[0].length < 2) return; var pts = run[0];
+      ctx.strokeStyle = 'rgba(20,60,110,0.45)'; ctx.lineWidth = Math.max(2, rzs * 0.2); strokePath(ctx, pts);
+      ctx.strokeStyle = rgb(RIVERC); ctx.lineWidth = Math.max(1.2, rzs * 0.12); strokePath(ctx, pts);
+      if (!lowDetail) { ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = Math.max(0.8, rzs * 0.035); strokePath(ctx, pts); }
+    });
+    riverRuns.forEach(function (run) { if (!run[1] || run[0].length < 2) return; var pts = run[0];
+      ctx.strokeStyle = rgb(SAND); ctx.lineWidth = Math.max(4, rzs * 0.62); strokePath(ctx, pts);
+      ctx.strokeStyle = rgb(SAND_WET, 1, 0.6); ctx.lineWidth = Math.max(3, rzs * 0.5); strokePath(ctx, pts);
+      ctx.strokeStyle = rgb(mix(COASTC, SHALLOW, 0.35)); ctx.lineWidth = Math.max(2.5, rzs * 0.42); strokePath(ctx, pts);
+      if (!lowDetail) { ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = Math.max(1, rzs * 0.06); ctx.setLineDash([rzs * 0.5, rzs * 0.7]); strokePath(ctx, pts); ctx.setLineDash([]); }
+    });
+    // cover unexplored tiles again (rivers and blended edges may reach into them): soft dark fog
+    var fogSp = this.fogSprite(Math.round(rzs));
+    for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) { i = r * g.W + c; if (explored[i]) continue; drawSprite(fogSp, S(g.tiles[i])); }
     // pass 3: territory
     var dirs = { even: [[1, 0], [0, -1], [-1, -1], [-1, 0], [-1, 1], [0, 1]], odd: [[1, 0], [1, -1], [0, -1], [-1, 0], [0, 1], [1, 1]] };
     var dirCorner2 = [[0, 1], [5, 0], [4, 5], [3, 4], [2, 3], [1, 2]];
@@ -345,9 +461,9 @@
         if (t.resource) {
           var Rs = AU.RESOURCES[t.resource];
           if (!Rs.revealTech || player.techs[Rs.revealTech]) {
-            var rart = AU.Assets.get('resources', t.resource);
-            ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.3, 0, Math.PI * 2); ctx.fill();
-            if (rart) this.drawArt(ctx, rart, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.52); else this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44);
+            var rart = AU.Assets.get('resources', t.resource), rx0 = cc[0] + rzs * 0.34, ry0 = cc[1] + rzs * 0.05 * isoY;
+            if (rart) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(rx0, ry0 + rzs * 0.3, rzs * 0.36, rzs * 0.13, 0, 0, Math.PI * 2); ctx.fill(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.3, rzs * 0.86, 0.92); }
+            else { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.3, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44); }
           }
         }
         if (t.worked && t.owner >= 0 && t.settlement == null && !midDetail) {

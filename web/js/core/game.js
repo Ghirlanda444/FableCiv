@@ -398,7 +398,7 @@
     return civ._lux;
   };
   G.hasResource = function (g, civ, res) { return !res || (G.luxuryCount(g, civ).strategic[res] || 0) > 0; };
-  G.isCoastal = function (g, s) { var t = g.tiles[s.tile]; return G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.terrain === 'coast' || nt.terrain === 'lake'; }); };
+  G.isCoastal = function (g, s) { var t = g.tiles[s.tile]; if (t.navigable) return true; return G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.terrain === 'coast' || nt.terrain === 'lake' || nt.navigable; }); };
   G.hasRiver = function (g, s) { var t = g.tiles[s.tile]; if (t.river) return true; return G.neighbors(g, t).some(function (n) { return g.tiles[n].river; }); };
   G.settlementHas = function (g, s, need) {
     if (!need) return true;
@@ -657,11 +657,11 @@
     var center = g.tiles[s.tile];
     var civilian = def.cls === 'civilian';
     function free(i) { return !G.unitsAt(g, i).some(function (o) { return o.civ !== s.civ || G.isMilitary(o) === !civilian; }); }
-    if (!naval && free(s.tile)) return s.tile;
+    if ((!naval || center.navigable) && free(s.tile)) return s.tile;
     var ring = Hex.spiral(center.col, center.row, 2, g.W, g.H);
     for (var i = 1; i < ring.length; i++) {
       var t = g.tiles[ring[i]];
-      if (naval ? !G.isWater(t) : !G.passable(g, t)) continue;
+      if (naval ? !(G.isWater(t) || t.navigable) : !G.passable(g, t)) continue;
       if (t.camp) continue;
       if (free(ring[i])) return ring[i];
     }

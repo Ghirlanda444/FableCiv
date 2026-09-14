@@ -244,7 +244,7 @@
       var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
       var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
-      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.river ? ' · River' : '') + '</b>';
+      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · Navigable River' : t.river ? ' · River' : '') + (t.shore ? ' · ' + ({ beach: 'Beach', cliff: 'Cliffs', rocks: 'Rocky shore', mangrove: 'Mangroves', reef: 'Reef' })[t.shore] : '') + '</b>';
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
       else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';

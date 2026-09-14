@@ -42,7 +42,7 @@
     if (T.impassable && !fx.mountainsPassable) return Infinity;
     var naval = U.isNaval(u);
     if (naval) {
-      if (!T.water) { var s = G.settlementAt(g, to.i); if (!s || s.civ !== u.civ) return Infinity; return 1; }
+      if (!T.water) { if (to.navigable) return 1; var s = G.settlementAt(g, to.i); if (!s || s.civ !== u.civ) return Infinity; return 1; }
       if (to.terrain === 'ocean' && !(AU.UNITS[u.type].ocean || (civ && (civ.techs.cartography || fx.earlyOcean)))) return Infinity;
       return 1;
     }
@@ -281,7 +281,7 @@
     if (U.isRanged(u)) return d <= (def.range || 1);
     if (d !== 1) return false;
     // melee: must be able to enter target terrain
-    if (U.isNaval(u) && !G.isWater(to)) return !!target.settlement && false;
+    if (U.isNaval(u) && !G.isWater(to) && !to.navigable) return false;
     if (!U.isNaval(u) && G.isWater(to)) return false;
     if (AU.TERRAIN[to.terrain].impassable) return false;
     return true;

@@ -56,14 +56,12 @@ const RESOURCE_DESC = {
 for (const [id, r] of Object.entries(AU.RESOURCES)) items.push({ kind: 'resources', id, name: r.name, size: '512x512', prompt: `Cartoon game inventory icon: ${RESOURCE_DESC[id] || 'a ' + r.name}, one chunky object with a thick clean outline, bright saturated colours, soft cel shading, large and centred, isolated on a plain white background, no text, no characters, no people.` });
 for (const c of AU.CIVS) items.push({ kind: 'civs', id: c.id, name: c.name + ' emblem', size: '512x512', prompt: `Flat vector game emblem: a round shield badge symbolising the ${c.name} civilization with one bold symbol associated with ${c.name} (an animal, plant, weapon, crown, building or sun), gold rim and ${c.color} background, thick clean outlines, no people, no faces, no characters, no text, isolated on a plain white background.` });
 const TERRAIN_DESC = {
-  ocean: 'deep blue ocean water with small cartoon waves', coast: 'shallow turquoise sea water near a beach with gentle cartoon waves', lake: 'calm bright blue lake water',
-  grassland: 'lush green grass meadow with tiny flowers', plains: 'dry golden-yellow grass savanna', desert: 'warm sandy desert with soft dunes',
-  tundra: 'cold grey-green tundra moss with patches of frost', snow: 'clean white snow field with soft blue shadows',
-  forest: 'bright green cartoon tree tops, many round chunky pine and oak canopies packed tightly together', jungle: 'bright cartoon jungle canopy, huge glossy leaves, palm fronds and vines packed tightly together',
-  marsh: 'a cartoon swamp seen from directly above, dark water pools, reeds, cattails and lily pads'
+  grassland: 'lush green meadow grass with a few tiny scattered wildflowers', plains: 'dry golden-yellow savanna grass with a few darker tufts', desert: 'warm pale sand with soft low dune ripples',
+  tundra: 'cold grey-green moss and lichen with small patches of frost', snow: 'clean white snow with soft pale-blue shadows and tiny sparkles',
+  forest: 'dense bright green tree tops, many round chunky pine and oak canopies packed edge to edge', jungle: 'dense bright rainforest canopy, huge glossy leaves and palm fronds packed edge to edge',
+  marsh: 'swampy wet grass with reeds, cattails, lily pads and small dark puddles', hills: 'rolling grassy hills with soft rounded bumps and gentle shading'
 };
-delete TERRAIN_DESC.plains;
-for (const [id, d] of Object.entries(TERRAIN_DESC)) items.push({ kind: 'terrain', id, name: (AU.TERRAIN[id] ? AU.TERRAIN[id].name : AU.FEATURES[id] ? AU.FEATURES[id].name : 'Hills') + ' texture', size: '512x512', nobg: true, prompt: `Seamless repeating 2D game texture pattern of ${d}, flat orthographic top-down view covering the whole image edge to edge, uniform lighting, no perspective, no horizon, no sky, no border, no frame, no vignette. ${SCENE_STYLE}` });
+for (const [id, d] of Object.entries(TERRAIN_DESC)) items.push({ kind: 'terrain', id, name: (AU.TERRAIN[id] ? AU.TERRAIN[id].name : AU.FEATURES[id] ? AU.FEATURES[id].name : 'Hills') + ' texture', size: '512x512', nobg: true, prompt: `Seamless tileable repeating game texture of ${d}, photographed straight down from directly above, an even field that fills the whole square uniformly edge to edge with no focal point, no central object, no island, no pond, no path, no horizon, no sky, no border, no frame, no vignette, no text. ${SCENE_STYLE}` });
 const FEATURE_DESC = {
   oasis: 'a small cartoon oasis pond with three palm trees', mountain: 'a chunky cartoon rocky mountain with a snowy peak', raider_camp: 'a small barbarian raider camp with hide tents, a campfire and a wooden palisade',
   farm: 'a small cartoon farm with wheat field rows and a tiny farmhouse', mine: 'a cartoon mine entrance in a rocky mound with a minecart and wooden supports', woodcutter: 'a cartoon lumber camp with a sawmill hut, log pile and stumps', pasture: 'a cartoon pasture with a wooden fence and two cows',

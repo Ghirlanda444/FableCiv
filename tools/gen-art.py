@@ -133,6 +133,23 @@ def main():
     from concurrent.futures import ThreadPoolExecutor
     import threading
     lock = threading.Lock(); stats = {'done': 0, 'failed': 0}
+    def texture_focus(img):
+        # a tileable texture looks the same at the centre, in every ring around it and in every quadrant;
+        # an island, a pond or a vignette gives concentric rings of different colour (score well above 40)
+        import math
+        im = img.convert('RGB').resize((64, 64)); px = im.load()
+        rings = [[0, 0, 0, 0] for _ in range(5)]
+        for y in range(64):
+            for x in range(64):
+                k = min(4, int(math.hypot(x - 31.5, y - 31.5) / 8)); c = px[x, y]
+                for j in range(3): rings[k][j] += c[j]
+                rings[k][3] += 1
+        means = [[r[j] / r[3] for j in range(3)] for r in rings]
+        rd = max(math.sqrt(sum((a[k] - b[k]) ** 2 for k in range(3))) for a in means for b in means)
+        from PIL import ImageStat
+        quad = [ImageStat.Stat(im.crop(b)).mean for b in ((0, 0, 32, 32), (32, 0, 64, 32), (0, 32, 32, 64), (32, 32, 64, 64))]
+        qd = max(math.sqrt(sum((a[k] - b[k]) ** 2 for k in range(3))) for a in quad for b in quad)
+        return max(rd, qd * 0.9)
     def work(it):
         path = os.path.join(ROOT, it['file'])
         prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
@@ -151,6 +168,15 @@ def main():
                     raise RuntimeError('bad response %s %d bytes' % (ctype, len(data)))
                 img = remove_bg(data, keep_bg=bool(it.get('nobg')), crop=(args.provider != 'xai'))
                 cov = coverage(img) if not it.get('nobg') else 1.0
+                if it.get('nobg'):  # a texture: reject a picture with a focal point in the middle (an island, a pond...)
+                    focus = texture_focus(img)
+                    if focus > 40:
+                        if best is None or -focus > best[0]: best = (-focus, img)
+                        if attempt < 2:
+                            print('  %s is a scene, not a repeating texture (focus %.0f), retrying' % (it['file'], focus), flush=True)
+                            time.sleep(args.delay)
+                            continue
+                        img = best[1]
                 if cov < 0.08:
                     if best is None or cov > best[0]: best = (cov, img)
                     if attempt < 2:

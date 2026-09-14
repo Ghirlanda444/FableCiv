@@ -48,7 +48,7 @@
       case 'civics': AU.CIVICS.forEach(function (t) { out.push({ id: t.id, name: t.name, sub: AU.ERAS[t.era] }); }); break;
       case 'governments': for (var gv in AU.GOVERNMENTS) out.push({ id: gv, name: AU.GOVERNMENTS[gv].name }); break;
       case 'policies': for (var pc in AU.POLICIES) out.push({ id: pc, name: AU.POLICIES[pc].name, sub: AU.POLICIES[pc].type }); break;
-      case 'terrain': for (var t in AU.TERRAIN) out.push({ id: 't:' + t, name: AU.TERRAIN[t].name }); out.push({ id: 'hills', name: 'Hills' }); out.push({ id: 'river', name: 'River' }); for (var f in AU.FEATURES) out.push({ id: 'f:' + f, name: AU.FEATURES[f].name }); break;
+      case 'terrain': for (var t in AU.TERRAIN) out.push({ id: 't:' + t, name: AU.TERRAIN[t].name }); out.push({ id: 'hills', name: 'Hills' }); out.push({ id: 'river', name: 'River' }); out.push({ id: 'navigable', name: 'Navigable River' }); for (var f in AU.FEATURES) out.push({ id: 'f:' + f, name: AU.FEATURES[f].name }); break;
       case 'resources': for (var r in AU.RESOURCES) out.push({ id: r, name: AU.RESOURCES[r].name, sub: AU.RESOURCES[r].kind }); break;
       case 'improvements': for (var im in AU.IMPROVEMENTS) out.push({ id: im, name: AU.IMPROVEMENTS[im].name }); break;
       case 'specializations': for (var sp in AU.SPECIALIZATIONS) out.push({ id: sp, name: AU.SPECIALIZATIONS[sp].name }); break;
@@ -81,6 +81,7 @@
       case 'terrain': {
         if (id === 'hills') h = '<h3>Hills</h3><p>+1 Production, costs 2 movement, +3 defence. Mines are the default improvement. Some abilities improve hills further.</p>';
         else if (id === 'river') h = '<h3>River</h3><p>+1 Food on land tiles. Enables the Water Mill and several wonders. Settlements on rivers benefit from Egyptian and Shawnee abilities.</p>';
+        else if (id === 'navigable') h = '<h3>Navigable River</h3><p>The wide lower reach of a long river. +1 Food and +1 Gold. Land units cross it like any land tile; ships can sail up it, and a settlement on or next to it counts as coastal: it can build ships, a Harbor and a Lighthouse even far from the sea. Rivers on the map: thin streams are ordinary rivers, wide ones with sandy banks are navigable.</p>';
         else if (id.charAt(0) === 't') { var tt = AU.TERRAIN[id.slice(2)]; h = '<h3>' + tt.name + '</h3><p>' + (y(tt.yields) || 'No yields') + (tt.impassable ? ' · Impassable (except for some abilities)' : ' · Movement cost ' + tt.move) + (tt.water ? ' · Water' : '') + '</p>'; }
         else { var ff = AU.FEATURES[id.slice(2)]; h = '<h3>' + ff.icon + ' ' + ff.name + '</h3><p>' + (y(ff.yields) || 'No yields') + ' · Movement cost ' + ff.move + (ff.defense ? ' · +' + ff.defense + ' defence' : '') + '</p>'; }
         break; }
