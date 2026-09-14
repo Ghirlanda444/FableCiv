@@ -2482,7 +2482,7 @@
  {
   "kind": "terrain",
   "id": "ocean",
-  "file": "terrain/ocean.png",
+  "file": "terrain/ocean.jpg",
   "name": "Ocean texture",
   "size": "512x512",
   "nobg": true
@@ -2490,7 +2490,7 @@
  {
   "kind": "terrain",
   "id": "coast",
-  "file": "terrain/coast.png",
+  "file": "terrain/coast.jpg",
   "name": "Coast texture",
   "size": "512x512",
   "nobg": true
@@ -2498,7 +2498,7 @@
  {
   "kind": "terrain",
   "id": "lake",
-  "file": "terrain/lake.png",
+  "file": "terrain/lake.jpg",
   "name": "Lake texture",
   "size": "512x512",
   "nobg": true
@@ -2506,7 +2506,7 @@
  {
   "kind": "terrain",
   "id": "grassland",
-  "file": "terrain/grassland.png",
+  "file": "terrain/grassland.jpg",
   "name": "Grassland texture",
   "size": "512x512",
   "nobg": true
@@ -2514,7 +2514,7 @@
  {
   "kind": "terrain",
   "id": "desert",
-  "file": "terrain/desert.png",
+  "file": "terrain/desert.jpg",
   "name": "Desert texture",
   "size": "512x512",
   "nobg": true
@@ -2522,7 +2522,7 @@
  {
   "kind": "terrain",
   "id": "tundra",
-  "file": "terrain/tundra.png",
+  "file": "terrain/tundra.jpg",
   "name": "Tundra texture",
   "size": "512x512",
   "nobg": true
@@ -2530,7 +2530,7 @@
  {
   "kind": "terrain",
   "id": "snow",
-  "file": "terrain/snow.png",
+  "file": "terrain/snow.jpg",
   "name": "Snow texture",
   "size": "512x512",
   "nobg": true
@@ -2538,7 +2538,7 @@
  {
   "kind": "terrain",
   "id": "forest",
-  "file": "terrain/forest.png",
+  "file": "terrain/forest.jpg",
   "name": "Forest texture",
   "size": "512x512",
   "nobg": true
@@ -2546,7 +2546,7 @@
  {
   "kind": "terrain",
   "id": "jungle",
-  "file": "terrain/jungle.png",
+  "file": "terrain/jungle.jpg",
   "name": "Rainforest texture",
   "size": "512x512",
   "nobg": true
@@ -2554,7 +2554,7 @@
  {
   "kind": "terrain",
   "id": "marsh",
-  "file": "terrain/marsh.png",
+  "file": "terrain/marsh.jpg",
   "name": "Marsh texture",
   "size": "512x512",
   "nobg": true
@@ -9002,7 +9002,7 @@
  {
   "kind": "techs",
   "id": "pottery",
-  "file": "techs/pottery.png",
+  "file": "techs/pottery.jpg",
   "name": "Pottery",
   "size": "512x512",
   "nobg": true
@@ -9010,7 +9010,7 @@
  {
   "kind": "techs",
   "id": "animal_husbandry",
-  "file": "techs/animal_husbandry.png",
+  "file": "techs/animal_husbandry.jpg",
   "name": "Animal Husbandry",
   "size": "512x512",
   "nobg": true
@@ -9018,7 +9018,7 @@
  {
   "kind": "techs",
   "id": "mining",
-  "file": "techs/mining.png",
+  "file": "techs/mining.jpg",
   "name": "Mining",
   "size": "512x512",
   "nobg": true
@@ -9026,7 +9026,7 @@
  {
   "kind": "techs",
   "id": "hunting",
-  "file": "techs/hunting.png",
+  "file": "techs/hunting.jpg",
   "name": "Hunting",
   "size": "512x512",
   "nobg": true
@@ -9034,7 +9034,7 @@
  {
   "kind": "techs",
   "id": "fishing",
-  "file": "techs/fishing.png",
+  "file": "techs/fishing.jpg",
   "name": "Fishing",
   "size": "512x512",
   "nobg": true
@@ -9042,7 +9042,7 @@
  {
   "kind": "techs",
   "id": "sailing",
-  "file": "techs/sailing.png",
+  "file": "techs/sailing.jpg",
   "name": "Sailing",
   "size": "512x512",
   "nobg": true
@@ -9050,7 +9050,7 @@
  {
   "kind": "techs",
   "id": "mysticism",
-  "file": "techs/mysticism.png",
+  "file": "techs/mysticism.jpg",
   "name": "Mysticism",
   "size": "512x512",
   "nobg": true
@@ -9058,7 +9058,7 @@
  {
   "kind": "techs",
   "id": "irrigation",
-  "file": "techs/irrigation.png",
+  "file": "techs/irrigation.jpg",
   "name": "Irrigation",
   "size": "512x512",
   "nobg": true
@@ -9066,7 +9066,7 @@
  {
   "kind": "techs",
   "id": "archery",
-  "file": "techs/archery.png",
+  "file": "techs/archery.jpg",
   "name": "Archery",
   "size": "512x512",
   "nobg": true
@@ -9074,7 +9074,7 @@
  {
   "kind": "techs",
   "id": "writing",
-  "file": "techs/writing.png",
+  "file": "techs/writing.jpg",
   "name": "Writing",
   "size": "512x512",
   "nobg": true
@@ -9082,7 +9082,7 @@
  {
   "kind": "techs",
   "id": "masonry",
-  "file": "techs/masonry.png",
+  "file": "techs/masonry.jpg",
   "name": "Masonry",
   "size": "512x512",
   "nobg": true
@@ -9090,7 +9090,7 @@
  {
   "kind": "techs",
   "id": "bronze_working",
-  "file": "techs/bronze_working.png",
+  "file": "techs/bronze_working.jpg",
   "name": "Bronze Working",
   "size": "512x512",
   "nobg": true
@@ -9098,7 +9098,7 @@
  {
   "kind": "techs",
   "id": "wheel",
-  "file": "techs/wheel.png",
+  "file": "techs/wheel.jpg",
   "name": "The Wheel",
   "size": "512x512",
   "nobg": true
@@ -9106,7 +9106,7 @@
  {
   "kind": "techs",
   "id": "celestial_navigation",
-  "file": "techs/celestial_navigation.png",
+  "file": "techs/celestial_navigation.jpg",
   "name": "Celestial Navigation",
   "size": "512x512",
   "nobg": true
@@ -9114,7 +9114,7 @@
  {
   "kind": "techs",
   "id": "currency",
-  "file": "techs/currency.png",
+  "file": "techs/currency.jpg",
   "name": "Currency",
   "size": "512x512",
   "nobg": true
@@ -9122,7 +9122,7 @@
  {
   "kind": "techs",
   "id": "horseback_riding",
-  "file": "techs/horseback_riding.png",
+  "file": "techs/horseback_riding.jpg",
   "name": "Horseback Riding",
   "size": "512x512",
   "nobg": true
@@ -9130,7 +9130,7 @@
  {
   "kind": "techs",
   "id": "iron_working",
-  "file": "techs/iron_working.png",
+  "file": "techs/iron_working.jpg",
   "name": "Iron Working",
   "size": "512x512",
   "nobg": true
@@ -9138,7 +9138,7 @@
  {
   "kind": "techs",
   "id": "calendar",
-  "file": "techs/calendar.png",
+  "file": "techs/calendar.jpg",
   "name": "Calendar",
   "size": "512x512",
   "nobg": true
@@ -9146,7 +9146,7 @@
  {
   "kind": "techs",
   "id": "shipbuilding",
-  "file": "techs/shipbuilding.png",
+  "file": "techs/shipbuilding.jpg",
   "name": "Shipbuilding",
   "size": "512x512",
   "nobg": true
@@ -9154,7 +9154,7 @@
  {
   "kind": "techs",
   "id": "mathematics",
-  "file": "techs/mathematics.png",
+  "file": "techs/mathematics.jpg",
   "name": "Mathematics",
   "size": "512x512",
   "nobg": true
@@ -9162,7 +9162,7 @@
  {
   "kind": "techs",
   "id": "roads",
-  "file": "techs/roads.png",
+  "file": "techs/roads.jpg",
   "name": "Roads",
   "size": "512x512",
   "nobg": true
@@ -9170,7 +9170,7 @@
  {
   "kind": "techs",
   "id": "construction",
-  "file": "techs/construction.png",
+  "file": "techs/construction.jpg",
   "name": "Construction",
   "size": "512x512",
   "nobg": true
@@ -9178,7 +9178,7 @@
  {
   "kind": "techs",
   "id": "engineering",
-  "file": "techs/engineering.png",
+  "file": "techs/engineering.jpg",
   "name": "Engineering",
   "size": "512x512",
   "nobg": true
@@ -9186,7 +9186,7 @@
  {
   "kind": "techs",
   "id": "optics",
-  "file": "techs/optics.png",
+  "file": "techs/optics.jpg",
   "name": "Optics",
   "size": "512x512",
   "nobg": true
@@ -9194,7 +9194,7 @@
  {
   "kind": "techs",
   "id": "herbalism",
-  "file": "techs/herbalism.png",
+  "file": "techs/herbalism.jpg",
   "name": "Herbalism",
   "size": "512x512",
   "nobg": true
@@ -9202,7 +9202,7 @@
  {
   "kind": "techs",
   "id": "metallurgy",
-  "file": "techs/metallurgy.png",
+  "file": "techs/metallurgy.jpg",
   "name": "Metallurgy",
   "size": "512x512",
   "nobg": true
@@ -9210,7 +9210,7 @@
  {
   "kind": "techs",
   "id": "military_tactics",
-  "file": "techs/military_tactics.png",
+  "file": "techs/military_tactics.jpg",
   "name": "Military Tactics",
   "size": "512x512",
   "nobg": true
@@ -9218,7 +9218,7 @@
  {
   "kind": "techs",
   "id": "apprenticeship",
-  "file": "techs/apprenticeship.png",
+  "file": "techs/apprenticeship.jpg",
   "name": "Apprenticeship",
   "size": "512x512",
   "nobg": true
@@ -9226,7 +9226,7 @@
  {
   "kind": "techs",
   "id": "machinery",
-  "file": "techs/machinery.png",
+  "file": "techs/machinery.jpg",
   "name": "Machinery",
   "size": "512x512",
   "nobg": true
@@ -9234,7 +9234,7 @@
  {
   "kind": "techs",
   "id": "compass",
-  "file": "techs/compass.png",
+  "file": "techs/compass.jpg",
   "name": "Compass",
   "size": "512x512",
   "nobg": true
@@ -9242,7 +9242,7 @@
  {
   "kind": "techs",
   "id": "education",
-  "file": "techs/education.png",
+  "file": "techs/education.jpg",
   "name": "Education",
   "size": "512x512",
   "nobg": true
@@ -9250,7 +9250,7 @@
  {
   "kind": "techs",
   "id": "paper",
-  "file": "techs/paper.png",
+  "file": "techs/paper.jpg",
   "name": "Paper",
   "size": "512x512",
   "nobg": true
@@ -9258,7 +9258,7 @@
  {
   "kind": "techs",
   "id": "stirrups",
-  "file": "techs/stirrups.png",
+  "file": "techs/stirrups.jpg",
   "name": "Stirrups",
   "size": "512x512",
   "nobg": true
@@ -9266,7 +9266,7 @@
  {
   "kind": "techs",
   "id": "three_field_system",
-  "file": "techs/three_field_system.png",
+  "file": "techs/three_field_system.jpg",
   "name": "Three-Field System",
   "size": "512x512",
   "nobg": true
@@ -9274,7 +9274,7 @@
  {
   "kind": "techs",
   "id": "military_engineering",
-  "file": "techs/military_engineering.png",
+  "file": "techs/military_engineering.jpg",
   "name": "Military Engineering",
   "size": "512x512",
   "nobg": true
@@ -9282,7 +9282,7 @@
  {
   "kind": "techs",
   "id": "castles",
-  "file": "techs/castles.png",
+  "file": "techs/castles.jpg",
   "name": "Castles",
   "size": "512x512",
   "nobg": true
@@ -9290,7 +9290,7 @@
  {
   "kind": "techs",
   "id": "alchemy",
-  "file": "techs/alchemy.png",
+  "file": "techs/alchemy.jpg",
   "name": "Alchemy",
   "size": "512x512",
   "nobg": true
@@ -9298,7 +9298,7 @@
  {
   "kind": "techs",
   "id": "heraldry",
-  "file": "techs/heraldry.png",
+  "file": "techs/heraldry.jpg",
   "name": "Heraldry",
   "size": "512x512",
   "nobg": true
@@ -9306,7 +9306,7 @@
  {
   "kind": "techs",
   "id": "clockwork",
-  "file": "techs/clockwork.png",
+  "file": "techs/clockwork.jpg",
   "name": "Clockwork",
   "size": "512x512",
   "nobg": true
@@ -9314,7 +9314,7 @@
  {
   "kind": "techs",
   "id": "cartography",
-  "file": "techs/cartography.png",
+  "file": "techs/cartography.jpg",
   "name": "Cartography",
   "size": "512x512",
   "nobg": true
@@ -9322,7 +9322,7 @@
  {
   "kind": "techs",
   "id": "mass_production",
-  "file": "techs/mass_production.png",
+  "file": "techs/mass_production.jpg",
   "name": "Mass Production",
   "size": "512x512",
   "nobg": true
@@ -9330,7 +9330,7 @@
  {
   "kind": "techs",
   "id": "banking",
-  "file": "techs/banking.png",
+  "file": "techs/banking.jpg",
   "name": "Banking",
   "size": "512x512",
   "nobg": true
@@ -9338,7 +9338,7 @@
  {
   "kind": "techs",
   "id": "gunpowder",
-  "file": "techs/gunpowder.png",
+  "file": "techs/gunpowder.jpg",
   "name": "Gunpowder",
   "size": "512x512",
   "nobg": true
@@ -9346,7 +9346,7 @@
  {
   "kind": "techs",
   "id": "printing",
-  "file": "techs/printing.png",
+  "file": "techs/printing.jpg",
   "name": "Printing",
   "size": "512x512",
   "nobg": true
@@ -9354,7 +9354,7 @@
  {
   "kind": "techs",
   "id": "astronomy",
-  "file": "techs/astronomy.png",
+  "file": "techs/astronomy.jpg",
   "name": "Astronomy",
   "size": "512x512",
   "nobg": true
@@ -9362,7 +9362,7 @@
  {
   "kind": "techs",
   "id": "square_rigging",
-  "file": "techs/square_rigging.png",
+  "file": "techs/square_rigging.jpg",
   "name": "Square Rigging",
   "size": "512x512",
   "nobg": true
@@ -9370,7 +9370,7 @@
  {
   "kind": "techs",
   "id": "metal_casting",
-  "file": "techs/metal_casting.png",
+  "file": "techs/metal_casting.jpg",
   "name": "Metal Casting",
   "size": "512x512",
   "nobg": true
@@ -9378,7 +9378,7 @@
  {
   "kind": "techs",
   "id": "anatomy",
-  "file": "techs/anatomy.png",
+  "file": "techs/anatomy.jpg",
   "name": "Anatomy",
   "size": "512x512",
   "nobg": true
@@ -9386,7 +9386,7 @@
  {
   "kind": "techs",
   "id": "siege_tactics",
-  "file": "techs/siege_tactics.png",
+  "file": "techs/siege_tactics.jpg",
   "name": "Siege Tactics",
   "size": "512x512",
   "nobg": true
@@ -9394,7 +9394,7 @@
  {
   "kind": "techs",
   "id": "scientific_method",
-  "file": "techs/scientific_method.png",
+  "file": "techs/scientific_method.jpg",
   "name": "Scientific Method",
   "size": "512x512",
   "nobg": true
@@ -9402,7 +9402,7 @@
  {
   "kind": "techs",
   "id": "joint_stock",
-  "file": "techs/joint_stock.png",
+  "file": "techs/joint_stock.jpg",
   "name": "Joint-Stock Companies",
   "size": "512x512",
   "nobg": true
@@ -9410,7 +9410,7 @@
  {
   "kind": "techs",
   "id": "fortification",
-  "file": "techs/fortification.png",
+  "file": "techs/fortification.jpg",
   "name": "Fortification",
   "size": "512x512",
   "nobg": true
@@ -9418,7 +9418,7 @@
  {
   "kind": "techs",
   "id": "industrialization",
-  "file": "techs/industrialization.png",
+  "file": "techs/industrialization.jpg",
   "name": "Industrialization",
   "size": "512x512",
   "nobg": true
@@ -9426,7 +9426,7 @@
  {
   "kind": "techs",
   "id": "scientific_theory",
-  "file": "techs/scientific_theory.png",
+  "file": "techs/scientific_theory.jpg",
   "name": "Scientific Theory",
   "size": "512x512",
   "nobg": true
@@ -9434,7 +9434,7 @@
  {
   "kind": "techs",
   "id": "ballistics",
-  "file": "techs/ballistics.png",
+  "file": "techs/ballistics.jpg",
   "name": "Ballistics",
   "size": "512x512",
   "nobg": true
@@ -9442,7 +9442,7 @@
  {
   "kind": "techs",
   "id": "military_science",
-  "file": "techs/military_science.png",
+  "file": "techs/military_science.jpg",
   "name": "Military Science",
   "size": "512x512",
   "nobg": true
@@ -9450,7 +9450,7 @@
  {
   "kind": "techs",
   "id": "steam_power",
-  "file": "techs/steam_power.png",
+  "file": "techs/steam_power.jpg",
   "name": "Steam Power",
   "size": "512x512",
   "nobg": true
@@ -9458,7 +9458,7 @@
  {
   "kind": "techs",
   "id": "sanitation",
-  "file": "techs/sanitation.png",
+  "file": "techs/sanitation.jpg",
   "name": "Sanitation",
   "size": "512x512",
   "nobg": true
@@ -9466,7 +9466,7 @@
  {
   "kind": "techs",
   "id": "economics",
-  "file": "techs/economics.png",
+  "file": "techs/economics.jpg",
   "name": "Economics",
   "size": "512x512",
   "nobg": true
@@ -9474,7 +9474,7 @@
  {
   "kind": "techs",
   "id": "rifling",
-  "file": "techs/rifling.png",
+  "file": "techs/rifling.jpg",
   "name": "Rifling",
   "size": "512x512",
   "nobg": true
@@ -9482,7 +9482,7 @@
  {
   "kind": "techs",
   "id": "railroad",
-  "file": "techs/railroad.png",
+  "file": "techs/railroad.jpg",
   "name": "Railroad",
   "size": "512x512",
   "nobg": true
@@ -9490,7 +9490,7 @@
  {
   "kind": "techs",
   "id": "telegraph",
-  "file": "techs/telegraph.png",
+  "file": "techs/telegraph.jpg",
   "name": "Telegraph",
   "size": "512x512",
   "nobg": true
@@ -9498,7 +9498,7 @@
  {
   "kind": "techs",
   "id": "mass_agriculture",
-  "file": "techs/mass_agriculture.png",
+  "file": "techs/mass_agriculture.jpg",
   "name": "Mass Agriculture",
   "size": "512x512",
   "nobg": true
@@ -9506,7 +9506,7 @@
  {
   "kind": "techs",
   "id": "explosives",
-  "file": "techs/explosives.png",
+  "file": "techs/explosives.jpg",
   "name": "Explosives",
   "size": "512x512",
   "nobg": true
@@ -9514,7 +9514,7 @@
  {
   "kind": "techs",
   "id": "refining",
-  "file": "techs/refining.png",
+  "file": "techs/refining.jpg",
   "name": "Refining",
   "size": "512x512",
   "nobg": true
@@ -9522,7 +9522,7 @@
  {
   "kind": "techs",
   "id": "electricity",
-  "file": "techs/electricity.png",
+  "file": "techs/electricity.jpg",
   "name": "Electricity",
   "size": "512x512",
   "nobg": true
@@ -9530,7 +9530,7 @@
  {
   "kind": "techs",
   "id": "radio",
-  "file": "techs/radio.png",
+  "file": "techs/radio.jpg",
   "name": "Radio",
   "size": "512x512",
   "nobg": true
@@ -9538,7 +9538,7 @@
  {
   "kind": "techs",
   "id": "chemistry",
-  "file": "techs/chemistry.png",
+  "file": "techs/chemistry.jpg",
   "name": "Chemistry",
   "size": "512x512",
   "nobg": true
@@ -9546,7 +9546,7 @@
  {
   "kind": "techs",
   "id": "steel",
-  "file": "techs/steel.png",
+  "file": "techs/steel.jpg",
   "name": "Steel",
   "size": "512x512",
   "nobg": true
@@ -9554,7 +9554,7 @@
  {
   "kind": "techs",
   "id": "replaceable_parts",
-  "file": "techs/replaceable_parts.png",
+  "file": "techs/replaceable_parts.jpg",
   "name": "Replaceable Parts",
   "size": "512x512",
   "nobg": true
@@ -9562,7 +9562,7 @@
  {
   "kind": "techs",
   "id": "flight",
-  "file": "techs/flight.png",
+  "file": "techs/flight.jpg",
   "name": "Flight",
   "size": "512x512",
   "nobg": true
@@ -9570,7 +9570,7 @@
  {
   "kind": "techs",
   "id": "ideology_tech",
-  "file": "techs/ideology_tech.png",
+  "file": "techs/ideology_tech.jpg",
   "name": "Mass Politics",
   "size": "512x512",
   "nobg": true
@@ -9578,7 +9578,7 @@
  {
   "kind": "techs",
   "id": "refrigeration",
-  "file": "techs/refrigeration.png",
+  "file": "techs/refrigeration.jpg",
   "name": "Refrigeration",
   "size": "512x512",
   "nobg": true
@@ -9586,7 +9586,7 @@
  {
   "kind": "techs",
   "id": "automobile",
-  "file": "techs/automobile.png",
+  "file": "techs/automobile.jpg",
   "name": "Automobile",
   "size": "512x512",
   "nobg": true
@@ -9594,7 +9594,7 @@
  {
   "kind": "techs",
   "id": "combustion",
-  "file": "techs/combustion.png",
+  "file": "techs/combustion.jpg",
   "name": "Combustion",
   "size": "512x512",
   "nobg": true
@@ -9602,7 +9602,7 @@
  {
   "kind": "techs",
   "id": "electronics",
-  "file": "techs/electronics.png",
+  "file": "techs/electronics.jpg",
   "name": "Electronics",
   "size": "512x512",
   "nobg": true
@@ -9610,7 +9610,7 @@
  {
   "kind": "techs",
   "id": "advanced_ballistics",
-  "file": "techs/advanced_ballistics.png",
+  "file": "techs/advanced_ballistics.jpg",
   "name": "Advanced Ballistics",
   "size": "512x512",
   "nobg": true
@@ -9618,7 +9618,7 @@
  {
   "kind": "techs",
   "id": "telecommunications",
-  "file": "techs/telecommunications.png",
+  "file": "techs/telecommunications.jpg",
   "name": "Telecommunications",
   "size": "512x512",
   "nobg": true
@@ -9626,7 +9626,7 @@
  {
   "kind": "techs",
   "id": "plastics",
-  "file": "techs/plastics.png",
+  "file": "techs/plastics.jpg",
   "name": "Plastics",
   "size": "512x512",
   "nobg": true
@@ -9634,7 +9634,7 @@
  {
   "kind": "techs",
   "id": "computers",
-  "file": "techs/computers.png",
+  "file": "techs/computers.jpg",
   "name": "Computers",
   "size": "512x512",
   "nobg": true
@@ -9642,7 +9642,7 @@
  {
   "kind": "techs",
   "id": "rocketry",
-  "file": "techs/rocketry.png",
+  "file": "techs/rocketry.jpg",
   "name": "Rocketry",
   "size": "512x512",
   "nobg": true
@@ -9650,7 +9650,7 @@
  {
   "kind": "techs",
   "id": "radar",
-  "file": "techs/radar.png",
+  "file": "techs/radar.jpg",
   "name": "Radar",
   "size": "512x512",
   "nobg": true
@@ -9658,7 +9658,7 @@
  {
   "kind": "techs",
   "id": "penicillin",
-  "file": "techs/penicillin.png",
+  "file": "techs/penicillin.jpg",
   "name": "Penicillin",
   "size": "512x512",
   "nobg": true
@@ -9666,7 +9666,7 @@
  {
   "kind": "techs",
   "id": "nuclear_fission",
-  "file": "techs/nuclear_fission.png",
+  "file": "techs/nuclear_fission.jpg",
   "name": "Nuclear Fission",
   "size": "512x512",
   "nobg": true
@@ -9674,7 +9674,7 @@
  {
   "kind": "techs",
   "id": "combined_arms",
-  "file": "techs/combined_arms.png",
+  "file": "techs/combined_arms.jpg",
   "name": "Combined Arms",
   "size": "512x512",
   "nobg": true
@@ -9682,7 +9682,7 @@
  {
   "kind": "techs",
   "id": "synthetic_materials",
-  "file": "techs/synthetic_materials.png",
+  "file": "techs/synthetic_materials.jpg",
   "name": "Synthetic Materials",
   "size": "512x512",
   "nobg": true
@@ -9690,7 +9690,7 @@
  {
   "kind": "techs",
   "id": "television",
-  "file": "techs/television.png",
+  "file": "techs/television.jpg",
   "name": "Television",
   "size": "512x512",
   "nobg": true
@@ -9698,7 +9698,7 @@
  {
   "kind": "techs",
   "id": "advanced_flight",
-  "file": "techs/advanced_flight.png",
+  "file": "techs/advanced_flight.jpg",
   "name": "Advanced Flight",
   "size": "512x512",
   "nobg": true
@@ -9706,7 +9706,7 @@
  {
   "kind": "techs",
   "id": "jet_engines",
-  "file": "techs/jet_engines.png",
+  "file": "techs/jet_engines.jpg",
   "name": "Jet Engines",
   "size": "512x512",
   "nobg": true
@@ -9714,7 +9714,7 @@
  {
   "kind": "techs",
   "id": "satellites",
-  "file": "techs/satellites.png",
+  "file": "techs/satellites.jpg",
   "name": "Satellites",
   "size": "512x512",
   "nobg": true
@@ -9722,7 +9722,7 @@
  {
   "kind": "techs",
   "id": "nuclear_power",
-  "file": "techs/nuclear_power.png",
+  "file": "techs/nuclear_power.jpg",
   "name": "Nuclear Power",
   "size": "512x512",
   "nobg": true
@@ -9730,7 +9730,7 @@
  {
   "kind": "techs",
   "id": "spaceflight",
-  "file": "techs/spaceflight.png",
+  "file": "techs/spaceflight.jpg",
   "name": "Spaceflight",
   "size": "512x512",
   "nobg": true
@@ -9738,7 +9738,7 @@
  {
   "kind": "techs",
   "id": "robotics",
-  "file": "techs/robotics.png",
+  "file": "techs/robotics.jpg",
   "name": "Robotics",
   "size": "512x512",
   "nobg": true
@@ -9746,7 +9746,7 @@
  {
   "kind": "techs",
   "id": "lasers",
-  "file": "techs/lasers.png",
+  "file": "techs/lasers.jpg",
   "name": "Lasers",
   "size": "512x512",
   "nobg": true
@@ -9754,7 +9754,7 @@
  {
   "kind": "techs",
   "id": "the_internet",
-  "file": "techs/the_internet.png",
+  "file": "techs/the_internet.jpg",
   "name": "The Internet",
   "size": "512x512",
   "nobg": true
@@ -9762,7 +9762,7 @@
  {
   "kind": "techs",
   "id": "genetics",
-  "file": "techs/genetics.png",
+  "file": "techs/genetics.jpg",
   "name": "Genetics",
   "size": "512x512",
   "nobg": true
@@ -9770,7 +9770,7 @@
  {
   "kind": "techs",
   "id": "composites",
-  "file": "techs/composites.png",
+  "file": "techs/composites.jpg",
   "name": "Composites",
   "size": "512x512",
   "nobg": true
@@ -9778,7 +9778,7 @@
  {
   "kind": "techs",
   "id": "stealth",
-  "file": "techs/stealth.png",
+  "file": "techs/stealth.jpg",
   "name": "Stealth",
   "size": "512x512",
   "nobg": true
@@ -9786,7 +9786,7 @@
  {
   "kind": "techs",
   "id": "guidance_systems",
-  "file": "techs/guidance_systems.png",
+  "file": "techs/guidance_systems.jpg",
   "name": "Guidance Systems",
   "size": "512x512",
   "nobg": true
@@ -9794,7 +9794,7 @@
  {
   "kind": "techs",
   "id": "nanotechnology",
-  "file": "techs/nanotechnology.png",
+  "file": "techs/nanotechnology.jpg",
   "name": "Nanotechnology",
   "size": "512x512",
   "nobg": true
@@ -9802,7 +9802,7 @@
  {
   "kind": "techs",
   "id": "artificial_intelligence",
-  "file": "techs/artificial_intelligence.png",
+  "file": "techs/artificial_intelligence.jpg",
   "name": "Artificial Intelligence",
   "size": "512x512",
   "nobg": true
@@ -9810,7 +9810,7 @@
  {
   "kind": "techs",
   "id": "fusion",
-  "file": "techs/fusion.png",
+  "file": "techs/fusion.jpg",
   "name": "Fusion",
   "size": "512x512",
   "nobg": true
@@ -9818,7 +9818,7 @@
  {
   "kind": "techs",
   "id": "quantum_computing",
-  "file": "techs/quantum_computing.png",
+  "file": "techs/quantum_computing.jpg",
   "name": "Quantum Computing",
   "size": "512x512",
   "nobg": true
@@ -9826,7 +9826,7 @@
  {
   "kind": "techs",
   "id": "future_tech",
-  "file": "techs/future_tech.png",
+  "file": "techs/future_tech.jpg",
   "name": "Future Technology",
   "size": "512x512",
   "nobg": true
@@ -9834,7 +9834,7 @@
  {
   "kind": "civics",
   "id": "code_of_laws",
-  "file": "civics/code_of_laws.png",
+  "file": "civics/code_of_laws.jpg",
   "name": "Code of Laws",
   "size": "512x512",
   "nobg": true
@@ -9842,7 +9842,7 @@
  {
   "kind": "civics",
   "id": "craftsmanship",
-  "file": "civics/craftsmanship.png",
+  "file": "civics/craftsmanship.jpg",
   "name": "Craftsmanship",
   "size": "512x512",
   "nobg": true
@@ -9850,7 +9850,7 @@
  {
   "kind": "civics",
   "id": "foreign_trade",
-  "file": "civics/foreign_trade.png",
+  "file": "civics/foreign_trade.jpg",
   "name": "Foreign Trade",
   "size": "512x512",
   "nobg": true
@@ -9858,7 +9858,7 @@
  {
   "kind": "civics",
   "id": "military_tradition",
-  "file": "civics/military_tradition.png",
+  "file": "civics/military_tradition.jpg",
   "name": "Military Tradition",
   "size": "512x512",
   "nobg": true
@@ -9866,7 +9866,7 @@
  {
   "kind": "civics",
   "id": "state_workforce",
-  "file": "civics/state_workforce.png",
+  "file": "civics/state_workforce.jpg",
   "name": "State Workforce",
   "size": "512x512",
   "nobg": true
@@ -9874,7 +9874,7 @@
  {
   "kind": "civics",
   "id": "early_empire",
-  "file": "civics/early_empire.png",
+  "file": "civics/early_empire.jpg",
   "name": "Early Empire",
   "size": "512x512",
   "nobg": true
@@ -9882,7 +9882,7 @@
  {
   "kind": "civics",
   "id": "rituals",
-  "file": "civics/rituals.png",
+  "file": "civics/rituals.jpg",
   "name": "Rituals",
   "size": "512x512",
   "nobg": true
@@ -9890,7 +9890,7 @@
  {
   "kind": "civics",
   "id": "oral_tradition",
-  "file": "civics/oral_tradition.png",
+  "file": "civics/oral_tradition.jpg",
   "name": "Oral Tradition",
   "size": "512x512",
   "nobg": true
@@ -9898,7 +9898,7 @@
  {
   "kind": "civics",
   "id": "political_philosophy",
-  "file": "civics/political_philosophy.png",
+  "file": "civics/political_philosophy.jpg",
   "name": "Political Philosophy",
   "size": "512x512",
   "nobg": true
@@ -9906,7 +9906,7 @@
  {
   "kind": "civics",
   "id": "games_recreation",
-  "file": "civics/games_recreation.png",
+  "file": "civics/games_recreation.jpg",
   "name": "Games and Recreation",
   "size": "512x512",
   "nobg": true
@@ -9914,7 +9914,7 @@
  {
   "kind": "civics",
   "id": "drama_poetry",
-  "file": "civics/drama_poetry.png",
+  "file": "civics/drama_poetry.jpg",
   "name": "Drama and Poetry",
   "size": "512x512",
   "nobg": true
@@ -9922,7 +9922,7 @@
  {
   "kind": "civics",
   "id": "military_training",
-  "file": "civics/military_training.png",
+  "file": "civics/military_training.jpg",
   "name": "Military Training",
   "size": "512x512",
   "nobg": true
@@ -9930,7 +9930,7 @@
  {
   "kind": "civics",
   "id": "recorded_history",
-  "file": "civics/recorded_history.png",
+  "file": "civics/recorded_history.jpg",
   "name": "Recorded History",
   "size": "512x512",
   "nobg": true
@@ -9938,7 +9938,7 @@
  {
   "kind": "civics",
   "id": "defensive_tactics",
-  "file": "civics/defensive_tactics.png",
+  "file": "civics/defensive_tactics.jpg",
   "name": "Defensive Tactics",
   "size": "512x512",
   "nobg": true
@@ -9946,7 +9946,7 @@
  {
   "kind": "civics",
   "id": "mysticism_civic",
-  "file": "civics/mysticism_civic.png",
+  "file": "civics/mysticism_civic.jpg",
   "name": "Theology",
   "size": "512x512",
   "nobg": true
@@ -9954,7 +9954,7 @@
  {
   "kind": "civics",
   "id": "trade_league",
-  "file": "civics/trade_league.png",
+  "file": "civics/trade_league.jpg",
   "name": "Trade League",
   "size": "512x512",
   "nobg": true
@@ -9962,7 +9962,7 @@
  {
   "kind": "civics",
   "id": "feudalism",
-  "file": "civics/feudalism.png",
+  "file": "civics/feudalism.jpg",
   "name": "Feudalism",
   "size": "512x512",
   "nobg": true
@@ -9970,7 +9970,7 @@
  {
   "kind": "civics",
   "id": "civil_service",
-  "file": "civics/civil_service.png",
+  "file": "civics/civil_service.jpg",
   "name": "Civil Service",
   "size": "512x512",
   "nobg": true
@@ -9978,7 +9978,7 @@
  {
   "kind": "civics",
   "id": "mercenaries",
-  "file": "civics/mercenaries.png",
+  "file": "civics/mercenaries.jpg",
   "name": "Mercenaries",
   "size": "512x512",
   "nobg": true
@@ -9986,7 +9986,7 @@
  {
   "kind": "civics",
   "id": "guilds",
-  "file": "civics/guilds.png",
+  "file": "civics/guilds.jpg",
   "name": "Guilds",
   "size": "512x512",
   "nobg": true
@@ -9994,7 +9994,7 @@
  {
   "kind": "civics",
   "id": "divine_right",
-  "file": "civics/divine_right.png",
+  "file": "civics/divine_right.jpg",
   "name": "Divine Right",
   "size": "512x512",
   "nobg": true
@@ -10002,7 +10002,7 @@
  {
   "kind": "civics",
   "id": "naval_tradition",
-  "file": "civics/naval_tradition.png",
+  "file": "civics/naval_tradition.jpg",
   "name": "Naval Tradition",
   "size": "512x512",
   "nobg": true
@@ -10010,7 +10010,7 @@
  {
   "kind": "civics",
   "id": "exploration",
-  "file": "civics/exploration.png",
+  "file": "civics/exploration.jpg",
   "name": "Exploration",
   "size": "512x512",
   "nobg": true
@@ -10018,7 +10018,7 @@
  {
   "kind": "civics",
   "id": "medieval_faires",
-  "file": "civics/medieval_faires.png",
+  "file": "civics/medieval_faires.jpg",
   "name": "Medieval Faires",
   "size": "512x512",
   "nobg": true
@@ -10026,7 +10026,7 @@
  {
   "kind": "civics",
   "id": "humanism",
-  "file": "civics/humanism.png",
+  "file": "civics/humanism.jpg",
   "name": "Humanism",
   "size": "512x512",
   "nobg": true
@@ -10034,7 +10034,7 @@
  {
   "kind": "civics",
   "id": "diplomatic_service",
-  "file": "civics/diplomatic_service.png",
+  "file": "civics/diplomatic_service.jpg",
   "name": "Diplomatic Service",
   "size": "512x512",
   "nobg": true
@@ -10042,7 +10042,7 @@
  {
   "kind": "civics",
   "id": "reformed_church",
-  "file": "civics/reformed_church.png",
+  "file": "civics/reformed_church.jpg",
   "name": "Reformed Church",
   "size": "512x512",
   "nobg": true
@@ -10050,7 +10050,7 @@
  {
   "kind": "civics",
   "id": "mercantilism",
-  "file": "civics/mercantilism.png",
+  "file": "civics/mercantilism.jpg",
   "name": "Mercantilism",
   "size": "512x512",
   "nobg": true
@@ -10058,7 +10058,7 @@
  {
   "kind": "civics",
   "id": "enlightenment",
-  "file": "civics/enlightenment.png",
+  "file": "civics/enlightenment.jpg",
   "name": "The Enlightenment",
   "size": "512x512",
   "nobg": true
@@ -10066,7 +10066,7 @@
  {
   "kind": "civics",
   "id": "colonialism",
-  "file": "civics/colonialism.png",
+  "file": "civics/colonialism.jpg",
   "name": "Colonialism",
   "size": "512x512",
   "nobg": true
@@ -10074,7 +10074,7 @@
  {
   "kind": "civics",
   "id": "absolutism",
-  "file": "civics/absolutism.png",
+  "file": "civics/absolutism.jpg",
   "name": "Absolutism",
   "size": "512x512",
   "nobg": true
@@ -10082,7 +10082,7 @@
  {
   "kind": "civics",
   "id": "the_arts",
-  "file": "civics/the_arts.png",
+  "file": "civics/the_arts.jpg",
   "name": "Patronage of the Arts",
   "size": "512x512",
   "nobg": true
@@ -10090,7 +10090,7 @@
  {
   "kind": "civics",
   "id": "civil_engineering",
-  "file": "civics/civil_engineering.png",
+  "file": "civics/civil_engineering.jpg",
   "name": "Civil Engineering",
   "size": "512x512",
   "nobg": true
@@ -10098,7 +10098,7 @@
  {
   "kind": "civics",
   "id": "nationalism",
-  "file": "civics/nationalism.png",
+  "file": "civics/nationalism.jpg",
   "name": "Nationalism",
   "size": "512x512",
   "nobg": true
@@ -10106,7 +10106,7 @@
  {
   "kind": "civics",
   "id": "opera_ballet",
-  "file": "civics/opera_ballet.png",
+  "file": "civics/opera_ballet.jpg",
   "name": "Opera and Ballet",
   "size": "512x512",
   "nobg": true
@@ -10114,7 +10114,7 @@
  {
   "kind": "civics",
   "id": "natural_history",
-  "file": "civics/natural_history.png",
+  "file": "civics/natural_history.jpg",
   "name": "Natural History",
   "size": "512x512",
   "nobg": true
@@ -10122,7 +10122,7 @@
  {
   "kind": "civics",
   "id": "urbanization",
-  "file": "civics/urbanization.png",
+  "file": "civics/urbanization.jpg",
   "name": "Urbanization",
   "size": "512x512",
   "nobg": true
@@ -10130,7 +10130,7 @@
  {
   "kind": "civics",
   "id": "scorched_earth",
-  "file": "civics/scorched_earth.png",
+  "file": "civics/scorched_earth.jpg",
   "name": "Scorched Earth",
   "size": "512x512",
   "nobg": true
@@ -10138,7 +10138,7 @@
  {
   "kind": "civics",
   "id": "capitalism",
-  "file": "civics/capitalism.png",
+  "file": "civics/capitalism.jpg",
   "name": "Capitalism",
   "size": "512x512",
   "nobg": true
@@ -10146,7 +10146,7 @@
  {
   "kind": "civics",
   "id": "conservation",
-  "file": "civics/conservation.png",
+  "file": "civics/conservation.jpg",
   "name": "Conservation",
   "size": "512x512",
   "nobg": true
@@ -10154,7 +10154,7 @@
  {
   "kind": "civics",
   "id": "ideology",
-  "file": "civics/ideology.png",
+  "file": "civics/ideology.jpg",
   "name": "Ideology",
   "size": "512x512",
   "nobg": true
@@ -10162,7 +10162,7 @@
  {
   "kind": "civics",
   "id": "mass_media",
-  "file": "civics/mass_media.png",
+  "file": "civics/mass_media.jpg",
   "name": "Mass Media",
   "size": "512x512",
   "nobg": true
@@ -10170,7 +10170,7 @@
  {
   "kind": "civics",
   "id": "mobilization",
-  "file": "civics/mobilization.png",
+  "file": "civics/mobilization.jpg",
   "name": "Mobilization",
   "size": "512x512",
   "nobg": true
@@ -10178,7 +10178,7 @@
  {
   "kind": "civics",
   "id": "suffrage",
-  "file": "civics/suffrage.png",
+  "file": "civics/suffrage.jpg",
   "name": "Suffrage",
   "size": "512x512",
   "nobg": true
@@ -10186,7 +10186,7 @@
  {
   "kind": "civics",
   "id": "totalitarianism",
-  "file": "civics/totalitarianism.png",
+  "file": "civics/totalitarianism.jpg",
   "name": "Totalitarianism",
   "size": "512x512",
   "nobg": true
@@ -10194,7 +10194,7 @@
  {
   "kind": "civics",
   "id": "class_struggle",
-  "file": "civics/class_struggle.png",
+  "file": "civics/class_struggle.jpg",
   "name": "Class Struggle",
   "size": "512x512",
   "nobg": true
@@ -10202,7 +10202,7 @@
  {
   "kind": "civics",
   "id": "cultural_heritage",
-  "file": "civics/cultural_heritage.png",
+  "file": "civics/cultural_heritage.jpg",
   "name": "Cultural Heritage",
   "size": "512x512",
   "nobg": true
@@ -10210,7 +10210,7 @@
  {
   "kind": "civics",
   "id": "cold_war",
-  "file": "civics/cold_war.png",
+  "file": "civics/cold_war.jpg",
   "name": "Cold War",
   "size": "512x512",
   "nobg": true
@@ -10218,7 +10218,7 @@
  {
   "kind": "civics",
   "id": "professional_sports",
-  "file": "civics/professional_sports.png",
+  "file": "civics/professional_sports.jpg",
   "name": "Professional Sports",
   "size": "512x512",
   "nobg": true
@@ -10226,7 +10226,7 @@
  {
   "kind": "civics",
   "id": "rapid_deployment",
-  "file": "civics/rapid_deployment.png",
+  "file": "civics/rapid_deployment.jpg",
   "name": "Rapid Deployment",
   "size": "512x512",
   "nobg": true
@@ -10234,7 +10234,7 @@
  {
   "kind": "civics",
   "id": "space_race",
-  "file": "civics/space_race.png",
+  "file": "civics/space_race.jpg",
   "name": "Space Race",
   "size": "512x512",
   "nobg": true
@@ -10242,7 +10242,7 @@
  {
   "kind": "civics",
   "id": "environmentalism",
-  "file": "civics/environmentalism.png",
+  "file": "civics/environmentalism.jpg",
   "name": "Environmentalism",
   "size": "512x512",
   "nobg": true
@@ -10250,7 +10250,7 @@
  {
   "kind": "civics",
   "id": "globalization",
-  "file": "civics/globalization.png",
+  "file": "civics/globalization.jpg",
   "name": "Globalization",
   "size": "512x512",
   "nobg": true
@@ -10258,7 +10258,7 @@
  {
   "kind": "civics",
   "id": "social_media",
-  "file": "civics/social_media.png",
+  "file": "civics/social_media.jpg",
   "name": "Social Media",
   "size": "512x512",
   "nobg": true
@@ -10266,7 +10266,7 @@
  {
   "kind": "civics",
   "id": "digital_democracy",
-  "file": "civics/digital_democracy.png",
+  "file": "civics/digital_democracy.jpg",
   "name": "Digital Democracy",
   "size": "512x512",
   "nobg": true
@@ -10274,7 +10274,7 @@
  {
   "kind": "civics",
   "id": "corporate_libertarianism",
-  "file": "civics/corporate_libertarianism.png",
+  "file": "civics/corporate_libertarianism.jpg",
   "name": "Corporate Libertarianism",
   "size": "512x512",
   "nobg": true
@@ -10282,7 +10282,7 @@
  {
   "kind": "civics",
   "id": "synthetic_technocracy",
-  "file": "civics/synthetic_technocracy.png",
+  "file": "civics/synthetic_technocracy.jpg",
   "name": "Synthetic Technocracy",
   "size": "512x512",
   "nobg": true
@@ -10290,7 +10290,7 @@
  {
   "kind": "civics",
   "id": "smart_power",
-  "file": "civics/smart_power.png",
+  "file": "civics/smart_power.jpg",
   "name": "Smart Power",
   "size": "512x512",
   "nobg": true
@@ -10298,7 +10298,7 @@
  {
   "kind": "civics",
   "id": "exodus_imperative",
-  "file": "civics/exodus_imperative.png",
+  "file": "civics/exodus_imperative.jpg",
   "name": "Exodus Imperative",
   "size": "512x512",
   "nobg": true
@@ -10306,7 +10306,7 @@
  {
   "kind": "civics",
   "id": "cultural_hegemony",
-  "file": "civics/cultural_hegemony.png",
+  "file": "civics/cultural_hegemony.jpg",
   "name": "Cultural Hegemony",
   "size": "512x512",
   "nobg": true

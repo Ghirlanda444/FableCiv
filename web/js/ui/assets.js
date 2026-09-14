@@ -5,6 +5,8 @@
   var A = AU.Assets = {
     base: 'assets/',
     key: function (kind, id) { return kind + '/' + id; },
+    // full-frame pictures are stored as JPEG, cut-outs as PNG
+    ext: function (kind) { return kind === 'terrain' || kind === 'techs' || kind === 'civics' ? 'jpg' : 'png'; },
     // returns an HTMLImageElement when loaded, null while loading or if missing
     get: function (kind, id) {
       var k = A.key(kind, id), e = cache[k];
@@ -17,7 +19,7 @@
           if (AU.App && AU.App.invalidate) AU.App.invalidate(); if (AU.App && AU.App.refreshPanel && AU.App.panel) AU.App.refreshPanel();
         };
         img.onerror = function () { e.failed = true; };
-        img.src = (AU.ASSET_DATA && AU.ASSET_DATA[k]) ? AU.ASSET_DATA[k] : A.base + k + '.png';
+        img.src = (AU.ASSET_DATA && AU.ASSET_DATA[k]) ? AU.ASSET_DATA[k] : A.base + k + '.' + A.ext(kind);
       }
       return e.ok ? e.img : null;
     },
@@ -37,7 +39,7 @@
       var e = A._state(ck, id); if (e && e.failed) return A.texture(kind, id);
       return null;
     },
-    url: function (kind, id) { var k = A.key(kind, id); return (AU.ASSET_DATA && AU.ASSET_DATA[k]) ? AU.ASSET_DATA[k] : A.base + k + '.png'; },
+    url: function (kind, id) { var k = A.key(kind, id); return (AU.ASSET_DATA && AU.ASSET_DATA[k]) ? AU.ASSET_DATA[k] : A.base + k + '.' + A.ext(kind); },
     usable3D: function (kind, id) { var e = cache[A.key(kind, id)]; return !!(e && e.ok && !e.tainted); },
     texture: function (kind, id) {
       var img = A.get(kind, id); if (!img || !window.THREE) return null;

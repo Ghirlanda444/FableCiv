@@ -1,6 +1,6 @@
 # Artwork wanted (1289 pictures)
 
-Save each image as **web/assets/<kind>/<id>.png** (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.
+Save each image as **web/assets/<kind>/<id>.png** (jpg for terrain, techs and civics) (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.
 
 Style guide for every prompt: Cute chibi 3D game render in the style of Clash of Clans and Kingshot: chunky exaggerated proportions, smooth rounded 3D shapes with glossy toy-like shading, soft studio lighting with a warm rim light and subtle ambient occlusion, bright saturated colours, cheerful and readable, isolated on a plain white background, no text, no watermark, no frame.
 

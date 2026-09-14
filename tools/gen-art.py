@@ -127,7 +127,7 @@ def main():
     for it in items:
         if kinds and it['kind'] not in kinds: continue
         if any(it['kind'].startswith(sk) for sk in skips) and it['kind'] not in kinds: continue
-        if os.path.exists(os.path.join(ROOT, it['file'])): continue
+        if os.path.exists(os.path.join(ROOT, it['file'])) or os.path.exists(os.path.join(ROOT, os.path.splitext(it['file'])[0] + '.png')): continue
         todo.append(it)
         if args.limit and len(todo) >= args.limit: break
     from concurrent.futures import ThreadPoolExecutor
@@ -159,7 +159,11 @@ def main():
                         continue
                     img = best[1]
                 os.makedirs(os.path.dirname(path), exist_ok=True)
-                img.save(path, 'PNG', optimize=True)
+                tmp = os.path.splitext(path)[0] + '.png'
+                img.save(tmp, 'PNG')
+                import importlib.util
+                spec = importlib.util.spec_from_file_location('shrink_assets', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shrink-assets.py')); mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+                mod.shrink(tmp)  # 512 px max, palette PNG or JPEG depending on the kind
                 with lock: stats['done'] += 1
                 time.sleep(args.delay)
                 return

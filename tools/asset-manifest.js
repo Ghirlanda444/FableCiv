@@ -80,8 +80,8 @@ for (const t of AU.TECHS) items.push({ kind: 'techs', id: t.id, name: t.name, si
 for (const c of AU.CIVICS) items.push({ kind: 'civics', id: c.id, name: c.name, size: '512x512', nobg: true, prompt: `Square game card picture for the civic "${c.name}" (${ERA_HINT[c.era]} era): a tiny chibi scene of people that represents ${c.name}. ${CARD_STYLE}` });
 const outDir = path.join(__dirname, '..', 'web', 'assets');
 fs.mkdirSync(outDir, { recursive: true });
-fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(items.map(i => ({ kind: i.kind, id: i.id, file: `${i.kind}/${i.id}.png`, name: i.name, size: i.size, nobg: !!i.nobg })), null, 1));
-let md = `# Artwork wanted (${items.length} pictures)\n\nSave each image as **web/assets/<kind>/<id>.png** (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.\n\nStyle guide for every prompt: ${STYLE}\n\n`;
+fs.writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(items.map(i => ({ kind: i.kind, id: i.id, file: `${i.kind}/${i.id}.${['terrain', 'techs', 'civics'].indexOf(i.kind) >= 0 ? 'jpg' : 'png'}`, name: i.name, size: i.size, nobg: !!i.nobg })), null, 1));
+let md = `# Artwork wanted (${items.length} pictures)\n\nSave each image as **web/assets/<kind>/<id>.png** (jpg for terrain, techs and civics) (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.\n\nStyle guide for every prompt: ${STYLE}\n\n`;
 let kind = '';
 for (const i of items) { if (i.kind !== kind) { kind = i.kind; md += `\n## ${kind}\n\n`; } md += `- **${i.kind}/${i.id}.png** (${i.size}) — ${i.name}\n  > ${i.prompt}\n`; }
 fs.writeFileSync(path.join(outDir, 'PROMPTS.md'), md);
