@@ -227,7 +227,7 @@
       var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
       var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.river ? ' · River' : '') + '</b>';
-      if (t.natural) html += '<div class="tip-nat">' + AU.NATURAL_WONDERS[t.natural].icon + ' ' + AU.NATURAL_WONDERS[t.natural].name + '</div>';
+      if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
       else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
@@ -339,7 +339,8 @@
         var tt = g.tiles[this.sel.tile];
         if (p.explored[this.sel.tile]) {
           var yy = AU.baseTileYields(tt, p), owner = tt.owner >= 0 && g.settlements[tt.owner] ? g.settlements[tt.owner] : null;
-          html += '<div class="card"><h3>' + AU.TERRAIN[tt.terrain].name + (tt.hills ? ' Hills' : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (River)' : '') + '</h3><div class="meta">' +
+          var NWc = tt.natural ? AU.NATURAL_WONDERS[tt.natural] : null;
+          html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">Natural Wonder</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' Hills' : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (River)' : '')) + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' Adjacent worked tiles: ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
             (tt.resource && (!AU.RESOURCES[tt.resource].revealTech || p.techs[AU.RESOURCES[tt.resource].revealTech]) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
             '🌾' + yy.food + ' ⚙️' + yy.production + ' 💰' + yy.gold + (yy.culture ? ' 🎭' + yy.culture : '') +
             (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · Independent camp' : '') + '</div></div>';
@@ -397,6 +398,7 @@
       if (advance) { var list = this.unitsNeedingOrders(); if (list.length) { this.selectUnit(list[0]); this.renderer.centerOn(this.g, list[0].tile); } else this.deselect(); }
       else this.selectUnit(u);
       this.refreshHud();
+      if (this.g && this.g.quoteQueue && this.g.quoteQueue.length && $('quote').hidden) { var self3 = this; setTimeout(function () { self3.showQuotes(); }, 150); }
     },
     doAttack: function (u, tileIdx) {
       var g = this.g, res = U.attack(g, u, tileIdx);

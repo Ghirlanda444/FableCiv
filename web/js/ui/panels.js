@@ -265,7 +265,9 @@
 
   P.render_log = function (app, g) {
     var html = '<div class="section">';
-    g.log.slice().reverse().forEach(function (l) { html += '<div class="row"><small class="stat">T' + l.turn + '</small><div class="grow">' + esc(l.msg) + '</div></div>'; });
+    var pl = G.player(g), known = g.log.filter(function (l) { return l.civ === undefined || l.civ === null || l.civ === pl.idx || pl.met[l.civ]; });
+    html += '<p class="stat">Only events involving you and the civilizations you have met are recorded.</p>';
+    known.slice().reverse().forEach(function (l) { html += '<div class="row"><small class="stat">T' + l.turn + '</small><div class="grow">' + esc(l.msg) + '</div></div>'; });
     return { title: 'History', html: html + '</div>' };
   };
 

@@ -524,35 +524,45 @@
     this.three.render(this.scene, this.camera);
   };
   // Yield labels: one small sprite per explored tile near the camera (option, key Y).
-  P.yieldSprite = function (text) {
-    var T = window.THREE, cv = document.createElement('canvas'), fs = 26, ctx = cv.getContext('2d');
-    ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; var tw = Math.ceil(ctx.measureText(text).width) + 12, th = fs * 1.4;
-    cv.width = tw; cv.height = th; ctx = cv.getContext('2d');
-    ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.fillRect(0, 0, tw, th);
-    ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center'; ctx.fillText(text, tw / 2, th / 2 + 1);
+  P.yieldSprite = function (groups) {
+    var T = window.THREE, YC = { food: ['#5ec45e', '#1f5a1f'], production: ['#e8923a', '#6b3a0a'], gold: ['#f0d040', '#7a5a00'], science: ['#4aa8ff', '#0b3d75'], culture: ['#c27bff', '#4a1a7a'], faith: ['#f4f0ff', '#6a5a9a'] };
+    var dot = 9, gap = dot * 2.3, rows = groups.length > 3 ? 2 : 1, perRow = Math.ceil(groups.length / rows);
+    function gw(gr) { return Math.min(gr[1], 3) * dot * 2.1 + (gr[1] > 3 ? dot * 2.4 : 0); }
+    var width = 0; for (var r = 0; r < rows; r++) { var w0 = 0; groups.slice(r * perRow, r * perRow + perRow).forEach(function (gr) { w0 += gw(gr) + gap * 0.6; }); width = Math.max(width, w0); }
+    var cv = document.createElement('canvas'); cv.width = Math.ceil(width) + 8; cv.height = Math.ceil(rows * gap * 1.15 + dot); var ctx = cv.getContext('2d');
+    for (var ri = 0; ri < rows; ri++) {
+      var rowG = groups.slice(ri * perRow, ri * perRow + perRow), rw = 0; rowG.forEach(function (gr) { rw += gw(gr) + gap * 0.6; });
+      var x = (cv.width - rw) / 2 + gap * 0.3, y = dot + 2 + ri * gap * 1.15;
+      rowG.forEach(function (gr) {
+        var n = gr[1], shown = Math.min(n, 3), col = YC[gr[0]];
+        for (var k = 0; k < shown; k++) { var dx = x + k * dot * 2.1 + dot; ctx.fillStyle = col[1]; ctx.beginPath(); ctx.arc(dx, y, dot + 1, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = col[0]; ctx.beginPath(); ctx.arc(dx, y, dot, 0, Math.PI * 2); ctx.fill(); }
+        if (n > 3) { ctx.font = 'bold ' + Math.round(dot * 2.2) + 'px system-ui, sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.7)'; ctx.strokeText(String(n), x + shown * dot * 2.1 + dot * 0.3, y); ctx.fillStyle = col[0]; ctx.fillText(String(n), x + shown * dot * 2.1 + dot * 0.3, y); }
+        x += gw(gr) + gap * 0.6;
+      });
+    }
     var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; tex.minFilter = T.LinearFilter;
     var sp = new T.Sprite(new T.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
-    var sc = R * 0.42 / fs; sp.userData.baseScale = [tw * sc, th * sc]; sp.scale.set(sp.userData.baseScale[0], sp.userData.baseScale[1], 1); sp.renderOrder = 9;
+    var sc = R * 0.011; sp.userData.baseScale = [cv.width * sc, cv.height * sc]; sp.scale.set(sp.userData.baseScale[0], sp.userData.baseScale[1], 1); sp.renderOrder = 9;
     return sp;
   };
   P.syncYields = function (g) {
     var self = this, keep = {}, player = G.player(g);
     if (this.showYields) {
-      var YI = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭' };
+      var YI = { food: 1, production: 1, gold: 1, science: 1, culture: 1, faith: 1 };
       var cx = this.cam.x, cz = this.cam.y, rad = R * 22;
       var c0 = Math.max(0, Math.floor((cx - rad) / (R * 1.732))), c1 = Math.min(g.W - 1, Math.ceil((cx + rad) / (R * 1.732)));
       var r0 = Math.max(0, Math.floor((cz - rad) / (R * 1.5))), r1 = Math.min(g.H - 1, Math.ceil((cz + rad) / (R * 1.5)));
       for (var rr = r0; rr <= r1; rr++) for (var cc = c0; cc <= c1; cc++) {
         var i = rr * g.W + cc, t = g.tiles[i];
-        if (!player.explored[i] || (AU.TERRAIN[t.terrain].impassable && !t.natural)) continue;
+        if (!player.explored[i] || (AU.TERRAIN[t.terrain].impassable && !t.natural) || t.settlement != null) continue;
         var so = t.owner >= 0 ? g.settlements[t.owner] : null, yy = so ? G.tileYields(g, t, so) : AU.baseTileYields(t, player);
-        var txt = ''; for (var yk in YI) if (yy[yk] >= 1) txt += (txt ? ' ' : '') + YI[yk] + Math.floor(yy[yk]);
-        if (!txt) continue;
+        var groups = [], txt = ''; for (var yk in YI) { var nv = Math.floor(yy[yk] || 0); if (nv >= 1) { groups.push([yk, nv]); txt += yk + nv + ','; } }
+        if (!groups.length) continue;
         keep[i] = txt;
         var node = this.yieldNodes[i];
         if (!node || node.userData.txt !== txt) {
           if (node) this.scene.remove(node);
-          node = this.yieldSprite(txt); node.userData.txt = txt;
+          node = this.yieldSprite(groups); node.userData.txt = txt;
           var p = Hex.center(t.col, t.row, R); node.position.set(p[0], this.heightAt(p[0], p[1]) + R * 0.35, p[1] + R * 0.45);
           this.scene.add(node); this.yieldNodes[i] = node;
         }
