@@ -74,7 +74,7 @@
     showSetup: function () {
       var grid = $('civ-grid'); grid.innerHTML = '';
       var ORDER = { easy: 0, medium: 1, hard: 2 }, DLABEL = { easy: '● Easy', medium: '●● Medium', hard: '●●● Hard' };
-      AU.CIVS.slice().sort(function (x, y) { return (ORDER[x.difficulty] || 1) - (ORDER[y.difficulty] || 1) || x.name.localeCompare(y.name); }).forEach(function (c) {
+      AU.CIVS.slice().sort(function (x, y) { var ox = x.difficulty in ORDER ? ORDER[x.difficulty] : 1, oy = y.difficulty in ORDER ? ORDER[y.difficulty] : 1; return ox - oy || x.name.localeCompare(y.name); }).forEach(function (c) {
         var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
         var em = AU.Assets.get('civs', c.id);
         d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + (em ? '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="">' : '') + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
