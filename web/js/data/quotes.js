@@ -58,7 +58,7 @@
   t('joint_stock', 'A cynic is a man who knows the price of everything and the value of nothing.', 'Oscar Wilde');
   t('fortification', 'The best fortress is to be found in the love of the people.', 'Niccolò Machiavelli');
   t('industrialization', 'And was Jerusalem builded here, among these dark Satanic Mills?', 'William Blake');
-  t('scientific_theory', 'Science is organized knowledge. Wisdom is organized life.', 'Immanuel Kant');
+  t('scientific_theory', 'Knowledge is organized knowledge. Wisdom is organized life.', 'Immanuel Kant');
   t('ballistics', 'God fights on the side with the best artillery.', 'attributed to Napoleon Bonaparte');
   t('military_science', 'Find out where your enemy is. Get at him as soon as you can. Strike him as hard as you can, and keep moving on.', 'Ulysses S. Grant');
   t('steam_power', 'I sell here, Sir, what all the world desires to have: power.', 'Matthew Boulton');
@@ -125,7 +125,7 @@
   c('military_training', 'The more you sweat in peace, the less you bleed in war.', 'Proverb');
   c('recorded_history', 'History is written by the victors.', 'Proverb');
   c('defensive_tactics', 'If you want peace, prepare for war.', 'Vegetius');
-  c('mysticism_civic', 'Faith is the bird that feels the light when the dawn is still dark.', 'Rabindranath Tagore');
+  c('mysticism_civic', 'Devotion is the bird that feels the light when the dawn is still dark.', 'Rabindranath Tagore');
   c('trade_league', 'No nation was ever ruined by trade.', 'Benjamin Franklin');
   c('feudalism', 'When Adam delved and Eve span, who was then the gentleman?', 'John Ball');
   c('civil_service', 'Govern a great nation as you would cook a small fish.', 'Lao Tzu');

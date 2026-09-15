@@ -2,11 +2,11 @@
 // Each kind has its own points, its own rising cost and a list of historical names in era order.
 (function (AU) {
   AU.GREAT_TYPES = {
-    prophet:   { name: 'Great Prophet',   icon: '🕊️', unit: 'great_prophet',   yield: 'faith',      desc: 'Founds a religion in one of your settlements (only a Great Prophet can). If every religion of the world is already founded, spreads your religion powerfully instead, or retires for Faith.' },
+    prophet:   { name: 'Great Prophet',   icon: '🕊️', unit: 'great_prophet',   yield: 'faith',      desc: 'Founds a religion in one of your settlements (only a Great Prophet can). If every religion of the world is already founded, spreads your religion powerfully instead, or retires for Devotion.' },
     scientist: { name: 'Great Scientist', icon: '🔬', unit: 'great_scientist', yield: 'science',    desc: 'Instantly completes the technology you are researching (or the cheapest available one).' },
     engineer:  { name: 'Great Engineer',  icon: '⚙️', unit: 'great_engineer',  yield: 'production', desc: 'Adds a huge burst of Production to what a City is building: a quick way to finish a wonder. In a Town the burst becomes Gold.' },
     merchant:  { name: 'Great Merchant',  icon: '💰', unit: 'great_merchant',  yield: 'gold',       desc: 'Brings a large sum of Gold to the treasury and one envoy to send to a city-state.' },
-    artist:    { name: 'Great Artist',    icon: '🎨', yield: 'culture', unit: 'great_artist',      desc: 'Creates a Great Work in a settlement: +3 Culture and +3 Tourism there every turn, forever.' },
+    artist:    { name: 'Great Artist',    icon: '🎨', yield: 'culture', unit: 'great_artist',      desc: 'Creates a Great Work in a settlement: +3 Heritage and +3 Fame there every turn, forever.' },
     general:   { name: 'Great General',   icon: '⚔️', unit: 'great_general',   yield: 'military',   desc: 'While alive: your land units within 2 tiles get +5 Strength. Can retire to fully heal every friendly unit within 2 tiles.' },
     admiral:   { name: 'Great Admiral',   icon: '⚓', unit: 'great_admiral',   yield: 'naval',      desc: 'While alive: your naval units within 2 tiles get +5 Strength and +1 Movement. Can retire to fully heal every friendly unit within 2 tiles.' }
   };

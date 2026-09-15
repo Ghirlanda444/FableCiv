@@ -1,4 +1,4 @@
-// Religion: Faith, pantheons, founding and enhancing a religion, pressure-based spread, religious units, religious victory.
+// Religion: Devotion, pantheons, founding and enhancing a religion, pressure-based spread, religious units, religious victory.
 (function (AU) {
   var G = AU.G;
   var R = AU.Religion = {};
@@ -205,8 +205,8 @@
     }
     civ.faith = (civ.faith || 0) + y; civ.faithTotal = (civ.faithTotal || 0) + y;
     if (civ.isPlayer) {
-      if (R.canChoosePantheon(g, civ) && !civ.flags['n:pantheon']) { civ.flags['n:pantheon'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You have enough Faith to found a pantheon.', panel: 'religion' }); }
-      if (R.canFound(g, civ) && !civ.flags['n:found']) { civ.flags['n:found'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You can found a religion (' + R.foundCost(g) + ' Faith).', panel: 'religion' }); }
+      if (R.canChoosePantheon(g, civ) && !civ.flags['n:pantheon']) { civ.flags['n:pantheon'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You have enough Devotion to found a pantheon.', panel: 'religion' }); }
+      if (R.canFound(g, civ) && !civ.flags['n:found']) { civ.flags['n:found'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You can found a religion (' + R.foundCost(g) + ' Devotion).', panel: 'religion' }); }
     }
   };
   R.checkVictory = function (g) {

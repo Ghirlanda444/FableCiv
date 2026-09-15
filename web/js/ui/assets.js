@@ -24,7 +24,7 @@
       return e.ok ? e.img : null;
     },
     has: function (kind, id) { return !!A.get(kind, id); },
-    // Culture-specific variant (kind/<culture>/<id>) when it exists, otherwise the shared picture.
+    // Heritage-specific variant (kind/<culture>/<id>) when it exists, otherwise the shared picture.
     _state: function (kind, id) { return cache[A.key(kind, id)]; },
     getFor: function (kind, id, culture) {
       if (!culture) return A.get(kind, id);

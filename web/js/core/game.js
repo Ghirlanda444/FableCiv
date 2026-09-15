@@ -247,7 +247,7 @@
     if (first) g.naturalFound[t.natural] = civ.idx;
     var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
     civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
-    G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Science and Culture.', tile: t.i });
+    G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Knowledge and Heritage.', tile: t.i });
     G.quote(g, civ, 'natural', t.natural, NW.name, 'Natural wonder discovered', t.i);
     G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };
@@ -547,7 +547,7 @@
   };
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
-    if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Faith only (see Religion)
+    if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.civic && !civ.civics[d.civic]) return false;
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
@@ -823,10 +823,10 @@
       if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;
       if (!G.condMet(g, civ, t.eureka.cond)) return;
       civ.boosts[t.id] = g.turn;
-      var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Science from a Spark
+      var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Knowledge from a Spark
       if (gain) civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
       var mt = G.masteryOf(t.id, false);
-      G.notify(g, civ, { kind: 'tech', text: 'Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Science' : '') + '.', panel: 'tech' });
+      G.notify(g, civ, { kind: 'tech', text: 'Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Knowledge' : '') + '.', panel: 'tech' });
     });
     AU.CIVICS.forEach(function (c) {
       if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
@@ -835,7 +835,7 @@
       var disc2 = G.civFx(g, civ).inspirationDiscount || 0, gain2 = disc2 ? Math.round(G.civicCost(g, civ, c) * disc2) : 0;
       if (gain2) civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
       var mc = G.masteryOf(c.id, true);
-      G.notify(g, civ, { kind: 'civic', text: 'Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Culture' : '') + '.', panel: 'civics' });
+      G.notify(g, civ, { kind: 'civic', text: 'Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Heritage' : '') + '.', panel: 'civics' });
     });
   };
 
@@ -869,8 +869,8 @@
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
   };
 
-  // ---------- Tourism & culture ----------
-  // Tourism per turn: wonders, cultural buildings and natural wonders inside the borders, scaled by era.
+  // ---------- Fame & culture ----------
+  // Fame per turn: wonders, cultural buildings and natural wonders inside the borders, scaled by era.
   G.tourism = function (g, civ) {
     var fx = G.civFx(g, civ), t = 0, sets = G.civSettlements(g, civ.idx);
     sets.forEach(function (s) {
@@ -888,7 +888,7 @@
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
   G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / 100); };
-  // Culture victory: your foreign visitors exceed the domestic tourists of every other living civilization (Industrial era or later).
+  // Heritage victory: your foreign visitors exceed the domestic tourists of every other living civilization (Industrial era or later).
   G.cultureProgress = function (g, civ) {
     var v = G.visitors(g, civ), need = 0;
     g.civs.forEach(function (o) { if (o.alive && !o.minor && o.idx !== civ.idx) need = Math.max(need, G.domesticTourists(g, o)); });

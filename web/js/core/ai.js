@@ -304,7 +304,7 @@
       var fol = R.availableBeliefs(g, 'follower'), fdr = R.availableBeliefs(g, 'founder');
       if (nm && fol.length && fdr.length) R.found(g, civ, nm.id, fol[Math.floor(G.rng(g) * fol.length)].id, fdr[Math.floor(G.rng(g) * fdr.length)].id);
     }
-    if (AU.Great && civ.faith > 250) { // spare Faith recruits the Great Person closest to completion
+    if (AU.Great && civ.faith > 250) { // spare Devotion recruits the Great Person closest to completion
       var GPa = AU.Great, bestT = null, bestF = 0.5; AU.GREAT_ORDER.forEach(function (t) { var f = (GPa.state(civ).pts[t] || 0) / GPa.cost(g, civ, t); if (f > bestF && GPa.canPatronize(g, civ, t, 'faith')) { bestF = f; bestT = t; } });
       if (bestT) GPa.patronize(g, civ, bestT, 'faith');
     }

@@ -45,7 +45,7 @@
     var fx = c.fx || {};
     if (fx.yieldMult) for (var k in fx.yieldMult) out.push('+' + Math.round((fx.yieldMult[k] - 1) * 100) + '% ' + k);
     if (fx.goldPerSettlement) out.push('+' + fx.goldPerSettlement + ' Gold per settlement');
-    if (fx.culturePerSettlement) out.push('+' + fx.culturePerSettlement + ' Culture per settlement');
+    if (fx.culturePerSettlement) out.push('+' + fx.culturePerSettlement + ' Heritage per settlement');
     if (fx.happinessBonus) out.push('+' + fx.happinessBonus + ' Happiness per settlement');
     if (fx.unitCostMult) out.push('units ' + Math.round((1 - fx.unitCostMult) * 100) + '% cheaper');
     if (fx.buildingCostMult) out.push('buildings ' + Math.round((1 - fx.buildingCostMult) * 100) + '% cheaper');
@@ -57,7 +57,7 @@
     if (fx.tileBonus) out.push('farms +1 Food');
     if (fx.navalMoves) out.push('naval units +1 movement');
     if (fx.landBonus) out.push('land units +' + fx.landBonus + ' strength');
-    if (fx.culturePerWonder) out.push('+' + fx.culturePerWonder + ' Culture per wonder');
+    if (fx.culturePerWonder) out.push('+' + fx.culturePerWonder + ' Heritage per wonder');
     if (fx.cityUpgradeCostMult) out.push('town upgrades ' + Math.round((1 - fx.cityUpgradeCostMult) * 100) + '% cheaper');
     if (fx.projectCostMult) out.push('space projects ' + Math.round((1 - fx.projectCostMult) * 100) + '% cheaper');
     if (fx.warWeariness) out.push('less war weariness');
@@ -162,7 +162,7 @@
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
     var nMast = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') !== 0; }).length;
-    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Spark</b>: an in-game condition for each technology. ⭐ <b>Mastery</b>: finish a technology after its Spark fired and you keep its permanent bonus. Finish it without the Spark and the mastery is lost. (Some leaders, like Meiji, also gain Science from Sparks.)</p>';
+    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Spark</b>: an in-game condition for each technology. ⭐ <b>Mastery</b>: finish a technology after its Spark fired and you keep its permanent bonus. Finish it without the Spark and the mastery is lost. (Some leaders, like Meiji, also gain Knowledge from Sparks.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="tech">🌳 View the full technology tree</button><br><br>';
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
@@ -202,7 +202,7 @@
     if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
     var nMastC = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') === 0; }).length;
-    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Insight</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Insight fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Culture from Insights.)</p>';
+    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Insight</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Insight fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Heritage from Insights.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
@@ -267,7 +267,7 @@
     if (AU.Palace) html += '<div class="section"><button class="big" data-action="palace">🏰 Your palace (' + AU.Palace.count(p) + '/' + AU.PALACE_PIECES.length + ' pieces' + (p.palace && p.palace.pending > 0 ? ', a piece is offered!' : '') + ')</button></div>';
     if (AU.Great) {
       var GP = AU.Great, gst = GP.state(p), ppt = GP.pointsPerTurn(g, p);
-      html += '<div class="section"><h3>Great People</h3><p class="stat">Buildings and wonders earn points every turn (Shrines → Prophets, Libraries → Scientists, Workshops → Engineers, Markets → Merchants, Amphitheaters → Artists, Barracks → Generals, Harbors → Admirals). When a bar fills, that Great Person appears in your capital. From half way you can recruit early with Faith or Gold.</p>';
+      html += '<div class="section"><h3>Great People</h3><p class="stat">Buildings and wonders earn points every turn (Shrines → Prophets, Libraries → Scientists, Workshops → Engineers, Markets → Merchants, Amphitheaters → Artists, Barracks → Generals, Harbors → Admirals). When a bar fills, that Great Person appears in your capital. From half way you can recruit early with Devotion or Gold.</p>';
       AU.GREAT_ORDER.forEach(function (t) {
         var T = AU.GREAT_TYPES[t], cost = GP.cost(g, p, t), pts = gst.pts[t] || 0, avail = GP.available(g, p, t), n = gst.count[t] || 0;
         var eta = ppt[t] > 0 ? Math.ceil((cost - pts) / ppt[t]) + ' turns' : (avail ? 'no points yet' : (t === 'prophet' && p.religion ? 'you have a religion' : t === 'prophet' && !p.pantheon ? 'choose a pantheon first' : t === 'prophet' && G.civUnits(g, p.idx).some(function (u) { return AU.UNITS[u.type].great === 'prophet'; }) ? 'your prophet is waiting for orders' : 'no religion left to found'));
@@ -279,7 +279,7 @@
       html += '</div>';
     }
     var cp = G.cultureProgress(g, p);
-    html += '<div class="section"><h3>Tourism &amp; culture victory</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' tourism/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">Win by culture when your foreign visitors exceed the domestic tourists of every rival (Industrial era or later). Tourism comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.</p>' +
+    html += '<div class="section"><h3>Fame &amp; Renown victory</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' Fame/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">Win by Renown when your foreign visitors exceed the domestic tourists of every rival (Industrial era or later). Fame comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.</p>' +
       g.civs.filter(function (o) { return o.alive && o.idx !== p.idx && p.met && p.met[o.idx]; }).map(function (o) { var dom = G.domesticTourists(g, o); return '<div class="row"><div class="grow">' + G.civData(o).name + '</div><small>' + Math.min(100, Math.round(cp.visitors / (dom + 1) * 100)) + '% (' + cp.visitors + '/' + (dom + 1) + ')</small></div>'; }).join('') + '</div>';
     var lux = G.luxuryCount(g, p);
     html += '<div class="section"><h3>Resources</h3><div class="yields">' + (lux.luxuries.map(function (r) { return '<span>' + AU.RESOURCES[r].icon + ' ' + AU.RESOURCES[r].name + '</span>'; }).join('') || '<span class="stat">no luxuries yet (work tiles with luxury resources for happiness)</span>') +
@@ -332,27 +332,27 @@
       '<h3>Towns and Cities</h3><p>Your capital is a City. New settlements are Towns. Towns have no production queue: their production becomes gold, and you buy buildings and units in them with gold. Towns grow by themselves. Once a Town reaches pop 5 you can <b>specialize</b> it (Farming, Mining, Trade, Fort, Urban Center): it stops growing and sends surplus food to your nearest City. Pay gold to <b>upgrade</b> a Town into a City whenever you want a real production hub.</p>' +
       '<h3>Growth and tiles</h3><p>There are no builders. Every time a settlement grows you pick a tile within three rings; the new citizen claims and improves it automatically (farm, mine, fishing boats, pasture, plantation…). Tiles with luxury resources give happiness, strategic resources unlock units such as Swordbearers (Iron) or Chevaliers (Horses).</p>' +
       '<h3>Units</h3><p>Tap a unit to select it, tap a highlighted tile to move (far tiles create multi-turn routes). Tap a red tile to attack: the estimated damage is shown, tap again to confirm. Ranged units attack from a distance without taking damage. Melee units capture settlements when their HP reaches 0. Units heal when they do not move; Fortify to defend and heal faster. One military and one civilian unit per tile.</p>' +
-      '<h3>Research and civics</h3><p>Science drives the technology tree, culture drives civics. Civics unlock governments (Autocracy, Republic, Monarchy, Democracy…) which you can switch between at any time from the Civics panel.</p>' +
+      '<h3>Research and civics</h3><p>Knowledge drives the technology tree, culture drives civics. Civics unlock governments (Autocracy, Republic, Monarchy, Democracy…) which you can switch between at any time from the Civics panel.</p>' +
       '<h3>Diplomacy</h3><p>Other leaders remember your wars. Declare war from the Diplomacy panel; AI leaders will offer or accept peace when a war goes badly for them. Independent camps (🏕️) spawn raiders: disperse them for gold.</p>' +
-      '<h3>Winning</h3><p><b>Domination</b>: hold every rival\'s original capital. <b>Science</b>: research Spaceflight and complete the three space projects in your capital. <b>Score</b>: highest score when the turn limit is reached.</p>' +
+      '<h3>Winning</h3><p><b>Domination</b>: hold every rival\'s original capital. <b>Knowledge</b>: research Spaceflight and complete the three space projects in your capital. <b>Score</b>: highest score when the turn limit is reached.</p>' +
       '<h3>Controls</h3><p>Drag to pan, pinch or scroll to zoom. Tap the yields at the top to open panels. Enter = end turn, N = next unit, F = fortify, Space = skip. The game autosaves every turn.</p></div>';
     return { title: 'How to play', html: html };
   };
   // ---------- Religion ----------
   P.render_religion = function (app, g, data) {
     var Rl = AU.Religion, p = G.player(g), y = G.civYields(g, p), html = '', sel = app.panelData;
-    html += '<div class="section"><div class="yields"><span class="faith">🕊️ ' + Math.floor(p.faith) + ' Faith</span><span>+' + (y.faith || 0) + ' per turn</span></div>';
-    html += '<p class="stat">Faith comes from Shrines, Temples, pantheon beliefs, holy cities and some wonders. Spend it on a pantheon (' + Rl.PANTHEON_COST + '), enhancing your religion (' + Rl.enhanceCost(g) + '), recruiting Great People early, and religious units bought in settlements with a Shrine or Temple.</p></div>';
+    html += '<div class="section"><div class="yields"><span class="faith">🕊️ ' + Math.floor(p.faith) + ' Devotion</span><span>+' + (y.faith || 0) + ' per turn</span></div>';
+    html += '<p class="stat">Devotion comes from Shrines, Temples, pantheon beliefs, holy cities and some wonders. Spend it on a pantheon (' + Rl.PANTHEON_COST + '), enhancing your religion (' + Rl.enhanceCost(g) + '), recruiting Great People early, and religious units bought in settlements with a Shrine or Temple.</p></div>';
     // pantheon
     if (!p.pantheon) {
-      html += '<div class="section"><h3>Pantheon</h3>' + (Rl.canChoosePantheon(g, p) ? '<p class="stat">Choose one belief. It is yours for the whole game.</p>' : '<p class="stat">Needs ' + Rl.PANTHEON_COST + ' Faith.</p>');
+      html += '<div class="section"><h3>Pantheon</h3>' + (Rl.canChoosePantheon(g, p) ? '<p class="stat">Choose one belief. It is yours for the whole game.</p>' : '<p class="stat">Needs ' + Rl.PANTHEON_COST + ' Devotion.</p>');
       Rl.availablePantheons(g).forEach(function (b) { html += '<div class="row"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small primary" data-action="pantheon" data-id="' + b.id + '" ' + (Rl.canChoosePantheon(g, p) ? '' : 'disabled') + '>Choose</button></div>'; });
       html += '</div>';
     } else html += '<div class="section"><h3>Pantheon: ' + AU.BELIEF_BY_ID[p.pantheon].name + '</h3><p class="stat">' + AU.BELIEF_BY_ID[p.pantheon].desc + '</p></div>';
     var rel = Rl.rel(g, p.religion);
     if (!rel && p.pantheon) {
       var slotsLeft = Rl.maxReligions(g) - Rl.religionsFounded(g);
-      html += '<div class="section"><h3>Found a religion</h3><p class="stat">' + (slotsLeft > 0 ? slotsLeft + ' religion' + (slotsLeft > 1 ? 's' : '') + ' can still be founded in this world. Religions are founded by a <b>Great Prophet</b> (earned with Great Prophet points from Shrines, Temples and Faith; see the Empire panel). Move the prophet into the settlement that should become the Holy City, pick a name, one Follower belief and one Founder belief, then found it.' : 'Every religion of this world has already been founded.') + (Rl.prophetFor(g, p) ? '<br><b style="color:var(--gold)">' + Rl.prophetFor(g, p).name + ' is ready in ' + G.settlementAt(g, Rl.prophetFor(g, p).tile).name + '.</b>' : (p.religion ? '' : '<br>No Great Prophet in a settlement yet.')) + '</p>';
+      html += '<div class="section"><h3>Found a religion</h3><p class="stat">' + (slotsLeft > 0 ? slotsLeft + ' religion' + (slotsLeft > 1 ? 's' : '') + ' can still be founded in this world. Religions are founded by a <b>Great Prophet</b> (earned with Great Prophet points from Shrines, Temples and Devotion; see the Empire panel). Move the prophet into the settlement that should become the Holy City, pick a name, one Follower belief and one Founder belief, then found it.' : 'Every religion of this world has already been founded.') + (Rl.prophetFor(g, p) ? '<br><b style="color:var(--gold)">' + Rl.prophetFor(g, p).name + ' is ready in ' + G.settlementAt(g, Rl.prophetFor(g, p).tile).name + '.</b>' : (p.religion ? '' : '<br>No Great Prophet in a settlement yet.')) + '</p>';
       if (slotsLeft > 0) {
         html += '<p><b>Name</b></p><div class="actions">' + Rl.availableNames(g).map(function (n) { return '<button class="small' + (sel.relName === n.id ? ' primary' : '') + '" data-action="relpick" data-what="relName" data-id="' + n.id + '">' + n.icon + ' ' + n.name + '</button>'; }).join('') + '</div>';
         html += '<p><b>Follower belief</b> (every settlement of the religion)</p>' + Rl.availableBeliefs(g, 'follower').map(function (b) { return '<div class="row' + (sel.relFollower === b.id ? ' selected' : '') + '"><div class="grow"><b>' + b.name + '</b><small>' + b.desc + '</small></div><button class="small' + (sel.relFollower === b.id ? ' primary' : '') + '" data-action="relpick" data-what="relFollower" data-id="' + b.id + '">' + (sel.relFollower === b.id ? 'Chosen' : 'Pick') + '</button></div>'; }).join('');
@@ -371,7 +371,7 @@
         html += '<br><button class="big primary" data-action="enhancerel" ' + (Rl.canEnhance(g, p) && sel.relEnh && sel.relFollower2 ? '' : 'disabled') + '>Enhance ' + rel.name + '</button>';
       }
       var vp = Rl.victoryProgress(g, p);
-      if (vp) html += '<h3>Religious victory</h3><p class="stat">Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
+      if (vp) html += '<h3>Devout victory</h3><p class="stat">Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
       html += '</div>';
     }
     // world religions
@@ -425,7 +425,7 @@
       case 'pantheon': if (AU.Religion.choosePantheon(g, p, d.id)) { app.toast('Pantheon: ' + AU.BELIEF_BY_ID[d.id].name + '.'); app.refreshPanel(); app.refreshHud(); } break;
       case 'foundrel': { var pdx = app.panelData; if (AU.Religion.found(g, p, pdx.relName, pdx.relFollower, pdx.relFounder)) { app.toast('Religion founded!'); app.refreshPanel(); app.refreshHud(); app.showQuotes(); } break; }
       case 'enhancerel': { var pd2 = app.panelData; if (AU.Religion.enhance(g, p, pd2.relEnh, pd2.relFollower2)) { app.toast('Religion enhanced.'); app.refreshPanel(); app.refreshHud(); } break; }
-      case 'buyfaith': s = g.settlements[+d.id]; if (s) { var ru = AU.Religion.buyUnit(g, s, d.item); if (ru) { app.toast(ru.name + ' purchased with Faith.'); app.refreshPanel(); app.refreshHud(); } } break;
+      case 'buyfaith': s = g.settlements[+d.id]; if (s) { var ru = AU.Religion.buyUnit(g, s, d.item); if (ru) { app.toast(ru.name + ' purchased with Devotion.'); app.refreshPanel(); app.refreshHud(); } } break;
       case 'pediasearch': break;
       case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.refreshPanel(); app.refreshHud(); break;
       case 'policyremove': G.setPolicies(g, p, (p.policies || []).filter(function (x) { return x !== d.id; })); app.refreshPanel(); app.refreshHud(); break;

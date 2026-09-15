@@ -36,16 +36,16 @@
     bomber:      { name: 'Heavy Bomber',      cls: 'air',      cost: 520, moves: 8,  strength: 45, ranged: 85, range: 2, tech: 'advanced_flight', resource: 'oil', icon: '🛩️', flying: true, sight: 3, vsSettlements: 15, desc: 'Heavy bomber: flies over anything, +15 vs settlements. Cannot capture.' },
     jet_fighter: { name: 'Jet Interceptor', cls: 'air',      cost: 680, moves: 10, strength: 90, ranged: 95, range: 2, tech: 'jet_engines', resource: 'oil', icon: '🛫', flying: true, sight: 4, desc: 'Fast jet: flies over anything, attacks from 2 tiles. Cannot capture.' },
     caravan:     { name: 'Caravan',     cls: 'civilian', caravan: true, cost: 60, moves: 2, strength: 0, civic: 'foreign_trade', icon: '🐪', desc: 'Walks into a Free City\'s land and opens a trade route: Gold every turn and +3 Ties while it stays. One route per free city; you can keep one caravan plus one per Market or Harbor.' },
-    great_prophet:   { name: 'Great Prophet',   cls: 'civilian', great: 'prophet',   cost: 0, moves: 3, strength: 0, icon: '🕊️', desc: 'Founds a religion in one of your settlements. Earned with Great Prophet points (Shrines, Temples, Faith).' },
+    great_prophet:   { name: 'Great Prophet',   cls: 'civilian', great: 'prophet',   cost: 0, moves: 3, strength: 0, icon: '🕊️', desc: 'Founds a religion in one of your settlements. Earned with Great Prophet points (Shrines, Temples, Devotion).' },
     great_scientist: { name: 'Great Scientist', cls: 'civilian', great: 'scientist', cost: 0, moves: 3, strength: 0, icon: '🔬', desc: 'Completes the technology being researched. Earned with Great Scientist points (Libraries, Universities, Research Labs).' },
     great_engineer:  { name: 'Great Engineer',  cls: 'civilian', great: 'engineer',  cost: 0, moves: 3, strength: 0, icon: '⚙️', desc: 'Adds a big burst of Production to a City. Earned with Great Engineer points (Workshops, Factories, Power Plants).' },
     great_merchant:  { name: 'Great Merchant',  cls: 'civilian', great: 'merchant',  cost: 0, moves: 3, strength: 0, icon: '💰', desc: 'Brings Gold and an envoy. Earned with Great Merchant points (Markets, Banks, Stock Exchanges).' },
-    great_artist:    { name: 'Great Artist',    cls: 'civilian', great: 'artist',    cost: 0, moves: 3, strength: 0, icon: '🎨', desc: 'Creates a Great Work: +3 Culture and +3 Tourism in a settlement. Earned with Great Artist points (Amphitheaters, Museums).' },
+    great_artist:    { name: 'Great Artist',    cls: 'civilian', great: 'artist',    cost: 0, moves: 3, strength: 0, icon: '🎨', desc: 'Creates a Great Work: +3 Heritage and +3 Fame in a settlement. Earned with Great Artist points (Amphitheaters, Museums).' },
     great_general:   { name: 'Great General',   cls: 'civilian', great: 'general',   cost: 0, moves: 3, strength: 0, icon: '⚔️', desc: '+5 Strength to your land units within 2 tiles. Earned with Great General points (Barracks, Castles, Military Academies).' },
     great_admiral:   { name: 'Great Admiral',   cls: 'civilian', great: 'admiral',   cost: 0, moves: 4, strength: 0, icon: '⚓', desc: '+5 Strength and +1 Movement to your naval units within 2 tiles. Earned with Great Admiral points (Lighthouses, Harbors, Shipyards).' },
-    missionary:  { name: 'Preacher',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Faith in a settlement with a Shrine.' },
-    apostle:     { name: 'Evangelist',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Faith in a settlement with a Temple.' },
-    inquisitor:  { name: 'Faith Warden',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Faith in a settlement with a Temple.' }
+    missionary:  { name: 'Preacher',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Devotion in a settlement with a Shrine.' },
+    apostle:     { name: 'Evangelist',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Devotion in a settlement with a Temple.' },
+    inquisitor:  { name: 'Faith Warden',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Devotion in a settlement with a Temple.' }
   };
   // The barbarian roster by era index
   AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank'], ['mech_infantry', 'modern_armor']];
@@ -102,8 +102,8 @@
     if (m.healBonus) out.push('+' + m.healBonus + ' HP healed per turn');
     if (m.healOnKill) out.push('heals ' + m.healOnKill + ' HP on a kill');
     if (m.goldOnKill) out.push('+' + m.goldOnKill + ' Gold per kill');
-    if (m.cultureOnKill) out.push('+' + m.cultureOnKill + ' Culture per kill');
-    if (m.scienceOnKill) out.push('+' + m.scienceOnKill + ' Science per kill');
+    if (m.cultureOnKill) out.push('+' + m.cultureOnKill + ' Heritage per kill');
+    if (m.scienceOnKill) out.push('+' + m.scienceOnKill + ' Knowledge per kill');
     if (m.productionOnKill) out.push('+' + m.productionOnKill + ' Production to the nearest settlement per kill');
     if (m.halfRetaliation) out.push('takes only half damage back when attacking');
     if (m.noRetaliation) out.push('takes no damage back when attacking');

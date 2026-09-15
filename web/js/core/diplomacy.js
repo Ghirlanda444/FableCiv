@@ -29,7 +29,7 @@
     landgrab: { name: 'Manifest Destiny', desc: 'Wants room to grow. Dislikes anyone who settles close to their borders.', line: 'The land is wide, but not wide enough for two of us. Keep your distance.' },
     scholar:  { name: 'Enlightened', desc: 'Admires civilizations ahead in science; looks down on backward ones.', line: 'Knowledge is the only empire that lasts. What have you discovered?' },
     patron:   { name: 'Patron of the Arts', desc: 'Likes civilizations rich in culture and wonders; bored by those without.', line: 'A people is judged by what it builds. I hope to see wonders in your lands.' },
-    devout:   { name: 'True Faith', desc: 'Likes those who follow their religion, resents those who spread another one into their settlements.', line: 'The heavens favour us. Walk with us in faith, and we shall be friends.' },
+    devout:   { name: 'True Devotion', desc: 'Likes those who follow their religion, resents those who spread another one into their settlements.', line: 'The heavens favour us. Walk with us in faith, and we shall be friends.' },
     merchant: { name: 'Peace and Plenty', desc: 'Values peace and trade. Dislikes warmongers and those who denounce others.', line: 'Prosperity needs peace. Trade with us and both our peoples will flourish.' }
   };
   D.agenda = function (civ) {

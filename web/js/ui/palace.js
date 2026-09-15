@@ -78,7 +78,7 @@
     var p = G.player(g), st = Pal.state(p), av = Pal.available(p), styles = Pal.styles(g, p), fx = Pal.fx(p), html = '';
     var sel = app.panelData && app.panelData.piece ? app.panelData.piece : (av[0] ? av[0].id : null), selStyle = app.panelData && app.panelData.style ? app.panelData.style : styles[0];
     html += '<div class="section"><canvas id="palace-cv" width="640" height="400" style="width:100%;max-width:640px;border-radius:12px;border:1px solid var(--line);display:block;margin:0 auto"></canvas>';
-    html += '<p class="stat">' + Pal.count(p) + ' of ' + AU.PALACE_PIECES.length + ' pieces built · +' + fx.capitalCulture + ' 🎭 Culture in the capital, +' + fx.happiness + ' 😊 empire-wide (one per 4 pieces), +' + fx.tourism + ' 🧳 tourism. Your people offer a new piece when a new era begins, when you complete a wonder, and every 20 turns of contentment.</p></div>';
+    html += '<p class="stat">' + Pal.count(p) + ' of ' + AU.PALACE_PIECES.length + ' pieces built · +' + fx.capitalCulture + ' 🎭 Heritage in the capital, +' + fx.happiness + ' 😊 empire-wide (one per 4 pieces), +' + fx.tourism + ' 🧳 tourism. Your people offer a new piece when a new era begins, when you complete a wonder, and every 20 turns of contentment.</p></div>';
     if (st.pending > 0 && av.length) {
       html += '<div class="section"><h3>🏰 Your people offer to improve the palace' + (st.pending > 1 ? ' (' + st.pending + ' pieces)' : '') + '</h3><p class="stat">Pick a piece and an architectural style. Styles can be mixed freely.</p><div class="tabs">';
       av.forEach(function (pc) { html += '<button class="small ' + (pc.id === sel ? 'on' : '') + '" data-action="palacepick" data-piece="' + pc.id + '" data-style="' + selStyle + '">' + pc.name + '</button>'; });

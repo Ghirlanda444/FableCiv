@@ -1,4 +1,4 @@
-// Great People rules: points per turn, recruiting, patronage with Faith or Gold, and what each one does.
+// Great People rules: points per turn, recruiting, patronage with Devotion or Gold, and what each one does.
 (function (AU) {
   var G = AU.G;
   var GP = AU.Great = {};
@@ -49,7 +49,7 @@
       if (st.pts[t] >= cost) { st.pts[t] -= cost; GP.recruit(g, civ, t); }
     });
   };
-  // Patronage: pay the missing points with Faith (×3) or Gold (×6), allowed from half way.
+  // Patronage: pay the missing points with Devotion (×3) or Gold (×6), allowed from half way.
   GP.patronCost = function (g, civ, type, currency) { var st = GP.state(civ), missing = Math.max(0, GP.cost(g, civ, type) - (st.pts[type] || 0)); return Math.max(1, Math.round(missing * (currency === 'gold' ? 6 : 3))); };
   GP.canPatronize = function (g, civ, type, currency) {
     if (!GP.available(g, civ, type)) return false;
@@ -59,7 +59,7 @@
   GP.patronize = function (g, civ, type, currency) {
     if (!GP.canPatronize(g, civ, type, currency)) return null;
     var price = GP.patronCost(g, civ, type, currency); if (currency === 'gold') civ.gold -= price; else civ.faith -= price;
-    GP.state(civ).pts[type] = 0; return GP.recruit(g, civ, type, 'with ' + (currency === 'gold' ? 'Gold' : 'Faith'));
+    GP.state(civ).pts[type] = 0; return GP.recruit(g, civ, type, 'with ' + (currency === 'gold' ? 'Gold' : 'Devotion'));
   };
   // ---------- using a Great Person ----------
   GP.typeOf = function (u) { return u.greatType || (AU.UNITS[u.type] && AU.UNITS[u.type].great) || null; };
@@ -72,7 +72,7 @@
       case 'prophet':
         if (R && !civ.religion && R.religionsFounded(g) < R.maxReligions(g)) out.push({ action: 'greatfound', label: '🕊️ Found a religion here', ok: !!own && !!civ.pantheon, why: !own ? 'Move into one of your settlements.' : !civ.pantheon ? 'Choose a pantheon first (Religion panel).' : '' });
         else if (civ.religion) out.push({ action: 'greatuse', label: '🕊️ Convert ' + (s ? s.name : 'this settlement') + ' to ' + R.name(g, civ.religion), ok: !!s, why: 'Move into a settlement.' });
-        else out.push({ action: 'greatuse', label: '🕊️ Retire for ' + GP.burst(g, civ, 120) + ' Faith', ok: true, why: '' });
+        else out.push({ action: 'greatuse', label: '🕊️ Retire for ' + GP.burst(g, civ, 120) + ' Devotion', ok: true, why: '' });
         break;
       case 'scientist': { var cur = civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null, cheapest = G.availableTechs(civ).sort(function (a, b) { return a.cost - b.cost; })[0]; var tech = cur || cheapest;
         out.push({ action: 'greatuse', label: '🔬 Discover ' + (tech ? tech.name : 'a technology') + ' now', ok: inside && !!tech, why: !inside ? 'Move inside your borders.' : !tech ? 'Nothing left to research.' : '' }); break; }
@@ -91,7 +91,7 @@
     switch (type) {
       case 'prophet':
         if (civ.religion && s) { s.pressure = s.pressure || {}; s.pressure[civ.religion] = (s.pressure[civ.religion] || 0) + 300; s.religion = civ.religion; msg = s.name + ' now follows ' + R.name(g, civ.religion) + '.'; }
-        else { civ.faith += GP.burst(g, civ, 120); msg = u.name + ' retires; +' + GP.burst(g, civ, 120) + ' Faith.'; }
+        else { civ.faith += GP.burst(g, civ, 120); msg = u.name + ' retires; +' + GP.burst(g, civ, 120) + ' Devotion.'; }
         break;
       case 'scientist': { var tech = (civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null) || G.availableTechs(civ).sort(function (a, b) { return a.cost - b.cost; })[0]; if (!tech) return false; G.learnTech(g, civ, tech.id); msg = u.name + ' discovers ' + tech.name + '!'; break; }
       case 'engineer': { var amt = GP.burst(g, civ, 150); if (s.isCity && s.queue.length) { var q = s.queue[0], key = q.kind + ':' + q.id; s.progress[key] = (s.progress[key] || 0) + amt; msg = u.name + ' adds ' + amt + ' Production in ' + s.name + '.'; } else { civ.gold += amt; msg = u.name + ' brings ' + amt + ' Gold.'; } break; }

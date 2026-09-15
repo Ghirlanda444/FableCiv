@@ -27,7 +27,7 @@
     if (civ.isPlayer) G.log(g, 'The ' + pc.name + ' of the palace was completed in the ' + AU.PALACE_STYLES[style].name + ' style.', civ.idx);
     return true;
   };
-  // Bonuses: +1 Culture in the capital per piece, +1 Happiness empire-wide per 4 pieces, tourism per piece.
+  // Bonuses: +1 Heritage in the capital per piece, +1 Happiness empire-wide per 4 pieces, tourism per piece.
   P.fx = function (civ) { var n = P.count(civ); return { capitalCulture: n, happiness: Math.floor(n / 4), tourism: n }; };
   // Called once per turn per civilization (from G.processCiv).
   P.turn = function (g, civ) {
