@@ -307,6 +307,69 @@
  },
  {
   "kind": "units",
+  "id": "great_prophet",
+  "file": "units/great_prophet.png",
+  "name": "Great Prophet",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_scientist",
+  "file": "units/great_scientist.png",
+  "name": "Great Scientist",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_engineer",
+  "file": "units/great_engineer.png",
+  "name": "Great Engineer",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_merchant",
+  "file": "units/great_merchant.png",
+  "name": "Great Merchant",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_artist",
+  "file": "units/great_artist.png",
+  "name": "Great Artist",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_general",
+  "file": "units/great_general.png",
+  "name": "Great General",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "great_admiral",
+  "file": "units/great_admiral.png",
+  "name": "Great Admiral",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
   "id": "missionary",
   "file": "units/missionary.png",
   "name": "Missionary",

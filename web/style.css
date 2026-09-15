@@ -226,3 +226,13 @@ button.gold { border-color: var(--gold); background: #4a3a10; }
 .tn.locked { opacity: .55; }
 .tn.sel { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(242,193,78,.45), 0 2px 8px rgba(0,0,0,.5); opacity: 1; z-index: 2; }
 .tn.path { border-color: var(--gold); opacity: 1; }
+
+/* City manager map */
+.citymap-wrap { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #0c1020; margin: 6px 0; }
+.citymap { display: block; width: 100%; }
+.citymap-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 4px 0 8px; }
+.citymap-legend .lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 2px solid; }
+.lg-worked { border-color: #f2c14e; background: #3a3020; } .lg-owned { border-color: rgba(242,193,78,.45); background: transparent; } .lg-cand { border-color: #7ed957; background: #1e3a1e; } .lg-foreign { border-color: #333; background: rgba(20,20,30,.7); }
+details.rules { margin-top: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 6px 10px; background: rgba(255,255,255,.03); }
+details.rules summary { cursor: pointer; font-weight: 600; color: var(--gold); font-size: 14px; }
+details.rules .help p { font-size: 13px; margin: 8px 0; }

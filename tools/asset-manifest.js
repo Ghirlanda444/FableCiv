@@ -8,7 +8,8 @@ const UU_LOOKS = require('./uu-looks');
 const AU = globalThis.AU;
 const STYLE = 'Cute chibi 3D game render in the style of Clash of Clans and Kingshot: chunky exaggerated proportions, smooth rounded 3D shapes with glossy toy-like shading, soft studio lighting with a warm rim light and subtle ambient occlusion, bright saturated colours, cheerful and readable, isolated on a plain white background, no text, no watermark, no frame.';
 const SCENE_STYLE = 'Colourful 3D-rendered cartoon game art like Clash of Clans and Kingshot: chunky rounded shapes with soft glossy shading and subtle ambient occlusion, bright saturated colours, cheerful, no text, no watermark.';
-const UNIT_DESC = {
+const GREAT_DESC = { great_prophet: 'a wise robed prophet with a long beard, a staff and a glowing halo, arms raised', great_scientist: 'a scientist in a long coat with round glasses holding a scroll and a brass telescope', great_engineer: 'an engineer with a leather apron, rolled-up sleeves, a big wrench and a blueprint', great_merchant: 'a rich merchant in fine silk robes with a fat coin purse and a treasure chest', great_artist: 'an artist with a beret, a palette and a big paintbrush, paint splashes around', great_general: 'a heroic general in a grand cloak and plumed helmet holding a banner and a baton', great_admiral: 'an admiral in a naval coat and bicorne hat holding a spyglass and a ship\'s wheel' };
+const UNIT_DESC = Object.assign({}, GREAT_DESC, {
   settler: 'a pioneer family with an ox-drawn covered wagon and bundles',
   scout: 'a lean scout in leather with a bow on the back, looking into the distance',
   warrior: 'a bronze-age warrior with a wooden club and a hide shield',
@@ -43,7 +44,7 @@ const UNIT_DESC = {
   fighter: 'a World War One biplane fighter aircraft in flight, seen from the side and slightly above, no people',
   bomber: 'a World War Two four-engine heavy bomber aircraft in flight, seen from the side and slightly above, no people',
   jet_fighter: 'a modern jet fighter aircraft in flight, seen from the side and slightly above, no people'
-};
+});
 const ERA_HINT = ['ancient', 'classical', 'medieval', 'renaissance', 'industrial', 'modern', 'atomic', 'futuristic'];
 function eraOf(tech, civic) { if (tech && AU.TECH_BY_ID[tech]) return ERA_HINT[AU.TECH_BY_ID[tech].era]; if (civic && AU.CIVIC_BY_ID[civic]) return ERA_HINT[AU.CIVIC_BY_ID[civic].era]; return 'ancient'; }
 const items = [];
@@ -93,16 +94,17 @@ for (const [sid, S] of Object.entries(AU.PALACE_STYLES)) for (const [pid, d] of 
 // Per-culture variants of every unit and building (Civ 4 style art groups)
 for (const [cid, cu] of Object.entries(AU.CULTURES)) {
   for (const [id, u] of Object.entries(AU.UNITS)) {
-    if (isVehicle(id)) continue;
+    if (isVehicle(id) || u.great) continue; // vehicles and great people have one shared picture
     const era = unitEra(id), modern = era >= 4;
     const outfit = modern ? `wearing a period-correct ${UNIFORM[era] || UNIFORM[7]} (absolutely no ancient armour, no tunic, no shield) with only a small ${cu.name} detail such as a badge or sash` : `equipment and clothing in ${cu.gear}`;
     items.push({ kind: 'units/' + cid, id, name: u.name + ' (' + cu.name + ')', size: '512x512', prompt: `Chibi 3D game character, exactly one single character alone in the picture (no second person, no companion, no group): a ${cu.name} ${UNIT_DESC[id] || u.name}, with ${cu.people}, ${outfit}, big head and small stocky body, full figure visible from head to toe, standing on the ground, 3/4 view facing left, small in the frame with empty space around it. ${STYLE}` });
   }
   for (const [id, b] of Object.entries(AU.BUILDINGS)) if (!b.noBuild || id === 'palace') items.push({ kind: 'buildings/' + cid, id, name: b.name + ' (' + cu.name + ')', size: '512x512', prompt: `A single cute cartoon ${eraOf(b.tech, b.civic)} ${b.name} building for a city-builder game in ${cu.arch}, chunky and rounded, seen from a 3/4 bird's-eye view, whole building visible with empty space around it. ${STYLE}` });
 }
-const CARD_STYLE = 'Cute chibi 3D-rendered mobile strategy game illustration, chunky rounded shapes with glossy toy-like shading, bright saturated colours, cheerful, a small scene filling the whole square. Absolutely no text, no words, no letters, no numbers, no titles, no logos, no badges, no watermark, no border.';
-for (const t of AU.TECHS) items.push({ kind: 'techs', id: t.id, name: t.name, size: '512x512', nobg: true, prompt: `Square game card picture for the technology "${t.name}" (${ERA_HINT[t.era]} era): a tiny chibi person or object that represents ${t.name}. ${CARD_STYLE}` });
-for (const c of AU.CIVICS) items.push({ kind: 'civics', id: c.id, name: c.name, size: '512x512', nobg: true, prompt: `Square game card picture for the civic "${c.name}" (${ERA_HINT[c.era]} era): a tiny chibi scene of people that represents ${c.name}. ${CARD_STYLE}` });
+const CARD_STYLE = 'Cute chibi 3D-rendered mobile strategy game illustration in the style of Clash of Clans and Kingshot: chunky rounded shapes with glossy toy-like shading, big heads and big eyes, bright saturated colours, cheerful, one clear subject large in the centre on a simple soft background, the scene fills the whole square. Absolutely no text, no words, no letters, no numbers, no titles, no logos, no badges, no watermark, no border.';
+const CARD_LOOKS = require('./card-looks.js');
+for (const t of AU.TECHS) items.push({ kind: 'techs', id: t.id, name: t.name, size: '512x512', nobg: true, prompt: `Square game card picture: ${CARD_LOOKS.techs[t.id] || 'a tiny chibi person or object that represents ' + t.name} (${ERA_HINT[t.era]} era look). ${CARD_STYLE}` });
+for (const c of AU.CIVICS) items.push({ kind: 'civics', id: c.id, name: c.name, size: '512x512', nobg: true, prompt: `Square game card picture: ${CARD_LOOKS.civics[c.id] || 'a tiny chibi scene of people that represents ' + c.name} (${ERA_HINT[c.era]} era look). ${CARD_STYLE}` });
 // Title screen key art (Kingshot-style scene) in both orientations, and logo candidates (the best spelled one is used).
 const KEYART_SCENE = 'a joyful cartoon battle scene in front of a big chunky fairy-tale castle on a green hill under a bright blue sky with fluffy clouds: a chibi Roman legionary with a red shield, a chibi Japanese samurai, a chibi medieval knight on a white horse, a chibi Egyptian queen, a chibi Chinese emperor in yellow robes, a chibi Viking with an axe, a chibi Aztec eagle warrior and a chibi Mongol horse archer charging, cheering, laughing and waving colourful banners together, big heads, tiny bodies, huge expressive eyes, confetti, sparkles and fireworks, warm golden sunlight, lots of energy, depth of field';
 items.push({ kind: 'keyart', id: 'title_landscape', name: 'Title key art (landscape)', size: '1536x864', nobg: true, hires: true, prompt: `Wide cinematic key art for a cute chibi civilization strategy game, ${KEYART_SCENE}, the characters fill the lower two thirds and the sky stays open at the top. Absolutely no text, no letters, no logo, no user interface, no watermark, no border. ${SCENE_STYLE}` });

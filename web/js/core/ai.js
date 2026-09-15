@@ -258,11 +258,26 @@
       if (!g.units[u.id]) return;
       if (u.type === 'settler') return AI.moveSettler(g, civ, u);
       if (AU.UNITS[u.type].religious) return AI.moveReligious(g, civ, u);
+      if (AU.UNITS[u.type].great) return AI.moveGreat(g, civ, u);
       if (!G.isMilitary(u)) return;
       if (AU.UNITS[u.type].cls === 'recon' && g.turn < 80) return AI.explore(g, civ, u);
       if (U.isNaval(u)) return AI.moveNaval(g, civ, u);
       AI.moveMilitary(g, civ, u, garrisoned, sets);
     });
+  };
+  // ---------- Great People: prophets found (handled in AI.religion), the rest act at once or walk home ----------
+  AI.moveGreat = function (g, civ, u) {
+    var GP = AU.Great, type = GP.typeOf(u), s = G.settlementAt(g, u.tile), own = s && s.civ === civ.idx, cap = civ.capital && g.settlements[civ.capital];
+    u.aiWait = (u.aiWait || 0) + 1;
+    function useNow() { var o = GP.options(g, u).filter(function (x) { return x.action === 'greatuse' && x.ok; })[0]; if (o) { GP.use(g, u); return true; } return false; }
+    function goHome() { if (cap && u.tile !== cap.tile) { if (!U.orderMove(g, u, cap.tile) && u.aiWait > 3) useNow(); } else if (u.aiWait > 3) useNow(); }
+    if (type === 'prophet') { if (!own) goHome(); else if (civ.religion || AU.Religion.religionsFounded(g) >= AU.Religion.maxReligions(g)) GP.use(g, u); return; } // founding itself happens in AI.religion
+    if (type === 'general' || type === 'admiral') { if (!own) goHome(); else { var hurt = G.civUnits(g, civ.idx).filter(function (o) { return o.id !== u.id && o.hp < 50 && G.dist(g.tiles[o.tile], g.tiles[u.tile]) <= 2; }).length; if (hurt >= 2) GP.use(g, u); } return; }
+    if (type === 'engineer' && own && u.aiWait < 6) { // walk to a city building a wonder when it is close and reachable
+      var city = G.civSettlements(g, civ.idx).filter(function (c) { return c.isCity && c.id !== s.id && c.queue.length && (c.queue[0].kind === 'wonder' || c.queue[0].kind === 'national') && G.dist(g.tiles[c.tile], g.tiles[u.tile]) <= 8 && !U.tileBlocked(g, u, c.tile, true); }).sort(function (a, b) { return G.dist(g.tiles[a.tile], g.tiles[u.tile]) - G.dist(g.tiles[b.tile], g.tiles[u.tile]); })[0];
+      if (city && U.orderMove(g, u, city.tile)) return;
+    }
+    if (!useNow()) goHome();
   };
   // ---------- Religion ----------
   AI.religion = function (g, civ) {
@@ -278,7 +293,7 @@
         opts.sort(function (x, y) { return score[y.id] - score[x.id]; }); R.choosePantheon(g, civ, opts[0].id);
       }
     }
-    if (R.canFound(g, civ) && (piety > 0.3 || G.rng(g) < 0.3)) {
+    if (R.canFound(g, civ)) {
       var names = R.availableNames(g), pref = AU.RELIGION_PREF[civ.civId], nm = names.filter(function (n) { return n.id === pref; })[0] || names[Math.floor(G.rng(g) * names.length)];
       var fol = R.availableBeliefs(g, 'follower'), fdr = R.availableBeliefs(g, 'founder');
       if (nm && fol.length && fdr.length) R.found(g, civ, nm.id, fol[Math.floor(G.rng(g) * fol.length)].id, fdr[Math.floor(G.rng(g) * fdr.length)].id);

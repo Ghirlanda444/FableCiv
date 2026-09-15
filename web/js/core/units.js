@@ -229,6 +229,7 @@
     if (fx.nearHomeBonus && civ) { var nearS = G.civSettlements(g, civ.idx).some(function (st) { return G.dist(g.tiles[st.tile], t) <= 3; }); if (nearS) str += fx.nearHomeBonus; }
     if (fx.capitalRadiusCombat && civ && civ.capital && g.settlements[civ.capital] && G.dist(g.tiles[g.settlements[civ.capital].tile], t) <= fx.capitalRadiusCombat.radius) str += fx.capitalRadiusCombat.bonus;
     if (land && fx.landBonus) str += fx.landBonus;
+    if (AU.Great && G.isMilitary(u)) str += AU.Great.aura(g, u, !land);
     if (!land && fx.navalBonus) str += fx.navalBonus;
     if (cls === 'cavalry' && fx.cavalryBonus) str += fx.cavalryBonus;
     if ((cls === 'melee' || cls === 'antcav' || cls === 'cavalry') && fx.meleeBonus) str += fx.meleeBonus;

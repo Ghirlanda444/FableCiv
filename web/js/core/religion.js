@@ -43,7 +43,9 @@
     G.log(g, G.civData(civ).name + ' founded the pantheon ' + AU.BELIEF_BY_ID[id].name + '.', civ.idx);
     return true;
   };
-  R.canFound = function (g, civ) { return civ.alive && !civ.religion && !!civ.pantheon && civ.faith >= R.foundCost(g) && R.religionsFounded(g) < R.maxReligions(g) && !!civ.capital && !!g.settlements[civ.capital]; };
+  // The Great Prophet of a civilization standing inside one of its settlements (religions are founded by prophets, not bought).
+  R.prophetFor = function (g, civ) { var out = null; G.civUnits(g, civ.idx).forEach(function (u) { if (out) return; if (AU.UNITS[u.type].great === 'prophet') { var s = G.settlementAt(g, u.tile); if (s && s.civ === civ.idx) out = u; } }); return out; };
+  R.canFound = function (g, civ) { return civ.alive && !civ.religion && !!civ.pantheon && !!R.prophetFor(g, civ) && R.religionsFounded(g) < R.maxReligions(g); };
   R.availableNames = function (g) { var taken = {}; for (var id in g.religions) taken[g.religions[id].nameId] = 1; return AU.RELIGION_NAMES.filter(function (n) { return !taken[n.id]; }); };
   R.availableBeliefs = function (g, type) {
     var taken = {}; for (var id in g.religions) g.religions[id].beliefs.forEach(function (b) { taken[b] = 1; });
@@ -56,11 +58,12 @@
     var fb = AU.BELIEF_BY_ID[followerId], ob = AU.BELIEF_BY_ID[founderId];
     if (!fb || fb.type !== 'follower' || R.availableBeliefs(g, 'follower').indexOf(fb) < 0) return false;
     if (!ob || ob.type !== 'founder' || R.availableBeliefs(g, 'founder').indexOf(ob) < 0) return false;
-    civ.faith -= R.foundCost(g);
+    var prophet = R.prophetFor(g, civ), cap = G.settlementAt(g, prophet.tile);
+    G.removeUnit(g, prophet);
     g.religions = g.religions || {};
-    var rel = { id: nameId, nameId: nameId, name: customName || nm.name, icon: nm.icon, founder: civ.idx, holyCity: civ.capital, beliefs: [followerId, founderId], enhanced: false, turn: g.turn };
+    var rel = { id: nameId, nameId: nameId, name: customName || nm.name, icon: nm.icon, founder: civ.idx, holyCity: cap.id, beliefs: [followerId, founderId], enhanced: false, turn: g.turn, prophet: prophet.name };
     g.religions[nameId] = rel; civ.religion = nameId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
-    var cap = g.settlements[civ.capital]; cap.religion = nameId; cap.pressure = cap.pressure || {}; cap.pressure[nameId] = Math.max(cap.pressure[nameId] || 0, 200);
+    cap.religion = nameId; cap.pressure = cap.pressure || {}; cap.pressure[nameId] = Math.max(cap.pressure[nameId] || 0, 200);
     G.notify(g, civ, { kind: 'faith', text: 'You founded ' + rel.name + ' in ' + cap.name + '!', panel: 'religion' });
     g.civs.forEach(function (o) { if (o.isPlayer && o.idx !== civ.idx && o.met[civ.idx]) G.notify(g, o, { kind: 'faith', text: G.civData(civ).name + ' founded ' + rel.name + '.', panel: 'religion' }); });
     G.log(g, G.civData(civ).name + ' founded ' + rel.name + ' in ' + cap.name + '.', civ.idx);

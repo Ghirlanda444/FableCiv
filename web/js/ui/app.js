@@ -216,7 +216,7 @@
     doTodo: function (i) { var it = (this._todo || [])[i]; if (it) { it.go(); this.refreshHud(); this.invalidate(); } },
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
-      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰' };
+      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰', great: '🌟' };
       var list = g.notifications.slice(-14).reverse();
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
@@ -355,6 +355,10 @@
             else html += '<button class="small primary" data-action="inquisition" ' + (Rl.canInquisition(g, u) ? '' : 'disabled') + '>Remove heresy' + (sHere ? ' in ' + sHere.name : '') + '</button>';
             Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">Debate ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
           }
+          if (AU.UNITS[u.type].great && AU.Great) {
+            var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + gt.desc + '</div>';
+            AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
+          }
           if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? 'Found Town' : 'Found Capital') + '</button>' + (!can ? '<small class="stat">Too close to another settlement or invalid terrain.</small>' : ''); }
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
@@ -417,6 +421,8 @@
         case 'todo': this.doTodo(+d.i); break;
         case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
         case 'clearnotifs': this.g.notifications.length = 0; this.refreshHud(); break;
+        case 'greatuse': if (u && AU.Great.use(g, u)) { this.deselect(); this.refreshHud(); this.invalidate(); this.showQuotes(); } break;
+        case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast('Founded ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
         case 'skip': if (u) { U.skip(g, u); this.afterUnitAction(u, true); } break;

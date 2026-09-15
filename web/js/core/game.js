@@ -225,6 +225,7 @@
     var civ = g.civs[civIdx], def = G.unitType(g, civ, typeId), fx = G.civFx(g, civ), m = def.moves + pm;
     if (def.cls === 'cavalry' && fx.cavalryMoves) m += fx.cavalryMoves;
     if ((def.cls === 'naval' || def.cls === 'navalRanged') && fx.navalMoves) m += fx.navalMoves;
+    if ((def.cls === 'naval' || def.cls === 'navalRanged') && unit && AU.Great && AU.Great.hasAdmiralNear(g, unit)) m += 1;
     if (def.cls === 'civilian' && fx.civilianMoves) m += fx.civilianMoves;
     if (fx.classMoves && fx.classMoves[def.cls]) m += fx.classMoves[def.cls];
     return m;
@@ -421,6 +422,7 @@
     var center = g.tiles[s.tile];
     add(y, G.tileYields(g, center, s, civ));
     s.tiles.forEach(function (i) { var t = g.tiles[i]; if (t.worked && i !== s.tile) add(y, G.tileYields(g, t, s, civ)); });
+    if (s.greatWorks) y.culture += s.greatWorks * 3;
     var bY = zeroYields(), wondersHere = 0;
     s.buildings.forEach(function (id) {
       var d = G.buildingDef(g, civ, id); if (!d) return;
@@ -541,7 +543,7 @@
   };
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
-    if (d.religious) return false; // missionaries, apostles and inquisitors are bought with Faith only (see Religion)
+    if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Faith only (see Religion)
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
@@ -844,6 +846,7 @@
   G.tourism = function (g, civ) {
     var fx = G.civFx(g, civ), t = 0, sets = G.civSettlements(g, civ.idx);
     sets.forEach(function (s) {
+      if (s.greatWorks) t += s.greatWorks * 3;
       s.buildings.forEach(function (b) {
         if (AU.WONDERS[b]) t += 3;
         else if (AU.NATIONAL[b]) t += 2;
@@ -985,6 +988,7 @@
   G.processCiv = function (g, civ) {
     if (!civ.alive) return;
     if (AU.Palace) AU.Palace.turn(g, civ);
+    if (AU.Great) AU.Great.turn(g, civ);
     civ._turnScience = 0; civ._turnCulture = 0; civ._turnFaith = 0;
     var sets = G.civSettlements(g, civ.idx);
     var foodFor = {};
