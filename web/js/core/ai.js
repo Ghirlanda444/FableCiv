@@ -132,6 +132,8 @@
     if (d.perPop) sc += s.pop * 0.3;
     if (d.pct) sc += 3;
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
+    var lean = AU.leaningOf ? AU.leaningOf(G.leaderData(civ)) : 'score';
+    if (lean === 'science') sc += (y.science || 0) * 0.8 + (d.perPop ? s.pop * 0.2 : 0); if (lean === 'culture') sc += (y.culture || 0) * 0.8 + (d.tourism || 0) * 2; if (lean === 'religion') sc += (y.faith || 0) * 0.8; if (lean === 'domination' && (d.defense || d.pct && d.pct.unitProduction)) sc += 3;
     if (y.faith) { var piety = tr.religion !== undefined ? tr.religion : 0.5; sc += y.faith * (0.5 + piety); if (!civ.religion && AU.Religion && AU.Religion.religionsFounded(g) < AU.Religion.maxReligions(g)) sc += (id === 'shrine' ? 5 : 2) * (0.5 + piety); } // faith: pantheon, a Great Prophet, a religion
     return sc / Math.max(40, d.cost) * 100;
   };
@@ -151,7 +153,7 @@
           else if (AI.wantsMilitary(g, civ)) { var wantRanged = G.civUnits(g, civ.idx).filter(function (u) { return U.isRanged(u); }).length < G.civUnits(g, civ.idx).filter(G.isMilitary).length / 3; var bu = AI.bestUnitToBuild(g, s, wantRanged); if (bu) pick = { kind: 'unit', id: bu }; }
           if (!pick && !s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 3) pick = { kind: 'unit', id: 'settler' };
           if (!pick && opts.national.length && s.pop >= 4 && G.rng(g) < 0.5) pick = { kind: 'national', id: opts.national[0] };
-          if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 && s.pop >= 4) { var w = opts.wonders.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; pick = { kind: 'wonder', id: w }; }
+          if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 + (AU.leaningOf(G.leaderData(civ)) === 'culture' ? 0.2 : 0) && s.pop >= 4) { var w = opts.wonders.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; pick = { kind: 'wonder', id: w }; }
           if (!pick && opts.buildings.length) { var bs = opts.buildings.slice().sort(function (a, b) { return AI.buildingScore(g, civ, s, b) - AI.buildingScore(g, civ, s, a); }); pick = { kind: 'building', id: bs[0] }; }
           if (!pick) { var bu2 = AI.bestUnitToBuild(g, s, false); if (bu2 && G.civUnits(g, civ.idx).length < sets.length * 4) pick = { kind: 'unit', id: bu2 }; }
           if (pick) G.enqueue(g, s, pick.kind, pick.id);
@@ -172,6 +174,7 @@
           s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked) return; var imp = G.improvementFor(g, t, civ); if (imp === 'farm' || imp === 'pasture' || imp === 'fishing') farms++; if (imp === 'mine' || imp === 'quarry' || imp === 'woodcutter') mines++; if (t.resource) res++; });
           var spec = farms >= mines && farms >= res ? 'farming' : mines >= res ? 'mining' : 'trade';
           if (AI.threatened(g, civ) && G.rng(g) < 0.3) spec = 'fort';
+          var utA = G.civData(civ).ut; if (utA && s.pop >= utA.minPop && G.rng(g) < 0.5) spec = utA.id;
           if (G.nearestCity(g, s) || spec !== 'farming') G.specialize(g, s, spec);
         }
         if (opts.buildings.length) {

@@ -73,7 +73,7 @@
     { id: 'mongolia', name: 'Mongolia', adj: 'Mongol', difficulty: 'hard', bias: ['plains', 'grassland'], color: '#5b3a1e', color2: '#e8d5a3',
       ability: { name: 'Horde', desc: 'Cavalry +1 Movement. Mounted units cost 20% less.', fx: { cavalryMoves: 1, classCostMult: { cavalry: 0.8 } } },
       uu: { id: 'keshig', name: 'Keshig', replaces: 'knight', strength: 2, moves: 1, halfRetaliation: true, movesAfterAttack: true, costMult: 1.15, desc: '+2 Strength, +1 Movement, showers arrows before charging (half damage back) and can move after attacking, costs 15% more' },
-      ub: { id: 'ordu', name: 'Ordu', replaces: 'barracks', yields: { production: 2, gold: 1 }, desc: '+2 Production, +1 Gold' },
+      ui: { id: 'ordu', name: 'Ordu', icon: '🐎', replaces: 'pasture', yields: { production: 1, gold: 1 }, desc: '+1 Production and +1 Gold on every pasture' },
       cities: ['Karakorum', 'Beshbalik', 'Turfan', 'Hsia', 'Old Sarai', 'New Sarai', 'Tabriz', 'Tiflis', 'Otrar', 'Sanchu', 'Kazan', 'Almarikh', 'Khanbaliq', 'Shangdu', 'Avarga', 'Ulaanbaatar', 'Erdene Zuu', 'Bukhara', 'Samarkand', 'Urgench', 'Merv', 'Nishapur', 'Herat', 'Balkh', 'Kashgar', 'Khotan', 'Hami', 'Ningxia', 'Bolghar', 'Astrakhan', 'Azov', 'Uliastai', 'Khovd', 'Choibalsan', 'Dalanzadgad', 'Tsetserleg', 'Baruun-Urt', 'Ordos', 'Hohhot', 'Sükhbaatar'],
       leaders: [
         L('genghis', 'Genghis Khan', 'Great Khan', 'Terror of the Steppe', 'Cavalry +5 Strength. Capturing a settlement grants 100 Gold and heals all your units nearby.', { cavalryBonus: 5, captureGold: 100, captureHeal: true }, { aggression: 0.95, expansion: 0.6, science: 0.3, culture: 0.2 }),
@@ -83,7 +83,7 @@
     { id: 'zulu', name: 'Zulu', adj: 'Zulu', difficulty: 'medium', bias: ['grassland', 'hills'], color: '#3a2c1c', color2: '#e74c3c',
       ability: { name: 'Amabutho', desc: 'Melee and anti-cavalry units cost 25% less and start with a level of experience.', fx: { classCostMult: { melee: 0.75, antcav: 0.75 }, unitsStartXp: 5 } },
       uu: { id: 'impi', name: 'Impi', replaces: 'pikeman', strength: 2, moves: 1, costMult: 0.7, flank: 3, xpMult: 0.5, desc: '+2 Strength, +1 Movement, 30% cheaper, +3 per adjacent friendly unit, +50% experience' },
-      ub: { id: 'ikanda', name: 'Ikanda', replaces: 'barracks', yields: { production: 2 }, unitStrength: 1, desc: '+2 Production, units built here +1 Strength' },
+      ut: { id: 'ikhanda', name: 'Ikhanda', icon: '🛡️', minPop: 3, desc: 'A warrior town: units bought here cost 40% less, +6 defense, free Walls, and +1 Production per worked tile.', fx: { unitPurchaseMult: 0.6, defense: 6, freeWalls: true, tileYields: { when: 'all', yields: { production: 1 } } } },
       cities: ['Ulundi', 'uMgungundlovu', 'kwaBulawayo', 'kwaDukuza', 'Nobamba', 'Eshowe', 'Ondini', 'Isandlwana', 'Nongoma', 'Empangeni', 'Melmoth', 'Mthonjaneni', 'Babanango', 'Mahlabathini', "Rorke's Drift", 'Hlobane', 'Gingindlovu', 'Ntombe', 'Kambula', 'Vryheid', 'Nkandla', 'Mtubatuba', 'Hluhluwe', 'Pongola', 'Mkuze', 'Ingwavuma', 'Richards Bay', 'Mandeni', 'Greytown', 'Kranskop', 'Umlazi', 'Inanda', 'Pinetown', 'Ixopo', 'Estcourt', 'Ladysmith', 'Colenso', 'Weenen', 'Dundee', 'Nquthu'],
       leaders: [
         L('shaka', 'Shaka', 'King', 'Horns of the Buffalo', 'Melee units +6 Strength when attacking. Killing a unit grants +10 Culture.', { meleeAttackBonus: 6, culturePerKill: 10 }, { aggression: 0.95, expansion: 0.5, science: 0.2, culture: 0.3 }),
@@ -93,7 +93,7 @@
     { id: 'persia', name: 'Persia', adj: 'Persian', difficulty: 'easy', bias: ['plains', 'hills'], color: '#7b2f8a', color2: '#f5cba7',
       ability: { name: 'Royal Road', desc: '+2 Gold per settlement. Units +1 Movement inside your borders. Free cities you have met gain +1 Ties with you every turn.', fx: { tiesPerTurn: 1, goldPerSettlement: 2, homeMoves: 1 } },
       uu: { id: 'immortal', name: 'Immortal', replaces: 'swordsman', strength: 3, defense: 6, healOnKill: 25, costMult: 1.2, desc: '+3 Strength, +6 defending, heals 25 HP on a kill, costs 20% more' },
-      ub: { id: 'pairidaeza', name: 'Pairidaeza', replaces: 'amphitheater', yields: { culture: 2, gold: 2 }, desc: '+2 Culture, +2 Gold' },
+      ut: { id: 'satrapy', name: 'Satrapy', icon: '👑', minPop: 4, desc: 'A tribute town: +4 Gold, +1 Gold per worked tile, +2 Culture.', fx: { flat: { gold: 4, culture: 2 }, tileYields: { when: 'all', yields: { gold: 1 } } } },
       cities: ['Pasargadae', 'Susa', 'Persepolis', 'Ecbatana', 'Babylon', 'Sardis', 'Bactra', 'Tarsus', 'Gordion', 'Arbela', 'Rhagae', 'Zranka', 'Ctesiphon', 'Isfahan', 'Shiraz', 'Istakhr', 'Gundeshapur', 'Firuzabad', 'Bishapur', 'Kermanshah', 'Qazvin', 'Yazd', 'Kerman', 'Kashan', 'Tus', 'Hecatompylos', 'Amol', 'Damghan', 'Sistan', 'Zadracarta', 'Seleucia', 'Opis', 'Nisa', 'Dura-Europos', 'Palmyra', 'Halicarnassus', 'Cyropolis', 'Taoce', 'Ahvaz', 'Bam'],
       leaders: [
         L('cyrus', 'Cyrus', 'King of Kings', 'Cylinder of Mercy', 'Conquered settlements keep buildings and lose no population; +2 Happiness in captured settlements.', { captureKeepBuildings: true, captureNoPopLoss: true, capturedHappiness: 2 }, { aggression: 0.6, expansion: 0.7, science: 0.5, culture: 0.6 }),
@@ -103,7 +103,7 @@
     { id: 'egypt', name: 'Egypt', adj: 'Egyptian', difficulty: 'medium', bias: ['river', 'desert'], color: '#d4ac0d', color2: '#1b2631',
       ability: { name: 'Gift of the Nile', desc: 'Worked River tiles yield +1 Food. Settlements on rivers +1 Production and +1 Culture.', fx: { tileBonus: [{ when: 'river', yields: { food: 1 } }], settlementSiteBonus: [{ when: 'river', yields: { production: 1, culture: 1 } }] } },
       uu: { id: 'maryannu', name: 'Chariot Bowman', replaces: 'archer', ranged: 4, moves: 1, movesAfterAttack: true, terrainBonus: {desert: 6, floodplains: 6}, desc: '+4 Ranged Strength, +1 Movement, can move after attacking, +6 on desert and floodplains' },
-      ub: { id: 'nilometer', name: 'Nilometer', replaces: 'water_mill', yields: { food: 2, gold: 1 }, desc: '+2 Food, +1 Gold' },
+      ui: { id: 'sphinx', name: 'Sphinx', icon: '🗿', replaces: 'farm', when: 'desert', yields: { culture: 2, faith: 1 }, desc: 'desert farms become monuments: +2 Culture, +1 Faith' },
       cities: ['Ra-Kedet', 'Thebes', 'Memphis', 'Akhetaten', 'Heliopolis', 'Elephantine', 'Alexandria', 'Pi-Ramesses', 'Abydos', 'Giza', 'Edfu', 'Tanis', 'Saqqara', 'Dendera', 'Kom Ombo', 'Aswan', 'Karnak', 'Hermopolis', 'Herakleopolis', 'Bubastis', 'Sais', 'Buto', 'Avaris', 'Mendes', 'Naukratis', 'Pelusium', 'Thinis', 'Coptos', 'Esna', 'Hierakonpolis', 'Faiyum', 'Crocodilopolis', 'Abu Simbel', 'Buhen', 'Napata', 'Meroe', 'Berenice', 'Nekheb', 'Athribis', 'Xois'],
       leaders: [
         L('cleopatra', 'Cleopatra', 'Pharaoh', 'Ptolemaic Court', '+15% Gold. Other leaders start friendlier toward you and wars declared on you cause 50% less war weariness.', { yieldMult: { gold: 1.15 }, attitudeBonus: 15, warWearinessMult: 0.5 }, { aggression: 0.3, expansion: 0.5, science: 0.5, culture: 0.8 }),
@@ -165,8 +165,8 @@
 
     { id: 'inca', name: 'Inca', adj: 'Incan', difficulty: 'hard', bias: ['mountain', 'hills'], color: '#a04000', color2: '#f9e79f',
       ability: { name: 'Terraces', desc: 'Worked Hills yield +1 Food. Units can cross Mountains (3 movement).', fx: { tileBonus: [{ when: 'hills', yields: { food: 1 } }], mountainsPassable: true } },
-      uu: { id: 'warakaq', name: "Warak'aq", replaces: 'archer', ranged: 2, moves: 1, ignoreHills: true, terrainBonus: {hills: 6}, desc: '+2 Ranged Strength, +1 Movement, hills cost no extra movement, +6 on hills' },
       ub: { id: 'qollqa', name: 'Qollqa', replaces: 'granary', yields: { food: 2, production: 1 }, desc: '+2 Food, +1 Production' },
+      ui: { id: 'terrace', name: 'Terrace', icon: '🌄', replaces: 'mine', when: 'hills', yields: { food: 2 }, desc: 'hill mines also grow food: +2 Food' },
       cities: ['Cusco', 'Machu Picchu', 'Ollantaytambo', 'Vilcabamba', 'Cajamarca', 'Quito', 'Tiwanaku', 'Chan Chan', 'Huánuco', 'Arequipa', 'Pisac', 'Vitcos', 'Sacsayhuamán', 'Vilcashuamán', 'Huánuco Pampa', 'Pachacamac', 'Tumebamba', 'Ingapirca', 'Hatun Xauxa', 'Chinchero', 'Raqchi', 'Choquequirao', 'Tipón', 'Pucara', 'Chucuito', 'Copacabana', 'Cochabamba', 'Samaipata', 'Incallajta', 'Paucartambo', 'Andahuaylas', 'Abancay', 'Ayacucho', 'Huancayo', 'Tarma', 'Chachapoyas', 'Kuelap', 'Paramonga', 'Nazca', 'Puno'],
       leaders: [
         L('pachacuti', 'Pachacuti', 'Sapa Inca', 'Qhapaq Ñan', 'Units +1 Movement inside your borders; worked Hills +1 Production; Mining Towns +2 Gold.', { homeMoves: 1, tileBonus: [{ when: 'hills', yields: { production: 1 } }], specializationYields: { mining: { gold: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.5 }),

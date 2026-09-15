@@ -9,14 +9,14 @@
   // Plain-language explanation of how a tile gets improved (no Civilization knowledge assumed).
   CM.improvementWhy = function (g, t, civ) {
     if (t.natural) return 'A natural wonder: it cannot be improved, but it already gives great yields.';
-    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' is here but your people cannot use it until you research ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return 'A citizen here builds a ' + AU.IMPROVEMENTS[R.improvement].name + ' to harvest the ' + R.name + '.'; }
+    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' is here but your people cannot use it until you research ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return 'A citizen here builds a ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
     if (G.isWater(t)) return 'Open water: nothing to build, but fish and other sea resources can be worked with Fishing Boats.';
     if (t.terrain === 'mountain') return 'Mountains cannot be worked.';
-    if (t.hills) return 'Hills: a citizen here digs a Mine (+1 Production).';
+    if (t.hills) return 'Hills: a citizen here builds a ' + G.improvementName(g, t, civ, 'mine') + (G.uniqueImprovement(g, t, civ, 'mine') ? ' (your unique improvement)' : ' (+1 Production)') + '.';
     if (t.feature === 'forest' || t.feature === 'jungle') return (t.feature === 'forest' ? 'Forest' : 'Rainforest') + ': a citizen here sets up a Woodcutter (+1 Production).';
     if (t.feature === 'marsh') return 'Marsh: a citizen here drains a Clearing (+1 Food).';
     if (t.terrain === 'snow') return 'Snow: too cold to improve.';
-    return 'Flat land: a citizen here plants a Farm (+1 Food).';
+    return 'Flat land: a citizen here builds a ' + G.improvementName(g, t, civ, 'farm') + (G.uniqueImprovement(g, t, civ, 'farm') ? ' (your unique improvement)' : ' (+1 Food)') + '.';
   };
   CM.html = function (app, g, s, data) {
     var civ = g.civs[s.civ], p = G.player(g), own = s.civ === p.idx;
@@ -33,7 +33,7 @@
       var y = G.tileYields(g, t, s, civ), imp = G.improvementFor(g, t, civ), isCenter = ti === s.tile, ownedHere = t.owner === s.id, ownerS = t.owner >= 0 ? g.settlements[t.owner] : null;
       var name = (t.hills ? 'Hills · ' : '') + AU.TERRAIN[t.terrain].name + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.natural ? ' · ' + AU.NATURAL_WONDERS[t.natural].name : '') + (t.river ? ' · river' : '');
       html += '<div class="tree-detail"><div class="grow"><b>' + (isCenter ? '🏛️ ' + s.name + ' (city centre)' : name) + (t.resource ? ' · ' + AU.RESOURCES[t.resource].icon + ' ' + AU.RESOURCES[t.resource].name : '') + '</b>' +
-        '<small>Yields if worked: <b>' + yTxt(y) + '</b>' + (imp && !isCenter ? ' · improvement: ' + AU.IMPROVEMENTS[imp].icon + ' ' + AU.IMPROVEMENTS[imp].name : '') + '</small>' +
+        '<small>Yields if worked: <b>' + yTxt(y) + '</b>' + (imp && !isCenter ? ' · improvement: ' + (G.uniqueImprovement(g, t, civ, imp) || AU.IMPROVEMENTS[imp]).icon + ' ' + G.improvementName(g, t, civ, imp) : '') + '</small>' +
         '<small>' + (isCenter ? 'The centre tile is always worked and never starves.' : t.worked && ownedHere ? '👤 A citizen works this tile now.' : ownedHere ? 'Yours, but no citizen works it: it gives nothing until the city grows.' : ownerS && ownerS.civ !== s.civ ? 'Belongs to ' + ownerS.name + ' (' + G.civData(g.civs[ownerS.civ]).name + ').' : ownerS ? 'Belongs to your settlement ' + ownerS.name + '.' : 'Unclaimed.') + '</small>' +
         (!isCenter ? '<small>' + CM.improvementWhy(g, t, civ) + '</small>' : '') + '</div>' +
         (cands.indexOf(ti) >= 0 ? '<div class="tree-detail-btns"><button class="small primary" data-action="citygrow" data-id="' + s.id + '" data-tile="' + ti + '">🌱 Send citizen here</button></div>' : '') + '</div>';

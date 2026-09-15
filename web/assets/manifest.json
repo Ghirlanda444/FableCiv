@@ -307,6 +307,15 @@
  },
  {
   "kind": "units",
+  "id": "caravan",
+  "file": "units/caravan.png",
+  "name": "Caravan",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
   "id": "great_prophet",
   "file": "units/great_prophet.png",
   "name": "Great Prophet",
@@ -4528,6 +4537,15 @@
  },
  {
   "kind": "units/mediterranean",
+  "id": "caravan",
+  "file": "units/mediterranean/caravan.png",
+  "name": "Caravan (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mediterranean",
   "id": "missionary",
   "file": "units/mediterranean/missionary.png",
   "name": "Preacher (Mediterranean)",
@@ -5044,6 +5062,15 @@
   "id": "special_forces",
   "file": "units/european/special_forces.png",
   "name": "Commandos (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/european",
+  "id": "caravan",
+  "file": "units/european/caravan.png",
+  "name": "Caravan (European)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -5572,6 +5599,15 @@
  },
  {
   "kind": "units/middle_eastern",
+  "id": "caravan",
+  "file": "units/middle_eastern/caravan.png",
+  "name": "Caravan (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/middle_eastern",
   "id": "missionary",
   "file": "units/middle_eastern/missionary.png",
   "name": "Preacher (Middle Eastern)",
@@ -6088,6 +6124,15 @@
   "id": "special_forces",
   "file": "units/east_asian/special_forces.png",
   "name": "Commandos (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "caravan",
+  "file": "units/east_asian/caravan.png",
+  "name": "Caravan (East Asian)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -6616,6 +6661,15 @@
  },
  {
   "kind": "units/south_asian",
+  "id": "caravan",
+  "file": "units/south_asian/caravan.png",
+  "name": "Caravan (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/south_asian",
   "id": "missionary",
   "file": "units/south_asian/missionary.png",
   "name": "Preacher (South and Southeast Asian)",
@@ -7138,6 +7192,15 @@
  },
  {
   "kind": "units/african",
+  "id": "caravan",
+  "file": "units/african/caravan.png",
+  "name": "Caravan (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/african",
   "id": "missionary",
   "file": "units/african/missionary.png",
   "name": "Preacher (African)",
@@ -7654,6 +7717,15 @@
   "id": "special_forces",
   "file": "units/mesoamerican/special_forces.png",
   "name": "Commandos (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "caravan",
+  "file": "units/mesoamerican/caravan.png",
+  "name": "Caravan (Indigenous American)",
   "size": "512x512",
   "nobg": false,
   "hires": false

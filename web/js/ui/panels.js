@@ -98,9 +98,10 @@
     if (!s.isCity) {
       var upCost = G.cityUpgradeCost(g, civ);
       html += '<div class="section"><h3>Town</h3><div class="row"><div class="grow"><b>Upgrade to City</b><small>Cities get a production queue, can build wonders and keep their production. Towns turn production into gold and buy what they need.</small></div><button class="small primary" data-action="upgradecity" data-id="' + s.id + '" ' + (civ.gold >= upCost ? '' : 'disabled') + '>' + upCost + ' 💰</button></div>';
-      html += '<h3>Specialization' + (s.specialization ? ': ' + AU.SPECIALIZATIONS[s.specialization].name : '') + '</h3>';
-      for (var sp in AU.SPECIALIZATIONS) {
-        var sd = AU.SPECIALIZATIONS[sp], can = G.canSpecialize(g, s, sp);
+      var specs = G.specializationsFor(civ);
+      html += '<h3>Specialization' + (s.specialization && specs[s.specialization] ? ': ' + specs[s.specialization].name : '') + '</h3>';
+      for (var sp in specs) {
+        var sd = specs[sp], can = G.canSpecialize(g, s, sp);
         html += '<div class="row ' + (s.specialization === sp ? 'active' : can ? '' : 'locked') + '"><div class="grow"><b>' + sd.icon + ' ' + sd.name + '</b><small>' + sd.desc + ' Requires pop ' + sd.minPop + '. A specialized town stops growing.</small></div>' + (s.specialization === sp ? '<span class="pill">current</span>' : '<button class="small" data-action="specialize" data-id="' + s.id + '" data-spec="' + sp + '" ' + (can && (!s.specialization || civ.gold >= 60) ? '' : 'disabled') + '>' + (s.specialization ? '60 💰' : 'Choose') + '</button>') + '</div>';
       }
       html += '</div>';
@@ -144,7 +145,7 @@
     var nats = s.tiles.filter(function (i) { return g.tiles[i].natural; }).map(function (i) { return AU.NATURAL_WONDERS[g.tiles[i].natural].name; });
     if (nats.length) html += '<div class="section"><h3>Natural wonders</h3><p class="stat">' + nats.join(', ') + '</p></div>';
     html += '<div class="section"><h3>Territory</h3><p class="stat">' + s.tiles.length + ' tiles owned, ' + worked + ' worked by citizens. Founded turn ' + s.founded + '.</p>';
-    html += '<div class="yields">' + s.tiles.filter(function (i) { return i !== s.tile; }).map(function (i) { var t = g.tiles[i], imp = G.improvementFor(g, t, civ), ty = G.tileYields(g, t, s, civ); return '<span class="' + (t.worked ? '' : 'stat') + '" data-action="citytile" data-tile="' + i + '" style="cursor:pointer">' + (t.worked ? '👤 ' : '· ') + (t.resource ? AU.RESOURCES[t.resource].icon + ' ' : '') + (t.hills ? 'Hills ' : '') + AU.TERRAIN[t.terrain].name + (t.feature ? ' ' + AU.FEATURES[t.feature].icon : '') + (imp ? ' ' + AU.IMPROVEMENTS[imp].icon : '') + ' <small>' + AU.YIELD_KEYS.filter(function (k) { return ty[k]; }).map(function (k) { return ty[k] + { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' }[k]; }).join(' ') + '</small></span>'; }).join('') + '</div>';
+    html += '<div class="yields">' + s.tiles.filter(function (i) { return i !== s.tile; }).map(function (i) { var t = g.tiles[i], imp = G.improvementFor(g, t, civ), ty = G.tileYields(g, t, s, civ); return '<span class="' + (t.worked ? '' : 'stat') + '" data-action="citytile" data-tile="' + i + '" style="cursor:pointer">' + (t.worked ? '👤 ' : '· ') + (t.resource ? AU.RESOURCES[t.resource].icon + ' ' : '') + (t.hills ? 'Hills ' : '') + AU.TERRAIN[t.terrain].name + (t.feature ? ' ' + AU.FEATURES[t.feature].icon : '') + (imp ? ' ' + (G.uniqueImprovement(g, t, civ, imp) ? G.uniqueImprovement(g, t, civ, imp).icon : AU.IMPROVEMENTS[imp].icon) : '') + ' <small>' + AU.YIELD_KEYS.filter(function (k) { return ty[k]; }).map(function (k) { return ty[k] + { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' }[k]; }).join(' ') + '</small></span>'; }).join('') + '</div>';
     html += '<button class="small" data-action="center" data-tile="' + s.tile + '">Show on map</button> <button class="small primary" data-action="cityview" data-id="' + s.id + '">🏙️ View city</button></div>';
     return { title: (s.isCapital ? '★ ' : '') + s.name + ' — ' + (s.isCity ? 'City' : 'Town'), html: html };
   };
@@ -286,14 +287,14 @@
     html += '<div class="section"><h3>Settlements</h3>';
     G.civSettlements(g, p.idx).forEach(function (s) {
       var sy = G.settlementYields(g, s);
-      html += '<div class="row clickable" data-action="city" data-id="' + s.id + '"><div class="grow"><b>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? 'City' : 'Town') + (s.specialization ? ' · ' + AU.SPECIALIZATIONS[s.specialization].name : '') + '</span>' + (s.pendingGrowth ? ' 🌱' : '') + '</b><small>Pop ' + s.pop + ' · ' + yieldsHtml(sy, { skip: ['happiness'] }) + ' · ' + (sy.happiness < 0 ? '😠' : '😊') + sy.happiness + (s.isCity ? ' · ' + (s.queue.length ? 'building ' + P.itemName(g, p, s.queue[0]) : '<b style="color:#e6b422">idle</b>') : '') + '</small></div></div>';
+      html += '<div class="row clickable" data-action="city" data-id="' + s.id + '"><div class="grow"><b>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? 'City' : 'Town') + (s.specialization ? ' · ' + (G.specializationDef(p, s.specialization) || { name: s.specialization }).name : '') + '</span>' + (s.pendingGrowth ? ' 🌱' : '') + '</b><small>Pop ' + s.pop + ' · ' + yieldsHtml(sy, { skip: ['happiness'] }) + ' · ' + (sy.happiness < 0 ? '😠' : '😊') + sy.happiness + (s.isCity ? ' · ' + (s.queue.length ? 'building ' + P.itemName(g, p, s.queue[0]) : '<b style="color:#e6b422">idle</b>') : '') + '</small></div></div>';
     });
     html += '</div><div class="section"><h3>Units (' + G.civUnits(g, p.idx).length + ')</h3>';
     G.civUnits(g, p.idx).forEach(function (u) { html += '<div class="row clickable" data-action="gotounit" data-id="' + u.id + '"><div class="grow"><b>' + AU.UNITS[u.type].icon + ' ' + u.name + '</b><small>HP ' + u.hp + ' · near ' + U.nearestName(g, u.tile) + (u.fortify ? ' · fortified' : '') + (u.auto ? ' · exploring' : '') + '</small></div></div>'; });
     html += '</div><div class="section"><h3>Rankings</h3>';
     var ranked = g.civs.slice().sort(function (a, b) { return G.score(g, b) - G.score(g, a); }), top = G.score(g, ranked[0]) || 1;
     ranked.forEach(function (c) { var cd = G.civData(c); html += '<div class="row"><div class="grow"><b>' + cd.name + (c.isPlayer ? ' (you)' : '') + (!c.alive ? ' — destroyed' : '') + '</b><div class="scorebar"><i style="width:' + Math.max(4, G.score(g, c) / top * 60) + '%;background:' + G.civColor(c) + '"></i><small class="stat">' + G.score(g, c) + ' pts · ' + (p.met[c.idx] || c.isPlayer ? Object.keys(c.techs).length + ' techs · ' + G.civSettlements(g, c.idx).length + ' settlements' : 'unknown') + '</small></div></div></div>'; });
-    html += '</div><div class="section"><h3>Victory conditions</h3><p class="stat">Domination: hold every rival\'s original capital. Science: research Spaceflight and complete the three space projects in your capital. Score: highest score at turn ' + g.maxTurns + '.</p></div>';
+    html += '</div><div class="section"><h3>Victory conditions</h3>' + Object.keys(AU.VICTORIES).map(function (k) { var v = AU.VICTORIES[k]; return '<p class="stat"><b>' + v.icon + ' ' + v.name + '</b>: ' + v.desc + '</p>'; }).join('') + '<p class="stat">' + G.leaderName(p) + ' leans towards ' + AU.leaningText(G.leaderData(p)) + '.</p></div>';
     return { title: 'Empire', html: html };
   };
 
@@ -382,7 +383,7 @@
   P.render_victory = function (app, g) {
     var p = G.player(g), v = g.victory, html = '<div class="victory">';
     if (!p.alive) html += '<h1>Defeat</h1><p>Your civilization has been destroyed on turn ' + g.turn + '.</p>';
-    else if (v) { var w = g.civs[v.civ], wd = G.civData(w); html += '<h1>' + (w.isPlayer ? 'Victory!' : 'Defeat') + '</h1><p>' + G.leaderName(w) + ' of ' + wd.name + ' achieved a <b>' + v.type + '</b> victory on turn ' + v.turn + '.</p>'; }
+    else if (v) { var w = g.civs[v.civ], wd = G.civData(w); html += '<h1>' + (w.isPlayer ? 'Victory!' : 'Defeat') + '</h1><p>' + G.leaderName(w) + ' of ' + wd.name + ' achieved a <b>' + (AU.VICTORIES[v.type] ? AU.VICTORIES[v.type].icon + ' ' + AU.VICTORIES[v.type].name : v.type) + '</b> victory on turn ' + v.turn + '.</p>'; }
     html += '<p class="stat">Final score: ' + G.score(g, p) + '</p><br><button class="big" data-action="continueplaying">Keep playing</button><br><br><button class="big primary" data-action="newgame">New game</button></div>';
     return { title: 'Game over', html: html };
   };
@@ -398,7 +399,7 @@
       case 'dequeue': s = g.settlements[+d.id]; if (s) { G.dequeue(g, s, +d.index); app.refreshPanel(); } break;
       case 'buy': s = g.settlements[+d.id]; if (s) { if (G.purchase(g, s, d.kind, d.item)) { app.toast('Purchased.'); var qi = s.queue.findIndex(function (q) { return q.kind === d.kind && q.id === d.item; }); if (qi >= 0 && d.kind !== 'unit') s.queue.splice(qi, 1); } else app.toast('Not enough gold.'); app.refreshPanel(); } break;
       case 'upgradecity': s = g.settlements[+d.id]; if (s && G.upgradeToCity(g, s)) { app.toast(s.name + ' is now a City!'); app.refreshPanel(); } break;
-      case 'specialize': s = g.settlements[+d.id]; if (s && G.specialize(g, s, d.spec)) { app.toast(s.name + ' is now a ' + AU.SPECIALIZATIONS[d.spec].name + '.'); app.refreshPanel(); } break;
+      case 'specialize': s = g.settlements[+d.id]; if (s && G.specialize(g, s, d.spec)) { app.toast(s.name + ' is now a ' + G.specializationDef(G.player(g), d.spec).name + '.'); app.refreshPanel(); } break;
       case 'research': p.currentTech = d.id; app.refreshPanel(); break;
       case 'civic': p.currentCivic = d.id; app.refreshPanel(); break;
       case 'government': if (G.setGovernment(g, p, d.id)) { app.toast('Government changed to ' + AU.GOVERNMENTS[d.id].name + '.'); app.refreshPanel(); } break;

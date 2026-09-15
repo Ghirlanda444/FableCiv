@@ -111,12 +111,14 @@
       var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: 'Easy to play', medium: 'Medium', hard: 'Specialised' }[c.difficulty] || 'Medium') + '</span></h3>' +
         (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' cultural group.</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
-        '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' +
-        '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' +
+        (c.uu ? '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
+        (c.ub ? '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
+        (c.ui ? '<div><b>Unique improvement – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + c.ui.when + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
+        (c.ut ? '<div><b>Unique town – ' + c.ut.icon + ' ' + c.ut.name + ':</b> a town specialization only you can pick (' + c.ut.desc + ').</div>' : '') +
         '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
         var portrait = AU.Assets.get('leaders', l.id);
-        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
       });
       html += '</div>';
       $('civ-detail').innerHTML = html;
@@ -371,7 +373,7 @@
         html += '</div>';
       } else if (this.sel.settlement && g.settlements[this.sel.settlement]) {
         var s = g.settlements[this.sel.settlement], own2 = s.civ === p.idx, y = G.settlementYields(g, s);
-        html += '<div class="card"><h3>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? 'City' : 'Town') + (s.specialization ? ' · ' + AU.SPECIALIZATIONS[s.specialization].name : '') + '</span>' + (!own2 ? ' <span class="pill">' + G.civData(g.civs[s.civ]).name + '</span>' : '') + '</h3>';
+        html += '<div class="card"><h3>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? 'City' : 'Town') + (s.specialization ? ' · ' + (G.specializationDef(g.civs[s.civ], s.specialization) || { name: s.specialization }).name : '') + '</span>' + (!own2 ? ' <span class="pill">' + G.civData(g.civs[s.civ]).name + '</span>' : '') + '</h3>';
         html += '<div class="meta">Pop ' + s.pop + ' · HP ' + s.hp + '/' + G.settlementMaxHp(g, s) + ' · Def ' + G.settlementStrength(g, s) + (own2 ? ' · <span class="food">🌾' + y.food + '</span> <span class="prod">⚙️' + (s.isCity ? y.production : y.rawProduction + '→💰') + '</span> <span class="goldc">💰' + y.gold + '</span> <span class="sci">🔬' + y.science + '</span> <span class="cult">🎭' + y.culture + '</span> ' + (y.happiness < 0 ? '😠' : '😊') + y.happiness : '') + '</div>';
         if (own2) {
           html += '<div class="actions"><button class="small primary" data-action="city" data-id="' + s.id + '">Manage</button>';

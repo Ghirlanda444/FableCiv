@@ -354,7 +354,7 @@
       if (y.food < 2) y.food = 2; if (y.production < 1) y.production = 1;
       return y;
     }
-    if (imp) add(y, AU.IMPROVEMENTS[imp].yields);
+    if (imp) { add(y, AU.IMPROVEMENTS[imp].yields); var uimp = G.uniqueImprovement(g, t, civ, imp); if (uimp) add(y, uimp.yields); }
     var water = G.isWater(t);
     G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.natural) add(y, AU.NATURAL_WONDERS[nt.natural].adjacent); });
     (fx.tileBonus || []).forEach(function (b) {
@@ -378,6 +378,7 @@
     if (s.specialization === 'farming' && (imp === 'farm' || imp === 'pasture' || imp === 'fishing')) y.food += 1;
     if (s.specialization === 'mining' && (imp === 'mine' || imp === 'quarry' || imp === 'woodcutter')) y.production += 1;
     if (s.specialization === 'trade' && t.resource) y.gold += 1;
+    var utT = G.civData(civ).ut; if (utT && s.specialization === utT.id && utT.fx && utT.fx.tileYields) { var tw = utT.fx.tileYields.when; if (tw === 'all' || (tw === 'resource' && t.resource) || (tw === 'water' && water) || (tw === 'farm' && imp === 'farm') || (tw === 'mine' && imp === 'mine') || (tw === 'hills' && t.hills)) add(y, utT.fx.tileYields.yields); }
     if (water && G.hasBuilding(s, 'lighthouse')) y.food += 1;
     return y;
   };
@@ -447,6 +448,7 @@
     y.science += (0.5 + (fx.sciencePerPop || 0)) * s.pop; y.culture += 0.3 * s.pop;
     y.science += 2 * s.specialists; y.culture += 2 * s.specialists;
     if (s.specialization === 'trade') y.gold += 4;
+    var utS = G.civData(civ).ut; if (utS && s.specialization === utS.id && utS.fx && utS.fx.flat) add(y, utS.fx.flat);
     y.gold += fx.goldPerSettlement || 0; y.culture += fx.culturePerSettlement || 0; y.science += fx.sciencePerSettlement || 0;
     y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
@@ -539,6 +541,7 @@
     var fx = G.civFx(g, civ);
     var prog = s ? (s.progress[kind + ':' + id] || 0) : 0;
     var m = (fx.purchaseMult || 1) * (s && !s.isCity && fx.townPurchaseMult ? fx.townPurchaseMult : 1);
+    var utP = G.civData(civ).ut; if (utP && s && s.specialization === utP.id && utP.fx && utP.fx.unitPurchaseMult && kind === 'unit') m *= utP.fx.unitPurchaseMult;
     if (kind === 'unit') { var ud = G.unitType(g, civ, id); if (ud.purchaseMult) m *= ud.purchaseMult; }
     return Math.max(10, Math.round((G.itemCost(g, civ, kind, id, s) - prog) * 2 * m));
   };
@@ -693,13 +696,19 @@
     G.log(g, s.name + ' has become a City.', civ.idx);
     return true;
   };
-  G.canSpecialize = function (g, s, spec) { var d = AU.SPECIALIZATIONS[spec]; return !s.isCity && s.pop >= d.minPop && s.specialization !== spec; };
+  // Town specializations: the five shared ones plus a civilization's own (data.ut).
+  G.specializationDef = function (civ, spec) { var d = AU.SPECIALIZATIONS[spec]; if (d) return d; var ut = civ && G.civData(civ).ut; return ut && ut.id === spec ? ut : null; };
+  G.specializationsFor = function (civ) { var out = {}; for (var k in AU.SPECIALIZATIONS) out[k] = AU.SPECIALIZATIONS[k]; var ut = civ && G.civData(civ).ut; if (ut) out[ut.id] = ut; return out; };
+  // A civilization's unique improvement applies where the base improvement would be built, on matching tiles.
+  G.uniqueImprovement = function (g, t, civ, imp) { var ui = civ && G.civData(civ).ui; if (!ui || !imp || ui.replaces !== imp) return null; var w = ui.when; if (!w) return ui; if (w === 'hills' && !t.hills) return null; if (w === 'river' && !t.river) return null; if (w === 'coast' && !G.neighbors(g, t).some(function (n) { return G.isWater(g.tiles[n]); })) return null; if (w === 'desert' && t.terrain !== 'desert') return null; if (w === 'flat' && t.hills) return null; if (w === 'forest' && t.feature !== 'forest' && t.feature !== 'jungle') return null; return ui; };
+  G.improvementName = function (g, t, civ, imp) { var ui = G.uniqueImprovement(g, t, civ, imp); return ui ? ui.name : AU.IMPROVEMENTS[imp].name; };
+  G.canSpecialize = function (g, s, spec) { var d = G.specializationDef(g.civs[s.civ], spec); if (!d) return false; return !s.isCity && s.pop >= d.minPop && s.specialization !== spec; };
   G.specialize = function (g, s, spec) {
     if (!G.canSpecialize(g, s, spec)) return false;
     var civ = g.civs[s.civ];
     if (s.specialization) { if (civ.gold < 60) return false; civ.gold -= 60; }
     s.specialization = spec;
-    if (spec === 'fort') G.addBuilding(g, s, 'walls');
+    if (spec === 'fort') G.addBuilding(g, s, 'walls'); var utW = G.civData(g.civs[s.civ]).ut; if (utW && spec === utW.id && utW.fx && utW.fx.freeWalls) G.addBuilding(g, s, 'walls');
     return true;
   };
   G.nearestCity = function (g, s) {
@@ -1012,6 +1021,7 @@
     if (g.tiles[s.tile].hills) str += 3 + (fx.hillsDefense || 0);
     if (fx.coastalDefense && G.isCoastal(g, s)) str += fx.coastalDefense;
     if (s.specialization === 'fort') str += 5;
+    var utD = G.civData(civ).ut; if (utD && s.specialization === utD.id && utD.fx && utD.fx.defense) str += utD.fx.defense;
     var garrison = G.unitsAt(g, s.tile).filter(function (u) { return G.isMilitary(u); })[0];
     if (garrison) str += 4;
     return str;
