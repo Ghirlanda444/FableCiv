@@ -287,3 +287,6 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
 .tutorial { position: absolute; left: 8px; right: 8px; top: calc(92px + var(--safe-top)); z-index: 6; background: linear-gradient(180deg, #2b3050, #1d2340); border: 2px solid var(--gold); border-radius: 14px; padding: 8px 12px; box-shadow: 0 4px 14px rgba(0,0,0,.5); font-size: 13.5px; line-height: 1.4; }
 .tutorial .tut-step { font-family: var(--font-display); font-weight: 800; color: var(--gold); font-size: 14px; margin-bottom: 2px; }
 .tutorial .tut-btns { display: flex; justify-content: flex-end; gap: 6px; margin-top: 6px; }
+.lang-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 10px; }
+.lang-bar button.small { padding: 4px 8px; font-size: 12px; }
+.lang-list { display: flex; flex-wrap: wrap; gap: 6px; }

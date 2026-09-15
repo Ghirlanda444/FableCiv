@@ -22,5 +22,5 @@
     return e;
   };
   H.medal = function (i) { return i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i + 1) + '.'; };
-  H.typeLabel = function (t) { return t === 'defeat' ? { icon: '💀', name: 'Defeat' } : (AU.VICTORIES[t] || { icon: '🏁', name: t }); };
+  H.typeLabel = function (t) { return t === 'defeat' ? { icon: '💀', name: _('Defeat') } : (AU.VICTORIES[t] || { icon: '🏁', name: t }); };
 })(globalThis.AU = globalThis.AU || {});

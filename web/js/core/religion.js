@@ -39,7 +39,7 @@
     if (!R.canChoosePantheon(g, civ) || !AU.BELIEF_BY_ID[id] || R.availablePantheons(g).indexOf(AU.BELIEF_BY_ID[id]) < 0) return false;
     if (!G.civFx(g, civ).freePantheon || civ.faith >= R.PANTHEON_COST) civ.faith -= R.PANTHEON_COST; else civ.faith = Math.max(0, civ.faith);
     civ.pantheon = id; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
-    G.notify(g, civ, { kind: 'faith', text: 'Pantheon founded: ' + AU.BELIEF_BY_ID[id].name + '.', panel: 'religion' });
+    G.notify(g, civ, { kind: 'faith', text: _('Pantheon founded') + ': ' + AU.BELIEF_BY_ID[id].name + '.', panel: 'religion' });
     G.log(g, G.civData(civ).name + ' founded the pantheon ' + AU.BELIEF_BY_ID[id].name + '.', civ.idx);
     return true;
   };
@@ -64,10 +64,10 @@
     var rel = { id: nameId, nameId: nameId, name: customName || nm.name, icon: nm.icon, founder: civ.idx, holyCity: cap.id, beliefs: [followerId, founderId], enhanced: false, turn: g.turn, prophet: prophet.name };
     g.religions[nameId] = rel; civ.religion = nameId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     cap.religion = nameId; cap.pressure = cap.pressure || {}; cap.pressure[nameId] = Math.max(cap.pressure[nameId] || 0, 200);
-    G.notify(g, civ, { kind: 'faith', text: 'You founded ' + rel.name + ' in ' + cap.name + '!', panel: 'religion' });
+    G.notify(g, civ, { kind: 'faith', text: _('You founded') + ' ' + rel.name + ' in ' + cap.name + '!', panel: 'religion' });
     g.civs.forEach(function (o) { if (o.isPlayer && o.idx !== civ.idx && o.met[civ.idx]) G.notify(g, o, { kind: 'faith', text: G.civData(civ).name + ' founded ' + rel.name + '.', panel: 'religion' }); });
     G.log(g, G.civData(civ).name + ' founded ' + rel.name + ' in ' + cap.name + '.', civ.idx);
-    if (civ.isPlayer) { G.quote(g, civ, 'religion', 'founded', rel.name + ' founded', 'A new religion'); }
+    if (civ.isPlayer) { G.quote(g, civ, 'religion', 'founded', rel.name + ' founded', _('A new religion')); }
     civ.flags['ev:religion'] = g.turn;
     return true;
   };
@@ -185,8 +185,8 @@
     var loser = win ? target : u, winner = win ? u : target;
     G.removeUnit(g, loser); winner.moves = 0; if (win) u.charges = Math.max(1, u.charges); 
     var lc = g.civs[loser.civ], wc = g.civs[winner.civ];
-    if (lc) G.notify(g, lc, { kind: 'faith', text: 'Your ' + loser.name + ' lost a theological debate near ' + AU.U.nearestName(g, loser.tile) + '.', tile: loser.tile });
-    if (wc) G.notify(g, wc, { kind: 'faith', text: 'Your ' + winner.name + ' won a theological debate!', tile: winner.tile, unit: winner.id });
+    if (lc) G.notify(g, lc, { kind: 'faith', text: _('Your') + ' ' + loser.name + ' lost a theological debate near ' + AU.U.nearestName(g, loser.tile) + '.', tile: loser.tile });
+    if (wc) G.notify(g, wc, { kind: 'faith', text: _('Your') + ' ' + winner.name + ' won a theological debate!', tile: winner.tile, unit: winner.id });
     return { win: win, chance: pA };
   };
 
@@ -205,8 +205,8 @@
     }
     civ.faith = (civ.faith || 0) + y; civ.faithTotal = (civ.faithTotal || 0) + y;
     if (civ.isPlayer) {
-      if (R.canChoosePantheon(g, civ) && !civ.flags['n:pantheon']) { civ.flags['n:pantheon'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You have enough Devotion to found a pantheon.', panel: 'religion' }); }
-      if (R.canFound(g, civ) && !civ.flags['n:found']) { civ.flags['n:found'] = g.turn; G.notify(g, civ, { kind: 'faith', text: 'You can found a religion (' + R.foundCost(g) + ' Devotion).', panel: 'religion' }); }
+      if (R.canChoosePantheon(g, civ) && !civ.flags['n:pantheon']) { civ.flags['n:pantheon'] = g.turn; G.notify(g, civ, { kind: 'faith', text: _('You have enough Devotion to found a pantheon.'), panel: 'religion' }); }
+      if (R.canFound(g, civ) && !civ.flags['n:found']) { civ.flags['n:found'] = g.turn; G.notify(g, civ, { kind: 'faith', text: _('You can found a religion') + ' (' + R.foundCost(g) + ' Devotion).', panel: 'religion' }); }
     }
   };
   R.checkVictory = function (g) {

@@ -32,7 +32,7 @@
       else { Art.drawPiece(ctx, pc, AU.PALACE_STYLES[style], color, color2, lcg(pc.id.length * 31 + style.length)); if (pc.id === 'hall') drawnTop.hall = pc.y - 135; }
       ctx.globalAlpha = 1;
     });
-    if (!pieces.length) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.font = 'bold 18px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('An empty hilltop awaits your palace', W / 2, 250); }
+    if (!pieces.length) { ctx.fillStyle = 'rgba(0,0,0,0.45)'; ctx.font = 'bold 18px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(_('An empty hilltop awaits your palace'), W / 2, 250); }
   };
   // ---- fallback shapes (chunky, rounded, bright: readable at any size) ----
   function roof(ctx, S, x, y, w, h, shape) {
@@ -78,21 +78,21 @@
     var p = G.player(g), st = Pal.state(p), av = Pal.available(p), styles = Pal.styles(g, p), fx = Pal.fx(p), html = '';
     var sel = app.panelData && app.panelData.piece ? app.panelData.piece : (av[0] ? av[0].id : null), selStyle = app.panelData && app.panelData.style ? app.panelData.style : styles[0];
     html += '<div class="section"><canvas id="palace-cv" width="640" height="400" style="width:100%;max-width:640px;border-radius:12px;border:1px solid var(--line);display:block;margin:0 auto"></canvas>';
-    html += '<p class="stat">' + Pal.count(p) + ' of ' + AU.PALACE_PIECES.length + ' pieces built · +' + fx.capitalCulture + ' 🎭 Heritage in the capital, +' + fx.happiness + ' 😊 empire-wide (one per 4 pieces), +' + fx.tourism + ' 🧳 tourism. Your people offer a new piece when a new era begins, when you complete a wonder, and every 20 turns of contentment.</p></div>';
+    html += '<p class="stat">' + Pal.count(p) + ' of ' + AU.PALACE_PIECES.length + ' pieces built · +' + fx.capitalCulture + ' 🎭 ' + _('Heritage in the capital') + ', +' + fx.happiness + ' 😊 empire-wide (one per 4 pieces), +' + fx.tourism + ' 🧳 ' + _('tourism. Your people offer a new piece when a new era begins, when you complete a wonder, and every 20 turns of contentment.') + '</p></div>';
     if (st.pending > 0 && av.length) {
-      html += '<div class="section"><h3>🏰 Your people offer to improve the palace' + (st.pending > 1 ? ' (' + st.pending + ' pieces)' : '') + '</h3><p class="stat">Pick a piece and an architectural style. Styles can be mixed freely.</p><div class="tabs">';
+      html += '<div class="section"><h3>🏰 ' + _('Your people offer to improve the palace') + (st.pending > 1 ? ' (' + st.pending + ' pieces)' : '') + '</h3><p class="stat">' + _('Pick a piece and an architectural style. Styles can be mixed freely.') + '</p><div class="tabs">';
       av.forEach(function (pc) { html += '<button class="small ' + (pc.id === sel ? 'on' : '') + '" data-action="palacepick" data-piece="' + pc.id + '" data-style="' + selStyle + '">' + pc.name + '</button>'; });
       html += '</div>';
       var pcSel = AU.PALACE_PIECE_BY_ID[sel]; if (pcSel) html += '<p class="stat">' + pcSel.desc + '</p>';
       html += '<div class="tabs">';
       styles.forEach(function (sid) { var S = AU.PALACE_STYLES[sid]; html += '<button class="small ' + (sid === selStyle ? 'on' : '') + '" data-action="palacepick" data-piece="' + sel + '" data-style="' + sid + '" title="' + S.look + '">' + S.name + (sid === (AU.cultureOf(p) || 'mediterranean') ? ' (yours)' : '') + '</button>'; });
       html += '</div><p class="stat">' + AU.PALACE_STYLES[selStyle].look + '</p>';
-      html += '<button class="big primary" data-action="palacebuild" data-piece="' + sel + '" data-style="' + selStyle + '">Build the ' + (pcSel ? pcSel.name : 'piece') + ' in the ' + AU.PALACE_STYLES[selStyle].name + ' style</button></div>';
-    } else if (st.pending > 0) html += '<div class="section"><p class="stat">Every piece is built. A magnificent palace!</p></div>';
-    else html += '<div class="section"><p class="stat">No piece is offered right now. Keep your people content, enter new eras and build wonders.</p></div>';
+      html += '<button class="big primary" data-action="palacebuild" data-piece="' + sel + '" data-style="' + selStyle + '">' + _('Build the') + ' ' + (pcSel ? pcSel.name : 'piece') + ' in the ' + AU.PALACE_STYLES[selStyle].name + ' style</button></div>';
+    } else if (st.pending > 0) html += '<div class="section"><p class="stat">' + _('Every piece is built. A magnificent palace!') + '</p></div>';
+    else html += '<div class="section"><p class="stat">' + _('No piece is offered right now. Keep your people content, enter new eras and build wonders.') + '</p></div>';
     var built = AU.PALACE_PIECES.filter(function (pc) { return st.pieces[pc.id]; });
-    if (built.length) html += '<div class="section"><h3>Built</h3><p class="stat">' + built.map(function (pc) { return pc.name + ' (' + AU.PALACE_STYLES[st.pieces[pc.id]].name + ')'; }).join(' · ') + '</p></div>';
+    if (built.length) html += '<div class="section"><h3>' + _('Built') + '</h3><p class="stat">' + built.map(function (pc) { return pc.name + ' (' + AU.PALACE_STYLES[st.pieces[pc.id]].name + ')'; }).join(' · ') + '</p></div>';
     setTimeout(function () { var cv = document.getElementById('palace-cv'); if (cv && app.g) Art.paint(cv, app.g, G.player(app.g), st.pending > 0 && sel && av.length ? { id: sel, style: selStyle } : null); }, 0);
-    return { title: 'Your Palace', html: html };
+    return { title: _('Your Palace'), html: html };
   };
 })(globalThis.AU = globalThis.AU || {});

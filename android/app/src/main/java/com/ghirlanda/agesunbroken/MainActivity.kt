@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         val restored = savedInstanceState?.let { webView.restoreState(it) }
         if (restored == null) {
             // The hosted version updates itself (service worker); the bundled copy is the offline fallback.
-            webView.loadUrl(if (REMOTE_URL.isNotEmpty()) REMOTE_URL else START_URL)
+            webView.loadUrl(if (REMOTE_URL.isNotEmpty() && BuildConfig.REMOTE_FIRST) REMOTE_URL else START_URL)
         }
     }
 
@@ -166,7 +166,7 @@ class MainActivity : AppCompatActivity() {
 
         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: android.webkit.WebResourceError) {
             // hosted version unreachable (offline, first run): use the copy packaged in the app
-            if (request.isForMainFrame && request.url.toString().startsWith(REMOTE_URL) && REMOTE_URL.isNotEmpty()) view.loadUrl(START_URL)
+            if (request.isForMainFrame && request.url.toString().startsWith(REMOTE_URL) && REMOTE_URL.isNotEmpty() && BuildConfig.REMOTE_FIRST) view.loadUrl(START_URL)
         }
 
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {

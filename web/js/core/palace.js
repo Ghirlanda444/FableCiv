@@ -16,7 +16,7 @@
   P.offer = function (g, civ, why) {
     var st = P.state(civ); if (!P.available(civ).length) return;
     st.pending++; st.lastOffer = g.turn;
-    if (civ.isPlayer) G.notify(g, civ, { kind: 'palace', text: why + ' Your people offer to add a piece to your palace.', panel: 'palace' });
+    if (civ.isPlayer) G.notify(g, civ, { kind: 'palace', text: why + ' ' + _('Your people offer to add a piece to your palace.'), panel: 'palace' });
   };
   P.build = function (g, civ, pieceId, style) {
     var st = P.state(civ), pc = AU.PALACE_PIECE_BY_ID[pieceId];
@@ -24,7 +24,7 @@
     if (!pc.needs.every(function (n) { return !!st.pieces[n]; })) return false;
     st.pieces[pieceId] = style; st.pending--;
     civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
-    if (civ.isPlayer) G.log(g, 'The ' + pc.name + ' of the palace was completed in the ' + AU.PALACE_STYLES[style].name + ' style.', civ.idx);
+    if (civ.isPlayer) G.log(g, _('The') + ' ' + pc.name + ' ' + _('of the palace was completed in the') + ' ' + AU.PALACE_STYLES[style].name + ' style.', civ.idx);
     return true;
   };
   // Bonuses: +1 Heritage in the capital per piece, +1 Happiness empire-wide per 4 pieces, tourism per piece.
@@ -33,12 +33,12 @@
   P.turn = function (g, civ) {
     if (civ.minor || !civ.alive || !civ.capital) return;
     var st = P.state(civ);
-    if (civ.era > st.era) { st.era = civ.era; if (g.turn > 1) P.offer(g, civ, 'A new era dawns.'); }
-    if (g.turn - st.lastOffer >= 20 && g.turn % 20 === 0) { var y = G.civYields(g, civ); if ((y.happiness || 0) >= 0) P.offer(g, civ, 'Your people are content.'); }
+    if (civ.era > st.era) { st.era = civ.era; if (g.turn > 1) P.offer(g, civ, _('A new era dawns.')); }
+    if (g.turn - st.lastOffer >= 20 && g.turn % 20 === 0) { var y = G.civYields(g, civ); if ((y.happiness || 0) >= 0) P.offer(g, civ, _('Your people are content.')); }
     if (!civ.isPlayer && st.pending > 0) { // the AI picks the first available piece in its own style, sometimes a neighbour's
       var av = P.available(civ); if (!av.length) { st.pending = 0; return; }
       var styles = P.styles(g, civ); P.build(g, civ, av[0].id, styles[G.rng(g) < 0.8 ? 0 : 1 + Math.floor(G.rng(g) * 3)]);
     }
   };
-  P.onWonder = function (g, civ) { P.offer(g, civ, 'A wonder was completed.'); };
+  P.onWonder = function (g, civ) { P.offer(g, civ, _('A wonder was completed.')); };
 })(globalThis.AU = globalThis.AU || {});

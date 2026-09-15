@@ -31,10 +31,10 @@
 
   // ---------- Game creation ----------
   AU.SPEEDS = {
-    quick:    { name: 'Quick',    mult: 0.67, turns: 330 },
-    standard: { name: 'Standard', mult: 1.0,  turns: 500 },
-    epic:     { name: 'Epic',     mult: 1.5,  turns: 750 },
-    marathon: { name: 'Marathon', mult: 3.0,  turns: 1500 }
+    quick:    { name: _('Quick'),    mult: 0.67, turns: 330 },
+    standard: { name: _('Standard'), mult: 1.0,  turns: 500 },
+    epic:     { name: _('Epic'),     mult: 1.5,  turns: 750 },
+    marathon: { name: _('Marathon'), mult: 3.0,  turns: 1500 }
   };
   G.speed = function (g) { return (AU.SPEEDS[g.speed] || AU.SPEEDS.standard).mult; };
   G.newGame = function (opts) {
@@ -92,7 +92,7 @@
     });
     g.camps.forEach(function (c) { G.spawnUnit(g, -1, 'warrior', c.tile); });
     G.refreshVisibility(g, g.civs[0]);
-    G.log(g, 'The world of Ages Unbroken begins. Turn 1.');
+    G.log(g, _('The world of Ages Unbroken begins. Turn 1.'));
     if (AU.CityStates && nStates > 0) { AU.CityStates.setup(g, rng, pool, nStates); G.refreshVisibility(g, G.player(g)); }
     return g;
   };
@@ -247,8 +247,8 @@
     if (first) g.naturalFound[t.natural] = civ.idx;
     var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
     civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
-    G.notify(g, civ, { kind: 'wonder', text: (first ? 'You discovered ' : 'Your explorers found ') + NW.name + '! +' + bonus + ' Knowledge and Heritage.', tile: t.i });
-    G.quote(g, civ, 'natural', t.natural, NW.name, 'Natural wonder discovered', t.i);
+    G.notify(g, civ, { kind: 'wonder', text: (first ? _('You discovered') + ' ' : _('Your explorers found') + ' ') + NW.name + '! +' + bonus + ' ' + _('Knowledge and Heritage.'), tile: t.i });
+    G.quote(g, civ, 'natural', t.natural, NW.name, _('Natural wonder discovered'), t.i);
     G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };
   G.refreshVisibility = function (g, civ) {
@@ -272,7 +272,7 @@
     var names = G.civData(civ).cities;
     var used = {}; for (var id in g.settlements) used[g.settlements[id].name] = true;
     for (var i = 0; i < names.length; i++) { if (!used[names[i]]) return names[i]; }
-    return 'New ' + names[civ.cityNameIdx++ % names.length];
+    return _('New') + ' ' + names[civ.cityNameIdx++ % names.length];
   };
   G.canFoundAt = function (g, civIdx, tileIdx) {
     var t = g.tiles[tileIdx];
@@ -637,7 +637,7 @@
       if (hasBarracks) bonus += G.civFx(g, civ).unitStrengthFromBarracks || 0;
       u.bonusStr = bonus;
       var pc = AU.UNITS[id].popCost || 0; if (pc) s.pop = Math.max(1, s.pop - pc);
-      G.notify(g, civ, { kind: 'unit', text: s.name + ' trained a ' + u.name + (pc ? ' (-' + pc + ' Population)' : '') + '.', tile: tileIdx, unit: u.id });
+      G.notify(g, civ, { kind: 'unit', text: s.name + ' ' + _('trained a') + ' ' + u.name + (pc ? ' (-' + pc + ' ' + _('Population)') : '') + '.', tile: tileIdx, unit: u.id });
     } else if (kind === 'building') {
       G.addBuilding(g, s, id);
       var bfx = G.civFx(g, civ);
@@ -654,20 +654,20 @@
       if (w.fx.instantGold) civ.gold += w.fx.instantGold;
       if (id === 'terracotta_army') G.civUnits(g, civ.idx).forEach(function (u) { var c = AU.UNITS[u.type].cls; if (c !== 'naval' && c !== 'navalRanged' && c !== 'civilian') u.bonusStr += 3; });
       G.log(g, G.civData(civ).name + ' completed the ' + w.name + ' in ' + s.name + '.', civ.idx);
-      G.quote(g, civ, 'wonder', id, w.name, 'Wonder completed in ' + s.name);
-      g.civs.forEach(function (c) { G.notify(g, c, { kind: 'wonder', text: (c === civ ? 'You' : G.civData(civ).name) + ' completed the ' + w.name + (c === civ ? ' in ' + s.name : '') + '.', tile: s.tile, settlement: s.id }); });
+      G.quote(g, civ, 'wonder', id, w.name, _('Wonder completed in') + ' ' + s.name);
+      g.civs.forEach(function (c) { G.notify(g, c, { kind: 'wonder', text: (c === civ ? _('You') : G.civData(civ).name) + ' completed the ' + w.name + (c === civ ? ' in ' + s.name : '') + '.', tile: s.tile, settlement: s.id }); });
     } else if (kind === 'national') {
       if (!G.canBuildNational(g, s, id)) { civ.gold += Math.round(s.progress['national:' + id] || 0); return false; }
       G.addBuilding(g, s, id); civ.nationalCount = (civ.nationalCount || 0) + 1; civ._fx = null;
       var nw = AU.NATIONAL[id];
       if (nw.fx && nw.fx.freeTech) G.grantFreeTech(g, civ);
       G.notify(g, civ, { kind: 'wonder', text: s.name + ' completed the ' + nw.name + '.', tile: s.tile, settlement: s.id });
-      G.quote(g, civ, 'national', id, nw.name, 'National wonder completed in ' + s.name);
+      G.quote(g, civ, 'national', id, nw.name, _('National wonder completed in') + ' ' + s.name);
       G.log(g, G.civData(civ).name + ' completed the ' + nw.name + '.', civ.idx);
     } else if (kind === 'project') {
       civ.projects = civ.projects || {}; civ.projects[id] = g.turn;
       G.log(g, G.civData(civ).name + ' completed ' + AU.PROJECTS[id].name + '.', civ.idx);
-      g.civs.forEach(function (c) { G.notify(g, c, { kind: 'project', text: (c === civ ? 'You' : G.civData(civ).name) + ' completed ' + AU.PROJECTS[id].name + '!', tile: s.tile }); });
+      g.civs.forEach(function (c) { G.notify(g, c, { kind: 'project', text: (c === civ ? _('You') : G.civData(civ).name) + ' completed ' + AU.PROJECTS[id].name + '!', tile: s.tile }); });
       if (id === 'launch_satellite') { for (var i = 0; i < civ.explored.length; i++) civ.explored[i] = 1; }
       if (id === 'colony_ship') g.victory = { type: 'science', civ: civ.idx, turn: g.turn };
     }
@@ -698,7 +698,7 @@
     var civ = g.civs[s.civ], cost = G.cityUpgradeCost(g, civ);
     if (s.isCity || civ.gold < cost) return false;
     civ.gold -= cost; s.isCity = true; s.specialization = null;
-    G.log(g, s.name + ' has become a City.', civ.idx);
+    G.log(g, s.name + ' ' + _('has become a City.'), civ.idx);
     return true;
   };
   // Town specializations: the five shared ones plus an empire's own (data.ut).
@@ -744,7 +744,7 @@
     if (!m || !civ.boosts || !civ.boosts[key]) return false;
     civ.mastery = civ.mastery || {}; civ.mastery[key] = g.turn; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     var name = isCivic ? AU.CIVIC_BY_ID[id].name : AU.TECH_BY_ID[id].name;
-    G.notify(g, civ, { kind: isCivic ? 'civic' : 'tech', text: '⭐ Mastery of ' + name + ': ' + m.desc + '.', panel: isCivic ? 'civics' : 'tech' });
+    G.notify(g, civ, { kind: isCivic ? 'civic' : 'tech', text: '⭐ ' + _('Mastery of') + ' ' + name + ': ' + m.desc + '.', panel: isCivic ? 'civics' : 'tech' });
     return true;
   };
   G.learnTech = function (g, civ, id) {
@@ -756,8 +756,8 @@
     if (fx.techGold) civ.gold += fx.techGold;
     if (fx.techCulture) civ.bonusCulture = (civ.bonusCulture || 0) + fx.techCulture;
     if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (fx.freeBuildingWithTech[fb] === id) G.civSettlements(g, civ.idx).forEach(function (s) { G.addBuilding(g, s, fb); });
-    G.notify(g, civ, { kind: 'tech', text: 'Research complete: ' + AU.TECH_BY_ID[id].name + '.', panel: 'tech' });
-    G.quote(g, civ, 'tech', id, AU.TECH_BY_ID[id].name, 'Technology discovered');
+    G.notify(g, civ, { kind: 'tech', text: _('Research complete') + ': ' + AU.TECH_BY_ID[id].name + '.', panel: 'tech' });
+    G.quote(g, civ, 'tech', id, AU.TECH_BY_ID[id].name, _('Technology discovered'));
   };
   G.learnCivic = function (g, civ, id) {
     civ.civics[id] = g.turn; delete civ.civicProgress[id];
@@ -767,10 +767,10 @@
     var cfx = G.civFx(g, civ); if (cfx.civicScience) civ.bonusScience = (civ.bonusScience || 0) + cfx.civicScience;
     civ._fx = null;
     var c = AU.CIVIC_BY_ID[id];
-    G.notify(g, civ, { kind: 'civic', text: 'Civic adopted: ' + c.name + (c.unlocks ? ' (unlocks ' + c.unlocks + ')' : '') + '.', panel: 'civics' });
-    if (c.cards && c.cards.length) G.notify(g, civ, { big: true, kind: 'civic', text: '🃏 New policy card' + (c.cards.length > 1 ? 's' : '') + ': ' + c.cards.map(function (k) { return AU.POLICIES[k] ? AU.POLICIES[k].name : k; }).join(', ') + '. Slot ' + (c.cards.length > 1 ? 'them' : 'it') + ' in Government & policies.', panel: 'civics', tab: 'policies' });
-    for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ New government available: ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
-    G.quote(g, civ, 'civic', id, c.name, 'Civic adopted');
+    G.notify(g, civ, { kind: 'civic', text: _('Civic adopted') + ': ' + c.name + (c.unlocks ? ' (unlocks ' + c.unlocks + ')' : '') + '.', panel: 'civics' });
+    if (c.cards && c.cards.length) G.notify(g, civ, { big: true, kind: 'civic', text: '🃏 ' + _('New policy card') + (c.cards.length > 1 ? 's' : '') + ': ' + c.cards.map(function (k) { return AU.POLICIES[k] ? AU.POLICIES[k].name : k; }).join(', ') + '. ' + _('Slot') + ' ' + (c.cards.length > 1 ? 'them' : 'it') + ' ' + _('in Government & policies.'), panel: 'civics', tab: 'policies' });
+    for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ ' + _('New government available') + ': ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
+    G.quote(g, civ, 'civic', id, c.name, _('Civic adopted'));
   };
   G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
   G.grantFreeCivic = function (g, civ) { var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
@@ -842,7 +842,7 @@
       var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Knowledge from a Spark
       if (gain) civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
       var mt = G.masteryOf(t.id, false);
-      G.notify(g, civ, { big: true, kind: 'tech', text: '💡 Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Knowledge' : '') + '.', panel: 'tech' });
+      G.notify(g, civ, { big: true, kind: 'tech', text: '💡 ' + _('Spark!') + ' ' + t.name + (mt ? ': ' + _('finish it to earn its mastery') + ' (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' ' + _('Knowledge') : '') + '.', panel: 'tech' });
     });
     AU.CIVICS.forEach(function (c) {
       if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
@@ -851,7 +851,7 @@
       var disc2 = G.civFx(g, civ).inspirationDiscount || 0, gain2 = disc2 ? Math.round(G.civicCost(g, civ, c) * disc2) : 0;
       if (gain2) civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
       var mc = G.masteryOf(c.id, true);
-      G.notify(g, civ, { big: true, kind: 'civic', text: '💡 Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Heritage' : '') + '.', panel: 'civics' });
+      G.notify(g, civ, { big: true, kind: 'civic', text: '💡 ' + _('Insight!') + ' ' + c.name + (mc ? ': ' + _('finish it to earn its mastery') + ' (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' ' + _('Heritage') : '') + '.', panel: 'civics' });
     });
   };
 
@@ -865,14 +865,14 @@
     g.civs.forEach(function (c) { if (c.idx !== a && c.idx !== b && c.alive) c.rel[a].attitude -= 5; });
     if (AU.Diplo) AU.Diplo.onWarDeclared(g, a, b);
     G.log(g, G.civData(ca).name + ' declared war on ' + G.civData(cb).name + '!', a);
-    g.civs.forEach(function (c) { if (c.isPlayer) G.notify(g, c, { kind: 'war', text: (c.idx === a ? 'You declared war on ' + G.civData(cb).name : G.civData(ca).name + ' declared war on ' + (c.idx === b ? 'you' : G.civData(cb).name)) + '!', panel: 'diplomacy' }); });
+    g.civs.forEach(function (c) { if (c.isPlayer) G.notify(g, c, { kind: 'war', text: (c.idx === a ? _('You declared war on') + ' ' + G.civData(cb).name : G.civData(ca).name + ' declared war on ' + (c.idx === b ? 'you' : G.civData(cb).name)) + '!', panel: 'diplomacy' }); });
   };
   G.makePeace = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
     ca.rel[b].war = false; cb.rel[a].war = false; ca.rel[b].peaceUntil = g.turn + 10; cb.rel[a].peaceUntil = g.turn + 10;
     ca.rel[b].attitude += 10; cb.rel[a].attitude += 10;
     G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' made peace.', a);
-    g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === a || c.idx === b)) G.notify(g, c, { kind: 'peace', text: 'Peace with ' + G.civData(c.idx === a ? cb : ca).name + '.', panel: 'diplomacy' }); });
+    g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === a || c.idx === b)) G.notify(g, c, { kind: 'peace', text: _('Peace with') + ' ' + G.civData(c.idx === a ? cb : ca).name + '.', panel: 'diplomacy' }); });
   };
   G.militaryStrength = function (g, civIdx) { var s = 0; G.civUnits(g, civIdx).forEach(function (u) { var d = AU.UNITS[u.type]; s += Math.max(d.strength, d.ranged || 0) * u.hp / 100; }); return s; };
   G.aiAcceptsPeace = function (g, ai, other) {
@@ -954,9 +954,9 @@
       var cost = G.growthCost(s.pop, g);
       if (s.food >= cost) {
         s.food -= cost; s.pop += 1; s.pendingGrowth += 1;
-        G.notify(g, civ, { kind: 'growth', text: s.name + ' has grown to ' + s.pop + '. Choose a tile to expand.', tile: s.tile, settlement: s.id });
+        G.notify(g, civ, { kind: 'growth', text: s.name + ' has grown to ' + s.pop + '. ' + _('Choose a tile to expand.'), tile: s.tile, settlement: s.id });
       } else if (s.food < 0) {
-        if (s.pop > 1) { s.pop -= 1; G.unworkWorstTile(g, s); G.notify(g, civ, { kind: 'starve', text: s.name + ' is starving and shrank to ' + s.pop + '.', tile: s.tile, settlement: s.id }); }
+        if (s.pop > 1) { s.pop -= 1; G.unworkWorstTile(g, s); G.notify(g, civ, { kind: 'starve', text: s.name + ' ' + _('is starving and shrank to') + ' ' + s.pop + '.', tile: s.tile, settlement: s.id }); }
         s.food = 0;
       }
     }
@@ -1019,9 +1019,9 @@
     if (!best) return null;
     var dmg = Math.round(U.damage(g, G.settlementStrength(g, s) - bs) * 0.6);
     best.hp -= dmg; var vciv = best.civ >= 0 ? g.civs[best.civ] : null;
-    if (best.hp <= 0) { G.removeUnit(g, best); if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + best.name + ' was destroyed by the walls of ' + s.name + '.', tile: best.tile }); G.log(g, 'The walls of ' + s.name + ' destroyed a ' + best.name + '.', s.civ); }
-    else if (vciv && vciv.isPlayer) G.notify(g, vciv, { kind: 'attack', text: 'The walls of ' + s.name + ' hit your ' + best.name + ' for ' + dmg + '.', tile: best.tile });
-    if (civ.isPlayer) G.notify(g, civ, { kind: 'attack', text: s.name + '\'s walls hit an enemy ' + best.name + ' for ' + dmg + '.', tile: best.tile });
+    if (best.hp <= 0) { G.removeUnit(g, best); if (vciv) G.notify(g, vciv, { kind: 'loss', text: _('Your') + ' ' + best.name + ' was destroyed by the walls of ' + s.name + '.', tile: best.tile }); G.log(g, _('The walls of') + ' ' + s.name + ' destroyed a ' + best.name + '.', s.civ); }
+    else if (vciv && vciv.isPlayer) G.notify(g, vciv, { kind: 'attack', text: _('The walls of') + ' ' + s.name + ' hit your ' + best.name + ' for ' + dmg + '.', tile: best.tile });
+    if (civ.isPlayer) G.notify(g, civ, { kind: 'attack', text: s.name + '\'' + _('s walls hit an enemy') + ' ' + best.name + ' for ' + dmg + '.', tile: best.tile });
     return dmg;
   };
   G.settlementMaxHp = function (g, s) { var hp = 100; if (G.hasBuilding(s, 'walls')) hp += 100; if (G.hasBuilding(s, 'castle')) hp += 100; return hp; };
@@ -1062,7 +1062,7 @@
     civ.gold -= G.unitUpkeep(g, civ);
     if (civ.gold < 0) {
       var mil = G.civUnits(g, civ.idx).filter(G.isMilitary);
-      if (mil.length) { var victim = mil[0]; G.removeUnit(g, victim); G.notify(g, civ, { kind: 'disband', text: 'Your treasury is empty: ' + victim.name + ' disbanded.' }); }
+      if (mil.length) { var victim = mil[0]; G.removeUnit(g, victim); G.notify(g, civ, { kind: 'disband', text: _('Your treasury is empty') + ': ' + victim.name + ' disbanded.' }); }
       civ.gold = 0;
     }
     // research

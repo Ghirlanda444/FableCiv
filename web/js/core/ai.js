@@ -13,7 +13,7 @@
       AI.envoys(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
-    } catch (e) { G.log(g, 'AI error for ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
+    } catch (e) { G.log(g, _('AI error for') + ' ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
   };
 
   // ---------- Diplomacy ----------

@@ -7,11 +7,11 @@
   var PAL = { ocean: 0x16427a, coast: 0x2f86c2, lake: 0x3f96d8, grassland: 0x5f9a3c, plains: 0xb1a052, desert: 0xdec88b, tundra: 0x8b9278, snow: 0xe8eef2, mountain: 0x7a746e };
 
   P.render_cityview = function (app, g, data) {
-    var s = g.settlements[data.id]; if (!s) return { title: 'City', html: '<p>Gone.</p>' };
+    var s = g.settlements[data.id]; if (!s) return { title: _('City'), html: '<p>Gone.</p>' };
     var civ = g.civs[s.civ];
-    var html = '<div class="cityview-wrap"><canvas id="cityview-canvas"></canvas><div class="cityview-hint">Drag to look around · pinch or scroll to zoom</div></div>';
-    html += '<div class="section"><h3>' + (s.isCity ? 'City' : 'Town') + ' of ' + s.name + ' · population ' + s.pop + '</h3><div class="yields">' + s.buildings.map(function (b) { var d = G.buildingDef(g, civ, b); return '<span>' + (AU.WONDERS[b] ? '🏛️ ' : AU.NATIONAL[b] ? '🏯 ' : '') + (d ? d.name : b) + '</span>'; }).join('') + (s.buildings.length ? '' : '<span class="stat">No buildings yet.</span>') + '</div></div>';
-    html += '<div class="section"><button class="small" data-action="city" data-id="' + s.id + '">← Manage ' + s.name + '</button></div>';
+    var html = '<div class="cityview-wrap"><canvas id="cityview-canvas"></canvas><div class="cityview-hint">' + _('Drag to look around') + ' · pinch or scroll to zoom</div></div>';
+    html += '<div class="section"><h3>' + (s.isCity ? _('City') : _('Town')) + ' of ' + s.name + ' · population ' + s.pop + '</h3><div class="yields">' + s.buildings.map(function (b) { var d = G.buildingDef(g, civ, b); return '<span>' + (AU.WONDERS[b] ? '🏛️ ' : AU.NATIONAL[b] ? '🏯 ' : '') + (d ? d.name : b) + '</span>'; }).join('') + (s.buildings.length ? '' : '<span class="stat">' + _('No buildings yet.') + '</span>') + '</div></div>';
+    html += '<div class="section"><button class="small" data-action="city" data-id="' + s.id + '">← ' + _('Manage') + ' ' + s.name + '</button></div>';
     setTimeout(function () { CV.open(app, s); }, 0);
     return { title: s.name, html: html };
   };

@@ -59,7 +59,7 @@
   GP.patronize = function (g, civ, type, currency) {
     if (!GP.canPatronize(g, civ, type, currency)) return null;
     var price = GP.patronCost(g, civ, type, currency); if (currency === 'gold') civ.gold -= price; else civ.faith -= price;
-    GP.state(civ).pts[type] = 0; return GP.recruit(g, civ, type, 'with ' + (currency === 'gold' ? 'Gold' : 'Devotion'));
+    GP.state(civ).pts[type] = 0; return GP.recruit(g, civ, type, 'with ' + (currency === 'gold' ? _('Gold') : _('Devotion')));
   };
   // ---------- using a Great Person ----------
   GP.typeOf = function (u) { return u.greatType || (AU.UNITS[u.type] && AU.UNITS[u.type].great) || null; };
@@ -70,16 +70,16 @@
     var civ = g.civs[u.civ], s = G.settlementAt(g, u.tile), own = s && s.civ === u.civ, t = g.tiles[u.tile], inside = G.tileOwnerCiv(g, t) === u.civ, R = AU.Religion, out = [];
     switch (type) {
       case 'prophet':
-        if (R && !civ.religion && R.religionsFounded(g) < R.maxReligions(g)) out.push({ action: 'greatfound', label: '🕊️ Found a religion here', ok: !!own && !!civ.pantheon, why: !own ? 'Move into one of your settlements.' : !civ.pantheon ? 'Choose a pantheon first (Religion panel).' : '' });
-        else if (civ.religion) out.push({ action: 'greatuse', label: '🕊️ Convert ' + (s ? s.name : 'this settlement') + ' to ' + R.name(g, civ.religion), ok: !!s, why: 'Move into a settlement.' });
-        else out.push({ action: 'greatuse', label: '🕊️ Retire for ' + GP.burst(g, civ, 120) + ' Devotion', ok: true, why: '' });
+        if (R && !civ.religion && R.religionsFounded(g) < R.maxReligions(g)) out.push({ action: 'greatfound', label: '🕊️ ' + _('Found a religion here'), ok: !!own && !!civ.pantheon, why: !own ? _('Move into one of your settlements.') : !civ.pantheon ? _('Choose a pantheon first (Religion panel).') : '' });
+        else if (civ.religion) out.push({ action: 'greatuse', label: '🕊️ ' + _('Convert') + ' ' + (s ? s.name : 'this settlement') + ' to ' + R.name(g, civ.religion), ok: !!s, why: _('Move into a settlement.') });
+        else out.push({ action: 'greatuse', label: '🕊️ ' + _('Retire for') + ' ' + GP.burst(g, civ, 120) + ' ' + _('Devotion'), ok: true, why: '' });
         break;
       case 'scientist': { var cur = civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null, cheapest = G.availableTechs(civ).sort(function (a, b) { return a.cost - b.cost; })[0]; var tech = cur || cheapest;
-        out.push({ action: 'greatuse', label: '🔬 Discover ' + (tech ? tech.name : 'a technology') + ' now', ok: inside && !!tech, why: !inside ? 'Move inside your borders.' : !tech ? 'Nothing left to research.' : '' }); break; }
-      case 'engineer': out.push({ action: 'greatuse', label: '⚙️ ' + (own && s.isCity && s.queue.length ? 'Add ' + GP.burst(g, civ, 150) + ' Production to ' + (AU.Panels ? AU.Panels.itemName(g, civ, s.queue[0]) : 'the build') : 'Turn skill into ' + GP.burst(g, civ, 150) + ' Gold' + (own && s.isCity ? ' (queue a wonder here first to get Production instead)' : '')), ok: !!own, why: 'Move into one of your settlements.' }); break;
-      case 'merchant': out.push({ action: 'greatuse', label: '💰 Trade mission: +' + GP.burst(g, civ, 200) + ' Gold and +15 Ties with every free city', ok: !!own, why: 'Move into one of your settlements.' }); break;
-      case 'artist': out.push({ action: 'greatuse', label: '🎨 Create a Great Work here (+3 🎭 +3 🧳 per turn)', ok: !!own, why: 'Move into one of your settlements.' }); break;
-      case 'general': case 'admiral': out.push({ action: 'greatuse', label: (type === 'general' ? '⚔️' : '⚓') + ' Retire: heal every friendly unit within 2 tiles', ok: true, why: '' }); break;
+        out.push({ action: 'greatuse', label: '🔬 ' + _('Discover') + ' ' + (tech ? tech.name : 'a technology') + ' now', ok: inside && !!tech, why: !inside ? _('Move inside your borders.') : !tech ? _('Nothing left to research.') : '' }); break; }
+      case 'engineer': out.push({ action: 'greatuse', label: '⚙️ ' + (own && s.isCity && s.queue.length ? _('Add') + ' ' + GP.burst(g, civ, 150) + ' ' + _('Production to') + ' ' + (AU.Panels ? AU.Panels.itemName(g, civ, s.queue[0]) : 'the build') : _('Turn skill into') + ' ' + GP.burst(g, civ, 150) + ' ' + _('Gold') + (own && s.isCity ? ' (' + _('queue a wonder here first to get Production instead)') : '')), ok: !!own, why: _('Move into one of your settlements.') }); break;
+      case 'merchant': out.push({ action: 'greatuse', label: '💰 ' + _('Trade mission') + ': +' + GP.burst(g, civ, 200) + ' ' + _('Gold and') + ' +15 ' + _('Ties with every free city'), ok: !!own, why: _('Move into one of your settlements.') }); break;
+      case 'artist': out.push({ action: 'greatuse', label: '🎨 ' + _('Create a Great Work here') + ' (+3 🎭 +3 🧳 per turn)', ok: !!own, why: _('Move into one of your settlements.') }); break;
+      case 'general': case 'admiral': out.push({ action: 'greatuse', label: (type === 'general' ? '⚔️' : '⚓') + ' ' + _('Retire: heal every friendly unit within 2 tiles'), ok: true, why: '' }); break;
     }
     return out;
   };
@@ -94,9 +94,9 @@
         else { civ.faith += GP.burst(g, civ, 120); msg = u.name + ' retires; +' + GP.burst(g, civ, 120) + ' Devotion.'; }
         break;
       case 'scientist': { var tech = (civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null) || G.availableTechs(civ).sort(function (a, b) { return a.cost - b.cost; })[0]; if (!tech) return false; G.learnTech(g, civ, tech.id); msg = u.name + ' discovers ' + tech.name + '!'; break; }
-      case 'engineer': { var amt = GP.burst(g, civ, 150); if (s.isCity && s.queue.length) { var q = s.queue[0], key = q.kind + ':' + q.id; s.progress[key] = (s.progress[key] || 0) + amt; msg = u.name + ' adds ' + amt + ' Production in ' + s.name + '.'; } else { civ.gold += amt; msg = u.name + ' brings ' + amt + ' Gold.'; } break; }
-      case 'merchant': { var gold = GP.burst(g, civ, 200); civ.gold += gold; if (AU.CityStates) AU.CityStates.goodwill(g, civ, 15, u.name); msg = u.name + ' brings ' + gold + ' Gold and goodwill among the free cities.'; break; }
-      case 'artist': s.greatWorks = (s.greatWorks || 0) + 1; s.greatWorkNames = (s.greatWorkNames || []).concat([u.name]); civ._fx = null; msg = u.name + ' creates a Great Work in ' + s.name + '.'; break;
+      case 'engineer': { var amt = GP.burst(g, civ, 150); if (s.isCity && s.queue.length) { var q = s.queue[0], key = q.kind + ':' + q.id; s.progress[key] = (s.progress[key] || 0) + amt; msg = u.name + ' adds ' + amt + ' ' + _('Production in') + ' ' + s.name + '.'; } else { civ.gold += amt; msg = u.name + ' brings ' + amt + ' Gold.'; } break; }
+      case 'merchant': { var gold = GP.burst(g, civ, 200); civ.gold += gold; if (AU.CityStates) AU.CityStates.goodwill(g, civ, 15, u.name); msg = u.name + ' brings ' + gold + ' ' + _('Gold and goodwill among the free cities.'); break; }
+      case 'artist': s.greatWorks = (s.greatWorks || 0) + 1; s.greatWorkNames = (s.greatWorkNames || []).concat([u.name]); civ._fx = null; msg = u.name + ' ' + _('creates a Great Work in') + ' ' + s.name + '.'; break;
       case 'general': case 'admiral': { var n = 0; G.civUnits(g, civ.idx).forEach(function (o) { if (o.id !== u.id && G.dist(g.tiles[o.tile], g.tiles[u.tile]) <= 2 && o.hp < 100) { o.hp = 100; n++; } }); msg = u.name + ' retires; ' + n + ' unit' + (n === 1 ? '' : 's') + ' healed.'; break; }
     }
     G.log(g, msg, civ.idx); if (civ.isPlayer) G.notify(g, civ, { kind: 'great', text: msg, tile: u.tile });

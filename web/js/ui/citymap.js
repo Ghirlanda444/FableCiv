@@ -8,43 +8,43 @@
   function yTxt(y) { return AU.YIELD_KEYS.filter(function (k) { return y[k]; }).map(function (k) { return y[k] + YI[k]; }).join(' ') || '—'; }
   // Plain-language explanation of how a tile gets improved (no Empire knowledge assumed).
   CM.improvementWhy = function (g, t, civ) {
-    if (t.natural) return 'A natural wonder: it cannot be improved, but it already gives great yields.';
-    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' is here but your people cannot use it until you research ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return 'A citizen here builds a ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
-    if (G.isWater(t)) return 'Open water: nothing to build, but fish and other sea resources can be worked with Fishing Boats.';
-    if (t.terrain === 'mountain') return 'Mountains cannot be worked.';
-    if (t.hills) return 'Hills: a citizen here builds a ' + G.improvementName(g, t, civ, 'mine') + (G.uniqueImprovement(g, t, civ, 'mine') ? ' (your unique improvement)' : ' (+1 Production)') + '.';
-    if (t.feature === 'forest' || t.feature === 'jungle') return (t.feature === 'forest' ? 'Forest' : 'Rainforest') + ': a citizen here sets up a Woodcutter (+1 Production).';
-    if (t.feature === 'marsh') return 'Marsh: a citizen here drains a Clearing (+1 Food).';
-    if (t.terrain === 'snow') return 'Snow: too cold to improve.';
-    return 'Flat land: a citizen here builds a ' + G.improvementName(g, t, civ, 'farm') + (G.uniqueImprovement(g, t, civ, 'farm') ? ' (your unique improvement)' : ' (+1 Food)') + '.';
+    if (t.natural) return _('A natural wonder: it cannot be improved, but it already gives great yields.');
+    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' ' + _('is here but your people cannot use it until you research') + ' ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return _('A citizen here builds a') + ' ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
+    if (G.isWater(t)) return _('Open water: nothing to build, but fish and other sea resources can be worked with Fishing Boats.');
+    if (t.terrain === 'mountain') return _('Mountains cannot be worked.');
+    if (t.hills) return _('Hills: a citizen here builds a') + ' ' + G.improvementName(g, t, civ, 'mine') + (G.uniqueImprovement(g, t, civ, 'mine') ? ' (your unique improvement)' : ' (+1 ' + _('Production)')) + '.';
+    if (t.feature === 'forest' || t.feature === 'jungle') return (t.feature === 'forest' ? _('Forest') : _('Rainforest')) + ': ' + _('a citizen here sets up a Woodcutter') + ' (+1 Production).';
+    if (t.feature === 'marsh') return _('Marsh: a citizen here drains a Clearing') + ' (+1 Food).';
+    if (t.terrain === 'snow') return _('Snow: too cold to improve.');
+    return _('Flat land: a citizen here builds a') + ' ' + G.improvementName(g, t, civ, 'farm') + (G.uniqueImprovement(g, t, civ, 'farm') ? ' (your unique improvement)' : ' (+1 ' + _('Food)')) + '.';
   };
   CM.html = function (app, g, s, data) {
     var civ = g.civs[s.civ], p = G.player(g), own = s.civ === p.idx;
     var worked = s.tiles.filter(function (i) { return g.tiles[i].worked && i !== s.tile; }).length;
     var cands = s.pendingGrowth > 0 && own ? G.expansionCandidates(g, s) : [];
-    var html = '<div class="section"><h3>Citizens and tiles</h3>';
-    html += '<p class="stat"><b>' + s.pop + ' citizens</b>: ' + worked + ' working tiles' + (s.specialists ? ', ' + s.specialists + ' specialist' + (s.specialists > 1 ? 's' : '') + ' (no free tile, they give +2 🔬 each)' : '') + '. The city centre is always worked for free. Every yield below comes from these tiles plus your buildings.</p>';
-    if (cands.length) html += '<div class="row" style="border-color:var(--food)"><div class="grow"><b>🌱 A new citizen is waiting (' + s.pendingGrowth + ')</b><small>Tap a green tile on the map to send them there, or let the game pick the best one.</small></div><button class="small" data-action="autoexpand" data-id="' + s.id + '">Auto</button></div>';
+    var html = '<div class="section"><h3>' + _('Citizens and tiles') + '</h3>';
+    html += '<p class="stat"><b>' + s.pop + ' citizens</b>: ' + worked + ' working tiles' + (s.specialists ? ', ' + s.specialists + ' specialist' + (s.specialists > 1 ? 's' : '') + ' (' + _('no free tile, they give') + ' +2 🔬 each)' : '') + '. ' + _('The city centre is always worked for free. Every yield below comes from these tiles plus your buildings.') + '</p>';
+    if (cands.length) html += '<div class="row" style="border-color:var(--food)"><div class="grow"><b>🌱 ' + _('A new citizen is waiting') + ' (' + s.pendingGrowth + ')</b><small>' + _('Tap a green tile on the map to send them there, or let the game pick the best one.') + '</small></div><button class="small" data-action="autoexpand" data-id="' + s.id + '">' + _('Auto') + '</button></div>';
     html += '<div class="citymap-wrap"><canvas id="citymap" class="citymap"></canvas></div>';
-    html += '<div class="citymap-legend"><span><i class="lg lg-worked"></i> worked by a citizen</span><span><i class="lg lg-owned"></i> yours, not worked</span>' + (cands.length ? '<span><i class="lg lg-cand"></i> new citizen can go here</span>' : '') + '<span><i class="lg lg-foreign"></i> someone else\'s</span></div>';
+    html += '<div class="citymap-legend"><span><i class="lg lg-worked"></i> worked by a citizen</span><span><i class="lg lg-owned"></i> yours, not worked</span>' + (cands.length ? '<span><i class="lg lg-cand"></i> ' + _('new citizen can go here') + '</span>' : '') + '<span><i class="lg lg-foreign"></i> someone else\'s</span></div>';
     // tile detail
     var ti = data.tile != null ? data.tile : s.tile, t = g.tiles[ti];
     if (t) {
       var y = G.tileYields(g, t, s, civ), imp = G.improvementFor(g, t, civ), isCenter = ti === s.tile, ownedHere = t.owner === s.id, ownerS = t.owner >= 0 ? g.settlements[t.owner] : null;
-      var name = (t.hills ? 'Hills · ' : '') + AU.TERRAIN[t.terrain].name + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.natural ? ' · ' + AU.NATURAL_WONDERS[t.natural].name : '') + (t.river ? ' · river' : '');
+      var name = (t.hills ? _('Hills') + ' · ' : '') + AU.TERRAIN[t.terrain].name + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.natural ? ' · ' + AU.NATURAL_WONDERS[t.natural].name : '') + (t.river ? ' · river' : '');
       html += '<div class="tree-detail"><div class="grow"><b>' + (isCenter ? '🏛️ ' + s.name + ' (city centre)' : name) + (t.resource ? ' · ' + AU.RESOURCES[t.resource].icon + ' ' + AU.RESOURCES[t.resource].name : '') + '</b>' +
-        '<small>Yields if worked: <b>' + yTxt(y) + '</b>' + (imp && !isCenter ? ' · improvement: ' + (G.uniqueImprovement(g, t, civ, imp) || AU.IMPROVEMENTS[imp]).icon + ' ' + G.improvementName(g, t, civ, imp) : '') + '</small>' +
-        '<small>' + (isCenter ? 'The centre tile is always worked and never starves.' : t.worked && ownedHere ? '👤 A citizen works this tile now.' : ownedHere ? 'Yours, but no citizen works it: it gives nothing until the city grows.' : ownerS && ownerS.civ !== s.civ ? 'Belongs to ' + ownerS.name + ' (' + G.civData(g.civs[ownerS.civ]).name + ').' : ownerS ? 'Belongs to your settlement ' + ownerS.name + '.' : 'Unclaimed.') + '</small>' +
+        '<small>' + _('Yields if worked') + ': <b>' + yTxt(y) + '</b>' + (imp && !isCenter ? ' · improvement: ' + (G.uniqueImprovement(g, t, civ, imp) || AU.IMPROVEMENTS[imp]).icon + ' ' + G.improvementName(g, t, civ, imp) : '') + '</small>' +
+        '<small>' + (isCenter ? _('The centre tile is always worked and never starves.') : t.worked && ownedHere ? '👤 ' + _('A citizen works this tile now.') : ownedHere ? _('Yours, but no citizen works it: it gives nothing until the city grows.') : ownerS && ownerS.civ !== s.civ ? _('Belongs to') + ' ' + ownerS.name + ' (' + G.civData(g.civs[ownerS.civ]).name + ').' : ownerS ? _('Belongs to your settlement') + ' ' + ownerS.name + '.' : 'Unclaimed.') + '</small>' +
         (!isCenter ? '<small>' + CM.improvementWhy(g, t, civ) + '</small>' : '') + '</div>' +
-        (cands.indexOf(ti) >= 0 ? '<div class="tree-detail-btns"><button class="small primary" data-action="citygrow" data-id="' + s.id + '" data-tile="' + ti + '">🌱 Send citizen here</button></div>' : '') + '</div>';
+        (cands.indexOf(ti) >= 0 ? '<div class="tree-detail-btns"><button class="small primary" data-action="citygrow" data-id="' + s.id + '" data-tile="' + ti + '">🌱 ' + _('Send citizen here') + '</button></div>' : '') + '</div>';
     }
-    html += '<details class="rules"><summary>How do citizens, tiles and improvements work?</summary><div class="help">' +
-      '<p><b>One citizen, one tile.</b> Each point of population is a citizen who works exactly one tile of the settlement\'s land. The food, production, gold, science and culture of that tile go to the settlement every turn. Tiles nobody works give nothing.</p>' +
-      '<p><b>No builders: citizens improve tiles by themselves.</b> When the settlement grows, you choose a tile within three rings of the centre; the new citizen moves there, claims it and immediately builds the right improvement: a <b>Farm</b> on flat land, a <b>Mine</b> on hills, a <b>Woodcutter</b> in forests and rainforest, a <b>Clearing</b> in marsh, and the special improvement of a resource (Pasture for cattle and horses, Plantation for bananas or silk, Camp for furs, Quarry for stone, Fishing Boats at sea…).</p>' +
-      '<p><b>Resources need knowledge.</b> A resource with a hidden technology (Iron needs Iron Working, Horses need Animal Husbandry, Coal, Oil…) only counts once you have researched it. Until then the tile is worked like plain land. Luxury resources make your people happy; strategic ones unlock units.</p>' +
-      '<p><b>Growth.</b> Each citizen eats 2 food per turn. Surplus food fills the growth bar; when it is full a new citizen is born and the map asks you where to put them (or press Auto). If food is short the settlement starves and the weakest tile is abandoned.</p>' +
-      '<p><b>Specialists.</b> If there is no free tile left, a new citizen becomes a specialist and gives +2 science instead.</p>' +
-      '<p><b>Towns and Cities.</b> Towns have no build queue: their production is turned into gold and you buy things there. Cities build units, buildings and wonders with their production. Buildings add to the yields of the whole settlement; the Territory list at the bottom shows every tile you own.</p></div></details>';
+    html += '<details class="rules"><summary>' + _('How do citizens, tiles and improvements work?') + '</summary><div class="help">' +
+      '<p><b>' + _('One citizen, one tile.') + '</b> ' + _("Each point of population is a citizen who works exactly one tile of the settlement's land. The food, production, gold, science and culture of that tile go to the settlement every turn. Tiles nobody works give nothing.") + '</p>' +
+      '<p><b>' + _('No builders: citizens improve tiles by themselves.') + '</b> ' + _('When the settlement grows, you choose a tile within three rings of the centre; the new citizen moves there, claims it and immediately builds the right improvement: a') + ' <b>' + _('Farm') + '</b> on flat land, a <b>' + _('Mine') + '</b> on hills, a <b>' + _('Woodcutter') + '</b> ' + _('in forests and rainforest, a') + ' <b>' + _('Clearing') + '</b> ' + _('in marsh, and the special improvement of a resource (Pasture for cattle and horses, Plantation for bananas or silk, Camp for furs, Quarry for stone, Fishing Boats at sea…).') + '</p>' +
+      '<p><b>' + _('Resources need knowledge.') + '</b> ' + _('A resource with a hidden technology (Iron needs Iron Working, Horses need Animal Husbandry, Coal, Oil…) only counts once you have researched it. Until then the tile is worked like plain land. Luxury resources make your people happy; strategic ones unlock units.') + '</p>' +
+      '<p><b>Growth.</b> ' + _('Each citizen eats 2 food per turn. Surplus food fills the growth bar; when it is full a new citizen is born and the map asks you where to put them (or press Auto). If food is short the settlement starves and the weakest tile is abandoned.') + '</p>' +
+      '<p><b>Specialists.</b> ' + _('If there is no free tile left, a new citizen becomes a specialist and gives') + ' +2 ' + _('science instead.') + '</p>' +
+      '<p><b>' + _('Towns and Cities.') + '</b> ' + _('Towns have no build queue: their production is turned into gold and you buy things there. Cities build units, buildings and wonders with their production. Buildings add to the yields of the whole settlement; the Territory list at the bottom shows every tile you own.') + '</p></div></details>';
     html += '</div>';
     setTimeout(function () { CM.draw(app, g, s, data); }, 0);
     return html;
@@ -80,7 +80,7 @@
       if (cands[i]) { ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(126,217,87,' + (0.55 + 0.45 * pulse) + ')'; }
       ctx.stroke();
       if (known) {
-        ctx.font = Math.round(r * 0.62) + 'px system-ui, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 3;
+        ctx.font = Math.round(r * 0.62) + 'px system-ui, "' + _('Apple Color Emoji') + '", "' + _('Segoe UI Emoji') + '", "' + _('Noto Color Emoji') + '", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 3;
         var icon = i === s.tile ? (s.isCity ? '🏛️' : '🏘️') : t.natural ? '✨' : t.resource && (!AU.RESOURCES[t.resource].revealTech || civ.techs[AU.RESOURCES[t.resource].revealTech]) ? AU.RESOURCES[t.resource].icon : t.feature ? AU.FEATURES[t.feature].icon : t.terrain === 'mountain' ? '🏔️' : t.hills ? '⛰️' : '';
         if (icon) ctx.fillText(icon, cx, cy - (mine && t.worked && i !== s.tile ? r * 0.12 : 0));
         if (mine && t.worked && i !== s.tile) { var imp = G.improvementFor(g, t, civ); ctx.font = Math.round(r * 0.42) + 'px system-ui, sans-serif'; ctx.fillText('👤' + (imp ? AU.IMPROVEMENTS[imp].icon : ''), cx, cy + r * 0.45); }

@@ -154,9 +154,9 @@
     // remove the Inchibil units on the camp
     G.unitsAt(g, t.i).forEach(function (o) { if (o.civ < 0) G.removeUnit(g, o); });
     g.undo = null;
-    G.notify(g, civ, { big: true, kind: 'camp', text: '🏕️ ' + u.name + ' dispersed an Inchibil camp: +' + gold + ' Gold.', tile: t.i });
-    if (civ.isPlayer) { g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: 'Inchibil camp dispersed', title: u.name + ' scatters the Inchibils', text: 'We found their camp and drove them off. The loot is ours: +' + gold + ' Gold.', by: u.name, tile: t.i, cat: 'camp' }); }
-    G.log(g, G.civData(civ).name + ' dispersed a camp.', civ.idx);
+    G.notify(g, civ, { big: true, kind: 'camp', text: '🏕️ ' + u.name + ' ' + _('dispersed an Inchibil camp') + ': +' + gold + ' Gold.', tile: t.i });
+    if (civ.isPlayer) { g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: _('Inchibil camp dispersed'), title: u.name + ' ' + _('scatters the Inchibils'), text: _('We found their camp and drove them off. The loot is ours') + ': +' + gold + ' Gold.', by: u.name, tile: t.i, cat: 'camp' }); }
+    G.log(g, G.civData(civ).name + ' ' + _('dispersed a camp.'), civ.idx);
     var cfx0 = G.civFx(g, civ); if (cfx0.campFaith) civ.bonusFaith = (civ.bonusFaith || 0) + cfx0.campFaith;
   };
   U.followPath = function (g, u) {
@@ -350,7 +350,7 @@
         if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
         return result;
       }
-      G.notify(g, g.civs[s.civ], { kind: 'attack', text: s.name + ' is under attack!', tile: s.tile, settlement: s.id });
+      G.notify(g, g.civs[s.civ], { kind: 'attack', text: s.name + ' ' + _('is under attack!'), tile: s.tile, settlement: s.id });
     } else if (target.unit) {
       var v = target.unit;
       var defStr = U.strength(g, v, { attacking: false, vs: u });
@@ -365,9 +365,9 @@
         if (civ) { var kf = G.civFx(g, civ); if (kf.faithFromKills) civ.bonusFaith = (civ.bonusFaith || 0) + kf.faithFromKills; }
         if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
-        if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
+        if (vciv) G.notify(g, vciv, { kind: 'loss', text: _('Your') + ' ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
         if (!G.isMilitary(v) && !ranged && U.canCapture(u) && !AU.UNITS[v.type].religious) { // capture civilian: convert
-          v.civ = u.civ; v.hp = 100; v.moves = 0; result.capturedUnit = v.id; G.notify(g, civ, { kind: 'capture', text: 'Captured an enemy ' + v.name + '!', tile: v.tile });
+          v.civ = u.civ; v.hp = 100; v.moves = 0; result.capturedUnit = v.id; G.notify(g, civ, { kind: 'capture', text: _('Captured an enemy') + ' ' + v.name + '!', tile: v.tile });
         } else {
           G.removeUnit(g, v);
           if (!ranged && !U.tileBlocked(g, u, tileIdx, true) && U.enterCost(g, u, g.tiles[tileIdx], g.tiles[u.tile]) !== Infinity) { G.setUnitTile(g, u, tileIdx); result.advanced = true; }
@@ -379,7 +379,7 @@
     if (u.attacksLeft > 0 && u.moves > 0) u.moves = Math.max(1, u.moves - 1);
     else if (def.movesAfterAttack) u.moves = Math.max(0, u.moves - 1);
     else u.moves = 0;
-    if (u.hp <= 0) { result.attackerKilled = true; if (civ) G.notify(g, civ, { kind: 'loss', text: 'Your ' + u.name + ' died attacking.', tile: u.tile }); G.removeUnit(g, u); if (target.unit && target.unit.hp > 0) target.unit.xp += 3; }
+    if (u.hp <= 0) { result.attackerKilled = true; if (civ) G.notify(g, civ, { kind: 'loss', text: _('Your') + ' ' + u.name + ' ' + _('died attacking.'), tile: u.tile }); G.removeUnit(g, u); if (target.unit && target.unit.hp > 0) target.unit.xp += 3; }
     if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return result;
   };
@@ -417,7 +417,7 @@
     var rest = G.civSettlements(g, oldIdx);
     if (wasCapital) { if (rest.length) { rest.sort(function (a, b) { return b.pop - a.pop; }); rest[0].isCapital = true; rest[0].isCity = true; oldCiv.capital = rest[0].id; G.addBuilding(g, rest[0], 'palace'); } else oldCiv.capital = null; }
     G.log(g, G.civData(newCiv).name + ' captured ' + s.name + ' from ' + G.civData(oldCiv).name + '!', newCivIdx);
-    g.civs.forEach(function (c) { G.notify(g, c, { kind: 'capture', text: (c.idx === newCivIdx ? 'You' : G.civData(newCiv).name) + ' captured ' + s.name + (c.idx === oldIdx ? ' from you!' : '.'), tile: s.tile, settlement: s.id }); });
+    g.civs.forEach(function (c) { G.notify(g, c, { kind: 'capture', text: (c.idx === newCivIdx ? _('You') : G.civData(newCiv).name) + ' captured ' + s.name + (c.idx === oldIdx ? ' ' + _('from you!') : '.'), tile: s.tile, settlement: s.id }); });
     G.revealAround(g, newCiv, g.tiles[s.tile].col, g.tiles[s.tile].row, 3);
     if (!rest.length) U.eliminate(g, oldCiv);
     newCiv.rel[oldIdx].attitude -= 20;
@@ -438,7 +438,7 @@
     var v = targets[G.rngInt(g, targets.length)];
     var dmg = U.damage(g, G.settlementStrength(g, s) - U.strength(g, v, { attacking: false }));
     v.hp -= Math.round(dmg * 0.6);
-    if (v.hp <= 0) { var vc = U.civ(g, v); if (vc) G.notify(g, vc, { kind: 'loss', text: 'Your ' + v.name + ' was killed by the walls of ' + s.name + '.', tile: v.tile }); G.removeUnit(g, v); }
+    if (v.hp <= 0) { var vc = U.civ(g, v); if (vc) G.notify(g, vc, { kind: 'loss', text: _('Your') + ' ' + v.name + ' was killed by the walls of ' + s.name + '.', tile: v.tile }); G.removeUnit(g, v); }
   };
   // ---------- Founding & upgrades ----------
   U.foundCity = function (g, u) {
@@ -448,7 +448,7 @@
     var s = G.foundSettlement(g, u.civ, u.tile);
     G.removeUnit(g, u);
     var civ = g.civs[u.civ];
-    G.notify(g, civ, { kind: 'found', text: 'Founded ' + s.name + (s.isCapital ? ' (capital)' : ' as a Town') + '.', tile: s.tile, settlement: s.id });
+    G.notify(g, civ, { kind: 'found', text: _('Founded') + ' ' + s.name + (s.isCapital ? ' (capital)' : ' ' + _('as a Town')) + '.', tile: s.tile, settlement: s.id });
     if (civ.isPlayer) G.refreshVisibility(g, civ);
     return s;
   };

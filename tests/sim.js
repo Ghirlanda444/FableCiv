@@ -20,6 +20,12 @@ console.log('done in', Date.now() - t0, 'ms; turn', g.turn, 'victory', JSON.stri
 errs.slice(0, 5).forEach(e => console.log('  ', e.msg));
 const pops = Object.values(g.settlements).map(s => s.pop);
 console.log('settlements', pops.length, 'pop range', Math.min(...pops), '-', Math.max(...pops), 'wonders', Object.keys(g.wonders).length, 'wars', g.log.filter(l => /declared war/.test(l.msg)).length, 'captures', g.log.filter(l => /captured/.test(l.msg)).length);
+// invariants: no NaN in the economy, no negative population, every unit on a tile it may stand on
+const bad = [];
+g.civs.forEach(c => { if (!c.alive) return; ['gold', 'faith'].forEach(k => { if (typeof c[k] !== 'number' || isNaN(c[k])) bad.push(c.civId + ' ' + k + '=' + c[k]); }); const y = G.civYields(g, c); for (const k in y) if (typeof y[k] === 'number' && isNaN(y[k])) bad.push(c.civId + ' yield ' + k + ' NaN'); });
+Object.values(g.settlements).forEach(s => { if (!(s.pop >= 1)) bad.push(s.name + ' pop ' + s.pop); if (!(s.hp >= 0)) bad.push(s.name + ' hp ' + s.hp); if (isNaN(s.food)) bad.push(s.name + ' food NaN'); });
+Object.values(g.units).forEach(u => { const t = g.tiles[u.tile]; if (!t) bad.push('unit off map'); else if (AU.TERRAIN[t.terrain].impassable && !AU.UNITS[u.type].flying && !(u.civ >= 0 && G.civFx(g, g.civs[u.civ]).mountainsPassable)) bad.push(u.type + ' on ' + t.terrain); if (isNaN(u.hp) || u.hp < 0 || u.hp > 100) bad.push(u.type + ' hp ' + u.hp); });
+console.log('invariants:', bad.length ? bad.slice(0, 8).join('; ') : 'ok');
 const json = G.serialize(g); const g2 = G.deserialize(json);
 console.log('save size', (json.length / 1024).toFixed(0) + 'KB', 'roundtrip ok', g2.turn === g.turn && Object.keys(g2.units).length === Object.keys(g.units).length);
-if (errs.length) process.exit(1);
+if (errs.length || bad.length) process.exit(1);

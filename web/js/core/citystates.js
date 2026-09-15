@@ -4,7 +4,7 @@
 (function (AU) {
   var G = AU.G;
   var CS = AU.CityStates = {};
-  CS.TIERS = [{ n: 10, name: 'Acquaintance' }, { n: 30, name: 'Partner' }, { n: 60, name: 'Patron' }, { n: 90, name: 'Kin' }];
+  CS.TIERS = [{ n: 10, name: _('Acquaintance') }, { n: 30, name: _('Partner') }, { n: 60, name: _('Patron') }, { n: 90, name: _('Kin') }];
   CS.UNION_TURNS = 20; CS.HOSTILE_TURNS = 30; CS.GIFT_COST = 120; CS.GIFT_TIES = 10; CS.QUEST_TIES = 15; CS.MEET_TIES = 5; CS.PASSIVE_CAP = 75; // gifts, quests and reputation cannot carry you past 75: only caravans, garrisons and faith can
 
   CS.isMinor = function (civ) { return !!civ.minor; };
@@ -32,7 +32,7 @@
   // ---------- ties ----------
   CS.tiesOf = function (g, civ, minor) { return (minor.ties && minor.ties[civ.idx]) || 0; };
   CS.tierOf = function (n) { var t = 0; CS.TIERS.forEach(function (T, i) { if (n >= T.n) t = i + 1; }); return t; };
-  CS.tierName = function (n) { var t = CS.tierOf(n); return t ? CS.TIERS[t - 1].name : 'Stranger'; };
+  CS.tierName = function (n) { var t = CS.tierOf(n); return t ? CS.TIERS[t - 1].name : _('Stranger'); };
   // The Patron: the empire with the highest Ties, at least 60, and no tie for first place.
   CS.patron = function (g, minor) {
     var best = -1, bn = CS.TIERS[2].n - 1, tie = false;
@@ -51,14 +51,14 @@
     if (n > 0 && !active && after > CS.PASSIVE_CAP) after = Math.max(before, CS.PASSIVE_CAP);
     minor.ties[civ.idx] = after; if (n > 0) minor.tieTurn[civ.idx] = g.turn;
     if (CS.tierOf(after) !== CS.tierOf(before) || (n > 0 && CS.patron(g, minor) === civ.idx && before < CS.TIERS[2].n)) { g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1; }
-    if (civ.isPlayer && why && CS.tierOf(after) > CS.tierOf(before)) G.notify(g, civ, { kind: 'diplomacy', text: G.civData(minor).name + ' now counts you as ' + CS.tierName(after) + (CS.patron(g, minor) === civ.idx ? ' and its Patron' : '') + ' (' + why + ').', panel: 'diplomacy' });
+    if (civ.isPlayer && why && CS.tierOf(after) > CS.tierOf(before)) G.notify(g, civ, { kind: 'diplomacy', text: G.civData(minor).name + ' ' + _('now counts you as') + ' ' + CS.tierName(after) + (CS.patron(g, minor) === civ.idx ? ' ' + _('and its Patron') : '') + ' (' + why + ').', panel: 'diplomacy' });
     return after - before;
   };
   // Reputation with every free city you have met (civics, Great Merchants...). n = ties per city.
   CS.goodwill = function (g, civ, n, why) {
     if (civ.minor) return;
     var hit = 0; CS.minors(g).forEach(function (m) { if (m.alive && civ.met[m.idx]) hit += CS.addTies(g, civ, m, n, why) > 0 ? 1 : 0; });
-    if (civ.isPlayer && hit) G.notify(g, civ, { kind: 'diplomacy', text: '+' + n + ' Ties with every free city you know' + (why ? ' (' + why + ')' : '') + '.', panel: 'diplomacy' });
+    if (civ.isPlayer && hit) G.notify(g, civ, { kind: 'diplomacy', text: '+' + n + ' ' + _('Ties with every free city you know') + (why ? ' (' + why + ')' : '') + '.', panel: 'diplomacy' });
   };
   CS.grantEnvoy = function (g, civ, n, why) { CS.goodwill(g, civ, (n || 1), why); };
   // Attacking a free city: every free city turns cold for a while.
@@ -66,7 +66,7 @@
     var a = g.civs[attackerIdx], d = g.civs[defenderIdx]; if (!a || a.minor || !d || !d.minor) return;
     CS.minors(g).forEach(function (m) { m.hostileUntil = m.hostileUntil || {}; m.hostileUntil[a.idx] = g.turn + CS.HOSTILE_TURNS; if (m.ties) m.ties[a.idx] = 0; if (m.kinSince) delete m.kinSince[a.idx]; });
     g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1;
-    if (a.isPlayer) G.notify(g, a, { kind: 'war', text: 'Every free city has heard of your attack on ' + G.civData(d).name + ': all your Ties are lost for ' + CS.HOSTILE_TURNS + ' turns.', panel: 'diplomacy' });
+    if (a.isPlayer) G.notify(g, a, { kind: 'war', text: _('Every free city has heard of your attack on') + ' ' + G.civData(d).name + ': ' + _('all your Ties are lost for') + ' ' + CS.HOSTILE_TURNS + ' turns.', panel: 'diplomacy' });
   };
   // What builds Ties this turn for one empire with one free city.
   CS.sources = function (g, civ, minor) {
@@ -75,10 +75,10 @@
     var caravan = false, garrison = false;
     G.civUnits(g, civ.idx).forEach(function (u) { if (!owned[u.tile]) return; if (u.route === minor.idx && AU.UNITS[u.type].caravan) caravan = true; else if (G.isMilitary(u)) garrison = true; });
     if (caravan) out.push({ id: 'caravan', n: 3, text: 'trade route' });
-    if (garrison) out.push({ id: 'garrison', n: 1, text: 'your soldiers protect them' });
+    if (garrison) out.push({ id: 'garrison', n: 1, text: _('your soldiers protect them') });
     var fx = G.civFx(g, civ);
     if (civ.religion && s.religion === civ.religion) out.push({ id: 'religion', n: 1 + (fx.tiesFollowerCity || 0), text: 'shared religion' });
-    if (fx.tiesPerTurn) out.push({ id: 'ability', n: fx.tiesPerTurn, text: 'your people\'s way with free cities' });
+    if (fx.tiesPerTurn) out.push({ id: 'ability', n: fx.tiesPerTurn, text: _("your people's way with free cities") });
     return out;
   };
   // Effects a major empire gets from its Ties: Partner, Patron (with the free city's special bonus), Kin.
@@ -101,12 +101,12 @@
   // ---------- union ----------
   CS.unionState = function (g, civ, minor) {
     if (civ.minor || !minor.alive || G.atWar(g, civ.idx, minor.idx)) return { ok: false, why: 'not possible' };
-    if (CS.patron(g, minor) !== civ.idx || CS.tierOf(CS.tiesOf(g, civ, minor)) < 4) return { ok: false, why: 'you must be its Patron with Kin ties (90)' };
+    if (CS.patron(g, minor) !== civ.idx || CS.tierOf(CS.tiesOf(g, civ, minor)) < 4) return { ok: false, why: _('you must be its Patron with Kin ties (90)') };
     var since = minor.kinSince && minor.kinSince[civ.idx], left = since == null ? CS.UNION_TURNS : Math.max(0, CS.UNION_TURNS - (g.turn - since));
-    if (left > 0) return { ok: false, why: left + ' more turn' + (left > 1 ? 's' : '') + ' as Kin' };
+    if (left > 0) return { ok: false, why: left + ' ' + _('more turn') + (left > 1 ? 's' : '') + ' ' + _('as Kin') };
     var s = G.civSettlements(g, minor.idx)[0], touching = false;
     s.tiles.forEach(function (i) { G.neighbors(g, g.tiles[i]).forEach(function (n) { if (G.tileOwnerCiv(g, g.tiles[n]) === civ.idx) touching = true; }); });
-    if (!touching) return { ok: false, why: 'your borders must touch theirs' };
+    if (!touching) return { ok: false, why: _('your borders must touch theirs') };
     return { ok: true, why: '' };
   };
   CS.union = function (g, civ, minor) {
@@ -117,8 +117,8 @@
     minor.alive = false; minor.capital = null;
     civ.unions = (civ.unions || []).concat([minor.civId]);
     g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1;
-    G.log(g, name + ' joined ' + G.civData(civ).name + ' in a Union.', civ.idx);
-    g.civs.forEach(function (c) { if (c.alive && !c.minor && (c.idx === civ.idx || c.met[civ.idx])) G.notify(g, c, { kind: 'diplomacy', text: name + ' joined ' + (c.idx === civ.idx ? 'your empire' : G.civData(civ).name) + ' in a Union: it is now a Town' + (c.idx === civ.idx ? ' and keeps its bonus (' + G.civData(minor).ability.name + ') forever.' : '.'), tile: s.tile, settlement: s.id }); });
+    G.log(g, name + ' joined ' + G.civData(civ).name + ' ' + _('in a Union.'), civ.idx);
+    g.civs.forEach(function (c) { if (c.alive && !c.minor && (c.idx === civ.idx || c.met[civ.idx])) G.notify(g, c, { kind: 'diplomacy', text: name + ' joined ' + (c.idx === civ.idx ? 'your empire' : G.civData(civ).name) + ' ' + _('in a Union: it is now a Town') + (c.idx === civ.idx ? ' ' + _('and keeps its bonus') + ' (' + G.civData(minor).ability.name + ') forever.' : '.'), tile: s.tile, settlement: s.id }); });
     G.revealAround(g, civ, g.tiles[s.tile].col, g.tiles[s.tile].row, 3);
     return true;
   };
@@ -150,7 +150,7 @@
     minor.gold += 3;
     // a Patron's wars are the free city's wars (Kin always, Patron sometimes)
     var pat = CS.patron(g, minor);
-    if (pat >= 0) { var kinNow = CS.tierOf(minor.ties[pat] || 0) >= 4; g.civs.forEach(function (o) { if (!o.minor && o.alive && o.idx !== pat && G.atWar(g, pat, o.idx) && !G.atWar(g, minor.idx, o.idx) && (kinNow || G.rng(g) < 0.3)) { minor.rel[o.idx].war = true; minor.rel[o.idx].warSince = g.turn; o.rel[minor.idx].war = true; o.rel[minor.idx].warSince = g.turn; if (o.isPlayer) G.notify(g, o, { kind: 'war', text: G.civData(minor).name + ' joined the war on the side of its Patron.', panel: 'diplomacy' }); } }); }
+    if (pat >= 0) { var kinNow = CS.tierOf(minor.ties[pat] || 0) >= 4; g.civs.forEach(function (o) { if (!o.minor && o.alive && o.idx !== pat && G.atWar(g, pat, o.idx) && !G.atWar(g, minor.idx, o.idx) && (kinNow || G.rng(g) < 0.3)) { minor.rel[o.idx].war = true; minor.rel[o.idx].warSince = g.turn; o.rel[minor.idx].war = true; o.rel[minor.idx].warSince = g.turn; if (o.isPlayer) G.notify(g, o, { kind: 'war', text: G.civData(minor).name + ' ' + _('joined the war on the side of its Patron.'), panel: 'diplomacy' }); } }); }
   };
   // ---------- caravans (trade routes) ----------
   CS.caravanLimit = function (g, civ) { var n = 1; G.civSettlements(g, civ.idx).forEach(function (s) { if (G.hasBuilding(s, 'market')) n++; if (G.hasBuilding(s, 'harbor')) n++; }); return n + (G.civFx(g, civ).extraCaravans || 0); };
@@ -160,8 +160,8 @@
   CS.openRoute = function (g, u) {
     var m = CS.routeTarget(g, u); if (!m || u.route === m.idx) return false;
     if (CS.caravans(g, g.civs[u.civ]).some(function (o) { return o.id !== u.id && o.route === m.idx; })) return false; // one route per free city
-    u.route = m.idx; u.sleep = true; u.moves = 0; u.name = 'Caravan to ' + G.civData(m).name;
-    if (g.civs[u.civ].isPlayer) G.notify(g, g.civs[u.civ], { kind: 'diplomacy', text: 'Trade route open with ' + G.civData(m).name + ': +' + CS.routeIncome(g, u) + ' Gold and +3 Ties every turn while the caravan stays.', tile: u.tile });
+    u.route = m.idx; u.sleep = true; u.moves = 0; u.name = _('Caravan to') + ' ' + G.civData(m).name;
+    if (g.civs[u.civ].isPlayer) G.notify(g, g.civs[u.civ], { kind: 'diplomacy', text: _('Trade route open with') + ' ' + G.civData(m).name + ': +' + CS.routeIncome(g, u) + ' ' + _('Gold and') + ' +3 ' + _('Ties every turn while the caravan stays.'), tile: u.tile });
     return true;
   };
   // Called each turn for an empire: route gold, and routes that no longer hold end.
@@ -170,7 +170,7 @@
     CS.caravans(g, civ).forEach(function (u) {
       if (u.route == null) return;
       var m = g.civs[u.route], ok = m && m.alive && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.route && !G.atWar(g, civ.idx, u.route);
-      if (!ok) { u.route = null; u.sleep = false; u.name = AU.UNITS[u.type].name; if (civ.isPlayer) G.notify(g, civ, { kind: 'diplomacy', text: 'A trade route ended: the caravan is free again.', tile: u.tile }); return; }
+      if (!ok) { u.route = null; u.sleep = false; u.name = AU.UNITS[u.type].name; if (civ.isPlayer) G.notify(g, civ, { kind: 'diplomacy', text: _('A trade route ended: the caravan is free again.'), tile: u.tile }); return; }
       gold += CS.routeIncome(g, u);
     });
     if (gold) civ.gold += gold;

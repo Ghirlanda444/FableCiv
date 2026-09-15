@@ -1,0 +1,50 @@
+name: Translate texts
+
+on:
+  workflow_dispatch:
+    inputs:
+      langs:
+        description: "Languages to translate (comma-separated codes; empty = all: it,es,de,fr,nl,zh,ru,bg)"
+        required: false
+        default: ""
+      limit:
+        description: "Maximum missing strings per language this run (0 = all)"
+        required: false
+        default: "0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: translate
+  cancel-in-progress: false
+
+jobs:
+  translate:
+    name: Translate missing strings with Grok
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Extract the English strings
+        run: node tools/i18n-extract.js
+      - name: Translate
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          XAI_TEXT_MODEL: ${{ vars.XAI_TEXT_MODEL }}
+        run: |
+          git config user.name "fableciv-art-bot"
+          git config user.email "art-bot@users.noreply.github.com"
+          langs="${{ github.event.inputs.langs }}"; limit="${{ github.event.inputs.limit }}"
+          args=""; [ -n "$langs" ] && args="$args --langs $langs"; [ -n "$limit" ] && args="$args --limit $limit"
+          python3 tools/translate.py $args
+          git add web/i18n
+          git commit -q -m "Translations: $(ls web/i18n/*.json | grep -v keys | wc -l) languages, $(wc -l < web/i18n/keys.json) strings" || echo "nothing new"
+          git pull --rebase -q origin main || true
+          git push -q origin HEAD:main || true

@@ -36,5 +36,5 @@
   };
   A.setEnabled = function (on) { A.enabled = !!on; if (!on) { if (A.cur) { A.cur._dead = true; A.cur.pause(); A.cur.removeAttribute('src'); } A.cur = null; A.curName = null; } else if (A.want) A.play(A.want); };
   A.setVolume = function (v) { A.volume = Math.max(0, Math.min(1, v)); if (A.cur) A.cur.volume = A.volume; };
-  A.status = function () { return !A.enabled ? 'off' : A.curName ? (A.curName === 'menu' ? 'Menu theme' : AU.ERAS[+A.curName.slice(3)] + ' era') : (A.want && A.missing[A.want] ? 'no track file yet (see music/README.md)' : 'waiting for a tap'); };
+  A.status = function () { return !A.enabled ? 'off' : A.curName ? (A.curName === 'menu' ? _('Menu theme') : AU.ERAS[+A.curName.slice(3)] + ' era') : (A.want && A.missing[A.want] ? 'no track file yet (see music/README.md)' : _('waiting for a tap')); };
 })(globalThis.AU = globalThis.AU || {});

@@ -20,18 +20,19 @@
   D.isAlly = function (g, a, b) { var r = D.rel(g, a, b); return !!r && r.allyUntil > g.turn; };
   D.hasOpenBorders = function (g, mover, owner) { if (mover === owner) return true; if (D.isAlly(g, mover, owner)) return true; var r = D.rel(g, owner, mover); return !!r && r.bordersUntil > g.turn; };
   D.isDenounced = function (g, a, b) { var r = D.rel(g, a, b); return !!r && g.turn - r.denouncedTurn < 25; };
-  D.mood = function (att) { return att > 40 ? 'Admiring' : att > 15 ? 'Friendly' : att > -10 ? 'Neutral' : att > -30 ? 'Unfriendly' : 'Hostile'; };
+  D.mood = function (att) { return att > 40 ? _('Admiring') : att > 15 ? _('Friendly') : att > -10 ? _('Neutral') : att > -30 ? _('Unfriendly') : _('Hostile'); };
   D.canDeclareWar = function (g, a, b) { var r = D.rel(g, a, b); if (!r || r.war) return false; if (r.peaceUntil > g.turn) return false; if (D.isFriend(g, a, b) || D.isAlly(g, a, b)) return false; return true; };
 
   // ---------- agendas: what a leader cares about (derived from the leader's personality) ----------
   var AGENDAS = {
-    warlord:  { name: 'Iron Fist', desc: 'Respects a strong army and despises weakness. Likes you when your military rivals theirs.', line: 'Show me your strength. Weak neighbours are only future provinces.' },
-    landgrab: { name: 'Manifest Destiny', desc: 'Wants room to grow. Dislikes anyone who settles close to their borders.', line: 'The land is wide, but not wide enough for two of us. Keep your distance.' },
-    scholar:  { name: 'Enlightened', desc: 'Admires empires ahead in science; looks down on backward ones.', line: 'Knowledge is the only empire that lasts. What have you discovered?' },
-    patron:   { name: 'Patron of the Arts', desc: 'Likes empires rich in culture and wonders; bored by those without.', line: 'A people is judged by what it builds. I hope to see wonders in your lands.' },
-    devout:   { name: 'True Devotion', desc: 'Likes those who follow their religion, resents those who spread another one into their settlements.', line: 'The heavens favour us. Walk with us in faith, and we shall be friends.' },
-    merchant: { name: 'Peace and Plenty', desc: 'Values peace and trade. Dislikes warmongers and those who denounce others.', line: 'Prosperity needs peace. Trade with us and both our peoples will flourish.' }
+    warlord:  { name: _('Iron Fist'), desc: _('Respects a strong army and despises weakness. Likes you when your military rivals theirs.'), line: _('Show me your strength. Weak neighbours are only future provinces.') },
+    landgrab: { name: _('Manifest Destiny'), desc: _('Wants room to grow. Dislikes anyone who settles close to their borders.'), line: _('The land is wide, but not wide enough for two of us. Keep your distance.') },
+    scholar:  { name: _('Enlightened'), desc: _('Admires empires ahead in science; looks down on backward ones.'), line: _('Knowledge is the only empire that lasts. What have you discovered?') },
+    patron:   { name: _('Patron of the Arts'), desc: _('Likes empires rich in culture and wonders; bored by those without.'), line: _('A people is judged by what it builds. I hope to see wonders in your lands.') },
+    devout:   { name: _('True Devotion'), desc: _('Likes those who follow their religion, resents those who spread another one into their settlements.'), line: _('The heavens favour us. Walk with us in faith, and we shall be friends.') },
+    merchant: { name: _('Peace and Plenty'), desc: _('Values peace and trade. Dislikes warmongers and those who denounce others.'), line: _('Prosperity needs peace. Trade with us and both our peoples will flourish.') }
   };
+  D.AGENDAS = AGENDAS;
   D.agenda = function (civ) {
     var tr = civ.ai || {}, best = 'merchant', bv = 0.55;
     if ((tr.aggression || 0) > bv) { best = 'warlord'; bv = tr.aggression; }
@@ -78,8 +79,8 @@
       AU.CityStates.addTies(g, me, them, AU.CityStates.MEET_TIES * (first ? 2 : 1), 'first contact');
       if (me.isPlayer) {
         me.flags['met:' + them.idx] = g.turn;
-        g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'meetCS', civ: them.idx, first: first });
-        G.notify(g, me, { kind: 'meet', text: 'You met the free city of ' + G.civData(them).name + (first ? ': as the first to find it you start with +10 Ties.' : ': +5 Ties.'), panel: 'diplomacy' });
+        g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('meetCS'), civ: them.idx, first: first });
+        G.notify(g, me, { kind: 'meet', text: _('You met the free city of') + ' ' + G.civData(them).name + (first ? ': ' + _('as the first to find it you start with') + ' +10 Ties.' : ': +5 Ties.'), panel: 'diplomacy' });
       }
     });
     if (!ca.minor && !cb.minor) [[ca, cb], [cb, ca]].forEach(function (pair) {
@@ -87,7 +88,7 @@
       if (!me.isPlayer) return;
       me.flags['met:' + them.idx] = g.turn;
       g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'meet', civ: them.idx });
-      G.notify(g, me, { kind: 'meet', text: 'You met ' + G.leaderName(them) + ' of ' + G.civData(them).name + '.', panel: 'diplomacy' });
+      G.notify(g, me, { kind: 'meet', text: _('You met') + ' ' + G.leaderName(them) + ' of ' + G.civData(them).name + '.', panel: 'diplomacy' });
     });
     return true;
   };
@@ -95,56 +96,56 @@
   // ---------- actions between two majors (a acts, b responds) ----------
   D.canDelegation = function (g, a, b) { var r = D.rel(g, a, b); return !!r && !r.war && g.turn - r.delegationTurn >= 15 && g.civs[a].gold >= 30; };
   D.sendDelegation = function (g, a, b) {
-    if (!D.canDelegation(g, a, b)) return { ok: false, text: 'A delegation was sent recently or you cannot afford it (30 Gold).' };
-    g.civs[a].gold -= 30; D.rel(g, a, b).delegationTurn = g.turn; D.log(g, b, a, 'Received a delegation', 6); D.log(g, a, b, 'Sent a delegation', 0);
-    return { ok: true, text: G.leaderName(g.civs[b]) + ' welcomes your delegation with a feast. (+6 opinion)' };
+    if (!D.canDelegation(g, a, b)) return { ok: false, text: _('A delegation was sent recently or you cannot afford it (30 Gold).') };
+    g.civs[a].gold -= 30; D.rel(g, a, b).delegationTurn = g.turn; D.log(g, b, a, _('Received a delegation'), 6); D.log(g, a, b, _('Sent a delegation'), 0);
+    return { ok: true, text: G.leaderName(g.civs[b]) + ' ' + _('welcomes your delegation with a feast.') + ' (+6 opinion)' };
   };
   D.canGift = function (g, a, b) { var r = D.rel(g, a, b); return !!r && !r.war && g.turn - r.giftTurn >= 10 && g.civs[a].gold >= 100; };
   D.gift = function (g, a, b) {
-    if (!D.canGift(g, a, b)) return { ok: false, text: 'You gifted them recently or cannot afford 100 Gold.' };
-    g.civs[a].gold -= 100; g.civs[b].gold += 100; D.rel(g, a, b).giftTurn = g.turn; D.log(g, b, a, 'Received a gift of 100 Gold', 8);
-    return { ok: true, text: 'The gift is accepted with thanks. (+8 opinion)' };
+    if (!D.canGift(g, a, b)) return { ok: false, text: _('You gifted them recently or cannot afford 100 Gold.') };
+    g.civs[a].gold -= 100; g.civs[b].gold += 100; D.rel(g, a, b).giftTurn = g.turn; D.log(g, b, a, _('Received a gift of 100 Gold'), 8);
+    return { ok: true, text: _('The gift is accepted with thanks.') + ' (+8 opinion)' };
   };
   D.wantsFriendship = function (g, ai, other) { var r = D.rel(g, ai.idx, other); return !!r && !r.war && r.attitude >= 15 && !D.isDenounced(g, ai.idx, other) && !D.isDenounced(g, other, ai.idx); };
   D.declareFriendship = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b], ra = D.rel(g, a, b), rb = D.rel(g, b, a);
-    if (!ra || ra.war) return { ok: false, text: 'Not while at war.' };
-    if (D.isFriend(g, a, b)) return { ok: false, text: 'You are already friends.' };
-    if (!cb.isPlayer && !D.wantsFriendship(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' is not ready for friendship. Improve their opinion first (delegations, gifts, peace, shared interests).' };
+    if (!ra || ra.war) return { ok: false, text: _('Not while at war.') };
+    if (D.isFriend(g, a, b)) return { ok: false, text: _('You are already friends.') };
+    if (!cb.isPlayer && !D.wantsFriendship(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' ' + _('is not ready for friendship. Improve their opinion first (delegations, gifts, peace, shared interests).') };
     ra.friendUntil = rb.friendUntil = g.turn + 30; ra.friendSince = rb.friendSince = g.turn;
-    D.log(g, a, b, 'Declared friendship', 5); D.log(g, b, a, 'Declared friendship', 5);
-    g.civs.forEach(function (c) { if (c.alive && !c.minor && c.idx !== a && c.idx !== b && c.met[a] && c.rel[b] && c.rel[b].war) D.log(g, c.idx, a, 'Befriended their enemy', -4); });
-    G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' declared friendship.', a);
-    return { ok: true, text: G.leaderName(cb) + ': "Let it be known that our peoples are friends." Friendship lasts 30 turns; neither side can declare war on the other.' };
+    D.log(g, a, b, _('Declared friendship'), 5); D.log(g, b, a, _('Declared friendship'), 5);
+    g.civs.forEach(function (c) { if (c.alive && !c.minor && c.idx !== a && c.idx !== b && c.met[a] && c.rel[b] && c.rel[b].war) D.log(g, c.idx, a, _('Befriended their enemy'), -4); });
+    G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' ' + _('declared friendship.'), a);
+    return { ok: true, text: G.leaderName(cb) + ': "' + _('Let it be known that our peoples are friends.') + '" ' + _('Friendship lasts 30 turns; neither side can declare war on the other.') };
   };
   D.wantsAlliance = function (g, ai, other) { var r = D.rel(g, ai.idx, other); return !!r && D.isFriend(g, ai.idx, other) && g.turn - r.friendSince >= 8 && r.attitude >= 35; };
   D.formAlliance = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b], ra = D.rel(g, a, b), rb = D.rel(g, b, a);
-    if (!ra || !D.isFriend(g, a, b)) return { ok: false, text: 'An alliance needs an active friendship first.' };
-    if (D.isAlly(g, a, b)) return { ok: false, text: 'You are already allied.' };
-    if (!cb.isPlayer && !D.wantsAlliance(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' wants a longer, warmer friendship before an alliance (8 turns of friendship and a high opinion).' };
+    if (!ra || !D.isFriend(g, a, b)) return { ok: false, text: _('An alliance needs an active friendship first.') };
+    if (D.isAlly(g, a, b)) return { ok: false, text: _('You are already allied.') };
+    if (!cb.isPlayer && !D.wantsAlliance(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' ' + _('wants a longer, warmer friendship before an alliance (8 turns of friendship and a high opinion).') };
     ra.allyUntil = rb.allyUntil = g.turn + 40; ra.friendUntil = rb.friendUntil = Math.max(ra.friendUntil, g.turn + 40);
-    D.log(g, a, b, 'Formed an alliance', 8); D.log(g, b, a, 'Formed an alliance', 8);
-    G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' formed an alliance.', a);
-    return { ok: true, text: 'Alliance sealed for 40 turns: open borders both ways, shared map knowledge, and each of you joins the war if the other is attacked.' };
+    D.log(g, a, b, _('Formed an alliance'), 8); D.log(g, b, a, _('Formed an alliance'), 8);
+    G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' ' + _('formed an alliance.'), a);
+    return { ok: true, text: _('Alliance sealed for 40 turns: open borders both ways, shared map knowledge, and each of you joins the war if the other is attacked.') };
   };
   D.wantsOpenBorders = function (g, ai, other) { var r = D.rel(g, ai.idx, other); return !!r && !r.war && r.attitude >= 5; };
   D.openBorders = function (g, a, b) {
     var cb = g.civs[b], ra = D.rel(g, a, b), rb = D.rel(g, b, a);
-    if (!ra || ra.war) return { ok: false, text: 'Not while at war.' };
-    if (rb.bordersUntil > g.turn && ra.bordersUntil > g.turn) return { ok: false, text: 'Borders are already open.' };
-    if (!cb.isPlayer && !D.wantsOpenBorders(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' does not trust you enough to open the borders.' };
-    ra.bordersUntil = rb.bordersUntil = g.turn + 30; D.log(g, b, a, 'Open borders agreement', 2); D.log(g, a, b, 'Open borders agreement', 2);
-    return { ok: true, text: 'Open borders for 30 turns: military units may cross each other\'s territory.' };
+    if (!ra || ra.war) return { ok: false, text: _('Not while at war.') };
+    if (rb.bordersUntil > g.turn && ra.bordersUntil > g.turn) return { ok: false, text: _('Borders are already open.') };
+    if (!cb.isPlayer && !D.wantsOpenBorders(g, cb, a)) return { ok: false, text: G.leaderName(cb) + ' ' + _('does not trust you enough to open the borders.') };
+    ra.bordersUntil = rb.bordersUntil = g.turn + 30; D.log(g, b, a, _('Open borders agreement'), 2); D.log(g, a, b, _('Open borders agreement'), 2);
+    return { ok: true, text: _("Open borders for 30 turns: military units may cross each other's territory.") };
   };
   D.denounce = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b], ra = D.rel(g, a, b);
-    if (!ra || ra.war) return { ok: false, text: 'You are already at war.' };
-    if (D.isFriend(g, a, b) || D.isAlly(g, a, b)) return { ok: false, text: 'You cannot denounce a friend or ally while the agreement lasts.' };
-    ra.denouncedTurn = g.turn; D.log(g, b, a, 'Denounced them publicly', -15); D.log(g, a, b, 'You denounced them', -5);
-    g.civs.forEach(function (c) { if (!c.alive || c.minor || c.idx === a || c.idx === b || !c.met[a]) return; if (D.isFriend(g, c.idx, b)) D.log(g, c.idx, a, 'Denounced their friend', -6); else if (c.rel[b] && c.rel[b].attitude < -15) D.log(g, c.idx, a, 'Denounced a leader they dislike too', 3); });
+    if (!ra || ra.war) return { ok: false, text: _('You are already at war.') };
+    if (D.isFriend(g, a, b) || D.isAlly(g, a, b)) return { ok: false, text: _('You cannot denounce a friend or ally while the agreement lasts.') };
+    ra.denouncedTurn = g.turn; D.log(g, b, a, _('Denounced them publicly'), -15); D.log(g, a, b, _('You denounced them'), -5);
+    g.civs.forEach(function (c) { if (!c.alive || c.minor || c.idx === a || c.idx === b || !c.met[a]) return; if (D.isFriend(g, c.idx, b)) D.log(g, c.idx, a, _('Denounced their friend'), -6); else if (c.rel[b] && c.rel[b].attitude < -15) D.log(g, c.idx, a, _('Denounced a leader they dislike too'), 3); });
     G.log(g, G.civData(ca).name + ' denounced ' + G.civData(cb).name + '.', a);
-    return { ok: true, text: 'Denounced. Their friends think less of you; their enemies approve.' };
+    return { ok: true, text: _('Denounced. Their friends think less of you; their enemies approve.') };
   };
   // Luxuries: what a could offer b that b lacks
   D.spareLuxuries = function (g, a, b) {
@@ -154,28 +155,28 @@
   D.addImport = function (g, civIdx, res, turns) { var c = g.civs[civIdx]; c.imports = c.imports || {}; c.imports[res] = g.turn + turns; c._lux = null; c._fx = null; g.fxGen = (g.fxGen || 0) + 1; };
   D.swapLuxuries = function (g, a, b, give, get) {
     var cb = g.civs[b], ra = D.rel(g, a, b);
-    if (!ra || ra.war) return { ok: false, text: 'Not while at war.' };
-    if (D.spareLuxuries(g, a, b).indexOf(give) < 0 || D.spareLuxuries(g, b, a).indexOf(get) < 0) return { ok: false, text: 'That trade is no longer possible.' };
+    if (!ra || ra.war) return { ok: false, text: _('Not while at war.') };
+    if (D.spareLuxuries(g, a, b).indexOf(give) < 0 || D.spareLuxuries(g, b, a).indexOf(get) < 0) return { ok: false, text: _('That trade is no longer possible.') };
     if (!cb.isPlayer && ra.attitude < -10) return { ok: false, text: G.leaderName(cb) + ' refuses to trade with you right now.' };
-    D.addImport(g, b, give, 30); D.addImport(g, a, get, 30); D.log(g, b, a, 'Traded luxuries', 3); D.log(g, a, b, 'Traded luxuries', 1);
-    return { ok: true, text: 'Deal: ' + AU.RESOURCES[give].name + ' for ' + AU.RESOURCES[get].name + ', 30 turns.' };
+    D.addImport(g, b, give, 30); D.addImport(g, a, get, 30); D.log(g, b, a, _('Traded luxuries'), 3); D.log(g, a, b, _('Traded luxuries'), 1);
+    return { ok: true, text: _('Deal') + ': ' + AU.RESOURCES[give].name + ' for ' + AU.RESOURCES[get].name + ', ' + _('30 turns.') };
   };
   D.sellLuxury = function (g, a, b, res) {
     var cb = g.civs[b], ra = D.rel(g, a, b), price = 90;
-    if (!ra || ra.war) return { ok: false, text: 'Not while at war.' };
-    if (D.spareLuxuries(g, a, b).indexOf(res) < 0) return { ok: false, text: 'They already have that.' };
-    if (!cb.isPlayer && (cb.gold < price || ra.attitude < -10)) return { ok: false, text: G.leaderName(cb) + (cb.gold < price ? ' cannot afford it (they have ' + Math.floor(cb.gold) + ' Gold).' : ' refuses to trade with you right now.') };
-    cb.gold -= price; g.civs[a].gold += price; D.addImport(g, b, res, 30); D.log(g, b, a, 'Bought a luxury from them', 2);
-    return { ok: true, text: 'Sold ' + AU.RESOURCES[res].name + ' for ' + price + ' Gold (30 turns).' };
+    if (!ra || ra.war) return { ok: false, text: _('Not while at war.') };
+    if (D.spareLuxuries(g, a, b).indexOf(res) < 0) return { ok: false, text: _('They already have that.') };
+    if (!cb.isPlayer && (cb.gold < price || ra.attitude < -10)) return { ok: false, text: G.leaderName(cb) + (cb.gold < price ? ' ' + _('cannot afford it (they have') + ' ' + Math.floor(cb.gold) + ' Gold).' : ' refuses to trade with you right now.') };
+    cb.gold -= price; g.civs[a].gold += price; D.addImport(g, b, res, 30); D.log(g, b, a, _('Bought a luxury from them'), 2);
+    return { ok: true, text: _('Sold') + ' ' + AU.RESOURCES[res].name + ' for ' + price + ' ' + _('Gold (30 turns).') };
   };
   D.buyLuxury = function (g, a, b, res) {
     var cb = g.civs[b], ra = D.rel(g, a, b), price = 110;
-    if (!ra || ra.war) return { ok: false, text: 'Not while at war.' };
-    if (D.spareLuxuries(g, b, a).indexOf(res) < 0) return { ok: false, text: 'They cannot spare that.' };
-    if (g.civs[a].gold < price) return { ok: false, text: 'You need ' + price + ' Gold.' };
+    if (!ra || ra.war) return { ok: false, text: _('Not while at war.') };
+    if (D.spareLuxuries(g, b, a).indexOf(res) < 0) return { ok: false, text: _('They cannot spare that.') };
+    if (g.civs[a].gold < price) return { ok: false, text: _('You need') + ' ' + price + ' Gold.' };
     if (!cb.isPlayer && ra.attitude < -10) return { ok: false, text: G.leaderName(cb) + ' refuses to trade with you right now.' };
-    g.civs[a].gold -= price; cb.gold += price; D.addImport(g, a, res, 30); D.log(g, b, a, 'Sold them a luxury', 2);
-    return { ok: true, text: 'Bought ' + AU.RESOURCES[res].name + ' for ' + price + ' Gold (30 turns).' };
+    g.civs[a].gold -= price; cb.gold += price; D.addImport(g, a, res, 30); D.log(g, b, a, _('Sold them a luxury'), 2);
+    return { ok: true, text: _('Bought') + ' ' + AU.RESOURCES[res].name + ' for ' + price + ' ' + _('Gold (30 turns).') };
   };
 
   // ---------- city-state audience ----------
@@ -183,10 +184,10 @@
   D.canGiftCS = function (g, a, m) { var r = D.rel(g, a, m.idx), CS = AU.CityStates; return !!r && !r.war && g.turn - r.giftTurn >= 15 && g.civs[a].gold >= D.giftCost(g, a, m) && !CS.isHostile(g, g.civs[a], m) && CS.tiesOf(g, g.civs[a], m) < CS.PASSIVE_CAP; };
   D.giftCS = function (g, a, m) {
     var CS = AU.CityStates;
-    if (!D.canGiftCS(g, a, m)) return { ok: false, text: 'You need ' + D.giftCost(g, a, m) + ' Gold, one gift every 15 turns, Ties below ' + CS.PASSIVE_CAP + ', and no recent attack on a free city.' };
+    if (!D.canGiftCS(g, a, m)) return { ok: false, text: _('You need') + ' ' + D.giftCost(g, a, m) + ' ' + _('Gold, one gift every 15 turns, Ties below') + ' ' + CS.PASSIVE_CAP + ', and no recent attack on a free city.' };
     g.civs[a].gold -= D.giftCost(g, a, m); m.gold += 60; D.rel(g, a, m.idx).giftTurn = g.turn;
     CS.addTies(g, g.civs[a], m, CS.GIFT_TIES, 'gift');
-    return { ok: true, text: G.civData(m).name + ' thanks you for the gold: +' + CS.GIFT_TIES + ' Ties (' + CS.tiesOf(g, g.civs[a], m) + ', ' + CS.tierName(CS.tiesOf(g, g.civs[a], m)) + ').' };
+    return { ok: true, text: G.civData(m).name + ' thanks you for the gold: +' + CS.GIFT_TIES + ' ' + _('Ties') + ' (' + CS.tiesOf(g, g.civs[a], m) + ', ' + CS.tierName(CS.tiesOf(g, g.civs[a], m)) + ').' };
   };
   // Quests: each free city asks for one thing; every empire that does it earns Ties there.
   var QUEST_BUILDINGS = ['granary', 'monument', 'shrine', 'library', 'barracks', 'market', 'walls', 'water_mill'];
@@ -194,9 +195,9 @@
   D.questOf = function (g, m) {
     if (m.quest) return m.quest;
     var rng = AU.lcgSimple ? AU.lcgSimple(m.idx) : null, roll = ((m.idx * 7919 + (g.seed || 1) * 31) % 100) / 100;
-    if (roll < 0.4) { var b = QUEST_BUILDINGS[(m.idx + (g.seed || 0)) % QUEST_BUILDINGS.length]; m.quest = { kind: 'building', id: b, text: 'Build a ' + AU.BUILDINGS[b].name + ' in one of your settlements' }; }
-    else if (roll < 0.75) { var u = QUEST_UNITS[(m.idx * 3 + (g.seed || 0)) % QUEST_UNITS.length]; m.quest = { kind: 'unit', id: u, text: 'Have a ' + AU.UNITS[u].name + ' in your service' }; }
-    else { var techs = AU.TECHS.filter(function (t) { return t.era <= 1; }); var t2 = techs[(m.idx * 5 + (g.seed || 0)) % techs.length]; m.quest = { kind: 'tech', id: t2.id, text: 'Research ' + t2.name }; }
+    if (roll < 0.4) { var b = QUEST_BUILDINGS[(m.idx + (g.seed || 0)) % QUEST_BUILDINGS.length]; m.quest = { kind: 'building', id: b, text: _('Build a') + ' ' + AU.BUILDINGS[b].name + ' ' + _('in one of your settlements') }; }
+    else if (roll < 0.75) { var u = QUEST_UNITS[(m.idx * 3 + (g.seed || 0)) % QUEST_UNITS.length]; m.quest = { kind: 'unit', id: u, text: _('Have a') + ' ' + AU.UNITS[u].name + ' in your service' }; }
+    else { var techs = AU.TECHS.filter(function (t) { return t.era <= 1; }); var t2 = techs[(m.idx * 5 + (g.seed || 0)) % techs.length]; m.quest = { kind: 'tech', id: t2.id, text: _('Research') + ' ' + t2.name }; }
     m.questDone = m.questDone || {};
     return m.quest;
   };
@@ -213,7 +214,7 @@
       if (!D.questMet(g, c, q)) return;
       m.questDone[c.idx] = g.turn;
       AU.CityStates.addTies(g, c, m, AU.CityStates.QUEST_TIES, 'quest');
-      if (c.isPlayer) G.notify(g, c, { kind: 'diplomacy', text: 'Quest complete for ' + G.civData(m).name + ' (' + q.text.toLowerCase() + '): +' + AU.CityStates.QUEST_TIES + ' Ties there.', panel: 'diplomacy' });
+      if (c.isPlayer) G.notify(g, c, { kind: 'diplomacy', text: _('Quest complete for') + ' ' + G.civData(m).name + ' (' + q.text.toLowerCase() + '): +' + AU.CityStates.QUEST_TIES + ' ' + _('Ties there.'), panel: 'diplomacy' });
     });
   };
 
@@ -228,12 +229,12 @@
       r.attitude = Math.max(-80, Math.min(80, r.attitude));
       if (r.war) return;
       // expiring agreements
-      if (r.allyUntil === g.turn && o.isPlayer) G.notify(g, o, { kind: 'diplomacy', text: 'Your alliance with ' + G.civData(civ).name + ' has expired.', panel: 'diplomacy' });
-      if (r.friendUntil === g.turn && o.isPlayer) G.notify(g, o, { kind: 'diplomacy', text: 'Your friendship with ' + G.civData(civ).name + ' has expired. Renew it in the leader screen.', panel: 'diplomacy' });
+      if (r.allyUntil === g.turn && o.isPlayer) G.notify(g, o, { kind: 'diplomacy', text: _('Your alliance with') + ' ' + G.civData(civ).name + ' has expired.', panel: 'diplomacy' });
+      if (r.friendUntil === g.turn && o.isPlayer) G.notify(g, o, { kind: 'diplomacy', text: _('Your friendship with') + ' ' + G.civData(civ).name + ' ' + _('has expired. Renew it in the leader screen.'), panel: 'diplomacy' });
       var rng = G.rng(g);
       if (o.isPlayer) {
-        if (D.wantsFriendship(g, civ, o.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.08 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'proposeFriendship', civ: civ.idx }); }
-        else if (D.wantsAlliance(g, civ, o.idx) && !D.isAlly(g, civ.idx, o.idx) && rng < 0.1 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'proposeAlliance', civ: civ.idx }); }
+        if (D.wantsFriendship(g, civ, o.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.08 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('proposeFriendship'), civ: civ.idx }); }
+        else if (D.wantsAlliance(g, civ, o.idx) && !D.isAlly(g, civ.idx, o.idx) && rng < 0.1 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('proposeAlliance'), civ: civ.idx }); }
         else if (r.attitude < -30 && rng < 0.05 && g.turn - r.denouncedTurn > 40) { D.denounce(g, civ.idx, o.idx); g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'denounced', civ: civ.idx }); }
       } else if (civ.idx < o.idx) { // AI to AI, once per pair
         if (D.wantsFriendship(g, civ, o.idx) && D.wantsFriendship(g, o, civ.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.1) D.declareFriendship(g, civ.idx, o.idx);
@@ -247,9 +248,9 @@
     var ca = g.civs[a], cb = g.civs[b];
     if (D.isFriend(g, a, b) || D.isAlly(g, a, b)) {
       var ra = D.rel(g, a, b), rb = D.rel(g, b, a); ra.friendUntil = rb.friendUntil = -1; ra.allyUntil = rb.allyUntil = -1;
-      D.log(g, b, a, 'Betrayed our friendship', -25);
-      g.civs.forEach(function (c) { if (c.alive && !c.minor && c.idx !== a && c.idx !== b && c.met[a]) D.log(g, c.idx, a, 'Attacked a friend: untrustworthy', -12); });
-      G.log(g, G.civData(ca).name + ' broke a friendship with ' + G.civData(cb).name + '!', a);
+      D.log(g, b, a, _('Betrayed our friendship'), -25);
+      g.civs.forEach(function (c) { if (c.alive && !c.minor && c.idx !== a && c.idx !== b && c.met[a]) D.log(g, c.idx, a, _('Attacked a friend: untrustworthy'), -12); });
+      G.log(g, G.civData(ca).name + ' ' + _('broke a friendship with') + ' ' + G.civData(cb).name + '!', a);
     }
     g.civs.forEach(function (c) {
       if (!c.alive || c.minor || c.idx === a || c.idx === b) return;
@@ -259,7 +260,7 @@
   // Player-facing greeting for the first meeting
   D.greeting = function (g, civ, player) {
     var d = G.civData(civ), l = G.leaderData(civ), ag = D.agenda(civ), att = D.rel(g, civ.idx, player.idx) ? D.rel(g, civ.idx, player.idx).attitude : 0;
-    var open = att >= 10 ? 'Greetings, stranger. ' : att <= -10 ? 'So, another power creeps toward our lands. ' : 'Well met. ';
+    var open = att >= 10 ? _('Greetings, stranger.') + ' ' : att <= -10 ? _('So, another power creeps toward our lands.') + ' ' : _('Well met.') + ' ';
     return open + 'I am ' + l.name + ', ' + (l.title.indexOf(' of ') >= 0 ? l.title : l.title + ' of ' + d.name) + '. ' + ag.line;
   };
 })(globalThis.AU = globalThis.AU || {});

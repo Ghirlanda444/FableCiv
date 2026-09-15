@@ -19,7 +19,7 @@
       var oldCanvas = $('map'), cv = document.createElement('canvas'); cv.id = 'map'; oldCanvas.parentNode.replaceChild(cv, oldCanvas);
       var use3d = this.settings.graphics === '3d' && this.webglOk();
       try { this.renderer = use3d ? new AU.Renderer3D(cv) : new AU.Renderer(cv); }
-      catch (e) { console.warn('3D renderer failed, falling back to 2D', e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
+      catch (e) { console.warn('3' + _('D renderer failed, falling back to 2D'), e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
       if (cam) this.renderer.cam = cam;
       this.renderer.showYields = !!this.settings.yields; this.renderer.iso = this.settings.iso !== false;
       this.renderer.resize(); this.bindInput(); this.invalidate();
@@ -38,8 +38,8 @@
     loop: function () { if (App.dirty && App.g && !$('game').hidden) { App.dirty = false; App.renderer.draw(App.g, App); } requestAnimationFrame(App.loop); },
     invalidate: function () { this.dirty = true; },
     hasSave: function () { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } },
-    save: function (silent) { try { localStorage.setItem(SAVE_KEY, G.serialize(this.g)); if (!silent) this.toast('Game saved.'); return true; } catch (e) { if (!silent) this.toast('Could not save: ' + e.message); return false; } },
-    load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; this.startGameState(G.deserialize(j)); return true; } catch (e) { this.toast('Could not load save: ' + e.message); return false; } },
+    save: function (silent) { try { localStorage.setItem(SAVE_KEY, G.serialize(this.g)); if (!silent) this.toast(_('Game saved.')); return true; } catch (e) { if (!silent) this.toast(_('Could not save') + ': ' + e.message); return false; } },
+    load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; this.startGameState(G.deserialize(j)); return true; } catch (e) { this.toast(_('Could not load save') + ': ' + e.message); return false; } },
     back: function () {
       if (!$('quote').hidden) { $('quote-ok').click(); return true; }
       if (!$('confirm').hidden) { $('confirm').hidden = true; return true; }
@@ -53,7 +53,7 @@
     // ---------- Screens ----------
     showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
     showTitle: function () { $('btn-continue').hidden = !this.hasSave(); var vl = $('version-line'); if (vl) vl.textContent = 'v0.3 · ' + AU.CIVS.length + ' empires · ' + AU.CIVS.reduce(function (n, c) { return n + c.leaders.length; }, 0) + ' leaders · single-player'; this.showScreen('title'); this.paintTitle(); this.showKeyArt(); if (AU.Audio) AU.Audio.play('menu'); this.refreshMusicBtn(); },
-    refreshMusicBtn: function () { var b = $('btn-music'); if (b && AU.Audio) { b.textContent = AU.Audio.enabled ? '🎵' : '🔇'; b.title = AU.Audio.enabled ? 'Music on (tap to mute)' : 'Music off'; } },
+    refreshMusicBtn: function () { var b = $('btn-music'); if (b && AU.Audio) { b.textContent = AU.Audio.enabled ? '🎵' : '🔇'; b.title = AU.Audio.enabled ? _('Music on (tap to mute)') : _('Music off'); } },
     showKeyArt: function () { // the painted key art behind the title when it exists; the generated map stays as fallback
       var img = $('title-art'), logo = $('logo-img'); if (!img) return;
       var id = window.innerWidth >= window.innerHeight ? 'title_landscape' : 'title_portrait';
@@ -77,7 +77,7 @@
       $('btn-new').onclick = function () { App.showSetup(); };
       $('btn-music').onclick = function () { App.settings.music = !(App.settings.music !== false); App.saveSettings(); AU.Audio.setEnabled(App.settings.music); App.refreshMusicBtn(); };
       window.addEventListener('resize', function () { if (!$('title').hidden) App.showKeyArt(); });
-      $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
+      $('btn-continue').onclick = function () { if (!App.load()) App.toast(_('No saved game found.')); };
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
       $('btn-tutorial').onclick = function () { AU.Tutorial.start(App); };
@@ -92,7 +92,7 @@
     },
     showSetup: function () {
       var grid = $('civ-grid'); grid.innerHTML = '';
-      var ORDER = { easy: 0, medium: 1, hard: 2 }, DLABEL = { easy: '● Easy', medium: '●● Medium', hard: '●●● Hard' };
+      var ORDER = { easy: 0, medium: 1, hard: 2 }, DLABEL = { easy: '● ' + _('Easy'), medium: '●● ' + _('Medium'), hard: '●●● ' + _('Hard') };
       AU.CIVS.slice().sort(function (x, y) { var ox = x.difficulty in ORDER ? ORDER[x.difficulty] : 1, oy = y.difficulty in ORDER ? ORDER[y.difficulty] : 1; return ox - oy || x.name.localeCompare(y.name); }).forEach(function (c) {
         var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
         var em = AU.Assets.get('civs', c.id);
@@ -116,20 +116,20 @@
     closeSheet: function () { $('civ-sheet').hidden = true; this.showPickBar(); },
     showPickBar: function () {
       var c = AU.CIV_BY_ID[this.setup.civ], l = AU.LEADER_BY_ID[this.setup.leader], bar = $('pick-bar'); if (!bar) return;
-      bar.innerHTML = '<img src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()"><div class="grow"><small class="stat">Playing as</small><b>' + c.name + ' · ' + l.name + '</b><small class="stat">' + (AU.leaningText ? AU.leaningText(l) : '') + '</small></div><button class="small" id="btn-pick-change">Change</button><button class="small primary" id="btn-pick-start">▶ Start</button>';
+      bar.innerHTML = '<img src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()"><div class="grow"><small class="stat">' + _('Playing as') + '</small><b>' + c.name + ' · ' + l.name + '</b><small class="stat">' + (AU.leaningText ? AU.leaningText(l) : '') + '</small></div><button class="small" id="btn-pick-change">' + _('Change') + '</button><button class="small primary" id="btn-pick-start">▶ ' + _('Start') + '</button>';
       var self = this; $('btn-pick-change').onclick = function () { self.showSetupDetail(); self.openSheet(); }; $('btn-pick-start').onclick = function () { self.startNewGame(); };
     },
     showSetupDetail: function () {
       var c = AU.CIV_BY_ID[this.setup.civ], self = this; var st = $('sheet-title'); if (st) st.textContent = c.name;
       var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
-      var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: 'Easy to play', medium: 'Medium', hard: 'Specialised' }[c.difficulty] || 'Medium') + '</span></h3>' +
-        (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' cultural group.</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
+      var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: _('Easy to play'), medium: _('Medium'), hard: _('Specialised') }[c.difficulty] || _('Medium')) + '</span></h3>' +
+        (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' ' + _('cultural group.') + '</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">' + _('Starts near') + ' ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
-        (c.uu ? '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
-        (c.ub ? '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
-        (c.ui ? '<div><b>Unique improvement – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + AU.whenLabel(c.ui.when) + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
-        (c.ut ? '<div><b>Unique town – ' + c.ut.icon + ' ' + c.ut.name + ':</b> a town specialization only you can pick (' + c.ut.desc + ').</div>' : '') +
-        '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
+        (c.uu ? '<div><b>' + _('Unique unit') + ' – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
+        (c.ub ? '<div><b>' + _('Unique building') + ' – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
+        (c.ui ? '<div><b>' + _('Unique improvement') + ' – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + AU.whenLabel(c.ui.when) + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
+        (c.ut ? '<div><b>' + _('Unique town') + ' – ' + c.ut.icon + ' ' + c.ut.name + ':</b> a town specialization only you can pick (' + c.ut.desc + ').</div>' : '') +
+        '<h3 style="margin-top:10px">' + _('Choose a leader') + '</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
         var portrait = AU.Assets.get('leaders', l.id);
         html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
@@ -137,15 +137,15 @@
       html += '</div>';
       $('civ-detail').innerHTML = html;
       $('civ-detail').querySelectorAll('.leader-card').forEach(function (el) { el.onclick = function () { self.setup.leader = el.dataset.leader; self.showSetupDetail(); }; });
-      var fs = $('btn-sheet-start'); if (fs) fs.textContent = '▶ Start Game';
+      var fs = $('btn-sheet-start'); if (fs) fs.textContent = '▶ ' + _('Start Game');
       this.showPickBar();
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
       var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed };
-      this.toast('Generating the world…');
+      this.toast(_('Generating the world…'));
       var self = this;
-      setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast('Failed to create the game: ' + e.message); } }, 30);
+      setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);
     },
     startGameState: function (g) {
       this.g = g; this.sel = { unit: null, settlement: null, tile: -1 }; this.mode = 'normal'; this.panel = null; $('panel').hidden = true;
@@ -160,7 +160,7 @@
       this.renderer.cam.zoom = 1.1;
       this.refreshHud(); this.invalidate();
       if (g.victory) this.openPanel('victory');
-      if (settler && g.turn === 1) { this.selectUnit(settler); this.toast('Tap "Found Capital" to settle, or tap a tile to move first.'); }
+      if (settler && g.turn === 1) { this.selectUnit(settler); this.toast(_('Tap') + ' "' + _('Found Capital') + '" ' + _('to settle, or tap a tile to move first.')); }
       var self2 = this; setTimeout(function () { self2.showQuotes(); }, 400);
     },
 
@@ -197,12 +197,12 @@
         '<span class="y" data-panel="civics">🎭 <b>' + y.culture.toFixed(1) + '</b><small>' + civTxt + '</small></span>' +
         '<span class="y" data-panel="religion">🕊️ <b>' + Math.floor(p.faith || 0) + '</b><small>+' + (y.faith || 0) + (p.religion && g.religions[p.religion] ? ' ' + g.religions[p.religion].icon : '') + '</small></span>' +
         '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>';
-      $('top-turn').innerHTML = '<b>Turn ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' Era';
+      $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' ' + _('Era');
       this.refreshNotifs();
       this.refreshContext();
       var need = this.unitsNeedingOrders().length;
       var ud = g.undo, uu = ud && g.units[ud.unit]; $('btn-undo').hidden = !(uu && AU.U.canUndo(g, uu));
-      $('btn-next').textContent = need ? 'Next Unit (' + need + ')' : 'Next Unit';
+      $('btn-next').textContent = need ? _('Next Unit') + ' (' + need + ')' : _('Next Unit');
       $('btn-next').classList.toggle('attention', need > 0);
       $('btn-next').disabled = need === 0;
       var todo = this.todo(); this._todo = todo;
@@ -214,24 +214,24 @@
     todo: function () {
       var g = this.g, p = G.player(g), list = [], self = this;
       if (!g) return list;
-      if (AU.Palace && p.palace && p.palace.pending > 0 && AU.Palace.available(p).length) list.push({ icon: '🏰', text: 'Improve your palace', go: function () { self.openPanel('palace'); } });
-      if (g.diploQueue && g.diploQueue.length) list.push({ icon: '👑', text: 'Audience: ' + G.civData(g.civs[g.diploQueue[0].civ]).name, go: function () { self.showDiploQueue(); } });
+      if (AU.Palace && p.palace && p.palace.pending > 0 && AU.Palace.available(p).length) list.push({ icon: '🏰', text: _('Improve your palace'), go: function () { self.openPanel('palace'); } });
+      if (g.diploQueue && g.diploQueue.length) list.push({ icon: '👑', text: _('Audience') + ': ' + G.civData(g.civs[g.diploQueue[0].civ]).name, go: function () { self.showDiploQueue(); } });
       g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
       G.civSettlements(g, p.idx).forEach(function (s) {
-        if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: 'Production: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
-        if (s.pendingGrowth > 0) list.push({ icon: '🌱', text: 'Choose tile: ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
+        if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: _('Production') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
+        if (s.pendingGrowth > 0) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
       if (AU.Religion) {
-        if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: 'Choose a pantheon', go: function () { self.openPanel('religion'); } });
-        if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: 'Found a religion', go: function () { self.openPanel('religion'); } });
-        if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: 'Enhance your religion', go: function () { self.openPanel('religion'); } });
+        if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: _('Choose a pantheon'), go: function () { self.openPanel('religion'); } });
+        if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: _('Found a religion'), go: function () { self.openPanel('religion'); } });
+        if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: _('Enhance your religion'), go: function () { self.openPanel('religion'); } });
       }
-      if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: 'Send the caravan to a free city', go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
-      if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
-      if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
-      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics', { tab: 'policies' }); } });
+      if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: _('Send the caravan to a free city'), go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
+      if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: _('Choose research'), go: function () { self.openPanel('tech'); } });
+      if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: _('Choose civic'), go: function () { self.openPanel('civics'); } });
+      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: _('Empty policy slot'), go: function () { self.openPanel('civics', { tab: 'policies' }); } });
       var promo = G.civUnits(g, p.idx).filter(function (u) { return U.promosAvailable(u) > 0; });
-      if (promo.length) list.push({ icon: '⭐', text: 'Promote ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
+      if (promo.length) list.push({ icon: '⭐', text: _('Promote') + ' ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
       var need = this.unitsNeedingOrders();
       if (need.length) list.push({ icon: '🪖', text: need.length === 1 ? need[0].name + ' needs orders' : need.length + ' units need orders', go: function () { self.nextUnit(); } });
       return list;
@@ -247,7 +247,7 @@
         d.innerHTML = '<span class="ni">' + (ICON[n.kind] || '📣') + '</span><span class="nt"></span><span class="nx" data-action="dismiss" data-i="' + d.dataset.i + '">×</span>';
         d.querySelector('.nt').textContent = n.text; box.appendChild(d);
       });
-      if (list.length > 2) { var cl = document.createElement('div'); cl.className = 'notif clear'; cl.textContent = 'Clear all'; cl.dataset.clear = '1'; box.appendChild(cl); }
+      if (list.length > 2) { var cl = document.createElement('div'); cl.className = 'notif clear'; cl.textContent = _('Clear all'); cl.dataset.clear = '1'; box.appendChild(cl); }
     },
     onNotif: function (i) {
       var n = this.g.notifications[i]; if (!n) return;
@@ -260,7 +260,7 @@
     },
     // Hosted version: service worker for offline play and automatic updates (only over http/https).
     setupUpdates: function () {
-      if (!('serviceWorker' in navigator) || !/^https?:/.test(location.protocol)) return;
+      if (!(_('serviceWorker') in navigator) || !/^https?:/.test(location.protocol)) return;
       var self = this;
       navigator.serviceWorker.register('sw.js').then(function (reg) {
         // artwork warm-up so the game also works offline later
@@ -268,7 +268,7 @@
         reg.addEventListener('updatefound', function () {
           var nw = reg.installing; if (!nw) return;
           nw.addEventListener('statechange', function () {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast('A new version of Tiny Empires is ready. It loads the next time you open the game (or from Menu).', 6000); if (self.panel === 'menu') self.refreshPanel(); }
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast(_('A new version of Tiny Empires is ready. It loads the next time you open the game (or from Menu).'), 6000); if (self.panel === 'menu') self.refreshPanel(); }
           });
         });
       }).catch(function () {});
@@ -283,13 +283,13 @@
       var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
       var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
-      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · Navigable River' : t.river ? ' · River' : '') + (t.shore ? ' · ' + ({ beach: 'Beach', cliff: 'Cliffs', rocks: 'Rocky shore', mangrove: 'Mangroves', reef: 'Reef' })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 Move cost ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
+      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' ' + _('Hills') : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · ' + _('Navigable River') : t.river ? ' · ' + _('River') : '') + (t.shore ? ' · ' + ({ beach: _('Beach'), cliff: _('Cliffs'), rocks: _('Rocky shore'), mangrove: _('Mangroves'), reef: _('Reef') })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 ' + _('Move cost') + ' ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
-      else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
+      else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
-      if (t.camp) html += '<div class="stat">🏕️ Inchibil camp: move a military unit onto it to disperse it for Gold.</div>';
+      if (t.camp) html += '<div class="stat">🏕️ ' + _('Inchibil camp: move a military unit onto it to disperse it for Gold.') + '</div>';
       var us = p.visible[tileIdx] ? G.unitsAt(g, tileIdx) : []; if (us.length) html += '<div class="stat">' + us.map(function (u) { return AU.UNITS[u.type].icon + ' ' + u.name; }).join(', ') + '</div>';
       tip.innerHTML = html; tip.hidden = false;
       var rect = $('map').getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -352,7 +352,7 @@
       this.sel.settlement = s.id; this.sel.unit = null; this.mode = 'expand';
       var set = {}; G.expansionCandidates(this.g, s).forEach(function (i) { set[i] = true; });
       this.renderer.highlights = { reach: null, attack: null, expand: set, path: null, selTile: s.tile };
-      this.toast('Choose a tile for ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).');
+      this.toast(_('Choose a tile for') + ' ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).');
       this.refreshContext(); this.invalidate();
     },
     refreshContext: function () {
@@ -361,47 +361,47 @@
       if (this.sel.unit && g.units[this.sel.unit]) {
         var u = g.units[this.sel.unit], def = U.def(g, u), own = u.civ === p.idx;
         var t = g.tiles[u.tile];
-        html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">Inchibils</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
+        html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">' + _('Inchibils') + '</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
-        html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? 'Str ' + U.strength(g, u, { attacking: false }) : 'Civilian') + (def.ranged ? ' · Ranged ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · Moves ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · Fortified' : '') + (U.isEmbarked(g, u) ? ' · Embarked' : '') + '</div>';
+        html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? _('Str') + ' ' + U.strength(g, u, { attacking: false }) : _('Civilian')) + (def.ranged ? ' · ' + _('Ranged') + ' ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · ' + _('Moves') + ' ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · ' + _('Fortified') : '') + (U.isEmbarked(g, u) ? ' · ' + _('Embarked') : '') + '</div>';
         if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
         if (def.unique && def.uuDesc) html += '<div class="meta stat">' + def.uuDesc + '</div>';
         if (own && U.promosAvailable(u)) {
-          html += '<div class="promo"><b>⭐ Promotion available</b> (heals 50 HP, ends the turn)<div class="actions">' + U.promoChoices(g, u).map(function (pr) { return '<button class="small gold" data-action="dopromote" data-id="' + pr.id + '" title="' + AU.modsText(pr.mods) + '">' + pr.name + '<small>' + AU.modsText(pr.mods) + '</small></button>'; }).join('') + '</div></div>';
+          html += '<div class="promo"><b>⭐ ' + _('Promotion available') + '</b> (' + _('heals 50 HP, ends the turn)') + '<div class="actions">' + U.promoChoices(g, u).map(function (pr) { return '<button class="small gold" data-action="dopromote" data-id="' + pr.id + '" title="' + AU.modsText(pr.mods) + '">' + pr.name + '<small>' + AU.modsText(pr.mods) + '</small></button>'; }).join('') + '</div></div>';
         }
         if (own) {
           html += '<div class="actions">';
-          if (this.pendingAttack != null) { var pa = this.previewAttack(u, this.pendingAttack); html += '<button class="small danger" data-action="attack" data-tile="' + this.pendingAttack + '">⚔️ Attack: ' + pa + '</button>'; }
+          if (this.pendingAttack != null) { var pa = this.previewAttack(u, this.pendingAttack); html += '<button class="small danger" data-action="attack" data-tile="' + this.pendingAttack + '">⚔️ ' + _('Attack') + ': ' + pa + '</button>'; }
           if (AU.UNITS[u.type].religious) {
             var Rl = AU.Religion, sHere = G.settlementAt(g, u.tile);
             html += '<small class="stat">' + AU.UNITS[u.type].icon + ' ' + u.charges + ' charge' + (u.charges === 1 ? '' : 's') + (u.religion ? ' · ' + Rl.icon(g, u.religion) + ' ' + Rl.name(g, u.religion) : '') + '</small>';
-            if (u.type !== 'inquisitor') html += '<button class="small primary" data-action="spread" ' + (Rl.canSpread(g, u) ? '' : 'disabled') + '>Spread religion' + (sHere ? ' in ' + sHere.name : '') + '</button>';
-            else html += '<button class="small primary" data-action="inquisition" ' + (Rl.canInquisition(g, u) ? '' : 'disabled') + '>Remove heresy' + (sHere ? ' in ' + sHere.name : '') + '</button>';
-            Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">Debate ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
+            if (u.type !== 'inquisitor') html += '<button class="small primary" data-action="spread" ' + (Rl.canSpread(g, u) ? '' : 'disabled') + '>' + _('Spread religion') + (sHere ? ' in ' + sHere.name : '') + '</button>';
+            else html += '<button class="small primary" data-action="inquisition" ' + (Rl.canInquisition(g, u) ? '' : 'disabled') + '>' + _('Remove heresy') + (sHere ? ' in ' + sHere.name : '') + '</button>';
+            Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">' + _('Debate') + ' ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
           }
           if (AU.UNITS[u.type].great && AU.Great) {
             var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + gt.desc + '</div>';
             AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
           }
-          if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">Route with ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 Ties per turn. Move it to end the route.</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 Open trade route' + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">Walk into the land of a free city you are not at war with.</small>' : ''); }
-          if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? 'Found Town' : 'Found Capital') + '</button>' + (!can ? '<small class="stat">Too close to another settlement or invalid terrain.</small>' : ''); }
-          if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
-          if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
-          html += '<button class="small" data-action="skip">Skip</button><button class="small" data-action="sleep">Sleep</button>';
-          if (u.path && u.path.length) { var dstS = G.settlementAt(g, u.path[u.path.length - 1]), dstT = g.tiles[u.path[u.path.length - 1]]; html += '<small class="stat">🥾 On the way to ' + (dstS ? dstS.name : AU.TERRAIN[dstT.terrain].name + (dstT.hills ? ' Hills' : '')) + ': ' + U.pathTurns(g, u, u.path) + ' more turn' + (U.pathTurns(g, u, u.path) > 1 ? 's' : '') + '.</small><button class="small" data-action="cancelpath">Cancel route</button>'; }
-          if (U.canUndo(g, u)) html += '<button class="small" data-action="undomove">↩ Undo move</button>';
-          var upc = U.upgradeCost(g, u); if (upc !== null) html += '<button class="small" data-action="upgrade" ' + (U.canUpgrade(g, u) ? '' : 'disabled') + '>Upgrade → ' + G.unitType(g, p, AU.UNITS[u.type].upgradesTo).name + ' (' + upc + '💰)</button>';
-          html += '<button class="small ghost" data-action="disband">Disband</button></div>';
+          if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">' + _('Route with') + ' ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 ' + _('Ties per turn. Move it to end the route.') + '</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 ' + _('Open trade route') + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">' + _('Walk into the land of a free city you are not at war with.') + '</small>' : ''); }
+          if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? _('Found Town') : _('Found Capital')) + '</button>' + (!can ? '<small class="stat">' + _('Too close to another settlement or invalid terrain.') + '</small>' : ''); }
+          if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">' + _('Fortify') + '</button>';
+          if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? _('Stop exploring') : _('Auto-explore')) + '</button>';
+          html += '<button class="small" data-action="skip">' + _('Skip') + '</button><button class="small" data-action="sleep">' + _('Sleep') + '</button>';
+          if (u.path && u.path.length) { var dstS = G.settlementAt(g, u.path[u.path.length - 1]), dstT = g.tiles[u.path[u.path.length - 1]]; html += '<small class="stat">🥾 ' + _('On the way to') + ' ' + (dstS ? dstS.name : AU.TERRAIN[dstT.terrain].name + (dstT.hills ? ' ' + _('Hills') : '')) + ': ' + U.pathTurns(g, u, u.path) + ' ' + _('more turn') + (U.pathTurns(g, u, u.path) > 1 ? 's' : '') + '.</small><button class="small" data-action="cancelpath">' + _('Cancel route') + '</button>'; }
+          if (U.canUndo(g, u)) html += '<button class="small" data-action="undomove">↩ ' + _('Undo move') + '</button>';
+          var upc = U.upgradeCost(g, u); if (upc !== null) html += '<button class="small" data-action="upgrade" ' + (U.canUpgrade(g, u) ? '' : 'disabled') + '>' + _('Upgrade') + ' → ' + G.unitType(g, p, AU.UNITS[u.type].upgradesTo).name + ' (' + upc + '💰)</button>';
+          html += '<button class="small ghost" data-action="disband">' + _('Disband') + '</button></div>';
         }
         html += '</div>';
       } else if (this.sel.settlement && g.settlements[this.sel.settlement]) {
         var s = g.settlements[this.sel.settlement], own2 = s.civ === p.idx, y = G.settlementYields(g, s);
-        html += '<div class="card"><h3>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? 'City' : 'Town') + (s.specialization ? ' · ' + (G.specializationDef(g.civs[s.civ], s.specialization) || { name: s.specialization }).name : '') + '</span>' + (!own2 ? ' <span class="pill">' + G.civData(g.civs[s.civ]).name + '</span>' : '') + '</h3>';
-        html += '<div class="meta">Pop ' + s.pop + ' · HP ' + s.hp + '/' + G.settlementMaxHp(g, s) + ' · Def ' + G.settlementStrength(g, s) + (own2 ? ' · <span class="food">🌾' + y.food + '</span> <span class="prod">⚙️' + (s.isCity ? y.production : y.rawProduction + '→💰') + '</span> <span class="goldc">💰' + y.gold + '</span> <span class="sci">🔬' + y.science + '</span> <span class="cult">🎭' + y.culture + '</span> ' + (y.happiness < 0 ? '😠' : '😊') + y.happiness : '') + '</div>';
+        html += '<div class="card"><h3>' + (s.isCapital ? '★ ' : '') + s.name + ' <span class="pill">' + (s.isCity ? _('City') : _('Town')) + (s.specialization ? ' · ' + (G.specializationDef(g.civs[s.civ], s.specialization) || { name: s.specialization }).name : '') + '</span>' + (!own2 ? ' <span class="pill">' + G.civData(g.civs[s.civ]).name + '</span>' : '') + '</h3>';
+        html += '<div class="meta">' + _('Pop') + ' ' + s.pop + ' · HP ' + s.hp + '/' + G.settlementMaxHp(g, s) + ' · ' + _('Def') + ' ' + G.settlementStrength(g, s) + (own2 ? ' · <span class="food">🌾' + y.food + '</span> <span class="prod">⚙️' + (s.isCity ? y.production : y.rawProduction + '→💰') + '</span> <span class="goldc">💰' + y.gold + '</span> <span class="sci">🔬' + y.science + '</span> <span class="cult">🎭' + y.culture + '</span> ' + (y.happiness < 0 ? '😠' : '😊') + y.happiness : '') + '</div>';
         if (own2) {
-          html += '<div class="actions"><button class="small primary" data-action="city" data-id="' + s.id + '">Manage</button>';
-          if (s.pendingGrowth > 0) html += '<button class="small" data-action="expand" data-id="' + s.id + '">🌱 Choose tile (' + s.pendingGrowth + ')</button><button class="small" data-action="autoexpand" data-id="' + s.id + '">Auto</button>';
-          if (this.mode === 'expand') html += '<span class="stat">Tap a green tile.</span>';
+          html += '<div class="actions"><button class="small primary" data-action="city" data-id="' + s.id + '">' + _('Manage') + '</button>';
+          if (s.pendingGrowth > 0) html += '<button class="small" data-action="expand" data-id="' + s.id + '">🌱 ' + _('Choose tile') + ' (' + s.pendingGrowth + ')</button><button class="small" data-action="autoexpand" data-id="' + s.id + '">' + _('Auto') + '</button>';
+          if (this.mode === 'expand') html += '<span class="stat">' + _('Tap a green tile.') + '</span>';
           html += '</div>';
         }
         html += '</div>';
@@ -410,10 +410,10 @@
         if (p.explored[this.sel.tile]) {
           var yy = AU.baseTileYields(tt, p), owner = tt.owner >= 0 && g.settlements[tt.owner] ? g.settlements[tt.owner] : null;
           var NWc = tt.natural ? AU.NATURAL_WONDERS[tt.natural] : null;
-          html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">Natural Wonder</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' Hills' : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (River)' : '')) + (function () { var mc = U.terrainCost(tt); return ' <span class="pill" title="Movement points needed to enter">🥾 ' + (mc === Infinity ? 'impassable' : mc) + '</span>'; })() + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' Adjacent worked tiles: ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
+          html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">' + _('Natural Wonder') + '</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' ' + _('Hills') : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (' + _('River)') : '')) + (function () { var mc = U.terrainCost(tt); return ' <span class="pill" title="Movement points needed to enter">🥾 ' + (mc === Infinity ? 'impassable' : mc) + '</span>'; })() + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' ' + _('Adjacent worked tiles') + ': ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
             (tt.resource && (!AU.RESOURCES[tt.resource].revealTech || p.techs[AU.RESOURCES[tt.resource].revealTech]) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
             '🌾' + yy.food + ' ⚙️' + yy.production + ' 💰' + yy.gold + (yy.culture ? ' 🎭' + yy.culture : '') +
-            (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · Independent camp' : '') + '</div></div>';
+            (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · ' + _('Independent camp') : '') + '</div></div>';
         }
       }
       box.innerHTML = html;
@@ -440,9 +440,9 @@
       if (!g) { if (name === 'pedia' || name === 'help' || name === 'togglegraphics' || name === 'toggleyields') AU.Panels.action(this, name, d); return; }
       var p = G.player(g), u = this.sel.unit ? g.units[this.sel.unit] : null, s;
       switch (name) {
-        case 'spread': if (u && AU.Religion.spread(g, u)) { this.toast('Religion spread.'); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
-        case 'inquisition': if (u && AU.Religion.inquisition(g, u)) { this.toast('Heresy removed.'); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
-        case 'debate': if (u) { var tgt = g.units[+d.id]; var res = tgt && AU.Religion.debate(g, u, tgt); if (res) { this.toast(res.win ? 'Debate won!' : 'Debate lost…'); if (g.units[u.id]) this.selectUnit(u); else this.deselect(); this.refreshHud(); this.invalidate(); } } break;
+        case 'spread': if (u && AU.Religion.spread(g, u)) { this.toast(_('Religion spread.')); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
+        case 'inquisition': if (u && AU.Religion.inquisition(g, u)) { this.toast(_('Heresy removed.')); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
+        case 'debate': if (u) { var tgt = g.units[+d.id]; var res = tgt && AU.Religion.debate(g, u, tgt); if (res) { this.toast(res.win ? _('Debate won!') : _('Debate lost…')); if (g.units[u.id]) this.selectUnit(u); else this.deselect(); this.refreshHud(); this.invalidate(); } } break;
         case 'dopromote': if (u && U.promote(g, u, d.id)) { this.toast(u.name + ' promoted: ' + AU.PROMO_BY_ID[d.id].name + '.'); this.afterUnitAction(u, true); } break;
         case 'todo': this.doTodo(+d.i); break;
         case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
@@ -450,19 +450,19 @@
         case 'caravanroute': if (u && AU.CityStates.openRoute(g, u)) { this.afterUnitAction(u, true); this.refreshHud(); this.invalidate(); } break;
         case 'greatuse': if (u && AU.Great.use(g, u)) { this.deselect(); this.refreshHud(); this.invalidate(); this.showQuotes(); } break;
         case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
-        case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast('Founded ' + st.name + '.'); } } break;
+        case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast(_('Founded') + ' ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
         case 'skip': if (u) { U.skip(g, u); this.afterUnitAction(u, true); } break;
         case 'sleep': if (u) { U.sleep(g, u); this.afterUnitAction(u, true); } break;
         case 'explore': if (u) { u.auto = !u.auto; if (u.auto) { AU.AI.explore(g, p, u); this.afterUnitAction(u, true); } else this.refreshContext(); } break;
         case 'cancelpath': if (u) { u.path = null; this.updateUnitHighlights(); this.refreshContext(); this.invalidate(); } break;
-        case 'undomove': if (u && U.undoMove(g, u)) { this.toast('Move undone.'); this.selectUnit(u); this.renderer.centerOn(g, u.tile); this.refreshHud(); this.invalidate(); } break;
-        case 'upgrade': if (u && U.upgrade(g, u)) { this.toast('Upgraded to ' + u.name + '.'); this.selectUnit(u); } break;
-        case 'disband': if (u) { var self = this; this.confirm('Disband ' + u.name + '?', function () { U.disband(g, u); self.deselect(); self.refreshHud(); self.invalidate(); }); } break;
+        case 'undomove': if (u && U.undoMove(g, u)) { this.toast(_('Move undone.')); this.selectUnit(u); this.renderer.centerOn(g, u.tile); this.refreshHud(); this.invalidate(); } break;
+        case 'upgrade': if (u && U.upgrade(g, u)) { this.toast(_('Upgraded to') + ' ' + u.name + '.'); this.selectUnit(u); } break;
+        case 'disband': if (u) { var self = this; this.confirm(_('Disband') + ' ' + u.name + '?', function () { U.disband(g, u); self.deselect(); self.refreshHud(); self.invalidate(); }); } break;
         case 'attack': if (u && d.tile != null) this.doAttack(u, +d.tile); break;
         case 'city': this.openPanel('city', { id: +d.id }); break;
         case 'expand': s = g.settlements[+d.id]; if (s) { this.closePanel(); this.renderer.centerOn(g, s.tile); this.startExpand(s); } break;
-        case 'autoexpand': s = g.settlements[+d.id]; if (s) { G.autoExpand(g, s); this.deselect(); this.selectSettlement(s); this.toast(s.name + ' expanded automatically.'); if (this.panel === 'city') this.openPanel('city', { id: s.id }); } break;
+        case 'autoexpand': s = g.settlements[+d.id]; if (s) { G.autoExpand(g, s); this.deselect(); this.selectSettlement(s); this.toast(s.name + ' ' + _('expanded automatically.')); if (this.panel === 'city') this.openPanel('city', { id: s.id }); } break;
         case 'center': this.closePanel(); if (d.tile != null) { this.renderer.centerOn(g, +d.tile); s = G.settlementAt(g, +d.tile); if (s) this.selectSettlement(s); } break;
         default: AU.Panels.action(this, name, d);
       }
@@ -477,11 +477,11 @@
     doAttack: function (u, tileIdx) {
       var g = this.g, res = U.attack(g, u, tileIdx);
       this.pendingAttack = null;
-      if (!res) { this.toast('Cannot attack that target.'); return; }
+      if (!res) { this.toast(_('Cannot attack that target.')); return; }
       var msg = [];
-      if (res.captured) msg.push('Captured ' + g.settlements[res.settlement].name + '!');
-      else if (res.settlementDamage != null) msg.push('Hit ' + g.settlements[res.settlement].name + ' for ' + res.settlementDamage);
-      if (res.defenderDamage != null) msg.push((res.killed ? 'Destroyed the enemy' : 'Dealt ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
+      if (res.captured) msg.push(_('Captured') + ' ' + g.settlements[res.settlement].name + '!');
+      else if (res.settlementDamage != null) msg.push(_('Hit') + ' ' + g.settlements[res.settlement].name + ' for ' + res.settlementDamage);
+      if (res.defenderDamage != null) msg.push((res.killed ? _('Destroyed the enemy') : _('Dealt') + ' ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
       if (res.attackerDamage) msg.push('took ' + res.attackerDamage);
       if (res.attackerKilled) msg.push('your unit was lost');
       this.toast(msg.join(', ') + '.');
@@ -495,25 +495,25 @@
       var h = this.renderer.highlights;
       if (this.mode === 'expand' && this.sel.settlement) {
         var s = g.settlements[this.sel.settlement];
-        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' claimed a new tile.'); } this.refreshHud(); return; }
+        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' ' + _('claimed a new tile.')); } this.refreshHud(); return; }
         this.mode = 'normal';
       }
       if (u && u.civ === p.idx) {
         if (tileIdx === u.tile) { this.cycleAtTile(tileIdx); return; }
         if (h.attack && h.attack[tileIdx]) {
           if (this.pendingAttack === tileIdx) { this.doAttack(u, tileIdx); return; }
-          this.pendingAttack = tileIdx; this.refreshContext(); this.toast('Attack: ' + this.previewAttack(u, tileIdx) + '. Tap again to confirm.'); return;
+          this.pendingAttack = tileIdx; this.refreshContext(); this.toast(_('Attack') + ': ' + this.previewAttack(u, tileIdx) + '. ' + _('Tap again to confirm.')); return;
         }
         this.pendingAttack = null;
-        if (!p.explored[tileIdx]) { this.toast('Unexplored territory.'); return; }
+        if (!p.explored[tileIdx]) { this.toast(_('Unexplored territory.')); return; }
         // move (this turn or multi-turn)
         var ownUnitsThere = G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === p.idx && G.isMilitary(o) === G.isMilitary(u); });
         if (ownUnitsThere.length) { this.selectUnit(ownUnitsThere[0]); return; }
         var sHere = G.settlementAt(g, tileIdx);
         if (sHere && sHere.civ === p.idx && !(h.reach && h.reach[tileIdx])) { var path0 = U.findPath(g, u, tileIdx); if (!path0) { this.selectSettlement(sHere); return; } }
         var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0;
-        if (U.orderMove(g, u, tileIdx)) { if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' turns. It keeps walking by itself each turn.', 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
-        this.toast('No route there.');
+        if (U.orderMove(g, u, tileIdx)) { if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' ' + _('turns. It keeps walking by itself each turn.'), 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
+        this.toast(_('No route there.'));
         return;
       }
       this.cycleAtTile(tileIdx);
@@ -538,13 +538,13 @@
       if (!force && this._todo && this._todo.length && this.settings.strictTurn) { this.doTodo(0); return; }
       var g = this.g, p = G.player(g), self = this;
       if (g.victory) { this.openPanel('victory'); return; }
-      this.busy = true; $('btn-end').disabled = true; $('btn-end').textContent = 'Processing…';
+      this.busy = true; $('btn-end').disabled = true; $('btn-end').textContent = _('Processing…');
       setTimeout(function () {
         try {
           G.civUnits(g, p.idx).forEach(function (u) { if (u.auto && u.moves > 0) AU.AI.explore(g, p, u); });
           G.endTurn(g);
           G.civUnits(g, p.idx).forEach(function (u) { if (u.auto && u.moves > 0) AU.AI.explore(g, p, u); });
-        } catch (e) { console.error(e); self.toast('Error during turn: ' + e.message, 4000); }
+        } catch (e) { console.error(e); self.toast(_('Error during turn') + ': ' + e.message, 4000); }
         self.busy = false; $('btn-end').disabled = false;
         self.pendingAttack = null;
         if (self.sel.unit && !g.units[self.sel.unit]) self.deselect(); else if (self.sel.unit) self.updateUnitHighlights();

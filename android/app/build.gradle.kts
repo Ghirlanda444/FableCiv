@@ -8,11 +8,13 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ghirlanda.agesunbroken"
+        applicationId = "com.ghirlanda.tinyempires"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        // versionCode counts the commits on main (set by the workflow); versionName is the game version
+        versionCode = (System.getenv("APP_VERSION_CODE") ?: "1").toInt()
+        versionName = System.getenv("APP_VERSION_NAME") ?: "0.3.0"
+        buildConfigField("boolean", "REMOTE_FIRST", System.getenv("APP_REMOTE_FIRST") ?: "true")
     }
 
     sourceSets {
@@ -23,8 +25,23 @@ android {
         }
     }
 
+    // Store signing: the keystore comes from the environment (see .github/workflows/android-release.yml); without it the release build stays unsigned.
+    signingConfigs {
+        create("release") {
+            val ksPath = System.getenv("ANDROID_KEYSTORE_PATH")
+            if (ksPath != null && File(ksPath).exists()) {
+                storeFile = File(ksPath)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+    buildFeatures { buildConfig = true }
+
     buildTypes {
         getByName("release") {
+            if (System.getenv("ANDROID_KEYSTORE_PATH") != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

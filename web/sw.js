@@ -3,7 +3,7 @@
 var VERSION = '__VERSION__';
 var CACHE = 'tiny-empires-' + VERSION;
 var CORE = ['./', './index.html', './style.css', './manifest.webmanifest', './icon-512.png', './lib/three.min.js',
-  './js/core/rng.js', './js/ui/assets.js', './js/core/hex.js', './js/data/terrain.js', './js/data/civs.js', './js/data/civs2.js', './js/data/religion.js', './js/data/citystates.js', './js/data/cultures.js',
+  './js/i18n.js', './js/core/rng.js', './js/ui/assets.js', './js/core/hex.js', './js/data/terrain.js', './js/data/civs.js', './js/data/civs2.js', './js/data/religion.js', './js/data/citystates.js', './js/data/cultures.js',
   './js/data/units.js', './js/data/buildings.js', './js/data/techs.js', './js/data/quotes.js', './js/core/mapgen.js', './js/core/game.js', './js/core/units.js', './js/core/religion.js', './js/core/citystates.js', './js/core/ai.js',
   './js/ui/renderer.js', './js/ui/renderer3d.js', './js/ui/panels.js', './js/ui/pedia.js', './js/ui/cityview.js', './js/ui/app.js', './js/version.js'];
 self.addEventListener('install', function (e) {
