@@ -546,6 +546,8 @@
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
     if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Faith only (see Religion)
     if (d.tech && !civ.techs[d.tech]) return false;
+    if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
     // obsolete? if the upgrade target is buildable, hide the old one (except settler/scout)
@@ -833,6 +835,7 @@
     var ca = g.civs[a], cb = g.civs[b];
     ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn;
     cb.flags['ev:warDeclaredOnUs'] = g.turn; ca.flags['ev:war'] = g.turn;
+    if (AU.CityStates) AU.CityStates.onWarDeclared(g, a, b);
     cb.rel[a].attitude -= 30;
     g.civs.forEach(function (c) { if (c.idx !== a && c.idx !== b && c.alive) c.rel[a].attitude -= 5; });
     if (AU.Diplo) AU.Diplo.onWarDeclared(g, a, b);
@@ -1018,6 +1021,7 @@
     if (!civ.alive) return;
     if (AU.Palace) AU.Palace.turn(g, civ);
     if (AU.Great) AU.Great.turn(g, civ);
+    if (AU.CityStates && !civ.minor) AU.CityStates.routesTurn(g, civ);
     civ._turnScience = 0; civ._turnCulture = 0; civ._turnFaith = 0;
     var sets = G.civSettlements(g, civ.idx);
     var foodFor = {};

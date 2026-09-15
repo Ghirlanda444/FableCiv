@@ -203,7 +203,7 @@
         if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: 'Found a religion', go: function () { self.openPanel('religion'); } });
         if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: 'Enhance your religion', go: function () { self.openPanel('religion'); } });
       }
-      if (AU.CityStates && (p.envoys || 0) > 0 && g.civs.some(function (m) { return m.minor && m.alive && p.met[m.idx] && !G.atWar(g, p.idx, m.idx); })) list.push({ icon: '🤝', text: 'Send ' + p.envoys + ' envoy' + (p.envoys > 1 ? 's' : ''), go: function () { self.openPanel('diplomacy'); } });
+      if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: 'Send the caravan to a free city', go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
       if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
       if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
       var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics'); } });
@@ -359,6 +359,7 @@
             var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + gt.desc + '</div>';
             AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
           }
+          if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">Route with ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 Ties per turn. Move it to end the route.</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 Open trade route' + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">Walk into the land of a free city you are not at war with.</small>' : ''); }
           if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? 'Found Town' : 'Found Capital') + '</button>' + (!can ? '<small class="stat">Too close to another settlement or invalid terrain.</small>' : ''); }
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
@@ -421,6 +422,7 @@
         case 'todo': this.doTodo(+d.i); break;
         case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
         case 'clearnotifs': this.g.notifications.length = 0; this.refreshHud(); break;
+        case 'caravanroute': if (u && AU.CityStates.openRoute(g, u)) { this.afterUnitAction(u, true); this.refreshHud(); this.invalidate(); } break;
         case 'greatuse': if (u && AU.Great.use(g, u)) { this.deselect(); this.refreshHud(); this.invalidate(); this.showQuotes(); } break;
         case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast('Founded ' + st.name + '.'); } } break;

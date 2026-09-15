@@ -147,6 +147,7 @@
           var pick = null;
           if (opts.projects.length) pick = { kind: 'project', id: opts.projects[0] };
           else if (s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 2) pick = { kind: 'unit', id: 'settler' };
+          else if (AU.CityStates && civ.civics.foreign_trade && AU.CityStates.caravans(g, civ).length < Math.min(2, AU.CityStates.caravanLimit(g, civ)) && AU.CityStates.minors(g).some(function (m) { return m.alive && civ.met[m.idx] && !G.atWar(g, civ.idx, m.idx) && G.dist(g.tiles[G.civSettlements(g, m.idx)[0].tile], g.tiles[s.tile]) <= 14; }) && G.rng(g) < 0.5) pick = { kind: 'unit', id: 'caravan' };
           else if (AI.wantsMilitary(g, civ)) { var wantRanged = G.civUnits(g, civ.idx).filter(function (u) { return U.isRanged(u); }).length < G.civUnits(g, civ.idx).filter(G.isMilitary).length / 3; var bu = AI.bestUnitToBuild(g, s, wantRanged); if (bu) pick = { kind: 'unit', id: bu }; }
           if (!pick && !s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 3) pick = { kind: 'unit', id: 'settler' };
           if (!pick && opts.national.length && s.pop >= 4 && G.rng(g) < 0.5) pick = { kind: 'national', id: opts.national[0] };
@@ -258,6 +259,7 @@
     units.forEach(function (u) {
       if (!g.units[u.id]) return;
       if (u.type === 'settler') return AI.moveSettler(g, civ, u);
+      if (AU.UNITS[u.type].caravan) return AI.moveCaravan(g, civ, u);
       if (AU.UNITS[u.type].religious) return AI.moveReligious(g, civ, u);
       if (AU.UNITS[u.type].great) return AI.moveGreat(g, civ, u);
       if (!G.isMilitary(u)) return;
@@ -313,12 +315,22 @@
       }
     }
   };
-  AI.envoys = function (g, civ) {
-    var CS = AU.CityStates; if (!CS || civ.minor || !(civ.envoys > 0)) return;
-    var tr = civ.ai, want = { science: tr.science, culture: tr.culture, military: tr.aggression, trade: 0.5, industrial: 0.5, religious: tr.religion || 0.3 };
+  AI.envoys = function (g, civ) { // free cities: gifts when rich, caravans handled by the units
+    var CS = AU.CityStates; if (!CS || civ.minor) return;
+    var reserve = 150 + G.civSettlements(g, civ.idx).length * 20;
+    if (civ.gold < CS.GIFT_COST * 2 + reserve) return;
     var best = null, bs = -1;
-    CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || G.atWar(g, civ.idx, m.idx)) return; var mine = CS.envoysOf(g, civ, m), suz = CS.suzerain(g, m); var sc = (want[m.stateType] || 0.4) + (mine > 0 && suz !== civ.idx ? 0.4 : 0) + (mine >= 3 && suz === civ.idx ? -0.5 : 0) + (mine >= 6 ? -2 : 0) + G.rng(g) * 0.3; if (sc > bs) { bs = sc; best = m; } });
-    if (best) CS.sendEnvoy(g, civ, best);
+    CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || G.atWar(g, civ.idx, m.idx) || !AU.Diplo.canGiftCS(g, civ.idx, m)) return; var t = CS.tiesOf(g, civ, m); var sc = (t >= 20 && t < 95 ? 2 : 1) + (CS.patron(g, m) === civ.idx ? 1 : 0) + G.rng(g) * 0.5; if (sc > bs) { bs = sc; best = m; } });
+    if (best) AU.Diplo.giftCS(g, civ.idx, best);
+    CS.minors(g).forEach(function (m) { if (m.alive && civ.met[m.idx] && CS.unionState(g, civ, m).ok) CS.union(g, civ, m); });
+  };
+  AI.moveCaravan = function (g, civ, u) {
+    var CS = AU.CityStates; if (u.route != null) return;
+    if (CS.openRoute(g, u)) return;
+    var busy = {}; CS.caravans(g, civ).forEach(function (o) { if (o.route != null) busy[o.route] = true; });
+    var best = null, bd = 1e9;
+    CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || busy[m.idx] || G.atWar(g, civ.idx, m.idx) || CS.isHostile(g, civ, m)) return; var s = G.civSettlements(g, m.idx)[0]; if (!s) return; s.tiles.forEach(function (i) { if (i === s.tile || U.tileBlocked(g, u, i, true)) return; var d = G.dist(g.tiles[i], g.tiles[u.tile]) - CS.tiesOf(g, civ, m) / 20; if (d < bd) { bd = d; best = i; } }); });
+    if (best != null) { U.orderMove(g, u, best); if (g.units[u.id]) CS.openRoute(g, u); }
   };
   AI.conversionTargets = function (g, civ) {
     var out = [];

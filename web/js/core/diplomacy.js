@@ -73,12 +73,13 @@
       var me = pair[0], them = pair[1];
       if (!them.minor || me.minor) return;
       // the first civilization to find a city-state gets a free envoy there
-      var first = !Object.keys(them.envoysFrom || {}).length && !them.flags['firstMet'];
-      if (first) { them.flags['firstMet'] = me.idx; them.envoysFrom = them.envoysFrom || {}; them.envoysFrom[me.idx] = (them.envoysFrom[me.idx] || 0) + 1; g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1; }
+      var first = !them.flags['firstMet'];
+      if (first) them.flags['firstMet'] = me.idx;
+      AU.CityStates.addTies(g, me, them, AU.CityStates.MEET_TIES * (first ? 2 : 1), 'first contact');
       if (me.isPlayer) {
         me.flags['met:' + them.idx] = g.turn;
         g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'meetCS', civ: them.idx, first: first });
-        G.notify(g, me, { kind: 'meet', text: 'You met the city-state of ' + G.civData(them).name + (first ? ' and received a free envoy for finding it first.' : '.'), panel: 'diplomacy' });
+        G.notify(g, me, { kind: 'meet', text: 'You met the free city of ' + G.civData(them).name + (first ? ': as the first to find it you start with +10 Ties.' : ': +5 Ties.'), panel: 'diplomacy' });
       }
     });
     if (!ca.minor && !cb.minor) [[ca, cb], [cb, ca]].forEach(function (pair) {
@@ -178,14 +179,16 @@
   };
 
   // ---------- city-state audience ----------
-  D.canGiftCS = function (g, a, m) { var r = D.rel(g, a, m.idx); return !!r && !r.war && g.turn - r.giftTurn >= 20 && g.civs[a].gold >= 120; };
+  D.giftCost = function (g, a, m) { var CS = AU.CityStates; return CS.GIFT_COST + CS.tiesOf(g, g.civs[a], m) * 3; }; // the closer you are, the pricier the presents
+  D.canGiftCS = function (g, a, m) { var r = D.rel(g, a, m.idx), CS = AU.CityStates; return !!r && !r.war && g.turn - r.giftTurn >= 15 && g.civs[a].gold >= D.giftCost(g, a, m) && !CS.isHostile(g, g.civs[a], m) && CS.tiesOf(g, g.civs[a], m) < CS.PASSIVE_CAP; };
   D.giftCS = function (g, a, m) {
-    if (!D.canGiftCS(g, a, m)) return { ok: false, text: 'You need 120 Gold, and one gift every 20 turns.' };
-    g.civs[a].gold -= 120; m.gold += 60; D.rel(g, a, m.idx).giftTurn = g.turn; m.envoysFrom = m.envoysFrom || {}; m.envoysFrom[a] = (m.envoysFrom[a] || 0) + 1;
-    g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1;
-    return { ok: true, text: G.civData(m).name + ' thanks you for the gold: +1 envoy.' };
+    var CS = AU.CityStates;
+    if (!D.canGiftCS(g, a, m)) return { ok: false, text: 'You need ' + D.giftCost(g, a, m) + ' Gold, one gift every 15 turns, Ties below ' + CS.PASSIVE_CAP + ', and no recent attack on a free city.' };
+    g.civs[a].gold -= D.giftCost(g, a, m); m.gold += 60; D.rel(g, a, m.idx).giftTurn = g.turn;
+    CS.addTies(g, g.civs[a], m, CS.GIFT_TIES, 'gift');
+    return { ok: true, text: G.civData(m).name + ' thanks you for the gold: +' + CS.GIFT_TIES + ' Ties (' + CS.tiesOf(g, g.civs[a], m) + ', ' + CS.tierName(CS.tiesOf(g, g.civs[a], m)) + ').' };
   };
-  // Quests: each city-state asks for one thing; every civilization that does it earns an envoy there.
+  // Quests: each free city asks for one thing; every civilization that does it earns Ties there.
   var QUEST_BUILDINGS = ['granary', 'monument', 'shrine', 'library', 'barracks', 'market', 'walls', 'water_mill'];
   var QUEST_UNITS = ['warrior', 'slinger', 'archer', 'spearman', 'scout', 'galley', 'horseman', 'settler'];
   D.questOf = function (g, m) {
@@ -208,9 +211,9 @@
     g.civs.forEach(function (c) {
       if (c.minor || !c.alive || !c.met[m.idx] || m.questDone[c.idx] || G.atWar(g, c.idx, m.idx)) return;
       if (!D.questMet(g, c, q)) return;
-      m.questDone[c.idx] = g.turn; m.envoysFrom = m.envoysFrom || {}; m.envoysFrom[c.idx] = (m.envoysFrom[c.idx] || 0) + 1;
-      g.civs.forEach(function (x) { x._fx = null; }); g.fxGen = (g.fxGen || 0) + 1;
-      if (c.isPlayer) G.notify(g, c, { kind: 'diplomacy', text: 'Quest complete for ' + G.civData(m).name + ' (' + q.text.toLowerCase() + '): +1 envoy there.', panel: 'diplomacy' });
+      m.questDone[c.idx] = g.turn;
+      AU.CityStates.addTies(g, c, m, AU.CityStates.QUEST_TIES, 'quest');
+      if (c.isPlayer) G.notify(g, c, { kind: 'diplomacy', text: 'Quest complete for ' + G.civData(m).name + ' (' + q.text.toLowerCase() + '): +' + AU.CityStates.QUEST_TIES + ' Ties there.', panel: 'diplomacy' });
     });
   };
 

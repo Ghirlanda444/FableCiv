@@ -226,14 +226,17 @@
     if (!others.some(function (c) { return p.met[c.idx]; })) html += '<p class="stat">You have not met any other civilization yet. Explore!</p>';
     var CS = AU.CityStates, minors = g.civs.filter(function (c) { return c.minor && p.met[c.idx]; });
     if (CS) {
-      html += '<div class="section"><h3>City-states</h3><p class="stat">Envoys: <b>' + (p.envoys || 0) + '</b> to send (you earn one with every civic). 1 envoy: bonus in your capital · 3: in every settlement and you can become Suzerain (most envoys) · 6: bonus doubled. The Suzerain gets the city-state\'s special bonus and its help in war.</p>';
-      if (!minors.length) html += '<p class="stat">No city-state met yet.</p>';
+      html += '<div class="section"><h3>Free cities</h3><p class="stat"><b>Ties</b> grow from what you do: a Caravan parked in their land (+3/turn and Gold), a soldier guarding their borders (+1), a shared religion (+1), their quest (+15) and gifts (+10). Ignore them and Ties fade. Tiers: Acquaintance 10 · Partner 30 (their yield in your capital) · Patron 60, if nobody is closer (their special bonus, their help in war) · Kin 90 (more yields; after 20 turns as Kin with touching borders they can join you in a <b>Union</b>).</p>';
+      if (!minors.length) html += '<p class="stat">No free city met yet.</p>';
+      var caravans = CS.caravans(g, p); html += '<p class="stat">🐪 Caravans: ' + caravans.length + '/' + CS.caravanLimit(g, p) + (caravans.filter(function (u) { return u.route != null; }).length ? ' · routes: ' + caravans.filter(function (u) { return u.route != null; }).map(function (u) { return G.civData(g.civs[u.route]).name + ' (+' + CS.routeIncome(g, u) + '💰)'; }).join(', ') : '') + (p.civics.foreign_trade ? '' : ' · needs the Caravans civic') + '</p>';
       minors.forEach(function (m) {
-        var d = G.civData(m), T = AU.CITY_STATE_TYPES[m.stateType], mine = CS.envoysOf(g, p, m), suz = CS.suzerain(g, m), tiers = AU.ENVOY_TIERS(m.stateType), war = G.atWar(g, p.idx, m.idx);
-        html += '<div class="row"><div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(m) + '"></div><div class="grow"><b>' + T.icon + ' ' + d.name + '</b> <span class="pill">' + T.name + '</span>' + (!m.alive ? ' <span class="pill war">destroyed</span>' : war ? ' <span class="pill war">At war</span>' : '') +
-          '<small>Your envoys: ' + mine + ' · Suzerain: ' + (suz < 0 ? 'none' : suz === p.idx ? '<b>you</b>' : G.civData(g.civs[suz]).name) + (m.religion ? ' · ' + AU.Religion.icon(g, m.religion) + ' ' + AU.Religion.name(g, m.religion) : '') + '</small>' +
-          '<small>' + tiers.map(function (t) { return (mine >= t.n ? '✅ ' : '⬜ ') + t.n + ': ' + t.desc; }).join(' · ') + '</small><small><b>' + d.ability.name + ':</b> ' + d.ability.desc + '</small></div>' +
-          (m.alive ? '<div><button class="small primary" data-action="talk" data-id="' + m.idx + '">Audience</button><button class="small" data-action="envoy" data-id="' + m.idx + '" ' + ((p.envoys || 0) > 0 && !war ? '' : 'disabled') + '>Send envoy</button></div>' : '') + '</div>';
+        var d = G.civData(m), T = AU.CITY_STATE_TYPES[m.stateType], mine = CS.tiesOf(g, p, m), pat = CS.patron(g, m), tier = CS.tierOf(mine), war = G.atWar(g, p.idx, m.idx), src = m.alive && !war ? CS.sources(g, p, m) : [], us = CS.unionState(g, p, m), hostile = CS.isHostile(g, p, m);
+        html += '<div class="row"><div class="swatch" style="width:14px;height:40px;border-radius:4px;background:' + G.civColor(m) + '"></div><div class="grow"><b>' + T.icon + ' ' + d.name + '</b> <span class="pill">' + T.name + '</span> ' + (!m.alive ? '<span class="pill war">gone</span>' : war ? '<span class="pill war">At war</span>' : '<span class="pill' + (tier >= 3 && pat === p.idx ? ' peace' : '') + '">' + CS.tierName(mine) + (pat === p.idx ? ' · Patron' : '') + '</span>') +
+          '<small>Ties <span class="strong">' + mine + '</span>/100 · Patron: ' + (pat < 0 ? 'none' : pat === p.idx ? '<span class="strong">you</span>' : G.civData(g.civs[pat]).name) + (m.religion ? ' · ' + AU.Religion.icon(g, m.religion) + ' ' + AU.Religion.name(g, m.religion) : '') + '</small>' +
+          '<div class="progress"><i style="width:' + mine + '%;background:' + (pat === p.idx ? 'var(--gold)' : 'var(--accent)') + '"></i></div>' +
+          '<small>' + (hostile ? '❄️ Cold after your attack on a free city (' + (m.hostileUntil[p.idx] - g.turn) + ' turns)' : src.length ? 'This turn: ' + src.map(function (x) { return '+' + x.n + ' ' + x.text; }).join(', ') : 'Nothing builds Ties right now' + (mine > 0 ? ': they fade slowly' : '')) + '</small>' +
+          '<small><span class="strong">' + d.ability.name + ':</span> ' + d.ability.desc + '</small>' + (m.alive && !war && tier >= 4 && pat === p.idx ? '<small>🤝 Union: ' + (us.ok ? '<span class="strong">possible now</span>' : us.why) + '</small>' : '') + '</div>' +
+          (m.alive ? '<div class="tree-detail-btns"><button class="small primary" data-action="talk" data-id="' + m.idx + '">Audience</button><button class="small" data-action="csgift" data-id="' + m.idx + '" ' + (AU.Diplo.canGiftCS(g, p.idx, m) ? '' : 'disabled') + '>Gift ' + AU.Diplo.giftCost(g, p.idx, m) + '💰</button>' + (us.ok ? '<button class="small gold" data-action="csunion" data-id="' + m.idx + '">Union</button>' : '') + '</div>' : '') + '</div>';
       });
       html += '</div>';
     }
@@ -411,7 +414,8 @@
       case 'togglemusic': app.settings.music = !(app.settings.music !== false); app.saveSettings(); AU.Audio.setEnabled(app.settings.music); app.refreshPanel(); break;
       case 'musicvol': app.settings.musicVolume = Math.round(Math.max(0, Math.min(1, (AU.Audio.volume || 0) + 0.1 * (+d.d))) * 10) / 10; app.saveSettings(); AU.Audio.setVolume(app.settings.musicVolume); app.refreshPanel(); break;
       case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
-      case 'envoy': if (AU.CityStates.sendEnvoy(g, p, g.civs[+d.id])) { app.refreshPanel(); app.refreshHud(); } break;
+      case 'csgift': { var gr = AU.Diplo.giftCS(g, p.idx, g.civs[+d.id]); app.toast(gr.text); app.refreshPanel(); app.refreshHud(); break; }
+      case 'csunion': { var mu = g.civs[+d.id]; app.confirm(G.civData(mu).name + ' will join your empire as a Town and keep its bonus forever. Proceed?', function () { if (AU.CityStates.union(g, p, mu)) { app.toast(G.civData(mu).name + ' joined you!'); app.refreshPanel(); app.refreshHud(); app.invalidate(); } }); break; }
       case 'talk': if (AU.DiploUI && g.civs[+d.id]) AU.DiploUI.open(app, +d.id, { kind: 'talk' }); break;
       case 'palace': app.openPanel('palace'); break;
       case 'palacepick': app.panelData = { piece: d.piece, style: d.style }; app.refreshPanel(); break;

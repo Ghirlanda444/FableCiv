@@ -40,7 +40,7 @@
     B('world_church', 'World Church', 'founder', '+1 Culture per settlement in the world following this religion.', { culturePerFollowerSettlement: 1 }),
     B('cross_cultural', 'Cross-Cultural Dialogue', 'founder', '+1 Science per settlement in the world following this religion.', { sciencePerFollowerSettlement: 1 }),
     B('lay_ministry', 'Lay Ministry', 'founder', '+1 Faith per settlement in the world following this religion.', { faithPerFollowerSettlement: 1 }),
-    B('papal_primacy', 'Papal Primacy', 'founder', 'City-states following this religion give you +1 extra envoy of influence.', { envoyPerFollowerState: 1 }),
+    B('papal_primacy', 'Papal Primacy', 'founder', 'Free cities following this religion gain +2 extra Ties with you every turn.', { tiesFollowerCity: 2 }),
     B('pilgrimage', 'Pilgrimage', 'founder', '+2 Faith and +1 Tourism per foreign settlement following this religion.', { faithPerForeignFollower: 2, tourismPerForeignFollower: 1 })
   ];
   // Enhancer beliefs: chosen when the religion is enhanced (second Faith milestone).

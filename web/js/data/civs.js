@@ -91,7 +91,7 @@
       ] },
 
     { id: 'persia', name: 'Persia', adj: 'Persian', difficulty: 'easy', bias: ['plains', 'hills'], color: '#7b2f8a', color2: '#f5cba7',
-      ability: { name: 'Royal Road', desc: '+2 Gold per settlement. Units +1 Movement inside your borders.', fx: { goldPerSettlement: 2, homeMoves: 1 } },
+      ability: { name: 'Royal Road', desc: '+2 Gold per settlement. Units +1 Movement inside your borders. Free cities you have met gain +1 Ties with you every turn.', fx: { tiesPerTurn: 1, goldPerSettlement: 2, homeMoves: 1 } },
       uu: { id: 'immortal', name: 'Immortal', replaces: 'swordsman', strength: 3, defense: 6, healOnKill: 25, costMult: 1.2, desc: '+3 Strength, +6 defending, heals 25 HP on a kill, costs 20% more' },
       ub: { id: 'pairidaeza', name: 'Pairidaeza', replaces: 'amphitheater', yields: { culture: 2, gold: 2 }, desc: '+2 Culture, +2 Gold' },
       cities: ['Pasargadae', 'Susa', 'Persepolis', 'Ecbatana', 'Babylon', 'Sardis', 'Bactra', 'Tarsus', 'Gordion', 'Arbela', 'Rhagae', 'Zranka', 'Ctesiphon', 'Isfahan', 'Shiraz', 'Istakhr', 'Gundeshapur', 'Firuzabad', 'Bishapur', 'Kermanshah', 'Qazvin', 'Yazd', 'Kerman', 'Kashan', 'Tus', 'Hecatompylos', 'Amol', 'Damghan', 'Sistan', 'Zadracarta', 'Seleucia', 'Opis', 'Nisa', 'Dura-Europos', 'Palmyra', 'Halicarnassus', 'Cyropolis', 'Taoce', 'Ahvaz', 'Bam'],
@@ -277,7 +277,7 @@
       ] },
 
     { id: 'mali', name: 'Mali', adj: 'Malian', difficulty: 'hard', bias: ['desert'], color: '#b9770e', color2: '#fdfefe',
-      ability: { name: 'Salt and Gold', desc: 'Worked Desert tiles yield +2 Gold. Purchases cost 15% less. Cities -10% Production.', fx: { tileBonus: [{ when: 'desert', yields: { gold: 2 } }], purchaseMult: 0.85, cityYieldMult: { production: 0.9 } } },
+      ability: { name: 'Salt and Gold', desc: 'Worked Desert tiles yield +2 Gold. Purchases cost 15% less. Cities -10% Production. Caravans: two extra, and each route yields +2 Gold.', fx: { extraCaravans: 2, caravanGold: 2, tileBonus: [{ when: 'desert', yields: { gold: 2 } }], purchaseMult: 0.85, cityYieldMult: { production: 0.9 } } },
       uu: { id: 'sofa', name: 'Sofa', replaces: 'horseman', strength: 2, defense: 4, goldOnKill: 50, purchaseMult: 0.7, desc: '+2 Strength, +4 defending, +50 Gold per kill, 30% cheaper to purchase' },
       ub: { id: 'suguba', name: 'Suguba', replaces: 'market', yields: { gold: 5 }, desc: '+5 Gold' },
       cities: ['Niani', 'Timbuktu', 'Djenné', 'Gao', 'Walata', 'Kangaba', 'Ségou', 'Koumbi Saleh', 'Kita', 'Bamako', 'Mopti', 'Sikasso', 'Taghaza', 'Takedda', 'Tadmekka', 'Audaghost', 'Kayes', 'Nioro', 'Koulikoro', 'Bandiagara', 'Douentza', 'Bourem', 'Kabara', 'Diré', 'Goundam', 'Kong', 'Bobo-Dioulasso', 'Kankan', 'Siguiri', 'Kouroussa', 'Dinguiraye', 'Bouré', 'Bambouk', 'Sansanding', 'Djoliba', 'Hamdallahi', 'Macina', 'Tichitt', 'Araouane', 'Dioïla'],

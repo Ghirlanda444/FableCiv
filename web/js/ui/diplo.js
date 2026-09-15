@@ -28,18 +28,17 @@
     box.style.backgroundSize = 'cover';
     var actions = [], say = '', kicker = '', sub = '', info = '';
     if (civ.minor) {
-      var T = AU.CITY_STATE_TYPES[civ.stateType], mine = CS.envoysOf(g, p, civ), suz = CS.suzerain(g, civ), war = G.atWar(g, p.idx, civ.idx), q = D.questOf(g, civ);
-      kicker = (war ? 'Hostile ' : mine >= 3 ? 'Grateful ' : mine > 0 ? 'Friendly ' : '') + 'envoy of ' + d.name;
-      $('leader-name').textContent = T.icon + ' ' + d.name; sub = T.name + ' city-state · ' + (civ.alive ? 'Suzerain: ' + (suz < 0 ? 'none' : suz === p.idx ? 'you' : G.civData(g.civs[suz]).name) : 'destroyed');
-      if (ctx.kind === 'meetCS') say = 'Welcome, traveller, to ' + d.name + '. We are a free city and mean to stay one. ' + (ctx.first ? 'You are the first great power to find us: accept an envoy\'s seat in our council as a token of friendship. ' : '') + 'Earn our favour and our ' + T.desc + ' will serve you.';
-      else if (war) say = 'You bring soldiers instead of envoys. ' + d.name + ' will not kneel.';
-      else say = mine >= 3 ? 'Our council remembers your generosity. What does ' + d.name + ' owe its patron today?' : 'The council of ' + d.name + ' hears you. Envoys and gifts open many doors.';
-      var tiers = AU.ENVOY_TIERS(civ.stateType);
-      info = '<div><b>' + esc(d.ability.name) + ':</b> ' + esc(d.ability.desc) + '</div><div>Your envoys: <b>' + mine + '</b> · ' + tiers.map(function (t) { return (mine >= t.n ? '✅ ' : '⬜ ') + t.n + ': ' + esc(t.desc); }).join(' · ') + '</div>' +
-        '<div>📜 <b>Quest:</b> ' + esc(q.text) + (civ.questDone && civ.questDone[p.idx] ? ' <span class="op-plus">(done)</span>' : ' → +1 envoy') + '</div>';
+      var T = AU.CITY_STATE_TYPES[civ.stateType], mine = CS.tiesOf(g, p, civ), tier = CS.tierOf(mine), pat = CS.patron(g, civ), war = G.atWar(g, p.idx, civ.idx), q = D.questOf(g, civ), us = CS.unionState(g, p, civ);
+      kicker = (war ? 'Hostile ' : tier >= 3 && pat === p.idx ? 'Grateful ' : tier >= 1 ? 'Friendly ' : '') + 'council of ' + d.name;
+      $('leader-name').textContent = T.icon + ' ' + d.name; sub = T.name + ' free city · ' + (civ.alive ? 'Patron: ' + (pat < 0 ? 'none' : pat === p.idx ? 'you' : G.civData(g.civs[pat]).name) : 'gone');
+      if (ctx.kind === 'meetCS') say = 'Welcome, traveller, to ' + d.name + '. We are a free city and mean to stay one. ' + (ctx.first ? 'You are the first great power to find us; we will remember it. ' : '') + 'Send your caravans, guard our borders, honour our quest, and our ' + T.desc + ' will flow to you. Stay long enough as our kin and we may even join you.';
+      else if (war) say = 'You bring soldiers instead of caravans. ' + d.name + ' will not kneel.';
+      else say = tier >= 3 && pat === p.idx ? 'Our council remembers everything you have done for ' + d.name + '. What does its patron ask today?' : tier >= 1 ? 'The council of ' + d.name + ' knows your name. Caravans and gifts open many doors.' : 'Strangers are welcome in ' + d.name + ', but friends are trusted.';
+      info = '<div><b>' + esc(d.ability.name) + ':</b> ' + esc(d.ability.desc) + ' <span class="stat">(for the Patron)</span></div><div>Ties: <b>' + mine + '</b>/100 · ' + CS.tierName(mine) + (pat === p.idx ? ' · you are the Patron' : '') + '</div>' +
+        '<div>📜 <b>Quest:</b> ' + esc(q.text) + (civ.questDone && civ.questDone[p.idx] ? ' <span class="op-plus">(done)</span>' : ' → +' + CS.QUEST_TIES + ' Ties') + '</div>' + (tier >= 4 && pat === p.idx ? '<div>🤝 <b>Union:</b> ' + (us.ok ? 'possible now' : esc(us.why)) + '</div>' : '');
       if (civ.alive) {
-        if (!war) actions.push({ label: 'Send an envoy' + ((p.envoys || 0) > 0 ? ' (' + p.envoys + ' available)' : ''), on: (p.envoys || 0) > 0, fn: function () { if (CS.sendEnvoy(g, p, civ)) UI.say('The envoy takes a seat in the council of ' + d.name + '.'); } });
-        if (!war) actions.push({ label: 'Gift 120 Gold (+1 envoy)', on: D.canGiftCS(g, p.idx, civ), fn: function () { UI.say(D.giftCS(g, p.idx, civ).text); } });
+        if (!war) actions.push({ label: 'Gift ' + D.giftCost(g, p.idx, civ) + ' Gold (+' + CS.GIFT_TIES + ' Ties)', on: D.canGiftCS(g, p.idx, civ), fn: function () { UI.say(D.giftCS(g, p.idx, civ).text); } });
+        if (!war && us.ok) actions.push({ label: 'Propose a Union', on: true, fn: function () { if (CS.union(g, p, civ)) UI.say(d.name + ' joins your empire!'); } });
         if (war) actions.push({ label: 'Make peace', on: true, fn: function () { if (AU.AI.respondToPeaceProposal(g, civ, p.idx)) { G.makePeace(g, p.idx, civ.idx); UI.say(d.name + ' accepts peace.'); } else UI.say(d.name + ' refuses peace for now.'); } });
         else actions.push({ label: 'Declare war', danger: true, on: D.canDeclareWar(g, p.idx, civ.idx), fn: function () { app.confirm('Declare war on ' + d.name + '? Its Suzerain may join.', function () { G.declareWar(g, p.idx, civ.idx); UI.say('War! ' + d.name + ' calls for help.'); }); } });
       }
