@@ -74,7 +74,7 @@
     for (var i = 0; i < us.length; i++) {
       var o = us[i];
       if (o.civ !== u.civ) return true;
-      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id) return true;
+      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id && !AU.UNITS[o.type].great && !AU.UNITS[u.type].great) return true; // great people may share a tile with anyone of their side
     }
     var s = G.settlementAt(g, tileIdx);
     if (s && s.civ !== u.civ) return true;

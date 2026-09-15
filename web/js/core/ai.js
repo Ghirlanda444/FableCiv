@@ -270,7 +270,7 @@
     var GP = AU.Great, type = GP.typeOf(u), s = G.settlementAt(g, u.tile), own = s && s.civ === civ.idx, cap = civ.capital && g.settlements[civ.capital];
     u.aiWait = (u.aiWait || 0) + 1;
     function useNow() { var o = GP.options(g, u).filter(function (x) { return x.action === 'greatuse' && x.ok; })[0]; if (o) { GP.use(g, u); return true; } return false; }
-    function goHome() { if (cap && u.tile !== cap.tile) { if (!U.orderMove(g, u, cap.tile) && u.aiWait > 3) useNow(); } else if (u.aiWait > 3) useNow(); }
+    function goHome() { var home = G.civSettlements(g, civ.idx).filter(function (c) { return !U.tileBlocked(g, u, c.tile, true); }).sort(function (a, b) { return G.dist(g.tiles[a.tile], g.tiles[u.tile]) - G.dist(g.tiles[b.tile], g.tiles[u.tile]); })[0]; if (home && u.tile !== home.tile) { if (!U.orderMove(g, u, home.tile) && u.aiWait > 3) useNow(); } else if (u.aiWait > 3) useNow(); }
     if (type === 'prophet') { if (!own) goHome(); else if (civ.religion || AU.Religion.religionsFounded(g) >= AU.Religion.maxReligions(g)) GP.use(g, u); return; } // founding itself happens in AI.religion
     if (type === 'general' || type === 'admiral') { if (!own) goHome(); else { var hurt = G.civUnits(g, civ.idx).filter(function (o) { return o.id !== u.id && o.hp < 50 && G.dist(g.tiles[o.tile], g.tiles[u.tile]) <= 2; }).length; if (hurt >= 2) GP.use(g, u); } return; }
     if (type === 'engineer' && own && u.aiWait < 6) { // walk to a city building a wonder when it is close and reachable
