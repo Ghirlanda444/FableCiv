@@ -15,6 +15,7 @@ require('fs').mkdirSync(out, { recursive: true });
   await page.click('#btn-new');
   await page.click('.civ-card[data-civ="japan"]');
   await page.click('.leader-card[data-leader="tokugawa"]');
+  await page.click('#btn-sheet-ok');
   await page.selectOption('#opt-size', 'tiny');
   await page.fill('#opt-seed', '4242');
   await page.screenshot({ path: out + '/02-setup.png' });

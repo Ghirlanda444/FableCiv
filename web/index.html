@@ -32,9 +32,14 @@
 <div id="setup" class="screen" hidden>
   <div class="setup-inner">
     <h2>Choose your empire</h2>
-    <p class="hint">Each leader rules only their own people. The bonuses below stay with you for the whole game.</p>
+    <div id="pick-bar" class="pick-bar"></div>
+    <p class="hint">Tap an empire to read its bonuses and pick a leader. Each leader rules only their own people.</p>
     <div id="civ-grid" class="civ-grid"></div>
-    <div id="civ-detail" class="civ-detail"></div>
+    <div id="civ-sheet" class="civ-sheet" hidden>
+      <div class="sheet-head"><button id="btn-sheet-back" class="small ghost">← All empires</button><span id="sheet-title" class="grow"></span></div>
+      <div id="civ-detail" class="civ-detail"></div>
+      <div class="sheet-foot"><button id="btn-sheet-ok" class="big ghost">✓ Choose, set map options</button><button id="btn-sheet-start" class="big primary">▶ Start Game</button></div>
+    </div>
     <div class="setup-options">
       <label>Map size <select id="opt-size"></select></label>
       <label>Map type <select id="opt-type"></select></label>
@@ -56,6 +61,7 @@
   <div id="topbar">
     <button id="btn-menu" class="icon" title="Menu">☰</button>
     <button id="btn-pedia-top" class="icon" title="Chibipedia">📖</button>
+    <button id="btn-rank" class="icon" title="Rankings and victory race">🏆</button>
     <div id="top-yields"></div>
     <div id="top-turn"></div>
   </div>

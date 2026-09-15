@@ -539,7 +539,8 @@
     overlay(hl.expand, 'rgba(120,255,120,0.4)');
     overlay(hl.attack, 'rgba(255,60,60,0.5)');
     if (hl.dragTile >= 0 && g.tiles[hl.dragTile]) { var dtp = S(g.tiles[hl.dragTile]); ctx.strokeStyle = '#ffe680'; ctx.lineWidth = Math.max(2, rzs * 0.12); hexPath(ctx, dtp[0], dtp[1], rzs - 2); ctx.stroke(); }
-    if (hl.path && hl.path.length) { ctx.fillStyle = 'rgba(255,255,255,0.85)'; hl.path.forEach(function (pi) { var p3 = S(g.tiles[pi]); ctx.beginPath(); ctx.arc(p3[0], p3[1], Math.max(2, rzs * 0.12), 0, Math.PI * 2); ctx.fill(); }); }
+    if (hl.path && hl.path.length) { ctx.fillStyle = 'rgba(255,255,255,0.85)'; hl.path.forEach(function (pi) { var p3 = S(g.tiles[pi]); ctx.beginPath(); ctx.arc(p3[0], p3[1], Math.max(2, rzs * 0.12), 0, Math.PI * 2); ctx.fill(); });
+      if (hl.pathLabel) { var lp = S(g.tiles[hl.path[hl.path.length - 1]]), fs = Math.max(11, rzs * 0.45); ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; var tw = ctx.measureText(hl.pathLabel).width + fs; ctx.fillStyle = 'rgba(20,24,40,0.9)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5, fs * 0.5) : ctx.rect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5); ctx.fill(); ctx.fillStyle = '#ffe680'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(hl.pathLabel, lp[0], lp[1] - rzs * 0.95); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; } }
     // pass 6: settlements
     for (var sid in g.settlements) {
       var st = g.settlements[sid]; t = g.tiles[st.tile];

@@ -183,42 +183,119 @@
     });
     return { title: 'Research', html: html };
   };
-  P.render_civics = function (app, g) {
-    var p = G.player(g), y = G.civYields(g, p), html = '';
+  var SLOT_TYPES = ['military', 'economic', 'diplomatic', 'wildcard'], SLOT_ICON = { military: '⚔️', economic: '💰', diplomatic: '🤝', wildcard: '🃏' };
+  // Which card sits in which slot: a card takes a slot of its own type first, else a wildcard slot (same rule as G.setPolicies).
+  function slotLayout(p) {
+    var slots = G.policySlots(p), out = [];
+    SLOT_TYPES.forEach(function (t) { for (var i = 0; i < (slots[t] || 0); i++) out.push({ type: t, card: null }); });
+    (p.policies || []).forEach(function (id) { var pc = AU.POLICIES[id]; if (!pc) return; var free = out.filter(function (x) { return !x.card && x.type === pc.type; })[0] || out.filter(function (x) { return !x.card && x.type === 'wildcard'; })[0]; if (free) free.card = id; });
+    return out;
+  }
+  P.render_civics = function (app, g, data) {
+    var p = G.player(g), y = G.civYields(g, p), html = '', tab = (data && data.tab) || 'civics';
     var avail = G.availableCivics(p);
-    html += '<div class="section"><h3>Government: ' + AU.GOVERNMENTS[p.government].name + '</h3>';
-    var govs = G.availableGovernments(p);
-    for (var id in AU.GOVERNMENTS) {
-      var gv = AU.GOVERNMENTS[id], ok = govs.indexOf(id) >= 0, cur = p.government === id;
-      html += '<div class="row ' + (cur ? 'active' : ok ? '' : 'locked') + '"><div class="grow"><b>' + gv.name + '</b><small>' + gv.desc + '</small><small>Slots: ' + Object.keys(gv.slots).filter(function (k) { return gv.slots[k]; }).map(function (k) { return gv.slots[k] + ' ' + k; }).join(', ') + '</small>' + (!ok ? '<small>Requires civic: ' + AU.CIVIC_BY_ID[gv.civic].name + '</small>' : '') + '</div>' + (cur ? '<span class="pill">current</span>' : ok ? '<button class="small" data-action="government" data-id="' + id + '">Adopt</button>' : '') + '</div>';
+    html += '<div class="tabs"><button class="small ' + (tab === 'civics' ? 'on' : '') + '" data-action="civtab" data-tab="civics">🎭 Civics</button><button class="small ' + (tab === 'policies' ? 'on' : '') + '" data-action="civtab" data-tab="policies">🏛️ Government &amp; policies</button></div>';
+    if (tab === 'policies') {
+      // ----- government -----
+      var govs = G.availableGovernments(p), cur = AU.GOVERNMENTS[p.government];
+      function slotChips(gv) { return SLOT_TYPES.filter(function (k) { return gv.slots[k]; }).map(function (k) { return '<span class="chip ' + k + '">' + gv.slots[k] + ' ' + SLOT_ICON[k] + ' ' + k + '</span>'; }).join(' '); }
+      html += '<div class="section"><h3>Your government</h3><div class="row active"><div class="grow"><b>' + cur.name + '</b><small>' + cur.desc + '</small><small>' + slotChips(cur) + '</small></div></div>';
+      var alts = govs.filter(function (id) { return id !== p.government; });
+      if (alts.length) { html += '<p class="stat">You can switch to:</p>'; alts.forEach(function (id) { var gv = AU.GOVERNMENTS[id]; html += '<div class="row"><div class="grow"><b>' + gv.name + '</b><small>' + gv.desc + '</small><small>' + slotChips(gv) + '</small></div><button class="small primary" data-action="government" data-id="' + id + '">Adopt</button></div>'; }); }
+      var locked = Object.keys(AU.GOVERNMENTS).filter(function (id) { return govs.indexOf(id) < 0; });
+      if (locked.length) { html += '<details class="rules"><summary>Future governments (' + locked.length + ')</summary>'; locked.forEach(function (id) { var gv = AU.GOVERNMENTS[id]; html += '<div class="row locked"><div class="grow"><b>' + gv.name + '</b><small>' + gv.desc + '</small><small>' + slotChips(gv) + ' · needs the civic ' + AU.CIVIC_BY_ID[gv.civic].name + '</small></div></div>'; }); html += '</details>'; }
+      html += '</div>';
+      // ----- slots -----
+      var layout = slotLayout(p), free = G.freeSlots(p), availCards = G.availablePolicies(p), active = p.policies || [], empty = layout.filter(function (x) { return !x.card; }).length;
+      var others = availCards.filter(function (id) { return active.indexOf(id) < 0; }), fitting = others.filter(function (id) { var t = AU.POLICIES[id].type; return free[t] > 0 || free.wildcard > 0; });
+      html += '<div class="section"><h3>Policy slots</h3><p class="stat">Your government gives you slots; each holds one card. A card fits a slot of its own colour, and a wildcard slot takes any card. Tap a slotted card to take it out, tap a card below to slot it. You can change cards whenever you like, for free.</p>';
+      if (!layout.length) html += '<p class="stat">No slots yet.</p>';
+      html += '<div class="slots">';
+      layout.forEach(function (sl, i) {
+        var pc = sl.card ? AU.POLICIES[sl.card] : null;
+        html += '<div class="slot ' + sl.type + (pc ? ' filled clickable' : '') + '"' + (pc ? ' data-action="policyremove" data-id="' + sl.card + '"' : '') + '><div class="stype">' + SLOT_ICON[sl.type] + ' ' + sl.type + ' slot</div>' + (pc ? '<b>' + pc.name + '</b><small>' + pc.desc + '</small><span class="slot-x">✕</span>' : '<small class="empty">Empty: pick a card below</small>') + '</div>';
+      });
+      html += '</div>';
+      if (empty && fitting.length) html += '<button class="small gold" data-action="policyauto">✨ Fill the ' + empty + ' empty slot' + (empty > 1 ? 's' : '') + ' for me</button>';
+      else if (empty && !fitting.length && others.length) html += '<p class="stat">The remaining cards do not fit your empty slots (wrong colour). Another government or a new civic will help.</p>';
+      html += '</div>';
+      // ----- cards -----
+      html += '<div class="section"><h3>Your cards (' + availCards.length + ')</h3>';
+      if (!availCards.length) html += '<p class="stat">Civics give you policy cards. Adopt <b>First Laws</b> to get the first ones.</p>';
+      SLOT_TYPES.forEach(function (t) {
+        var list = availCards.filter(function (id) { return AU.POLICIES[id].type === t; }); if (!list.length) return;
+        html += '<h4 class="cards-h ' + t + '">' + SLOT_ICON[t] + ' ' + t.charAt(0).toUpperCase() + t.slice(1) + ' cards</h4>';
+        list.forEach(function (id) {
+          var pc = AU.POLICIES[id], on = active.indexOf(id) >= 0, fits = free[t] > 0 || free.wildcard > 0;
+          html += '<div class="row card-row ' + t + (on ? ' active' : fits ? '' : ' locked') + '"><div class="grow"><b>' + pc.name + '</b><small>' + pc.desc + '</small></div>' + (on ? '<button class="small" data-action="policyremove" data-id="' + id + '">Slotted ✓</button>' : '<button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled title="No free slot of this colour"') + '>' + (fits ? 'Slot' : 'No slot') + '</button>') + '</div>';
+        });
+      });
+      html += '</div>';
+      return { title: 'Government & Policies', html: html };
     }
-    html += '</div>';
-    // policy cards
-    var slots = G.policySlots(p), free = G.freeSlots(p), availCards = G.availablePolicies(p), active = p.policies || [];
-    html += '<div class="section"><h3>Policy cards</h3><p class="stat">Slots: ' + ['military', 'economic', 'diplomatic', 'wildcard'].map(function (k) { return k + ' ' + (slots[k] - free[k]) + '/' + slots[k]; }).join(' · ') + '. Cards come from civics; wildcard slots accept any card.</p>';
-    if (!active.length) html += '<p class="stat">No cards slotted.</p>';
-    active.forEach(function (id) { var pc = AU.POLICIES[id]; html += '<div class="row active"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small" data-action="policyremove" data-id="' + id + '">Remove</button></div>'; });
-    var others = availCards.filter(function (id) { return active.indexOf(id) < 0; });
-    if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
-    html += '</div>';
     var nMastC = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') === 0; }).length;
     html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Insight</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Insight fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Heritage from Insights.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
       var cost = G.civicCost(g, p, c), prog = p.civicProgress[c.id] || 0, cur = p.currentCivic === c.id, boosted = p.boosts && p.boosts['c:' + c.id];
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="civic" data-id="' + c.id + '">' + (AU.Assets.get('civics', c.id) ? '<img class="techpic" src="' + AU.Assets.url('civics', c.id) + '" alt="">' : '') + '<div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#3a2a4a;color:#e6c8ff">Inspired ✓</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || 'Leads to further civics') + '</small>' + (c.inspiration ? '<small>💡 Insight: ' + c.inspiration.desc + (boosted ? ' ✓' : '') + '</small>' : '') + masteryLine(p, c.id, true) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
+      var ck = AU.civicKind(c); html += '<div class="row clickable ' + (cur ? 'active' : '') + (ck ? ' kind-' + ck : '') + '" data-action="civic" data-id="' + c.id + '">' + (AU.Assets.get('civics', c.id) ? '<img class="techpic" src="' + AU.Assets.url('civics', c.id) + '" alt="">' : '') + '<div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span>' + (ck ? '<span class="kind-pill ' + ck + '">' + ck + '</span>' : '') + (boosted ? ' <span class="pill" style="background:#3a2a4a;color:#e6c8ff">Inspired ✓</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || 'Leads to further civics') + '</small>' + (c.inspiration ? '<small>💡 Insight: ' + c.inspiration.desc + (boosted ? ' ✓' : '') + '</small>' : '') + masteryLine(p, c.id, true) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
       var list = AU.CIVICS.filter(function (t) { return t.era === ei && avail.indexOf(t) < 0; });
       if (!list.length) return;
       html += '<div class="section"><h3>' + era + ' Era</h3>';
-      list.forEach(function (c) { var done = !!p.civics[c.id]; html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + c.name + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && c.inspiration ? '<small>💡 ' + c.inspiration.desc + '</small>' : '') + masteryLine(p, c.id, true) + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.civicCost(g, p, c) + '</span>') + '</div>'; });
+      list.forEach(function (c) { var done = !!p.civics[c.id], ck2 = AU.civicKind(c); html += '<div class="row ' + (done ? 'done' : 'locked') + (ck2 ? ' kind-' + ck2 : '') + '"><div class="grow"><b>' + c.name + (ck2 ? '<span class="kind-pill ' + ck2 + '">' + ck2 + '</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && c.inspiration ? '<small>💡 ' + c.inspiration.desc + '</small>' : '') + masteryLine(p, c.id, true) + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.civicCost(g, p, c) + '</span>') + '</div>'; });
       html += '</div>';
     });
     return { title: 'Civics & Government', html: html };
   };
+
+  // ---------- Rankings: everyone you have met, side by side, plus the race for each victory ----------
+  P.render_rankings = function (app, g) {
+    var p = G.player(g), html = '';
+    var civs = g.civs.filter(function (c) { return !c.minor && c.alive && (c.isPlayer || (p.met && p.met[c.idx])); });
+    civs.sort(function (a, b) { return G.score(g, b) - G.score(g, a); });
+    var stats = civs.map(function (c) { var y = G.civYields(g, c); return { c: c, y: y, score: G.score(g, c), mil: G.militaryStrength(g, c.idx), sets: G.civSettlements(g, c.idx).length, techs: Object.keys(c.techs).length, civics: Object.keys(c.civics).length }; });
+    function maxOf(k) { return Math.max(1, Math.max.apply(null, stats.map(function (r) { return +r[k] || 0; }))); }
+    function yMax(k) { return Math.max(1, Math.max.apply(null, stats.map(function (r) { return +r.y[k] || 0; }))); }
+    function bar(v, m, color) { return '<div class="scorebar"><i style="width:' + Math.max(3, Math.min(100, v / m * 100)) + '%;background:' + color + '"></i></div>'; }
+    html += '<div class="section"><h3>Empires you have met (' + civs.length + ')</h3><p class="stat">Sorted by score. Bars compare with the best of the empires you know.</p>';
+    var mS = maxOf('score'), mM = maxOf('mil'), mSci = yMax('science'), mCul = yMax('culture');
+    stats.forEach(function (r, i) {
+      var c = r.c, cd = G.civData(c), col = G.civColor(c);
+      html += '<div class="row rank-row' + (c.isPlayer ? ' active' : '') + '"><div class="grow"><b>' + (i + 1) + '. ' + cd.name + (c.isPlayer ? ' (you)' : '') + ' <span class="pill">' + G.leaderName(c) + '</span> <span class="pill">' + AU.ERAS[c.era || 0] + '</span></b>' +
+        '<div class="rank-grid">' +
+        '<span>🏆 ' + r.score + bar(r.score, mS, col) + '</span>' +
+        '<span>⚔️ ' + Math.round(r.mil) + bar(r.mil, mM, '#3fa65a') + '</span>' +
+        '<span>🔬 ' + (+r.y.science).toFixed(1) + '/t' + bar(r.y.science, mSci, 'var(--sci)') + '</span>' +
+        '<span>🎭 ' + (+r.y.culture).toFixed(1) + '/t' + bar(r.y.culture, mCul, 'var(--cult)') + '</span>' +
+        '</div><small>💰 ' + Math.floor(c.gold) + ' (' + (r.y.gold >= 0 ? '+' : '') + (+r.y.gold).toFixed(1) + '/t) · 🏘️ ' + r.sets + ' settlements · ' + r.techs + ' techs · ' + r.civics + ' civics' + (c.isPlayer ? '' : ' · ' + (G.atWar(g, p.idx, c.idx) ? '<span class="pill war">at war</span>' : '<span class="pill peace">peace</span>')) + '</small></div></div>';
+    });
+    html += '</div>';
+    // the race for each victory
+    html += '<div class="section"><h3>Victory race</h3>';
+    var all = g.civs.filter(function (c) { return !c.minor; });
+    function name(c) { return G.civData(c).name + (c.isPlayer ? ' (you)' : ''); }
+    var V = AU.VICTORIES;
+    // conquest: original capitals held
+    var caps = civs.map(function (c) { var n = 0; all.forEach(function (o) { var oc = g.settlements[o.originalCapital]; if (oc && oc.civ === c.idx) n++; }); return { c: c, n: n }; }).sort(function (a, b) { return b.n - a.n; });
+    html += '<div class="row"><div class="grow"><b>' + V.domination.icon + ' ' + V.domination.name + '</b><small>' + V.domination.desc + '</small><small>' + caps.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.n + '/' + all.length + ' capitals'; }).join(' · ') + '</small></div></div>';
+    // star voyage: projects done
+    var PR = Object.keys(AU.PROJECTS), sp = civs.map(function (c) { var n = PR.filter(function (k) { return c.projects && c.projects[k]; }).length; return { c: c, n: n, t: c.techs.spaceflight ? 1 : 0 }; }).sort(function (a, b) { return b.n - a.n || b.t - a.t; });
+    html += '<div class="row"><div class="grow"><b>' + V.science.icon + ' ' + V.science.name + '</b><small>' + V.science.desc + '</small><small>' + sp.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.n + '/' + PR.length + ' projects' + (r.t ? ' (Space Travel known)' : ''); }).join(' · ') + '</small></div></div>';
+    // renown: visitors vs need
+    var cu = civs.map(function (c) { var cp = G.cultureProgress(g, c); return { c: c, v: cp.visitors, need: cp.need, pct: cp.need > 0 ? Math.round(cp.visitors / cp.need * 100) : 0 }; }).sort(function (a, b) { return b.pct - a.pct; });
+    html += '<div class="row"><div class="grow"><b>' + V.culture.icon + ' ' + V.culture.name + '</b><small>' + V.culture.desc + '</small><small>' + cu.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.v + '/' + r.need + ' visitors (' + Math.min(100, r.pct) + '%)'; }).join(' · ') + '</small></div></div>';
+    // devotion: empires converted
+    if (AU.Religion) { var rl = civs.map(function (c) { var rows = AU.Religion.victoryProgress(g, c); if (!rows) return null; return { c: c, ok: rows.filter(function (x) { return x.ok; }).length, total: rows.length }; }).filter(Boolean).sort(function (a, b) { return b.ok - a.ok; });
+      html += '<div class="row"><div class="grow"><b>' + V.religion.icon + ' ' + V.religion.name + '</b><small>' + V.religion.desc + '</small><small>' + (rl.length ? rl.slice(0, 3).map(function (r) { return name(r.c) + ' (' + AU.Religion.name(g, r.c.religion) + '): ' + r.ok + '/' + r.total + ' empires converted'; }).join(' · ') : 'No religion founded yet.') + '</small></div></div>'; }
+    html += '<div class="row"><div class="grow"><b>' + V.score.icon + ' ' + V.score.name + '</b><small>' + V.score.desc + ' Turn ' + g.turn + ' of ' + g.maxTurns + '.</small><small>' + stats.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.score; }).join(' · ') + '</small></div></div>';
+    html += '<p class="stat">' + G.leaderName(p) + ' leans towards ' + (AU.leaningText ? AU.leaningText(AU.LEADER_BY_ID[p.leaderId]) : 'a victory of their own') + '. Empires you have not met yet are hidden.</p></div>';
+    return { title: 'Rankings', html: html };
+  };
+  P.render_government = function (app, g, data) { return P.render_civics(app, g, Object.assign({ tab: 'policies' }, data || {})); };
 
   // ---------- Diplomacy ----------
   P.render_diplomacy = function (app, g) {
@@ -309,6 +386,7 @@
   // ---------- Menu ----------
   P.render_menu = function (app, g) {
     var html = '<div class="section">';
+    if (g) html += '<button class="big" data-action="rankings">🏆 Rankings &amp; victory race</button><br><br><button class="big" data-action="policies">🏛️ Government &amp; policies</button><br><br>';
     if (g) html += '<button class="big" data-action="save">Save game</button><br><br>';
     html += '<button class="big" data-action="loadgame" ' + (app.hasSave() ? '' : 'disabled') + '>Load saved game</button><br><br>';
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
@@ -402,7 +480,7 @@
       case 'specialize': s = g.settlements[+d.id]; if (s && G.specialize(g, s, d.spec)) { app.toast(s.name + ' is now a ' + G.specializationDef(G.player(g), d.spec).name + '.'); app.refreshPanel(); } break;
       case 'research': p.currentTech = d.id; app.refreshPanel(); break;
       case 'civic': p.currentCivic = d.id; app.refreshPanel(); break;
-      case 'government': if (G.setGovernment(g, p, d.id)) { app.toast('Government changed to ' + AU.GOVERNMENTS[d.id].name + '.'); app.refreshPanel(); } break;
+      case 'government': if (G.setGovernment(g, p, d.id)) { app.toast('Government changed to ' + AU.GOVERNMENTS[d.id].name + '.'); app.refreshPanel(); app.refreshHud(); } break;
       case 'war': app.confirm('Declare war on ' + G.civData(g.civs[+d.id]).name + '? Other leaders will remember this.', function () { G.declareWar(g, p.idx, +d.id); app.refreshPanel(); app.refreshHud(); }); break;
       case 'peace': { var o = g.civs[+d.id]; if (AU.AI.respondToPeaceProposal(g, o, p.idx) || (o.peaceOffer && g.turn - o.peaceOffer < 5)) { G.makePeace(g, p.idx, o.idx); o.peaceOffer = null; app.toast(G.leaderName(o) + ' accepts peace.'); } else { app.toast(G.leaderName(o) + ' refuses to make peace for now.'); o.rel[p.idx].attitude += 1; } app.refreshPanel(); break; }
       case 'gotounit': { var u = g.units[+d.id]; if (u) { app.closePanel(); app.selectUnit(u); app.renderer.centerOn(g, u.tile); } break; }
@@ -427,7 +505,11 @@
       case 'enhancerel': { var pd2 = app.panelData; if (AU.Religion.enhance(g, p, pd2.relEnh, pd2.relFollower2)) { app.toast('Religion enhanced.'); app.refreshPanel(); app.refreshHud(); } break; }
       case 'buyfaith': s = g.settlements[+d.id]; if (s) { var ru = AU.Religion.buyUnit(g, s, d.item); if (ru) { app.toast(ru.name + ' purchased with Devotion.'); app.refreshPanel(); app.refreshHud(); } } break;
       case 'pediasearch': break;
-      case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.refreshPanel(); app.refreshHud(); break;
+      case 'civtab': app.panelData.tab = d.tab; app.refreshPanel(); break;
+      case 'rankings': app.openPanel('rankings'); break;
+      case 'policies': app.openPanel('civics', { tab: 'policies' }); break;
+      case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.toast(AU.POLICIES[d.id].name + ' slotted.'); app.refreshPanel(); app.refreshHud(); break;
+      case 'policyauto': { var act = p.policies || [], rest = G.availablePolicies(p).filter(function (x) { return act.indexOf(x) < 0; }).sort(function (a2, b2) { var A = AU.POLICIES[a2].fx || {}, B = AU.POLICIES[b2].fx || {}; return (B.yieldMult ? 1 : 0) - (A.yieldMult ? 1 : 0); }); G.setPolicies(g, p, act.concat(rest)); app.toast('Slots filled. Change any card whenever you like.'); app.refreshPanel(); app.refreshHud(); break; }
       case 'policyremove': G.setPolicies(g, p, (p.policies || []).filter(function (x) { return x !== d.id; })); app.refreshPanel(); app.refreshHud(); break;
       case 'cityview': app.openPanel('cityview', { id: +d.id }); break;
       case 'citytile': app.panelData.tile = +d.tile; app.refreshPanel(); setTimeout(function () { var cm = $('citymap'); if (cm) cm.scrollIntoView({ block: 'center' }); }, 0); break;

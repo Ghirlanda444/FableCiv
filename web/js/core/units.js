@@ -104,6 +104,15 @@
     }
     return { dist: dist, prev: prev };
   };
+  // Plain movement cost of a tile for an ordinary land unit (what the tile card shows).
+  U.terrainCost = function (t) { var T = AU.TERRAIN[t.terrain]; if (T.impassable) return Infinity; if (T.water) return 1; var c = t.hills ? 2 : 1; if (t.feature && AU.FEATURES[t.feature].move > c) c = AU.FEATURES[t.feature].move; if (t.hills && (t.feature === 'forest' || t.feature === 'jungle')) c = 3; return c; };
+  // How many turns a unit needs to walk a path (this turn counts if it still has movement).
+  U.pathTurns = function (g, u, path) {
+    if (!path || !path.length) return 0;
+    var def = U.def(g, u), max = def.moves || 1, moves = u.moves, turns = moves > 0 ? 1 : 0, from = g.tiles[u.tile];
+    for (var i = 0; i < path.length; i++) { var to = g.tiles[path[i]]; if (moves <= 0) { turns++; moves = max; } var c = U.enterCost(g, u, to, from); if (c === Infinity) break; moves = Math.max(0, moves - c); from = to; }
+    return Math.max(1, turns);
+  };
   U.findPath = function (g, u, target) {
     if (target === u.tile) return [];
     var res = U.dijkstra(g, u);

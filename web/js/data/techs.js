@@ -276,6 +276,8 @@
   };
   for (var pid in AU.POLICIES) { var pc = AU.POLICIES[pid]; if (pc.desc.indexOf('… ') >= 0) pc.desc = pc.desc.split('… simplified: ')[1] ? pc.desc.split('… simplified: ')[1].charAt(0).toUpperCase() + pc.desc.split('… simplified: ')[1].slice(1) : pc.desc; }
 
+  // The kind of a civic for colouring: the dominant type of the cards it gives (military, economic, diplomatic, wildcard), else none.
+  AU.civicKind = function (c) { if (!c || !c.cards || !c.cards.length) return ''; var n = {}; c.cards.forEach(function (k) { var pc = AU.POLICIES[k]; if (pc) n[pc.type] = (n[pc.type] || 0) + 1; }); var best = '', bn = 0; for (var k2 in n) if (n[k2] > bn) { bn = n[k2]; best = k2; } return best; };
   AU.GOVERNMENTS = {
     chiefdom:      { name: 'Chiefdom',           civic: null, desc: 'The starting government. One wildcard slot.', fx: {}, slots: { military: 0, economic: 0, diplomatic: 0, wildcard: 1 } },
     autocracy:     { name: 'Autocracy',          civic: 'code_of_laws', desc: '+10% Production in the capital, +2 Combat Strength.', fx: { capitalMult: { production: 1.1 }, combatBonus: 2 }, slots: { military: 1, economic: 1, diplomatic: 0, wildcard: 0 } },

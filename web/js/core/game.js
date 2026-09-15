@@ -768,6 +768,8 @@
     civ._fx = null;
     var c = AU.CIVIC_BY_ID[id];
     G.notify(g, civ, { kind: 'civic', text: 'Civic adopted: ' + c.name + (c.unlocks ? ' (unlocks ' + c.unlocks + ')' : '') + '.', panel: 'civics' });
+    if (c.cards && c.cards.length) G.notify(g, civ, { big: true, kind: 'civic', text: '🃏 New policy card' + (c.cards.length > 1 ? 's' : '') + ': ' + c.cards.map(function (k) { return AU.POLICIES[k] ? AU.POLICIES[k].name : k; }).join(', ') + '. Slot ' + (c.cards.length > 1 ? 'them' : 'it') + ' in Government & policies.', panel: 'civics', tab: 'policies' });
+    for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ New government available: ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
     G.quote(g, civ, 'civic', id, c.name, 'Civic adopted');
   };
   G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };

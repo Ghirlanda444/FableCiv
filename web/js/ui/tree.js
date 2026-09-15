@@ -88,7 +88,8 @@
       if (p) { if (K.done(p, t.id)) st = 'done'; else if (K.cur(p) === t.id) st = 'cur'; else if (availIds[t.id]) st = 'avail'; else st = 'locked'; }
       var boosted = p && p.boosts && p.boosts[K.boostKey(t.id)] && st !== 'done';
       var pct = p && st === 'cur' ? Math.min(100, K.prog(p, t.id) / K.cost(g, p, t) * 100) : 0;
-      html += '<div class="tn ' + st + (sel && sel.id === t.id ? ' sel' : path[t.id] ? ' path' : '') + '" style="left:' + (ps.x + pad) + 'px;top:' + (ps.y + pad + hh) + 'px" data-action="treepick" data-id="' + t.id + '" data-col="' + ps.col + '">' +
+      var tk = kind === 'civic' && AU.civicKind ? AU.civicKind(t) : '';
+      html += '<div class="tn ' + st + (sel && sel.id === t.id ? ' sel' : path[t.id] ? ' path' : '') + (tk ? ' kind-' + tk : '') + '" style="left:' + (ps.x + pad) + 'px;top:' + (ps.y + pad + hh) + 'px" data-action="treepick" data-id="' + t.id + '" data-col="' + ps.col + '">' +
         (AU.Assets.get(K.art, t.id) ? '<img class="tn-pic" loading="lazy" src="' + AU.Assets.url(K.art, t.id) + '" alt="">' : '<span class="tn-pic tn-ico">' + K.icon + '</span>') +
         '<div class="tn-txt"><b>' + t.name + '</b><small>' + (p ? K.cost(g, p, t) : t.cost) + ' ' + K.icon + (boosted ? ' · 💡' : '') + (st === 'done' ? ' · ✓' : '') + '</small>' + (pct ? '<i class="tn-bar" style="width:' + pct + '%"></i>' : '') + '</div></div>';
     });

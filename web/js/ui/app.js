@@ -82,6 +82,9 @@
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
       $('btn-back').onclick = function () { App.showTitle(); };
       $('btn-start').onclick = function () { App.startNewGame(); };
+      $('btn-sheet-start').onclick = function () { App.startNewGame(); };
+      $('btn-sheet-back').onclick = function () { App.closeSheet(); };
+      $('btn-sheet-ok').onclick = function () { App.closeSheet(); };
     },
     showSetup: function () {
       var grid = $('civ-grid'); grid.innerHTML = '';
@@ -90,7 +93,7 @@
         var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
         var em = AU.Assets.get('civs', c.id);
         d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="" onerror="this.remove()">' + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
-        d.onclick = function () { App.setup.civ = c.id; App.setup.leader = c.leaders[0].id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); };
+        d.onclick = function () { App.setup.civ = c.id; App.setup.leader = c.leaders[0].id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); App.openSheet(); };
         grid.appendChild(d);
       });
       function fill(sel, obj, def) { sel.innerHTML = ''; for (var k in obj) { var o = document.createElement('option'); o.value = k; o.textContent = obj[k].name; if (k === def) o.selected = true; sel.appendChild(o); } }
@@ -102,11 +105,18 @@
       for (var ns = 0; ns <= 16; ns++) { var os = document.createElement('option'); os.value = ns; os.textContent = ns; if (ns === 4) os.selected = true; stSel.appendChild(os); }
       $('opt-size').onchange = function () { var s = AU.MAP_SIZES[this.value]; civSel.value = String(s.civs - 1); stSel.value = String(Math.min(16, Math.round(s.civs * 0.6))); };
       if (!this.setup.leader || AU.LEADER_BY_ID[this.setup.leader].civId !== this.setup.civ) this.setup.leader = AU.CIV_BY_ID[this.setup.civ].leaders[0].id;
-      this.showSetupDetail();
+      this.showSetupDetail(); $('civ-sheet').hidden = true;
       this.showScreen('setup');
     },
+    openSheet: function () { var sh = $('civ-sheet'); sh.hidden = false; $('civ-detail').scrollTop = 0; },
+    closeSheet: function () { $('civ-sheet').hidden = true; this.showPickBar(); },
+    showPickBar: function () {
+      var c = AU.CIV_BY_ID[this.setup.civ], l = AU.LEADER_BY_ID[this.setup.leader], bar = $('pick-bar'); if (!bar) return;
+      bar.innerHTML = '<img src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()"><div class="grow"><small class="stat">Playing as</small><b>' + c.name + ' · ' + l.name + '</b><small class="stat">' + (AU.leaningText ? AU.leaningText(l) : '') + '</small></div><button class="small" id="btn-pick-change">Change</button><button class="small primary" id="btn-pick-start">▶ Start</button>';
+      var self = this; $('btn-pick-change').onclick = function () { self.showSetupDetail(); self.openSheet(); }; $('btn-pick-start').onclick = function () { self.startNewGame(); };
+    },
     showSetupDetail: function () {
-      var c = AU.CIV_BY_ID[this.setup.civ], self = this;
+      var c = AU.CIV_BY_ID[this.setup.civ], self = this; var st = $('sheet-title'); if (st) st.textContent = c.name;
       var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
       var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: 'Easy to play', medium: 'Medium', hard: 'Specialised' }[c.difficulty] || 'Medium') + '</span></h3>' +
         (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' cultural group.</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">Starts near ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
@@ -123,6 +133,8 @@
       html += '</div>';
       $('civ-detail').innerHTML = html;
       $('civ-detail').querySelectorAll('.leader-card').forEach(function (el) { el.onclick = function () { self.setup.leader = el.dataset.leader; self.showSetupDetail(); }; });
+      var fs = $('btn-sheet-start'); if (fs) fs.textContent = '▶ Start Game';
+      this.showPickBar();
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
@@ -152,6 +164,7 @@
     bindGame: function () {
       $('btn-menu').onclick = function () { App.openPanel('menu'); };
       $('btn-pedia-top').onclick = function () { App.openPanel('pedia', { cat: App.pediaState.cat }); };
+      $('btn-rank').onclick = function () { App.openPanel('rankings'); };
       $('btn-end').onclick = function () { if (App._todo && App._todo.length) App.doTodo(0); else App.endTurn(); };
       $('btn-next').onclick = function () { App.nextUnit(); };
       $('btn-undo').onclick = function () { var g = App.g, d = g && g.undo, u = d && g.units[d.unit]; if (u && AU.U.canUndo(g, u)) { App.sel.unit = u.id; App.action('undomove', {}); } else { $('btn-undo').hidden = true; } };
@@ -211,7 +224,7 @@
       if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: 'Send the caravan to a free city', go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
       if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: 'Choose research', go: function () { self.openPanel('tech'); } });
       if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: 'Choose civic', go: function () { self.openPanel('civics'); } });
-      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics'); } });
+      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: 'Empty policy slot', go: function () { self.openPanel('civics', { tab: 'policies' }); } });
       var promo = G.civUnits(g, p.idx).filter(function (u) { return U.promosAvailable(u) > 0; });
       if (promo.length) list.push({ icon: '⭐', text: 'Promote ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
       var need = this.unitsNeedingOrders();
@@ -234,7 +247,7 @@
     onNotif: function (i) {
       var n = this.g.notifications[i]; if (!n) return;
       this.g.notifications.splice(i, 1);
-      if (n.panel) this.openPanel(n.panel);
+      if (n.panel) this.openPanel(n.panel, n.tab ? { tab: n.tab } : undefined);
       else if (n.settlement && this.g.settlements[n.settlement]) { this.selectSettlement(this.g.settlements[n.settlement]); this.renderer.centerOn(this.g, n.tile); if (n.kind === 'growth') this.startExpand(this.g.settlements[n.settlement]); else if (n.kind === 'idle' || n.kind === 'build') this.openPanel('city', { id: n.settlement }); }
       else if (n.unit && this.g.units[n.unit]) { this.selectUnit(this.g.units[n.unit]); this.renderer.centerOn(this.g, n.tile); }
       else if (n.tile != null) { this.renderer.centerOn(this.g, n.tile); this.sel.tile = n.tile; }
@@ -265,7 +278,7 @@
       var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
       var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
-      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · Navigable River' : t.river ? ' · River' : '') + (t.shore ? ' · ' + ({ beach: 'Beach', cliff: 'Cliffs', rocks: 'Rocky shore', mangrove: 'Mangroves', reef: 'Reef' })[t.shore] : '') + '</b>';
+      var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' Hills' : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · Navigable River' : t.river ? ' · River' : '') + (t.shore ? ' · ' + ({ beach: 'Beach', cliff: 'Cliffs', rocks: 'Rocky shore', mangrove: 'Mangroves', reef: 'Reef' })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 Move cost ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
       else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
@@ -314,9 +327,9 @@
     updateUnitHighlights: function () {
       var g = this.g, u = g.units[this.sel.unit]; var h = this.renderer.highlights;
       h.expand = null; h.selTile = -1;
-      if (!u) { h.reach = null; h.attack = null; h.path = null; return; }
+      if (!u) { h.reach = null; h.attack = null; h.path = null; h.pathLabel = null; return; }
       h.reach = u.moves > 0 ? U.reachableNow(g, u) : null;
-      h.path = u.path;
+      h.path = u.path; h.pathLabel = u.path && u.path.length ? U.pathTurns(g, u, u.path) + ' turns' : null;
       var atk = {};
       if (G.isMilitary(u) && u.moves > 0) {
         var t = g.tiles[u.tile], range = U.isRanged(u) ? (U.def(g, u).range || 1) : 1;
@@ -370,7 +383,7 @@
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
           html += '<button class="small" data-action="skip">Skip</button><button class="small" data-action="sleep">Sleep</button>';
-          if (u.path && u.path.length) html += '<button class="small" data-action="cancelpath">Cancel route</button>';
+          if (u.path && u.path.length) { var dstS = G.settlementAt(g, u.path[u.path.length - 1]), dstT = g.tiles[u.path[u.path.length - 1]]; html += '<small class="stat">🥾 On the way to ' + (dstS ? dstS.name : AU.TERRAIN[dstT.terrain].name + (dstT.hills ? ' Hills' : '')) + ': ' + U.pathTurns(g, u, u.path) + ' more turn' + (U.pathTurns(g, u, u.path) > 1 ? 's' : '') + '.</small><button class="small" data-action="cancelpath">Cancel route</button>'; }
           if (U.canUndo(g, u)) html += '<button class="small" data-action="undomove">↩ Undo move</button>';
           var upc = U.upgradeCost(g, u); if (upc !== null) html += '<button class="small" data-action="upgrade" ' + (U.canUpgrade(g, u) ? '' : 'disabled') + '>Upgrade → ' + G.unitType(g, p, AU.UNITS[u.type].upgradesTo).name + ' (' + upc + '💰)</button>';
           html += '<button class="small ghost" data-action="disband">Disband</button></div>';
@@ -392,7 +405,7 @@
         if (p.explored[this.sel.tile]) {
           var yy = AU.baseTileYields(tt, p), owner = tt.owner >= 0 && g.settlements[tt.owner] ? g.settlements[tt.owner] : null;
           var NWc = tt.natural ? AU.NATURAL_WONDERS[tt.natural] : null;
-          html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">Natural Wonder</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' Hills' : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (River)' : '')) + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' Adjacent worked tiles: ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
+          html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">Natural Wonder</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' Hills' : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (River)' : '')) + (function () { var mc = U.terrainCost(tt); return ' <span class="pill" title="Movement points needed to enter">🥾 ' + (mc === Infinity ? 'impassable' : mc) + '</span>'; })() + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' Adjacent worked tiles: ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
             (tt.resource && (!AU.RESOURCES[tt.resource].revealTech || p.techs[AU.RESOURCES[tt.resource].revealTech]) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
             '🌾' + yy.food + ' ⚙️' + yy.production + ' 💰' + yy.gold + (yy.culture ? ' 🎭' + yy.culture : '') +
             (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · Independent camp' : '') + '</div></div>';
@@ -493,7 +506,8 @@
         if (ownUnitsThere.length) { this.selectUnit(ownUnitsThere[0]); return; }
         var sHere = G.settlementAt(g, tileIdx);
         if (sHere && sHere.civ === p.idx && !(h.reach && h.reach[tileIdx])) { var path0 = U.findPath(g, u, tileIdx); if (!path0) { this.selectSettlement(sHere); return; } }
-        if (U.orderMove(g, u, tileIdx)) { if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
+        var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0;
+        if (U.orderMove(g, u, tileIdx)) { if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' turns. It keeps walking by itself each turn.', 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
         this.toast('No route there.');
         return;
       }
@@ -576,7 +590,7 @@
           if (moved && dragUnit && self.g.units[dragUnit.id]) {
             if (self.sel.unit !== dragUnit.id) self.selectUnit(dragUnit);
             var rect1 = cv.getBoundingClientRect(); var idx1 = r.tileAtScreen(self.g, e.clientX - rect1.left, e.clientY - rect1.top);
-            if (idx1 !== dragTarget) { dragTarget = idx1; var path = idx1 >= 0 && idx1 !== dragUnit.tile && G.player(self.g).explored[idx1] ? U.findPath(self.g, dragUnit, idx1) : null; r.highlights.path = path || null; r.highlights.dragTile = idx1; self.invalidate(); }
+            if (idx1 !== dragTarget) { dragTarget = idx1; var path = idx1 >= 0 && idx1 !== dragUnit.tile && G.player(self.g).explored[idx1] ? U.findPath(self.g, dragUnit, idx1) : null; r.highlights.pathLabel = path && path.length ? U.pathTurns(self.g, dragUnit, path) + (U.pathTurns(self.g, dragUnit, path) > 1 ? ' turns' : ' turn') : null; r.highlights.path = path || null; r.highlights.dragTile = idx1; self.invalidate(); }
           } else if (moved) { r.cam.x -= dx / r.cam.zoom; r.cam.y -= dy / r.cam.zoom; r.clampCamera(self.g); self.invalidate(); }
         }
       });
