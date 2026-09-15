@@ -4,15 +4,17 @@ JPEG for full-frame pictures (terrain textures, technology and civic cards)."""
 import os, sys
 from PIL import Image
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'web', 'assets')
-JPEG_KINDS = ('terrain', 'techs', 'civics', 'thrones')
+JPEG_KINDS = ('terrain', 'techs', 'civics', 'thrones', 'keyart')
 MAX = 512
+MAX_BY_KIND = {'keyart': 1600, 'logo': 1024}  # full-screen pictures keep their resolution
 
 def shrink(path):
     kind = os.path.relpath(path, ROOT).split(os.sep)[0]
     img = Image.open(path)
     changed = False
-    if max(img.size) > MAX:
-        s = MAX / float(max(img.size)); img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS); changed = True
+    mx = MAX_BY_KIND.get(kind, MAX)
+    if max(img.size) > mx:
+        s = mx / float(max(img.size)); img = img.resize((max(1, round(img.width * s)), max(1, round(img.height * s))), Image.LANCZOS); changed = True
     if kind in JPEG_KINDS:
         out = os.path.splitext(path)[0] + '.jpg'
         img.convert('RGB').save(out, 'JPEG', quality=86, optimize=True, progressive=True)

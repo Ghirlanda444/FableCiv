@@ -15,6 +15,7 @@ self.addEventListener('activate', function (e) {
 // Core files: cache first (they are versioned by the cache name). Artwork: cache first too, fetched once and kept.
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== self.location.origin) return;
+  if (/\/music\//.test(e.request.url)) return; // music: streamed by the browser with range requests, not cached
   e.respondWith(caches.match(e.request).then(function (hit) {
     if (hit) return hit;
     return fetch(e.request).then(function (res) {

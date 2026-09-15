@@ -151,6 +151,7 @@
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
     html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies. One continuous tree: nothing resets between eras.</p>';
+    html += '<button class="big gold" data-action="tree" data-kind="tech">🌳 View the full technology tree</button><br><br>';
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
       var cost = G.techCost(g, p, t), prog = p.techProgress[t.id] || 0, cur = p.currentTech === t.id;
@@ -189,6 +190,7 @@
     if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
     html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics.</p>';
+    html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
       var cost = G.civicCost(g, p, c), prog = p.civicProgress[c.id] || 0, cur = p.currentCivic === c.id, boosted = p.boosts && p.boosts['c:' + c.id];
@@ -285,6 +287,8 @@
     if (app.settings.graphics !== '3d') html += '<button class="big ghost" data-action="toggleiso">View: ' + (app.settings.iso !== false ? 'Isometric (Civ 3 style)' : 'Top-down') + ' (switch)</button><br><br>';
     html += '<p class="stat">Chibilization ' + (AU.VERSION && AU.VERSION !== '__VERSION__' ? 'build ' + AU.VERSION.slice(0, 7) : 'local build') + (app.updateReady ? ' · <b>update ready</b>' : '') + '</p>';
     if (app.updateReady) html += '<button class="big primary" data-action="applyupdate">Restart with the new version</button><br><br>';
+    var Au = AU.Audio; if (Au) html += '<div class="row"><div class="grow"><b>🎵 Music: ' + (Au.enabled ? 'on' : 'off') + '</b><small>' + (Au.enabled ? 'Now: ' + Au.status() + ' · volume ' + Math.round(Au.volume * 100) + '%' : 'Silent') + '</small></div><button class="small" data-action="musicvol" data-d="-1" ' + (Au.enabled ? '' : 'disabled') + '>−</button><button class="small" data-action="musicvol" data-d="1" ' + (Au.enabled ? '' : 'disabled') + '>+</button><button class="small ' + (Au.enabled ? '' : 'primary') + '" data-action="togglemusic">' + (Au.enabled ? 'Mute' : 'Turn on') + '</button></div>';
+    html += '<button class="big ghost" data-action="tree" data-kind="tech">🌳 Technology & civics trees</button><br><br>';
     html += '<button class="big ghost" data-action="toggleyields">' + (app.settings.yields ? 'Hide' : 'Show') + ' tile yields on the map (Y)</button><br><br>';
     html += '<button class="big ghost" data-action="togglestrict">End Turn button: ' + (app.settings.strictTurn ? 'must clear the to-do list first' : 'to-do first, Pass anytime') + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
@@ -358,6 +362,7 @@
   // ---------- Panel actions ----------
   P.action = function (app, name, d) {
     var g = app.g, p = g ? G.player(g) : null, s;
+    if (AU.Tree && AU.Tree.action(app, name, d)) return;
     switch (name) {
       case 'citytab': app.panelData.tab = d.tab; app.refreshPanel(); break;
       case 'enqueue': s = g.settlements[+d.id]; if (s && G.enqueue(g, s, d.kind, d.item)) app.refreshPanel(); break;
@@ -376,6 +381,8 @@
       case 'newgame': app.closePanel(); app.g = null; app.showSetup(); break;
       case 'quit': app.confirm('Quit to the title screen? Your game is saved.', function () { app.save(true); app.panel = null; $('panel').hidden = true; app.g = null; app.showTitle(); }); break;
       case 'help': app.openPanel('help'); break;
+      case 'togglemusic': app.settings.music = !(app.settings.music !== false); app.saveSettings(); AU.Audio.setEnabled(app.settings.music); app.refreshPanel(); break;
+      case 'musicvol': app.settings.musicVolume = Math.round(Math.max(0, Math.min(1, (AU.Audio.volume || 0) + 0.1 * (+d.d))) * 10) / 10; app.saveSettings(); AU.Audio.setVolume(app.settings.musicVolume); app.refreshPanel(); break;
       case 'pedia': app.openPanel('pedia', { cat: d.cat || app.pediaState.cat, id: d.id || null }); break;
       case 'envoy': if (AU.CityStates.sendEnvoy(g, p, g.civs[+d.id])) { app.refreshPanel(); app.refreshHud(); } break;
       case 'talk': if (AU.DiploUI && g.civs[+d.id]) AU.DiploUI.open(app, +d.id, { kind: 'talk' }); break;

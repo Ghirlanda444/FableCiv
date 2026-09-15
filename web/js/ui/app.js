@@ -8,7 +8,7 @@
     g: null, renderer: null, sel: { unit: null, settlement: null, tile: -1 }, mode: 'normal', panel: null, dirty: true, pendingAttack: null,
     setup: { civ: 'rome' }, busy: false,
 
-    settings: { graphics: '2d', yields: false, iso: true }, pediaState: { cat: 'concepts' },
+    settings: { graphics: '2d', yields: false, iso: true, music: true, musicVolume: 0.7 }, pediaState: { cat: 'concepts' },
     loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); if (!s.v || s.v < 2) { s.graphics = '2d'; s.v = 2; } Object.assign(this.settings, s); } catch (e) {} },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
@@ -26,6 +26,7 @@
     },
     init: function () {
       this.loadSettings();
+      if (AU.Audio) AU.Audio.init(this.settings);
       this.makeRenderer();
       this.bindTitle(); this.bindGame();
       window.addEventListener('resize', function () { App.renderer.resize(); App.invalidate(); });
@@ -51,7 +52,15 @@
 
     // ---------- Screens ----------
     showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
-    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); this.showScreen('title'); this.paintTitle(); },
+    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); var vl = $('version-line'); if (vl) vl.textContent = 'v0.3 · ' + AU.CIVS.length + ' civilizations · ' + AU.CIVS.reduce(function (n, c) { return n + c.leaders.length; }, 0) + ' leaders · single-player'; this.showScreen('title'); this.paintTitle(); this.showKeyArt(); if (AU.Audio) AU.Audio.play('menu'); this.refreshMusicBtn(); },
+    refreshMusicBtn: function () { var b = $('btn-music'); if (b && AU.Audio) { b.textContent = AU.Audio.enabled ? '🎵' : '🔇'; b.title = AU.Audio.enabled ? 'Music on (tap to mute)' : 'Music off'; } },
+    showKeyArt: function () { // the painted key art behind the title when it exists; the generated map stays as fallback
+      var img = $('title-art'), logo = $('logo-img'); if (!img) return;
+      var id = window.innerWidth >= window.innerHeight ? 'title_landscape' : 'title_portrait';
+      var list = AU.ASSET_LIST || [];
+      if (list.indexOf('assets/keyart/' + id + '.jpg') >= 0) { img.hidden = false; img.onload = function () { $('title').classList.add('has-art'); }; img.onerror = function () { img.hidden = true; $('title').classList.remove('has-art'); }; if (img.dataset.id !== id) { img.dataset.id = id; img.src = AU.Assets.url('keyart', id); } }
+      if (logo && list.indexOf('assets/logo/chibilization.png') >= 0) { logo.hidden = false; logo.onerror = function () { logo.hidden = true; $('title').classList.remove('has-logo'); }; logo.onload = function () { $('title').classList.add('has-logo'); }; if (!logo.src) logo.src = AU.Assets.url('logo', 'chibilization'); }
+    },
     paintTitle: function () {
       try {
         var cv = $('title-bg'); if (!cv) return;
@@ -66,6 +75,8 @@
     },
     bindTitle: function () {
       $('btn-new').onclick = function () { App.showSetup(); };
+      $('btn-music').onclick = function () { App.settings.music = !(App.settings.music !== false); App.saveSettings(); AU.Audio.setEnabled(App.settings.music); App.refreshMusicBtn(); };
+      window.addEventListener('resize', function () { if (!$('title').hidden) App.showKeyArt(); });
       $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
@@ -120,6 +131,7 @@
     },
     startGameState: function (g) {
       this.g = g; this.sel = { unit: null, settlement: null, tile: -1 }; this.mode = 'normal'; this.panel = null; $('panel').hidden = true;
+      if (AU.Audio) AU.Audio.forEra(G.player(g).era || 0);
       G.autosaveHook = function () { App.save(true); };
       this.showScreen('game');
       this.renderer.resize();
@@ -150,6 +162,7 @@
     },
     refreshHud: function () {
       var g = this.g, p = G.player(g); if (!g) return;
+      if (AU.Audio) AU.Audio.forEra(p.era || 0);
       var y = G.civYields(g, p);
       var techT = p.currentTech ? AU.TECH_BY_ID[p.currentTech] : null, civT = p.currentCivic ? AU.CIVIC_BY_ID[p.currentCivic] : null;
       function turnsLeft(prog, cost, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) : '∞'; }

@@ -13,16 +13,19 @@
 <body>
 <div id="title" class="screen">
   <canvas id="title-bg"></canvas>
+  <img id="title-art" class="title-art" alt="" hidden>
+  <div class="title-shade"></div>
+  <button id="btn-music" class="icon music-btn" title="Music">🎵</button>
   <div class="title-inner">
-    <h1>Chibilization</h1>
-    <p class="tagline">Build a civilization that never resets. Towns, cities, wonders and war across seven eras.</p>
+    <h1 class="logo"><img id="logo-img" class="logo-img" alt="Chibilization" hidden><span class="logo-text" aria-hidden="true"><span class="logo-w1">Chibi</span><span class="logo-w2">lization</span></span></h1>
+    <p class="tagline">Build a civilization that never resets. Towns, cities, wonders and war across eight eras.</p>
     <div class="title-buttons">
       <button id="btn-continue" class="big primary" hidden>Continue</button>
-      <button id="btn-new" class="big">New Game</button>
+      <button id="btn-new" class="big primary">New Game</button>
       <button id="btn-help" class="big ghost">How to Play</button>
       <button id="btn-pedia" class="big ghost">📖 Civilopedia</button>
     </div>
-    <p class="version">v0.2 · 30 civilizations · 71 leaders · single-player</p>
+    <p class="version" id="version-line">Chibilization · single-player</p>
   </div>
 </div>
 
@@ -104,6 +107,8 @@
 <script src="js/ui/renderer.js"></script>
 <script src="js/ui/renderer3d.js"></script>
 <script src="js/ui/panels.js"></script>
+<script src="js/ui/tree.js"></script>
+<script src="js/ui/audio.js"></script>
 <script src="js/ui/diplo.js"></script>
 <script src="js/ui/palace.js"></script>
 <script src="js/ui/pedia.js"></script>

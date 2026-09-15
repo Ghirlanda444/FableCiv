@@ -14,7 +14,7 @@
   }
   function artHas(kind, id) { return !!artIndex()[kind + '/' + id]; }
   function thumb(kind, id, label, big) { return '<div class="art-thumb' + (big ? ' big' : '') + '"><img loading="lazy" src="' + AU.Assets.url(kind, id) + '" alt=""><small>' + label + '</small></div>'; }
-  var ART_KINDS = [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'], ['natural', 'Natural Wonders'], ['leaders', 'Leaders'], ['civs', 'Civilization emblems'], ['resources', 'Resources'], ['features', 'Features & improvements'], ['techs', 'Technology cards'], ['civics', 'Civic cards'], ['thrones', 'Throne rooms'], ['palace', 'Palace pieces']];
+  var ART_KINDS = [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'World Wonders'], ['national', 'National Wonders'], ['natural', 'Natural Wonders'], ['leaders', 'Leaders'], ['civs', 'Civilization emblems'], ['resources', 'Resources'], ['features', 'Features & improvements'], ['techs', 'Technology cards'], ['civics', 'Civic cards'], ['thrones', 'Throne rooms'], ['palace', 'Palace pieces'], ['keyart', 'Key art & logo']];
   function artKindCount(kind) { var n = 0, ix = artIndex(); for (var k in ix) if (k.indexOf(kind + '/') === 0) n++; return n; }
   // every version of one unit or building: the shared picture plus one per cultural art group
   function variantsHtml(kind, id) {
@@ -43,7 +43,8 @@
       if (kind === 'techs') AU.TECHS.forEach(function (t) { names[t.id] = t.name; });
       if (kind === 'civics') AU.CIVICS.forEach(function (c) { names[c.id] = c.name; });
       if (kind === 'thrones') for (var cu in AU.CULTURES) names[cu] = AU.CULTURES[cu].name;
-      var row2 = '', big = kind === 'leaders' || kind === 'natural' || kind === 'wonders' || kind === 'national' || kind === 'thrones' || kind === 'techs' || kind === 'civics';
+      if (kind === 'keyart') { names.title_landscape = 'Title (landscape)'; names.title_portrait = 'Title (portrait)'; for (var lg in ix) if (lg.indexOf('logo/') === 0) row2 += thumb('logo', lg.slice(5), 'Logo ' + lg.slice(5).replace('chibilization_', ''), true); }
+      var row2 = row2 || '', big = kind === 'keyart' || kind === 'leaders' || kind === 'natural' || kind === 'wonders' || kind === 'national' || kind === 'thrones' || kind === 'techs' || kind === 'civics';
       for (var k in ix) { if (k.indexOf(kind + '/') !== 0 || k.slice(kind.length + 1).indexOf('/') >= 0) continue; var id2 = k.slice(kind.length + 1); row2 += thumb(kind, id2, names[id2] || id2, big); }
       if (row2) h += '<div class="art-grid">' + row2 + '</div>';
     }
@@ -146,6 +147,7 @@
     var st = app.pediaState; if (data.cat) st.cat = data.cat; if (data.id !== undefined) st.id = data.id;
     var html = '<div class="tabs">' + CATS.map(function (c) { return '<button class="small ' + (st.cat === c[0] ? 'on' : '') + '" data-action="pedia" data-cat="' + c[0] + '">' + c[1] + '</button>'; }).join('') + '</div>';
     html += '<input id="pedia-search" placeholder="Search…" value="' + (st.q || '').replace(/"/g, '') + '" style="width:100%;margin-bottom:10px">';
+    if (st.cat === 'techs' || st.cat === 'civics') html += '<button class="small gold" data-action="tree" data-kind="' + (st.cat === 'techs' ? 'tech' : 'civic') + '" style="margin-bottom:10px">🌳 View the full ' + (st.cat === 'techs' ? 'technology' : 'civics') + ' tree</button>';
     html += '<div id="pedia-list"></div><div id="pedia-entry" class="pedia-entry"></div>';
     setTimeout(function () { P.renderPediaList(app); }, 0);
     return { title: 'Civilopedia', html: html };

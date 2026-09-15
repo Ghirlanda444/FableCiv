@@ -75,18 +75,26 @@ def xai_model():
     _XAI['model'] = pref[0] if pref else 'grok-2-image-1212'
     return _XAI['model']
 
-def fetch_xai(prompt, w, h):
+def aspect_of(w, h):
+    """The aspect ratio string the xAI API accepts for a wanted size, or None for a square / unsupported one."""
+    import math
+    w, h = int(w), int(h); d = math.gcd(w, h); r = '%d:%d' % (w // d, h // d)
+    return r if r in ('16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '2:1', '1:2') else None
+
+def fetch_xai(prompt, w, h, hires=False):
     """xAI image generation (Grok Imagine): OpenAI-compatible endpoint, returns the image bytes."""
     import base64
     model = xai_model()
     body = {'model': model, 'prompt': prompt, 'n': 1, 'response_format': 'b64_json'}
-    try:
-        out = xai_request('images/generations', body)
-    except RuntimeError as e:
-        if 'response_format' in str(e) or 'HTTP 400' in str(e):
-            body.pop('response_format', None)
-            out = xai_request('images/generations', body)
-        else: raise
+    ar = aspect_of(w, h)
+    if ar: body['aspect_ratio'] = ar
+    if hires: body['resolution'] = '2k'
+    for drop in ('resolution', 'aspect_ratio', 'response_format', None):  # older models reject the extras: retry without them
+        try:
+            out = xai_request('images/generations', body); break
+        except RuntimeError as e:
+            if drop is None or 'HTTP 400' not in str(e): raise
+            body.pop(drop, None)
     d = out['data'][0]
     if d.get('b64_json'): return base64.b64decode(d['b64_json']), 'image/jpeg'
     return fetch(d['url'])
@@ -181,7 +189,7 @@ def main():
                 url = 'https://image.pollinations.ai/prompt/' + urllib.parse.quote(prompt) + '?width=%s&height=%s&nologo=true&seed=%d&model=flux' % (w, h, seed)
                 print('%s (%s) seed %d' % (it['file'], it['name'], seed), flush=True)
                 if args.provider == 'xai':
-                    data, ctype = fetch_xai(prompt, w, h)
+                    data, ctype = fetch_xai(prompt, w, h, hires=bool(it.get('hires')))
                 else:
                     data, ctype = fetch(url)
                 if len(data) < 5000 or 'image' not in ctype:
