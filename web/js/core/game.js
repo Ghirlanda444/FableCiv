@@ -15,7 +15,7 @@
     if (!fx) return into;
     for (var k in fx) {
       var v = fx[k];
-      if (MULT_OBJ[k]) { into[k] = into[k] || {}; for (var y in v) into[k][y] = (into[k][y] || 1) * v[y]; }
+      if (MULT_OBJ[k]) { into[k] = into[k] || {}; for (var y in v) into[k][y] = (into[k][y] || 1) + (v[y] - 1); } // percentages add up instead of compounding (+15% and +10% give +25%, not +26.5%)
       else if (CONCAT[k]) into[k] = (into[k] || []).concat(v);
       else if (NESTED[k]) { into[k] = into[k] || {}; for (var b in v) into[k][b] = add(into[k][b] || {}, v[b]); }
       else if (ADD_OBJ[k]) into[k] = add(into[k] || {}, v);
@@ -488,7 +488,7 @@
     y.happiness = happy;
     // percents & multipliers
     y.production *= 1 + pct.production / 100; y.science *= 1 + pct.science / 100;
-    var ym = fx.yieldMult || {};
+    var ym = {}; for (var ymk in (fx.yieldMult || {})) ym[ymk] = Math.min(2, Math.max(0.25, fx.yieldMult[ymk])); // all the percentage bonuses together cap at +100%
     for (var yk in ym) if (y[yk] !== undefined && yk !== 'happiness') y[yk] *= ym[yk];
     if (s.isCity && fx.cityYieldMult) for (var cy in fx.cityYieldMult) if (y[cy] !== undefined) y[cy] *= fx.cityYieldMult[cy];
     if (s.isCapital && fx.capitalMult) for (var ck in fx.capitalMult) y[ck] *= fx.capitalMult[ck];
