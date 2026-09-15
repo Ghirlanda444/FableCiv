@@ -1,8 +1,8 @@
-# Chibilization (repo FableCiv)
+# Tiny Empires (repo FableCiv)
 
-A single-player 4X strategy game for Android (and any modern browser) in the spirit of the
-Civilization series: a hybrid that keeps the classic "one civilization from start to finish"
-structure and imports the **Town / City settlement system** of the newest generation.
+A single-player 4X strategy game for Android, Windows and any modern browser: one chibi empire
+grows from a single camp to the stars, with the **Town / City settlement system**, Free Cities,
+Sparks and Mastery, Great People and 40 empires with 95 leaders.
 
 Design pillars:
 
@@ -12,16 +12,16 @@ Design pillars:
 - **Governments and policy cards.** 10 governments with military, economic, diplomatic and wildcard
   slots; 61 policy cards unlocked by civics.
 - **Three kinds of wonders.** 20 world wonders (one per world), 12 national wonders (one per
-  civilization, needing several copies of a building) and 16 natural wonders placed by the map.
+  empire, needing several copies of a building) and 16 natural wonders placed by the map.
 - **Civilopedia** for every object in the game, and a **3D city view** that shows each settlement
   built from its real buildings.
-- **Leaders belong to their civilization.** Caesar can only rule Rome, Victoria only England.
-  30 civilizations with 71 leaders (two or three per civilization), each leader with their own
-  ability on top of the civilization's permanent ability, unique unit and unique building:
+- **Leaders belong to their empire.** Caesar can only rule Rome, Victoria only England.
+  30 empires with 71 leaders (two or three per empire), each leader with their own
+  ability on top of the empire's permanent ability, unique unit and unique building:
   Rome, Japan, China, America, India, Indonesia, Mongolia, Zulu, Persia, Egypt, Celts, Arabia,
   France, England, Aztec, Inca, Maya, Shawnee, Greece, Germany, Russia, Spain, Ottomans, Korea,
   Vietnam, Ethiopia, Mali, Norway, Babylon, Polynesia.
-- **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 20 civilizations) and eight map
+- **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 20 empires) and eight map
   types: Continents, Pangaea, Fractal, Archipelago, Islands, Donut, Inland Sea, Terra.
 - **Game speeds.** Quick, Standard, Epic and Marathon scale research, production, growth and the
   turn limit.
@@ -56,9 +56,9 @@ tests/      headless engine simulation (Node) and Playwright UI smoke tests
 
 ## Play on Windows, Mac or Linux
 
-- **Windows app:** download `Chibilization-windows.exe` from the `windows-latest` release and double-click
+- **Windows app:** download `TinyEmpires-windows.exe` from the `windows-latest` release and double-click
   it (portable, no install). It is unsigned, so Windows SmartScreen may ask you to confirm once.
-- **Any browser:** download `Chibilization.html` from the same release and open it in Chrome, Edge or
+- **Any browser:** download `TinyEmpires.html` from the same release and open it in Chrome, Edge or
   Firefox. The whole game is in that one file.
 - **From source:** open `web/index.html` directly, or serve the folder (`npx http-server web`).
 

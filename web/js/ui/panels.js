@@ -123,7 +123,7 @@
     [['units', 'Units'], ['buildings', 'Buildings'], ['wonders', 'Wonders'], ['national', 'National'], ['projects', 'Projects']].forEach(function (t) { if (!s.isCity && (t[0] === 'wonders' || t[0] === 'projects' || t[0] === 'national')) return; html += '<button class="small ' + (tab === t[0] ? 'on' : '') + '" data-action="citytab" data-id="' + s.id + '" data-tab="' + t[0] + '">' + t[1] + ' (' + opts[t[0]].length + ')</button>'; });
     html += '</div>';
     var kind = { units: 'unit', buildings: 'building', wonders: 'wonder', national: 'national', projects: 'project' }[tab];
-    if (tab === 'national' && !opts.national.length) html += '<p class="stat">National wonders need several copies of a building across your settlements (for example three Libraries for the Royal Library). Each can be built once per civilization.</p>';
+    if (tab === 'national' && !opts.national.length) html += '<p class="stat">National wonders need several copies of a building across your settlements (for example three Libraries for the Royal Library). Each can be built once per empire.</p>';
     if (!opts[tab].length) html += '<p class="stat">Nothing available yet. Research new technologies.</p>';
     opts[tab].forEach(function (id) {
       var cost = G.itemCost(g, civ, kind, id, s), buyCost = G.purchaseCost(g, civ, kind, id, s), name, desc;
@@ -224,7 +224,7 @@
   P.render_diplomacy = function (app, g) {
     var p = G.player(g), html = '';
     var others = g.civs.filter(function (c) { return c.idx !== p.idx && !c.minor; });
-    if (!others.some(function (c) { return p.met[c.idx]; })) html += '<p class="stat">You have not met any other civilization yet. Explore!</p>';
+    if (!others.some(function (c) { return p.met[c.idx]; })) html += '<p class="stat">You have not met any other empire yet. Explore!</p>';
     var CS = AU.CityStates, minors = g.civs.filter(function (c) { return c.minor && p.met[c.idx]; });
     if (CS) {
       html += '<div class="section"><h3>Free cities</h3><p class="stat"><b>Ties</b> grow from what you do: a Caravan parked in their land (+3/turn and Gold), a soldier guarding their borders (+1), a shared religion (+1), their quest (+15) and gifts (+10). Ignore them and Ties fade. Tiers: Acquaintance 10 · Partner 30 (their yield in your capital) · Patron 60, if nobody is closer (their special bonus, their help in war) · Kin 90 (more yields; after 20 turns as Kin with touching borders they can join you in a <b>Union</b>).</p>';
@@ -301,7 +301,7 @@
   P.render_log = function (app, g) {
     var html = '<div class="section">';
     var pl = G.player(g), known = g.log.filter(function (l) { return l.civ === undefined || l.civ === null || l.civ === pl.idx || pl.met[l.civ]; });
-    html += '<p class="stat">Only events involving you and the civilizations you have met are recorded.</p>';
+    html += '<p class="stat">Only events involving you and the empires you have met are recorded.</p>';
     known.slice().reverse().forEach(function (l) { html += '<div class="row"><small class="stat">T' + l.turn + '</small><div class="grow">' + esc(l.msg) + '</div></div>'; });
     return { title: 'History', html: html + '</div>' };
   };
@@ -314,7 +314,7 @@
     html += '<button class="big" data-action="newgame">New game</button><br><br>';
     html += '<button class="big ghost" data-action="togglegraphics">Graphics: ' + (app.settings.graphics === '3d' ? '3D world' : '2D painted map') + ' (switch)</button><br><br>';
     if (app.settings.graphics !== '3d') html += '<button class="big ghost" data-action="toggleiso">View: ' + (app.settings.iso !== false ? 'Isometric' : 'Top-down') + ' (switch)</button><br><br>';
-    html += '<p class="stat">Chibilization ' + (AU.VERSION && AU.VERSION !== '__VERSION__' ? 'build ' + AU.VERSION.slice(0, 7) : 'local build') + (app.updateReady ? ' · <b>update ready</b>' : '') + '</p>';
+    html += '<p class="stat">Tiny Empires ' + (AU.VERSION && AU.VERSION !== '__VERSION__' ? 'build ' + AU.VERSION.slice(0, 7) : 'local build') + (app.updateReady ? ' · <b>update ready</b>' : '') + '</p>';
     if (app.updateReady) html += '<button class="big primary" data-action="applyupdate">Restart with the new version</button><br><br>';
     var Au = AU.Audio; if (Au) html += '<div class="row"><div class="grow"><b>🎵 Music: ' + (Au.enabled ? 'on' : 'off') + '</b><small>' + (Au.enabled ? 'Now: ' + Au.status() + ' · volume ' + Math.round(Au.volume * 100) + '%' : 'Silent') + '</small></div><button class="small" data-action="musicvol" data-d="-1" ' + (Au.enabled ? '' : 'disabled') + '>−</button><button class="small" data-action="musicvol" data-d="1" ' + (Au.enabled ? '' : 'disabled') + '>+</button><button class="small ' + (Au.enabled ? '' : 'primary') + '" data-action="togglemusic">' + (Au.enabled ? 'Mute' : 'Turn on') + '</button></div>';
     html += '<button class="big ghost" data-action="tree" data-kind="tech">🌳 Technology & civics trees</button><br><br>';
@@ -323,12 +323,12 @@
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="pedia">📖 Chibipedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
-    html += '</div><p class="stat">Chibilization. Autosaves at the end of every turn.</p>';
+    html += '</div><p class="stat">Tiny Empires. Autosaves at the end of every turn.</p>';
     return { title: 'Menu', html: html };
   };
   P.render_help = function () {
     var html = '<div class="help">' +
-      '<h3>The idea</h3><p>Ages Unbroken blends the classic Civilization formula with the settlement system of the newest generation: you found <b>Towns</b>, upgrade the important ones into <b>Cities</b>, and your civilization stays the same from the first turn to the last. There are no era resets, no crises and no changing civilizations: each leader rules only their own people, and every tech and civic you unlock stays with you.</p>' +
+      '<h3>The idea</h3><p>Tiny Empires is a turn-based strategy game where one empire grows from a single camp to the stars. You found <b>Towns</b>, upgrade the important ones into <b>Cities</b>, and your empire stays the same from the first turn to the last: no era resets, no crises, no switching peoples. Each leader rules only their own people, and every technology and civic you unlock stays with you.</p>' +
       '<h3>Towns and Cities</h3><p>Your capital is a City. New settlements are Towns. Towns have no production queue: their production becomes gold, and you buy buildings and units in them with gold. Towns grow by themselves. Once a Town reaches pop 5 you can <b>specialize</b> it (Farming, Mining, Trade, Fort, Urban Center): it stops growing and sends surplus food to your nearest City. Pay gold to <b>upgrade</b> a Town into a City whenever you want a real production hub.</p>' +
       '<h3>Growth and tiles</h3><p>There are no builders. Every time a settlement grows you pick a tile within three rings; the new citizen claims and improves it automatically (farm, mine, fishing boats, pasture, plantation…). Tiles with luxury resources give happiness, strategic resources unlock units such as Swordbearers (Iron) or Chevaliers (Horses).</p>' +
       '<h3>Units</h3><p>Tap a unit to select it, tap a highlighted tile to move (far tiles create multi-turn routes). Tap a red tile to attack: the estimated damage is shown, tap again to confirm. Ranged units attack from a distance without taking damage. Melee units capture settlements when their HP reaches 0. Units heal when they do not move; Fortify to defend and heal faster. One military and one civilian unit per tile.</p>' +
@@ -371,7 +371,7 @@
         html += '<br><button class="big primary" data-action="enhancerel" ' + (Rl.canEnhance(g, p) && sel.relEnh && sel.relFollower2 ? '' : 'disabled') + '>Enhance ' + rel.name + '</button>';
       }
       var vp = Rl.victoryProgress(g, p);
-      if (vp) html += '<h3>Devout victory</h3><p class="stat">Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
+      if (vp) html += '<h3>Devout victory</h3><p class="stat">Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every empire.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
       html += '</div>';
     }
     // world religions
@@ -382,7 +382,7 @@
   };
   P.render_victory = function (app, g) {
     var p = G.player(g), v = g.victory, html = '<div class="victory">';
-    if (!p.alive) html += '<h1>Defeat</h1><p>Your civilization has been destroyed on turn ' + g.turn + '.</p>';
+    if (!p.alive) html += '<h1>Defeat</h1><p>Your empire has been destroyed on turn ' + g.turn + '.</p>';
     else if (v) { var w = g.civs[v.civ], wd = G.civData(w); html += '<h1>' + (w.isPlayer ? 'Victory!' : 'Defeat') + '</h1><p>' + G.leaderName(w) + ' of ' + wd.name + ' achieved a <b>' + (AU.VICTORIES[v.type] ? AU.VICTORIES[v.type].icon + ' ' + AU.VICTORIES[v.type].name : v.type) + '</b> victory on turn ' + v.turn + '.</p>'; }
     html += '<p class="stat">Final score: ' + G.score(g, p) + '</p><br><button class="big" data-action="continueplaying">Keep playing</button><br><br><button class="big primary" data-action="newgame">New game</button></div>';
     return { title: 'Game over', html: html };

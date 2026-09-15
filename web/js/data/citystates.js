@@ -1,4 +1,4 @@
-// Free cities: independent single-city minor powers. Ties give tiered bonuses; the civilization with the most Ties (60+) is the Patron.
+// Free cities: independent single-city minor powers. Ties give tiered bonuses; the empire with the most Ties (60+) is the Patron.
 (function (AU) {
   var TYPES = AU.CITY_STATE_TYPES = {
     trade: { name: 'Trade', icon: '💰', yield: 'gold', desc: 'Gold' }, science: { name: 'Scholarly', icon: '🔬', yield: 'science', desc: 'Knowledge' },
@@ -43,7 +43,7 @@
     S('cahokia', 'Cahokia', 'industrial', '#784212', 'Mound Builders', 'Patron: Farms +1 Production; +1 Happiness per settlement is not included.', { tileBonus: [{ when: 'farm', yields: { production: 1 } }] })
   ];
   AU.CITY_STATE_BY_ID = {};
-  // Each city-state doubles as a minimal "civilization" record so every code path that reads civ data keeps working.
+  // Each city-state doubles as a minimal "empire" record so every code path that reads civ data keeps working.
   AU.CITY_STATES.forEach(function (s) {
     s.adj = s.name; s.color2 = '#ffffff'; s.minor = true; s.cities = [s.name]; s.difficulty = 'medium'; s.bias = [];
     s.leaders = [{ id: 'cs_' + s.id, name: s.name, title: TYPES[s.type].name + ' city-state', civId: s.id, ability: { name: TYPES[s.type].name, desc: '', fx: {} }, ai: { aggression: 0, expansion: 0, science: 0.5, culture: 0.5, religion: s.type === 'religious' ? 0.9 : 0.2 } }];

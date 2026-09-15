@@ -66,7 +66,7 @@
     });
     g.civs.forEach(function (a) { g.civs.forEach(function (b) { if (a !== b) a.rel[b.idx] = { war: false, attitude: (G.civFx(g, b).attitudeBonus || 0), warSince: -1, peaceUntil: -1 }; }); });
     G.assignColors(g);
-    // Start biases: each civilization (player first) takes the free start that suits it best.
+    // Start biases: each empire (player first) takes the free start that suits it best.
     var pool = map.starts.slice(), picked = [];
     g.civs.forEach(function (civ) {
       var data = AU.CIV_BY_ID[civ.civId], bias = data.bias || [], best = 0, bs = -1e9;
@@ -104,7 +104,7 @@
   G.quote = function (g, civ, cat, id, title, kicker, tile) { if (!civ.isPlayer) return; var q = AU.QUOTES && AU.QUOTES[cat] && AU.QUOTES[cat][id]; if (!q) return; g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: kicker, title: title, text: q.text, by: q.by, cat: cat, id: id, tile: tile }); };
   G.civData = function (civ) { return AU.CIV_BY_ID[civ.civId] || AU.CITY_STATE_BY_ID[civ.civId]; };
   G.civColor = function (civ) { return civ.color || G.civData(civ).color; };
-  // Make sure no two civilizations in the same game share a near-identical banner colour.
+  // Make sure no two empires in the same game share a near-identical banner colour.
   G.assignColors = function (g) {
     function toRgb(h) { var n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
     function toHex(c) { return '#' + c.map(function (v) { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
@@ -178,7 +178,7 @@
   G.fxKey = function (g, civ) { return (g.fxGen || 0) + '|' + civ.government + '|' + Object.keys(civ.civics).length + '|' + Object.keys(civ.techs).length + '|' + Object.keys(g.wonders).length + '|' + (civ.policies || []).join(',') + '|' + (civ.nationalCount || 0); };
 
   // ---------- Units (creation; movement/combat live in units.js) ----------
-  // Picture id of a unit: the civilization's unique unit id when it replaces this type, else the base type.
+  // Picture id of a unit: the empire's unique unit id when it replaces this type, else the base type.
   G.unitArtId = function (g, civ, typeId) { var d = civ ? G.civData(civ) : null; return d && d.uu && d.uu.replaces === typeId ? d.uu.id : typeId; };
   G.unitType = function (g, civ, typeId) {
     // returns the effective unit definition for this civ (unique unit replacement applied)
@@ -192,7 +192,7 @@
     }
     return base;
   };
-  // How well a start site matches a civilization's terrain bias (counts within two rings, strongest bias first).
+  // How well a start site matches an empire's terrain bias (counts within two rings, strongest bias first).
   G.biasScore = function (g, t, bias) {
     if (!bias || !bias.length) return 0;
     var ring = Hex.spiral(t.col, t.row, 2, g.W, g.H), score = 0;
@@ -696,10 +696,10 @@
     G.log(g, s.name + ' has become a City.', civ.idx);
     return true;
   };
-  // Town specializations: the five shared ones plus a civilization's own (data.ut).
+  // Town specializations: the five shared ones plus an empire's own (data.ut).
   G.specializationDef = function (civ, spec) { var d = AU.SPECIALIZATIONS[spec]; if (d) return d; var ut = civ && G.civData(civ).ut; return ut && ut.id === spec ? ut : null; };
   G.specializationsFor = function (civ) { var out = {}; for (var k in AU.SPECIALIZATIONS) out[k] = AU.SPECIALIZATIONS[k]; var ut = civ && G.civData(civ).ut; if (ut) out[ut.id] = ut; return out; };
-  // A civilization's unique improvement applies where the base improvement would be built, on matching tiles.
+  // An empire's unique improvement applies where the base improvement would be built, on matching tiles.
   G.uniqueImprovement = function (g, t, civ, imp) { var ui = civ && G.civData(civ).ui; if (!ui || !imp || ui.replaces !== imp) return null; var w = ui.when; if (!w) return ui; if (w === 'hills' && !t.hills) return null; if (w === 'river' && !t.river) return null; if (w === 'coast' && !G.neighbors(g, t).some(function (n) { return G.isWater(g.tiles[n]); })) return null; if (w === 'desert' && t.terrain !== 'desert') return null; if (w === 'flat' && t.hills) return null; if (w === 'forest' && t.feature !== 'forest' && t.feature !== 'jungle') return null; return ui; };
   G.improvementName = function (g, t, civ, imp) { var ui = G.uniqueImprovement(g, t, civ, imp); return ui ? ui.name : AU.IMPROVEMENTS[imp].name; };
   G.canSpecialize = function (g, s, spec) { var d = G.specializationDef(g.civs[s.civ], spec); if (!d) return false; return !s.isCity && s.pop >= d.minPop && s.specialization !== spec; };
@@ -888,7 +888,7 @@
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
   G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / 100); };
-  // Heritage victory: your foreign visitors exceed the domestic tourists of every other living civilization (Industrial era or later).
+  // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Industrial era or later).
   G.cultureProgress = function (g, civ) {
     var v = G.visitors(g, civ), need = 0;
     g.civs.forEach(function (o) { if (o.alive && !o.minor && o.idx !== civ.idx) need = Math.max(need, G.domesticTourists(g, o)); });
@@ -1080,7 +1080,7 @@
     var player = G.player(g);
     g.notifications = [];
     G.civSettlements(g, player.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); });
-    // AI civilizations meet whoever has walked into the land they have explored
+    // AI empires meet whoever has walked into the land they have explored
     if (g.turn % 3 === 0) g.civs.forEach(function (a) {
       if (a.isPlayer || !a.alive) return;
       for (var sid0 in g.settlements) { var s0 = g.settlements[sid0]; if (s0.civ !== a.idx && !a.met[s0.civ] && a.explored[s0.tile]) G.meet(g, a.idx, s0.civ); }

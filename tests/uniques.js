@@ -1,4 +1,4 @@
-// Unique improvements and unique towns: yields apply for the owning civilization only.
+// Unique improvements and unique towns: yields apply for the owning empire only.
 const AU = require('./load.js'); const G = AU.G;
 let fails = 0; const check = (c, m) => { if (!c) { fails++; console.log('FAIL', m); } };
 const g = G.newGame({ playerCiv: 'egypt', mapSize: 'small', difficulty: 'prince', seed: 11, mapType: 'continents', speed: 'standard', numCivs: 3 });

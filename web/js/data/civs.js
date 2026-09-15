@@ -1,5 +1,5 @@
-// 30 civilizations, each with two or three leaders. A leader can only rule their own civilization.
-// Every civilization has a permanent civ ability, a unique unit and a unique building; every leader adds
+// 30 empires, each with two or three leaders. A leader can only rule their own empire.
+// Every empire has a permanent civ ability, a unique unit and a unique building; every leader adds
 // a leader ability on top, so Rome under Caesar plays differently from Rome under Augustus.
 (function (AU) {
   function L(id, name, title, abName, abDesc, fx, ai) { return { id: id, name: name, title: title, ability: { name: abName, desc: abDesc, fx: fx }, ai: ai }; }
@@ -297,7 +297,7 @@
       ] },
 
     { id: 'babylon', name: 'Babylon', adj: 'Babylonian', difficulty: 'medium', bias: ['river', 'marsh'], color: '#6c3483', color2: '#f8c471',
-      ability: { name: 'Cradle of Civilization', desc: 'Technologies cost 15% less, but each settlement yields -1 Knowledge. Worked River tiles +1 Gold.', fx: { techCostMult: 0.85, sciencePerSettlement: -1, tileBonus: [{ when: 'river', yields: { gold: 1 } }] } },
+      ability: { name: 'Cradle of Cities', desc: 'Technologies cost 15% less, but each settlement yields -1 Knowledge. Worked River tiles +1 Gold.', fx: { techCostMult: 0.85, sciencePerSettlement: -1, tileBonus: [{ when: 'river', yields: { gold: 1 } }] } },
       uu: { id: 'sabum', name: 'Sabum Kibittum', replaces: 'warrior', strength: 3, moves: 1, sight: 2, xpMult: 1, scienceOnKill: 10, desc: '+3 Strength, +1 Movement, +2 Sight, double experience, +10 Knowledge per kill' },
       ub: { id: 'ziggurat', name: 'Ziggurat', replaces: 'library', yields: { science: 2, culture: 1, faith: 1 }, desc: '+2 Knowledge, +1 Heritage, +1 Devotion' },
       cities: ['Babylon', 'Ur', 'Uruk', 'Nippur', 'Sippar', 'Kish', 'Larsa', 'Eridu', 'Lagash', 'Borsippa', 'Isin', 'Akkad', 'Girsu', 'Umma', 'Shuruppak', 'Adab', 'Bad-tibira', 'Marad', 'Dilbat', 'Kutha', 'Der', 'Eshnunna', 'Mari', 'Nineveh', 'Ashur', 'Nimrud', 'Dur-Sharrukin', 'Arrapha', 'Nuzi', 'Harran', 'Carchemish', 'Ebla', 'Terqa', 'Tuttul', 'Kisurra', 'Zabalam', 'Larak', 'Dur-Kurigalzu', 'Nagar', 'Urkesh'],
@@ -316,7 +316,7 @@
         L('hotu', 'Hotu Matu\'a', 'Ariki', 'Moai', 'Each Wonder yields +3 Heritage; settlements on Coast +2 Heritage; Monuments +1 Heritage.', { culturePerWonder: 3, coastalSettlementYields: { culture: 2 }, buildingBonus: { monument: { culture: 1 } } }, { aggression: 0.3, expansion: 0.6, science: 0.4, culture: 0.8 })
       ] }
   ];
-  // Rebuilds the lookup tables; extra civilization files (civs2.js) push into AU.CIVS and call this again.
+  // Rebuilds the lookup tables; extra empire files (civs2.js) push into AU.CIVS and call this again.
   AU.indexCivs = function () { AU.CIV_BY_ID = {}; AU.LEADER_BY_ID = {}; AU.CIVS.forEach(function (c) { AU.CIV_BY_ID[c.id] = c; c.leaders.forEach(function (l) { l.civId = c.id; AU.LEADER_BY_ID[l.id] = l; }); }); };
   AU.indexCivs();
   AU.leadersOf = function (civId) { return AU.CIV_BY_ID[civId].leaders; };

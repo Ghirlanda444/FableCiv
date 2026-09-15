@@ -52,14 +52,14 @@
 
     // ---------- Screens ----------
     showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
-    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); var vl = $('version-line'); if (vl) vl.textContent = 'v0.3 · ' + AU.CIVS.length + ' civilizations · ' + AU.CIVS.reduce(function (n, c) { return n + c.leaders.length; }, 0) + ' leaders · single-player'; this.showScreen('title'); this.paintTitle(); this.showKeyArt(); if (AU.Audio) AU.Audio.play('menu'); this.refreshMusicBtn(); },
+    showTitle: function () { $('btn-continue').hidden = !this.hasSave(); var vl = $('version-line'); if (vl) vl.textContent = 'v0.3 · ' + AU.CIVS.length + ' empires · ' + AU.CIVS.reduce(function (n, c) { return n + c.leaders.length; }, 0) + ' leaders · single-player'; this.showScreen('title'); this.paintTitle(); this.showKeyArt(); if (AU.Audio) AU.Audio.play('menu'); this.refreshMusicBtn(); },
     refreshMusicBtn: function () { var b = $('btn-music'); if (b && AU.Audio) { b.textContent = AU.Audio.enabled ? '🎵' : '🔇'; b.title = AU.Audio.enabled ? 'Music on (tap to mute)' : 'Music off'; } },
     showKeyArt: function () { // the painted key art behind the title when it exists; the generated map stays as fallback
       var img = $('title-art'), logo = $('logo-img'); if (!img) return;
       var id = window.innerWidth >= window.innerHeight ? 'title_landscape' : 'title_portrait';
       var list = AU.ASSET_LIST || [];
       if (list.indexOf('assets/keyart/' + id + '.jpg') >= 0) { img.hidden = false; img.onload = function () { $('title').classList.add('has-art'); }; img.onerror = function () { img.hidden = true; $('title').classList.remove('has-art'); }; if (img.dataset.id !== id) { img.dataset.id = id; img.src = AU.Assets.url('keyart', id); } }
-      if (logo && list.indexOf('assets/logo/chibilization.png') >= 0) { logo.hidden = false; logo.onerror = function () { logo.hidden = true; $('title').classList.remove('has-logo'); }; logo.onload = function () { $('title').classList.add('has-logo'); }; if (!logo.src) logo.src = AU.Assets.url('logo', 'chibilization'); }
+      if (logo && list.indexOf('assets/logo/tiny_empires.png') >= 0) { logo.hidden = false; logo.onerror = function () { logo.hidden = true; $('title').classList.remove('has-logo'); }; logo.onload = function () { $('title').classList.add('has-logo'); }; if (!logo.src) logo.src = AU.Assets.url('logo', 'tiny_empires'); }
     },
     paintTitle: function () {
       try {
@@ -246,7 +246,7 @@
         reg.addEventListener('updatefound', function () {
           var nw = reg.installing; if (!nw) return;
           nw.addEventListener('statechange', function () {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast('A new version of Chibilization is ready. It loads the next time you open the game (or from Menu).', 6000); if (self.panel === 'menu') self.refreshPanel(); }
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast('A new version of Tiny Empires is ready. It loads the next time you open the game (or from Menu).', 6000); if (self.panel === 'menu') self.refreshPanel(); }
           });
         });
       }).catch(function () {});

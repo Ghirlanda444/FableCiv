@@ -1,5 +1,5 @@
 // Free Cities: independent single-city powers. No tokens: Ties grow from what you do on the map (caravans, garrisons,
-// shared religion, quests, gifts) and decay when ignored. Tiers: Acquaintance, Partner, Patron (the closest civilization),
+// shared religion, quests, gifts) and decay when ignored. Tiers: Acquaintance, Partner, Patron (the closest empire),
 // Kin. A Kin free city can join your empire peacefully through a Union.
 (function (AU) {
   var G = AU.G;
@@ -10,7 +10,7 @@
   CS.isMinor = function (civ) { return !!civ.minor; };
   CS.majors = function (g) { return g.civs.filter(function (c) { return !c.minor; }); };
   CS.minors = function (g) { return g.civs.filter(function (c) { return c.minor; }); };
-  // Called from G.newGame once the major civilizations and their starts exist. `starts` = unused start tiles.
+  // Called from G.newGame once the major empires and their starts exist. `starts` = unused start tiles.
   CS.setup = function (g, rng, starts, count) {
     var pool = AU.CITY_STATES.slice(); rng.shuffle(pool);
     var n = Math.min(count, starts.length, pool.length);
@@ -33,7 +33,7 @@
   CS.tiesOf = function (g, civ, minor) { return (minor.ties && minor.ties[civ.idx]) || 0; };
   CS.tierOf = function (n) { var t = 0; CS.TIERS.forEach(function (T, i) { if (n >= T.n) t = i + 1; }); return t; };
   CS.tierName = function (n) { var t = CS.tierOf(n); return t ? CS.TIERS[t - 1].name : 'Stranger'; };
-  // The Patron: the civilization with the highest Ties, at least 60, and no tie for first place.
+  // The Patron: the empire with the highest Ties, at least 60, and no tie for first place.
   CS.patron = function (g, minor) {
     var best = -1, bn = CS.TIERS[2].n - 1, tie = false;
     for (var k in minor.ties || {}) { var n = minor.ties[k]; if (n > bn) { bn = n; best = +k; tie = false; } else if (n === bn && best >= 0) tie = true; }
@@ -68,7 +68,7 @@
     g.civs.forEach(function (c) { c._fx = null; }); g.fxGen = (g.fxGen || 0) + 1;
     if (a.isPlayer) G.notify(g, a, { kind: 'war', text: 'Every free city has heard of your attack on ' + G.civData(d).name + ': all your Ties are lost for ' + CS.HOSTILE_TURNS + ' turns.', panel: 'diplomacy' });
   };
-  // What builds Ties this turn for one civilization with one free city.
+  // What builds Ties this turn for one empire with one free city.
   CS.sources = function (g, civ, minor) {
     var out = [], sets = G.civSettlements(g, minor.idx), s = sets[0]; if (!s) return out;
     var owned = {}; s.tiles.forEach(function (i) { owned[i] = true; });
@@ -81,7 +81,7 @@
     if (fx.tiesPerTurn) out.push({ id: 'ability', n: fx.tiesPerTurn, text: 'your people\'s way with free cities' });
     return out;
   };
-  // Effects a major civilization gets from its Ties: Partner, Patron (with the free city's special bonus), Kin.
+  // Effects a major empire gets from its Ties: Partner, Patron (with the free city's special bonus), Kin.
   CS.civFx = function (g, civ) {
     var out = [];
     if (civ.minor) return out;
@@ -164,7 +164,7 @@
     if (g.civs[u.civ].isPlayer) G.notify(g, g.civs[u.civ], { kind: 'diplomacy', text: 'Trade route open with ' + G.civData(m).name + ': +' + CS.routeIncome(g, u) + ' Gold and +3 Ties every turn while the caravan stays.', tile: u.tile });
     return true;
   };
-  // Called each turn for a civilization: route gold, and routes that no longer hold end.
+  // Called each turn for an empire: route gold, and routes that no longer hold end.
   CS.routesTurn = function (g, civ) {
     var gold = 0;
     CS.caravans(g, civ).forEach(function (u) {

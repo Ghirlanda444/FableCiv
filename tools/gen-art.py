@@ -49,7 +49,7 @@ def xai_request(path, body=None):
     key = os.environ.get('XAI_API_KEY')
     if not key: raise RuntimeError('XAI_API_KEY is not set')
     data = json.dumps(body).encode('utf-8') if body is not None else None
-    req = urllib.request.Request('https://api.x.ai/v1/' + path, data=data, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'Chibilization-art/1.0'})
+    req = urllib.request.Request('https://api.x.ai/v1/' + path, data=data, headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json', 'User-Agent': 'TinyEmpires-art/1.0'})
     try:
         with urllib.request.urlopen(req, timeout=180) as r:
             return json.loads(r.read().decode('utf-8'))

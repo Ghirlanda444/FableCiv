@@ -27,8 +27,8 @@
   var AGENDAS = {
     warlord:  { name: 'Iron Fist', desc: 'Respects a strong army and despises weakness. Likes you when your military rivals theirs.', line: 'Show me your strength. Weak neighbours are only future provinces.' },
     landgrab: { name: 'Manifest Destiny', desc: 'Wants room to grow. Dislikes anyone who settles close to their borders.', line: 'The land is wide, but not wide enough for two of us. Keep your distance.' },
-    scholar:  { name: 'Enlightened', desc: 'Admires civilizations ahead in science; looks down on backward ones.', line: 'Knowledge is the only empire that lasts. What have you discovered?' },
-    patron:   { name: 'Patron of the Arts', desc: 'Likes civilizations rich in culture and wonders; bored by those without.', line: 'A people is judged by what it builds. I hope to see wonders in your lands.' },
+    scholar:  { name: 'Enlightened', desc: 'Admires empires ahead in science; looks down on backward ones.', line: 'Knowledge is the only empire that lasts. What have you discovered?' },
+    patron:   { name: 'Patron of the Arts', desc: 'Likes empires rich in culture and wonders; bored by those without.', line: 'A people is judged by what it builds. I hope to see wonders in your lands.' },
     devout:   { name: 'True Devotion', desc: 'Likes those who follow their religion, resents those who spread another one into their settlements.', line: 'The heavens favour us. Walk with us in faith, and we shall be friends.' },
     merchant: { name: 'Peace and Plenty', desc: 'Values peace and trade. Dislikes warmongers and those who denounce others.', line: 'Prosperity needs peace. Trade with us and both our peoples will flourish.' }
   };
@@ -63,7 +63,7 @@
   };
 
   // ---------- meeting ----------
-  // Called whenever two civilizations meet for the first time (either direction). Returns true if it was new.
+  // Called whenever two empires meet for the first time (either direction). Returns true if it was new.
   D.onMeet = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b]; if (!ca || !cb || a === b) return false;
     var isNew = !ca.met[b] || !cb.met[a];
@@ -72,7 +72,7 @@
     [[ca, cb], [cb, ca]].forEach(function (pair) {
       var me = pair[0], them = pair[1];
       if (!them.minor || me.minor) return;
-      // the first civilization to find a city-state gets a free envoy there
+      // the first empire to find a city-state gets a free envoy there
       var first = !them.flags['firstMet'];
       if (first) them.flags['firstMet'] = me.idx;
       AU.CityStates.addTies(g, me, them, AU.CityStates.MEET_TIES * (first ? 2 : 1), 'first contact');
@@ -188,7 +188,7 @@
     CS.addTies(g, g.civs[a], m, CS.GIFT_TIES, 'gift');
     return { ok: true, text: G.civData(m).name + ' thanks you for the gold: +' + CS.GIFT_TIES + ' Ties (' + CS.tiesOf(g, g.civs[a], m) + ', ' + CS.tierName(CS.tiesOf(g, g.civs[a], m)) + ').' };
   };
-  // Quests: each free city asks for one thing; every civilization that does it earns Ties there.
+  // Quests: each free city asks for one thing; every empire that does it earns Ties there.
   var QUEST_BUILDINGS = ['granary', 'monument', 'shrine', 'library', 'barracks', 'market', 'walls', 'water_mill'];
   var QUEST_UNITS = ['warrior', 'slinger', 'archer', 'spearman', 'scout', 'galley', 'horseman', 'settler'];
   D.questOf = function (g, m) {

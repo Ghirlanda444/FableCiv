@@ -1,6 +1,6 @@
 // Mastery: a permanent bonus earned when a technology or civic is completed AFTER its Spark / Insight fired.
 // Meet the condition first, then finish the research, and the mastery is yours for the rest of the game.
-// Effects use the same keys as civilization abilities, civics and policies (merged into G.civFx).
+// Effects use the same keys as empire abilities, civics and policies (merged into G.civFx).
 (function (AU) {
   AU.MASTERY = { techs: {
     pottery: { desc: 'Granaries +1 Food', fx: { buildingBonus: { granary: { food: 1 } } } },

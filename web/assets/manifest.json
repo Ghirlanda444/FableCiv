@@ -9586,9 +9586,36 @@
  },
  {
   "kind": "logo",
-  "id": "chibilization",
-  "file": "logo/chibilization.png",
-  "name": "Logo",
+  "id": "tiny_empires_1",
+  "file": "logo/tiny_empires_1.png",
+  "name": "Logo candidate 1",
+  "size": "1024x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "logo",
+  "id": "tiny_empires_2",
+  "file": "logo/tiny_empires_2.png",
+  "name": "Logo candidate 2",
+  "size": "1024x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "logo",
+  "id": "tiny_empires_3",
+  "file": "logo/tiny_empires_3.png",
+  "name": "Logo candidate 3",
+  "size": "1024x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "logo",
+  "id": "tiny_empires_4",
+  "file": "logo/tiny_empires_4.png",
+  "name": "Logo candidate 4",
   "size": "1024x512",
   "nobg": false,
   "hires": false

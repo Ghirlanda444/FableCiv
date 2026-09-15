@@ -23,7 +23,7 @@ jobs:
       - name: Single-file HTML
         run: |
           node tools/asset-manifest.js
-          node tools/bundle-html.js Chibilization.html
+          node tools/bundle-html.js TinyEmpires.html
       - name: Prepare desktop app
         shell: bash
         run: |
@@ -44,12 +44,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: windows-latest
-          name: "Chibilization (latest Windows build)"
+          name: "Tiny Empires (latest Windows build)"
           prerelease: true
           files: |
-            desktop/dist/Chibilization-windows.exe
-            Chibilization.html
+            desktop/dist/TinyEmpires-windows.exe
+            TinyEmpires.html
           body: |
-            Chibilization-windows.exe: portable Windows app, no install (double-click; Windows SmartScreen may ask you to confirm the first time because it is unsigned).
-            Chibilization.html: the whole game in one file, opens in any modern browser on Windows, Mac or Linux.
+            TinyEmpires-windows.exe: portable Windows app, no install (double-click; Windows SmartScreen may ask you to confirm the first time because it is unsigned).
+            TinyEmpires.html: the whole game in one file, opens in any modern browser on Windows, Mac or Linux.
             Built from commit ${{ github.sha }}.

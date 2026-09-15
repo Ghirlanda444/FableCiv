@@ -1,4 +1,4 @@
-# Chibilization: proposal for a game that stands on its own
+# Tiny Empires: proposal for a game that stands on its own
 
 Goal: keep everything players love (a cute, deep, turn-based empire game) while making the game clearly its
 own thing next to the Civilization series. Legal exposure comes from expression (names, coined terms, copied
@@ -17,7 +17,7 @@ Three honest options:
 | Chibi Ages | low | Short, ownable, works as a brand and a YouTube channel name. Tagline: "The cute path of history". Recommended. |
 | Tiny Empires / Chibi Realms / Pocket Ages | low | Fine fallbacks if "Chibi Ages" is taken in the stores. |
 
-Recommendation: register **Chibi Ages** (or the first free one) and keep "The cute path of history" as the tagline.
+Decision: the game is called **Tiny Empires** (done). The playable peoples are called **empires**, never the C-word, and the in-game encyclopedia stays the **Chibipedia**. "The cute path of history" stays as the tagline.
 The logo art can be regenerated with the new word for about 10 cents.
 
 ## 2. Vocabulary already changed (done in this pass)

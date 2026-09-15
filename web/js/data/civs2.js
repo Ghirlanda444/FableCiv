@@ -1,4 +1,4 @@
-// Additional civilizations (the second batch of 20). Same format as civs.js; pushed into AU.CIVS.
+// Additional empires (the second batch of 20). Same format as civs.js; pushed into AU.CIVS.
 // Extra fields: difficulty ('easy' | 'medium' | 'hard') and bias (preferred start terrain, strongest first).
 (function (AU) {
   function L(id, name, title, abName, abDesc, fx, ai) { return { id: id, name: name, title: title, ability: { name: abName, desc: abDesc, fx: fx }, ai: ai }; }
@@ -25,18 +25,18 @@
       ] },
 
     { id: 'byzantium', name: 'Byzantium', adj: 'Byzantine', difficulty: 'medium', bias: ['coast', 'hills'], color: '#4a1259', color2: '#f5c542',
-      ability: { name: 'Caesaropapism', desc: '+15% Devotion. Settlements following your religion +1 Heritage. Units +3 Strength against civilizations of another religion.', fx: { yieldMult: { faith: 1.15 }, culturePerFollowerSettlement: 1, combatBonusVsOtherReligion: 3 } },
+      ability: { name: 'Caesaropapism', desc: '+15% Devotion. Settlements following your religion +1 Heritage. Units +3 Strength against empires of another religion.', fx: { yieldMult: { faith: 1.15 }, culturePerFollowerSettlement: 1, combatBonusVsOtherReligion: 3 } },
       uu: { id: 'dromon', name: 'Dromon', replaces: 'galley', strength: 4, attack: 5, movesAfterAttack: true, costMult: 1.15, desc: '+4 Strength, +5 when attacking (Greek fire), can move after attacking, costs 15% more' },
       ub: { id: 'great_church', name: 'Great Church', replaces: 'shrine', yields: { faith: 3, culture: 1, happiness: 1 }, desc: '+3 Devotion, +1 Heritage, +1 Happiness' },
       cities: ['Constantinople', 'Thessalonica', 'Nicaea', 'Antioch', 'Trebizond', 'Adrianople', 'Chalcedon', 'Nicomedia', 'Smyrna', 'Ancyra', 'Caesarea Mazaca', 'Iconium', 'Attaleia', 'Amorium', 'Dyrrachium', 'Ohrid', 'Mystras', 'Monemvasia', 'Naupaktos', 'Sinope', 'Amaseia', 'Sebasteia', 'Melitene', 'Edessa', 'Cherson', 'Bari', 'Kastoria', 'Serdica', 'Philippopolis', 'Varna', 'Mesembria', 'Herakleia', 'Cyzicus', 'Prusa', 'Dorylaion', 'Laodicea', 'Philadelphia', 'Side', 'Theodosiopolis', 'Selymbria'],
       leaders: [
         L('justinian', 'Justinian I', 'Basileus', 'Renovatio Imperii', 'Wonders cost 15% less and each yields +2 Heritage. Captured settlements keep all their buildings.', { wonderCostMult: 0.85, culturePerWonder: 2, captureKeepBuildings: true }, { aggression: 0.6, expansion: 0.6, science: 0.5, culture: 0.7 }),
         L('theodora', 'Theodora', 'Augusta', 'Purple Shroud', 'Your religion spreads 25% faster. +1 Heritage and +1 Happiness in every settlement.', { pressureMult: 1.25, culturePerSettlement: 1, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.5, science: 0.6, culture: 0.9 }),
-        L('basil', 'Basil II', 'Bulgar Slayer', 'Bulgaroktonos', 'Units +4 Strength against civilizations of another religion (stacks with Caesaropapism). Units heal +10 in your territory. +80 Gold per captured settlement.', { combatBonusVsOtherReligion: 4, healBonusHome: 10, captureGold: 80 }, { aggression: 0.9, expansion: 0.5, science: 0.3, culture: 0.4 })
+        L('basil', 'Basil II', 'Bulgar Slayer', 'Bulgaroktonos', 'Units +4 Strength against empires of another religion (stacks with Caesaropapism). Units heal +10 in your territory. +80 Gold per captured settlement.', { combatBonusVsOtherReligion: 4, healBonusHome: 10, captureGold: 80 }, { aggression: 0.9, expansion: 0.5, science: 0.3, culture: 0.4 })
       ] },
 
     { id: 'poland', name: 'Poland', adj: 'Polish', difficulty: 'medium', bias: ['plains', 'forest'], color: '#d63384', color2: '#ffffff',
-      ability: { name: 'Antemurale Christianitatis', desc: '+1 Devotion per settlement. Units +3 Strength against civilizations of another religion and +4 when defending inside your borders.', fx: { faithPerSettlement: 1, combatBonusVsOtherReligion: 3, homeDefenseBonus: 4 } },
+      ability: { name: 'Antemurale Christianitatis', desc: '+1 Devotion per settlement. Units +3 Strength against empires of another religion and +4 when defending inside your borders.', fx: { faithPerSettlement: 1, combatBonusVsOtherReligion: 3, homeDefenseBonus: 4 } },
       uu: { id: 'winged_hussar', name: 'Winged Hussar', replaces: 'cavalry', strength: 3, attack: 6, intimidate: 4, flank: 2, costMult: 1.2, desc: '+3 Strength, +6 when attacking, adjacent enemies fight at -4, +2 per adjacent friendly unit, costs 20% more' },
       ub: { id: 'sukiennice', name: 'Sukiennice', replaces: 'market', yields: { gold: 3, culture: 2 }, desc: '+3 Gold, +2 Heritage' },
       cities: ['Kraków', 'Warszawa', 'Gniezno', 'Poznań', 'Wrocław', 'Gdańsk', 'Lublin', 'Toruń', 'Łódź', 'Szczecin', 'Płock', 'Sandomierz', 'Kalisz', 'Radom', 'Częstochowa', 'Bydgoszcz', 'Białystok', 'Rzeszów', 'Kielce', 'Opole', 'Katowice', 'Olsztyn', 'Elbląg', 'Legnica', 'Przemyśl', 'Zamość', 'Tarnów', 'Włocławek', 'Łęczyca', 'Sieradz', 'Wieliczka', 'Malbork', 'Grudziądz', 'Chełmno', 'Koszalin', 'Słupsk', 'Gorzów', 'Zielona Góra', 'Nowy Sącz', 'Piotrków'],
@@ -63,7 +63,7 @@
       cities: ['Meroë', 'Napata', 'Kerma', 'Faras', 'Dongola', 'Soba', 'Qustul', 'Buhen', 'Semna', 'Sai', 'Sedeinga', 'Jebel Barkal', 'Kawa', 'Sanam', 'Tabo', 'Musawwarat', 'Naqa', 'Wad ban Naqa', 'Basa', 'Dangeil', 'Amara', 'Kurgus', 'Tombos', 'Kurru', 'Nuri', 'Argo', 'Qasr Ibrim', 'Ballana', 'Kalabsha', 'Dakka', 'Aniba', 'Mirgissa', 'Uronarti', 'Shalfak', 'Askut', 'Kumma', 'Debeira', 'Serra', 'Sesebi', 'Wadi Halfa'],
       leaders: [
         L('amanirenas', 'Amanirenas', 'Kandake', 'One-Eyed Queen', 'Units +6 Strength when defending inside your borders and +4 vs units from another continent. +15 Gold per kill.', { homeDefenseBonus: 6, combatBonusVsInvaders: 4, goldPerKill: 15 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.5 }),
-        L('piye', 'Piye', 'Pharaoh of Kush', 'Conqueror of Egypt', '+5 Devotion per kill. Captured settlements keep their buildings. Units +3 Strength against civilizations that share your religion.', { faithFromKills: 5, captureKeepBuildings: true, combatBonusOwnReligion: 3 }, { aggression: 0.75, expansion: 0.6, science: 0.4, culture: 0.5 })
+        L('piye', 'Piye', 'Pharaoh of Kush', 'Conqueror of Egypt', '+5 Devotion per kill. Captured settlements keep their buildings. Units +3 Strength against empires that share your religion.', { faithFromKills: 5, captureKeepBuildings: true, combatBonusOwnReligion: 3 }, { aggression: 0.75, expansion: 0.6, science: 0.4, culture: 0.5 })
       ] },
 
     { id: 'portugal', name: 'Portugal', adj: 'Portuguese', difficulty: 'easy', bias: ['coast'], color: '#7cb518', color2: '#c1121f',
@@ -87,13 +87,13 @@
       ] },
 
     { id: 'khmer', name: 'Khmer', adj: 'Khmer', difficulty: 'hard', bias: ['river', 'jungle'], color: '#a67c52', color2: '#0b3d2e',
-      ability: { name: 'Devaraja', desc: 'Settlements founded on a river +2 Devotion and +1 Heritage. Worked River tiles +1 Food. Units +2 Strength against civilizations that share your religion.', fx: { settlementSiteBonus: [{ when: 'river', yields: { faith: 2, culture: 1 } }], tileBonus: [{ when: 'river', yields: { food: 1 } }], combatBonusOwnReligion: 2 } },
+      ability: { name: 'Devaraja', desc: 'Settlements founded on a river +2 Devotion and +1 Heritage. Worked River tiles +1 Food. Units +2 Strength against empires that share your religion.', fx: { settlementSiteBonus: [{ when: 'river', yields: { faith: 2, culture: 1 } }], tileBonus: [{ when: 'river', yields: { food: 1 } }], combatBonusOwnReligion: 2 } },
       uu: { id: 'domrey', name: 'Domrey', replaces: 'catapult', strength: 6, ranged: 3, moves: 1, costMult: 1.2, desc: '+6 Strength, +3 Ranged Strength, +1 Movement (a ballista carried on an elephant), costs 20% more' },
       ui: { id: 'baray', name: 'Baray', icon: '💧', replaces: 'farm', when: 'river', yields: { food: 2, faith: 1 }, desc: 'river farms become reservoirs: +2 Food, +1 Devotion' },
       cities: ['Yasodharapura', 'Hariharalaya', 'Indrapura', 'Isanapura', 'Lingapura', 'Banteay Chhmar', 'Preah Khan', 'Phimai', 'Lavo', 'Vyadhapura', 'Angkor Borei', 'Oudong', 'Longvek', 'Phnom Penh', 'Battambang', 'Siem Reap', 'Kampot', 'Kratie', 'Stung Treng', 'Kampong Cham', 'Kampong Thom', 'Takeo', 'Prey Veng', 'Svay Rieng', 'Pursat', 'Kampong Chhnang', 'Sisophon', 'Poipet', 'Sihanoukville', 'Koh Kong', 'Pailin', 'Kep', 'Preah Vihear', 'Beng Mealea', 'Banteay Srei', 'Wat Phu', 'Sdok Kok Thom', 'Phanom Rung', 'Muang Tam', 'Bakong'],
       leaders: [
         L('jayavarman', 'Jayavarman VII', 'Devaraja', 'Bayon', 'Each Wonder yields +2 Devotion. Wonders cost 10% less. +1 Happiness in every settlement.', { faithPerWonder: 2, wonderCostMult: 0.9, happinessBonus: 1 }, { aggression: 0.4, expansion: 0.5, science: 0.5, culture: 0.8 }),
-        L('suryavarman', 'Suryavarman II', 'Devaraja', 'Angkor Wat', 'Your religion spreads 30% faster. Settlements following your religion +1 Heritage. Units +3 Strength against civilizations that share your religion (stacks with Devaraja).', { pressureMult: 1.3, culturePerFollowerSettlement: 1, combatBonusOwnReligion: 3 }, { aggression: 0.7, expansion: 0.6, science: 0.4, culture: 0.6 })
+        L('suryavarman', 'Suryavarman II', 'Devaraja', 'Angkor Wat', 'Your religion spreads 30% faster. Settlements following your religion +1 Heritage. Units +3 Strength against empires that share your religion (stacks with Devaraja).', { pressureMult: 1.3, culturePerFollowerSettlement: 1, combatBonusOwnReligion: 3 }, { aggression: 0.7, expansion: 0.6, science: 0.4, culture: 0.6 })
       ] },
 
     { id: 'kongo', name: 'Kongo', adj: 'Kongolese', difficulty: 'hard', bias: ['jungle', 'river'], color: '#f4a261', color2: '#264653',

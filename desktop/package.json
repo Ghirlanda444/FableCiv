@@ -1,8 +1,8 @@
 {
-  "name": "chibilization",
-  "productName": "Chibilization",
+  "name": "tiny-empires",
+  "productName": "Tiny Empires",
   "version": "0.3.0",
-  "description": "Chibilization, a cute Civilization-style 4X game",
+  "description": "Tiny Empires, a cute chibi empire-building strategy game",
   "main": "main.js",
   "private": true,
   "scripts": {
@@ -16,12 +16,12 @@
   },
   "build": {
     "appId": "com.ghirlanda.fableciv",
-    "productName": "Chibilization",
-    "artifactName": "Chibilization-${os}-${arch}.${ext}",
+    "productName": "Tiny Empires",
+    "artifactName": "TinyEmpires-${os}-${arch}.${ext}",
     "directories": { "output": "dist" },
     "files": ["main.js", "web/**/*"],
     "win": { "target": ["portable"], "icon": "icon.ico" },
     "linux": { "target": ["AppImage"], "category": "Game" },
-    "portable": { "artifactName": "Chibilization-windows.exe" }
+    "portable": { "artifactName": "TinyEmpires-windows.exe" }
   }
 }

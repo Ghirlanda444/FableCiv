@@ -29,7 +29,7 @@
   };
   // Bonuses: +1 Heritage in the capital per piece, +1 Happiness empire-wide per 4 pieces, tourism per piece.
   P.fx = function (civ) { var n = P.count(civ); return { capitalCulture: n, happiness: Math.floor(n / 4), tourism: n }; };
-  // Called once per turn per civilization (from G.processCiv).
+  // Called once per turn per empire (from G.processCiv).
   P.turn = function (g, civ) {
     if (civ.minor || !civ.alive || !civ.capital) return;
     var st = P.state(civ);

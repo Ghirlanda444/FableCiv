@@ -63,7 +63,7 @@ require('fs').mkdirSync(out, { recursive: true });
   console.log('turn 30 state:', JSON.stringify(state));
   // in-app confirm dialog: disband a unit
   const before = await page.evaluate(() => AU.G.civUnits(AU.App.g, 0).length);
-  // an audience (leader screen) may be open after meeting a civilization: close it like a player would
+  // an audience (leader screen) may be open after meeting an empire: close it like a player would
   await page.evaluate(() => { if (AU.DiploUI && AU.DiploUI.state) AU.DiploUI.close(); AU.App.g.diploQueue = []; document.getElementById('leader').hidden = true; document.getElementById('quote').hidden = true; });
   await page.evaluate(() => { const g = AU.App.g; const u = AU.G.civUnits(g, 0)[0]; AU.App.selectUnit(u); });
   await page.click('[data-action="disband"]');

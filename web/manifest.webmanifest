@@ -1,12 +1,12 @@
 {
-  "name": "Chibilization",
-  "short_name": "Chibilization",
+  "name": "Tiny Empires",
+  "short_name": "Tiny Empires",
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "any",
   "background_color": "#0b0e14",
   "theme_color": "#0b0e14",
-  "description": "A cute chibi strategy game: 40 civilizations, religion, free cities, towns and cities, eight eras.",
+  "description": "A cute chibi strategy game: 40 empires, religion, free cities, towns and cities, eight eras.",
   "icons": [{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
 }

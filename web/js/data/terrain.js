@@ -96,7 +96,7 @@
     pangaea:     { name: 'Pangaea',     desc: 'One giant supercontinent with a few small islands.' },
     fractal:     { name: 'Fractal',     desc: 'Irregular, unpredictable coastlines and land masses.' },
     archipelago: { name: 'Archipelago', desc: 'Many small and medium islands. Sailing matters.' },
-    islands:     { name: 'Islands',     desc: 'A scatter of medium islands, each big enough for a civilization.' },
+    islands:     { name: 'Islands',     desc: 'A scatter of medium islands, each big enough for an empire.' },
     donut:       { name: 'Donut',       desc: 'A ring of land around a central inland sea.' },
     inland_sea:  { name: 'Inland Sea',  desc: 'Land all around the map edge, a large sea in the middle.' },
     terra:       { name: 'Terra',       desc: 'Everyone starts on the old world; a rich new world waits across the ocean.' }

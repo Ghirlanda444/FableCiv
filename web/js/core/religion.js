@@ -43,7 +43,7 @@
     G.log(g, G.civData(civ).name + ' founded the pantheon ' + AU.BELIEF_BY_ID[id].name + '.', civ.idx);
     return true;
   };
-  // The Great Prophet of a civilization standing inside one of its settlements (religions are founded by prophets, not bought).
+  // The Great Prophet of an empire standing inside one of its settlements (religions are founded by prophets, not bought).
   R.prophetFor = function (g, civ) { var out = null; G.civUnits(g, civ.idx).forEach(function (u) { if (out) return; if (AU.UNITS[u.type].great === 'prophet') { var s = G.settlementAt(g, u.tile); if (s && s.civ === civ.idx) out = u; } }); return out; };
   R.canFound = function (g, civ) { return civ.alive && !civ.religion && !!civ.pantheon && !!R.prophetFor(g, civ) && R.religionsFounded(g) < R.maxReligions(g); };
   R.availableNames = function (g) { var taken = {}; for (var id in g.religions) taken[g.religions[id].nameId] = 1; return AU.RELIGION_NAMES.filter(function (n) { return !taken[n.id]; }); };

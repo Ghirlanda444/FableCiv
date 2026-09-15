@@ -1,7 +1,7 @@
 // Service worker: makes the hosted game installable and playable offline, and picks up new versions automatically.
 // VERSION is stamped by the deploy workflow (commit id); a new version installs a fresh cache and the page reloads.
 var VERSION = '__VERSION__';
-var CACHE = 'chibilization-' + VERSION;
+var CACHE = 'tiny-empires-' + VERSION;
 var CORE = ['./', './index.html', './style.css', './manifest.webmanifest', './icon-512.png', './lib/three.min.js',
   './js/core/rng.js', './js/ui/assets.js', './js/core/hex.js', './js/data/terrain.js', './js/data/civs.js', './js/data/civs2.js', './js/data/religion.js', './js/data/citystates.js', './js/data/cultures.js',
   './js/data/units.js', './js/data/buildings.js', './js/data/techs.js', './js/data/quotes.js', './js/core/mapgen.js', './js/core/game.js', './js/core/units.js', './js/core/religion.js', './js/core/citystates.js', './js/core/ai.js',

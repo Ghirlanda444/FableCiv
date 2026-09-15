@@ -1,4 +1,4 @@
-// One bold, instantly recognisable symbol per civilization for the round emblem badges.
+// One bold, instantly recognisable symbol per empire for the round emblem badges.
 module.exports = {
   rome: 'a golden Roman aquila eagle with spread wings above a laurel wreath',
   japan: 'a red rising sun with white rays behind a red torii gate',

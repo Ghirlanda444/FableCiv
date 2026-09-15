@@ -34,7 +34,7 @@
     B('reliquaries', 'Reliquaries', 'follower', 'Settlements of this religion generate +2 Fame and +1 Gold.', { tourismPerFollower: 2, goldPerSettlement: 1 }),
     B('tithe', 'Tithe', 'follower', '+2 Gold per settlement following this religion.', { goldPerSettlement: 2 })
   ];
-  // Founder beliefs: benefit the civilization that founded the religion, scaling with settlements following it anywhere.
+  // Founder beliefs: benefit the empire that founded the religion, scaling with settlements following it anywhere.
   AU.FOUNDER_BELIEFS = [
     B('church_property', 'Church Property', 'founder', '+2 Gold per settlement in the world following this religion.', { goldPerFollowerSettlement: 2 }),
     B('world_church', 'World Church', 'founder', '+1 Heritage per settlement in the world following this religion.', { culturePerFollowerSettlement: 1 }),
@@ -62,7 +62,7 @@
     { id: 'sikhism', name: 'Sikhism', icon: '🪯' }, { id: 'taoism', name: 'Taoism', icon: '☯️' }, { id: 'zoroastrianism', name: 'Zoroastrianism', icon: '🔥' },
     { id: 'tengriism', name: 'Tengriism', icon: '🌤️' }, { id: 'norse', name: 'Old Norse Devotion', icon: '🔨' }, { id: 'ancestor_worship', name: 'Ancestor Worship', icon: '🏺' }
   ];
-  // Preferred religion names per civilization (first free one is used by the AI).
+  // Preferred religion names per empire (first free one is used by the AI).
   AU.RELIGION_PREF = { india: 'hinduism', china: 'confucianism', japan: 'shinto', arabia: 'islam', ottoman: 'islam', persia: 'zoroastrianism', mongolia: 'tengriism', norway: 'norse', russia: 'orthodoxy', byzantium: 'orthodoxy', rome: 'catholicism', spain: 'catholicism', france: 'catholicism', poland: 'catholicism', portugal: 'catholicism', germany: 'protestantism', england: 'protestantism', netherlands: 'protestantism', korea: 'buddhism', khmer: 'buddhism', vietnam: 'buddhism', babylon: 'ancestor_worship', mali: 'islam', ethiopia: 'orthodoxy', nubia: 'ancestor_worship', egypt: 'ancestor_worship' };
   // Devout units: bought with Devotion only (no combat; captured units are lost).
   AU.RELIGIOUS_UNITS = {

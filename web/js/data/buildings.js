@@ -41,7 +41,7 @@
     spaceport:    { name: 'Spaceport',     cost: 900, yields: { science: 4 }, tech: 'rocketry', requires: 'airport', desc: 'Required for space projects.' }
   };
 
-  // National wonders: each civilization can build one of each, usually after owning several of a building.
+  // National wonders: each empire can build one of each, usually after owning several of a building.
   AU.NATIONAL = {
     national_epic:   { name: 'National Epic',      cost: 200, civic: 'drama_poetry', requiresCount: ['monument', 2], yields: { culture: 4 }, desc: 'Units built here start with a level of experience.', fx: { unitStrength: 2 } },
     heroic_epic:     { name: 'Heroic Epic',        cost: 260, civic: 'military_training', requiresCount: ['barracks', 2], yields: { culture: 2, production: 2 }, desc: '+15% unit production here; all units +1 Strength.', fx: { pctUnitProduction: 15, empireLandBonus: 1 } },

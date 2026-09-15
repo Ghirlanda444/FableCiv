@@ -4,7 +4,7 @@
   AU.ERAS = ['Ancient', 'Classical', 'Medieval', 'Renaissance', 'Industrial', 'Modern', 'Atomic', 'Information'];
   var ERA_COST = [30, 130, 300, 560, 860, 1250, 1750, 2400];
 
-  // Condition shorthand: [type, arg, n]. Evaluated every turn against the civilization's state or event flags.
+  // Condition shorthand: [type, arg, n]. Evaluated every turn against the empire's state or event flags.
   function T(id, name, era, step, pre, eureka, extra) {
     var t = { id: id, name: name, era: era, cost: Math.round(ERA_COST[era] * (1 + step * 0.09)), pre: pre || [] };
     if (eureka) { t.eureka = { desc: eureka[0], cond: eureka[1] }; }
@@ -22,7 +22,7 @@
     T('mysticism', 'Omens', 0, 2, [], ['Build a Monument', ['building', 'monument', 1]]),
     T('irrigation', 'Water Channels', 0, 3, ['pottery'], ['Work 3 Farms', ['improvement', 'farm', 3]]),
     T('archery', 'Bowcraft', 0, 3, ['hunting'], ['Kill a unit with a Sling Hunter', ['event', 'killSlinger']]),
-    T('writing', 'Script', 0, 4, ['pottery'], ['Meet another civilization', ['met', 1]]),
+    T('writing', 'Script', 0, 4, ['pottery'], ['Meet another empire', ['met', 1]]),
     T('masonry', 'Stonework', 0, 5, ['mining'], ['Work a Quarry or own 2 Hills tiles', ['tiles', 'hills', 2]]),
     T('bronze_working', 'Bronze Casting', 0, 5, ['mining'], ['Kill 2 units', ['kills', 2]]),
     T('wheel', 'Cartwright', 0, 6, ['mining', 'animal_husbandry'], ['Work Horses or Cattle', ['resource', 'horses|cattle', 1]]),
@@ -78,7 +78,7 @@
     T('economics', 'Free Markets', 4, 3, ['scientific_theory', 'joint_stock'], ['Own 2 Banks', ['building', 'bank', 2]]),
     T('rifling', 'Rifled Barrels', 4, 4, ['ballistics', 'military_science'], ['Own 3 Musketmen', ['unit', 'musketman', 3]]),
     T('railroad', 'Railways', 4, 5, ['steam_power', 'fortification'], ['Own 2 Factories', ['building', 'factory', 2]], { fx: { homeMoves: 1 }, desc: 'Units +1 extra Movement inside your borders.' }),
-    T('telegraph', 'Telegraphy', 4, 5, ['scientific_theory', 'railroad'], ['Meet 4 civilizations', ['met', 4]]),
+    T('telegraph', 'Telegraphy', 4, 5, ['scientific_theory', 'railroad'], ['Meet 4 empires', ['met', 4]]),
     T('mass_agriculture', 'Tractors', 4, 6, ['sanitation', 'industrialization'], ['Own a settlement with 15 population', ['pop', 15]], { fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }, { when: 'pasture', yields: { food: 1 } }] }, desc: 'Farms and Pastures +1 Food.' }),
     T('explosives', 'Dynamite', 4, 7, ['rifling', 'railroad'], ['Own 2 Field Cannons', ['unit', 'field_cannon', 2]], { fx: { classBonus: { siege: 3 } }, desc: 'Siege units +3 Strength.' }),
     T('refining', 'Oil Refining', 4, 8, ['economics', 'steam_power'], ['Own 2 Power-hungry Factories… own 3 Factories', ['building', 'factory', 3]]),
@@ -140,14 +140,14 @@
   AU.CIVICS = [
     C('code_of_laws', "First Laws", 0, 0, [], null, { unlocks: 'Autocracy, Oligarchy', cards: ['discipline', 'urban_planning'] }),
     C('craftsmanship', "Artisans", 0, 1, ['code_of_laws'], ['Work 3 tiles with improvements', ['improvedTiles', 3]], { cards: ['agoge', 'ilkum'] }),
-    C('foreign_trade', "Caravans", 0, 1, ['code_of_laws'], ['Meet another civilization', ['met', 1]], { cards: ['caravansary'], fx: { goldPerSettlement: 1 } }),
+    C('foreign_trade', "Caravans", 0, 1, ['code_of_laws'], ['Meet another empire', ['met', 1]], { cards: ['caravansary'], fx: { goldPerSettlement: 1 } }),
     C('military_tradition', "War Bands", 0, 2, ['craftsmanship'], ['Disperse an independent camp', ['event', 'camp']], { cards: ['survey', 'conscription'] }),
     C('state_workforce', "Corvée Labor", 0, 3, ['craftsmanship'], ['Build a wonder or a City hall… upgrade a Town into a City', ['cities', 2]], { cards: ['corvee'] }),
     C('early_empire', "First Kingdoms", 0, 3, ['foreign_trade'], ['Grow to 6 population in total', ['totalPop', 6]], { cards: ['colonization'] }),
     C('rituals', "Sacred Rites", 0, 4, ['foreign_trade'], ['Build a Shrine', ['building', 'shrine', 1]], { fx: { happinessBonus: 1 }, cards: ['god_king'] }),
     C('oral_tradition', "Storytellers", 0, 5, ['rituals'], ['Own 2 Monuments', ['building', 'monument', 2]], { fx: { culturePerSettlement: 1 } }),
     // Classical
-    C('political_philosophy', "Statecraft", 1, 0, ['state_workforce', 'early_empire'], ['Meet 3 civilizations', ['met', 3]], { unlocks: 'Classical Republic' }),
+    C('political_philosophy', "Statecraft", 1, 0, ['state_workforce', 'early_empire'], ['Meet 3 empires', ['met', 3]], { unlocks: 'Classical Republic' }),
     C('games_recreation', "Festivals", 1, 0, ['state_workforce'], ['Research Construction', ['tech', 'construction']], { fx: { happinessBonus: 1 }, cards: ['bread_circuses'] }),
     C('drama_poetry', "Theater", 1, 1, ['early_empire', 'oral_tradition'], ['Build a wonder', ['wonders', 1]], { cards: ['inspiration_card'] }),
     C('military_training', "Drill Yards", 1, 2, ['military_tradition', 'games_recreation'], ['Build a Barracks', ['building', 'barracks', 1]], { cards: ['maneuver', 'strategos'] }),
@@ -166,7 +166,7 @@
     C('medieval_faires', "Market Fairs", 2, 5, ['guilds'], ['Work 4 Luxury resources', ['resourcekind', 'luxury', 4]], { fx: { luxuryHappinessBonus: 0 , yieldMult: { gold: 1.05 } }, cards: ['merchant_confederation'] }),
     // Renaissance
     C('humanism', "Humanities", 3, 0, ['guilds', 'medieval_faires'], ['Build 3 wonders… build a Museum', ['building', 'museum', 1]], { fx: { yieldMult: { culture: 1.05 } }, cards: ['patronage'] }),
-    C('diplomatic_service', "Embassies", 3, 0, ['guilds', 'exploration'], ['Make peace… be at peace with 3 met civilizations', ['peaceWith', 3]], { fx: { warWearinessMult: 0.75 }, cards: ['charismatic_leader'] }),
+    C('diplomatic_service', "Embassies", 3, 0, ['guilds', 'exploration'], ['Make peace… be at peace with 3 met empires', ['peaceWith', 3]], { fx: { warWearinessMult: 0.75 }, cards: ['charismatic_leader'] }),
     C('reformed_church', "Reformation", 3, 1, ['divine_right'], ['Own 4 Shrines', ['building', 'shrine', 4]], { fx: { happinessBonus: 1 }, cards: ['religious_orders'] }),
     C('mercantilism', "Trade Monopolies", 3, 2, ['medieval_faires', 'diplomatic_service'], ['Own 3 Banks… own 2 Banks', ['building', 'bank', 2]], { fx: { yieldMult: { gold: 1.05 } }, cards: ['free_market'] }),
     C('enlightenment', "Age of Reason", 3, 3, ['humanism', 'diplomatic_service'], ['Own 3 Universities', ['building', 'university', 3]], { fx: { yieldMult: { science: 1.05 } }, cards: ['rationalism', 'liberalism'] }),
@@ -196,7 +196,7 @@
     C('rapid_deployment', "Airlift Doctrine", 6, 1, ['cold_war', 'mobilization'], ['Own 3 Airports… own 2 Airports', ['building', 'airport', 2]], { fx: { classMoves: { melee: 1, ranged: 1 } }, cards: ['lightning_warfare'] }),
     C('space_race', "Moonshot", 6, 2, ['cold_war', 'class_struggle'], ['Research Rocketry', ['tech', 'rocketry']], { fx: { projectCostMult: 0.8 }, cards: ['space_program'] }),
     C('environmentalism', "Green Movement", 6, 3, ['conservation', 'professional_sports'], ['Own 15 Forest tiles', ['feature', 'forest', 15]], { fx: { happinessBonus: 1 }, cards: ['green_economy'] }),
-    C('globalization', "World Markets", 6, 4, ['space_race', 'suffrage'], ['Meet every other civilization', ['metAll', 1]], { fx: { yieldMult: { gold: 1.1, science: 1.05 } }, cards: ['multinationals'] }),
+    C('globalization', "World Markets", 6, 4, ['space_race', 'suffrage'], ['Meet every other empire', ['metAll', 1]], { fx: { yieldMult: { gold: 1.1, science: 1.05 } }, cards: ['multinationals'] }),
     C('social_media', "Viral Heritage", 6, 5, ['professional_sports', 'globalization'], ['Research The Internet', ['tech', 'the_internet']], { fx: { yieldMult: { culture: 1.1 } }, cards: ['online_communities'] }),
     // Information
     C('digital_democracy', "E-Democracy", 7, 0, ['social_media', 'globalization'], ['Research Artificial Intelligence… research Computers', ['tech', 'computers']], { fx: { happinessBonus: 1, yieldMult: { science: 1.05 } }, cards: ['open_data'] }),

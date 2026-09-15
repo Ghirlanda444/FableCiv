@@ -6,7 +6,7 @@
   var CM = AU.CityMap = { radius: 3 };
   var YI = { food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' };
   function yTxt(y) { return AU.YIELD_KEYS.filter(function (k) { return y[k]; }).map(function (k) { return y[k] + YI[k]; }).join(' ') || '—'; }
-  // Plain-language explanation of how a tile gets improved (no Civilization knowledge assumed).
+  // Plain-language explanation of how a tile gets improved (no Empire knowledge assumed).
   CM.improvementWhy = function (g, t, civ) {
     if (t.natural) return 'A natural wonder: it cannot be improved, but it already gives great yields.';
     if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' is here but your people cannot use it until you research ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return 'A citizen here builds a ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
