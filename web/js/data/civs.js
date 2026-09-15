@@ -23,7 +23,7 @@
       leaders: [
         L('tokugawa', 'Tokugawa Ieyasu', 'Shogun', 'Sakoku', '+5 Strength for units inside your borders and +3 settlement defense. Towns convert Production to Gold at 125%.', { combatBonusHome: 5, cityDefense: 3, townGoldMult: 1.25 }, { aggression: 0.3, expansion: 0.5, science: 0.6, culture: 0.6 }),
         L('hojo', 'Hojo Tokimune', 'Shikken', 'Kamikaze', 'Naval units +6 Strength and +1 Movement. Units on Coast tiles +5 Strength.', { navalBonus: 6, navalMoves: 1, combatBonusCoast: 5 }, { aggression: 0.5, expansion: 0.5, science: 0.5, culture: 0.5 }),
-        L('meiji', 'Emperor Meiji', 'Emperor', 'Restoration', 'Technologies cost 10% less. Every building yields +1 Science in Cities.', { techCostMult: 0.9, cityBuildingScience: 1 }, { aggression: 0.35, expansion: 0.5, science: 0.9, culture: 0.6 })
+        L('meiji', 'Emperor Meiji', 'Emperor', 'Restoration', 'Every Eureka also grants 20% of the technology\'s cost in Science. Every building yields +1 Science in Cities.', { eurekaDiscount: 0.2, cityBuildingScience: 1 }, { aggression: 0.35, expansion: 0.5, science: 0.9, culture: 0.6 })
       ] },
 
     { id: 'china', name: 'China', adj: 'Chinese', difficulty: 'easy', bias: ['river', 'grassland'], color: '#2e8b57', color2: '#f7e04b',
@@ -198,7 +198,7 @@
       ub: { id: 'odeon', name: 'Odeon', replaces: 'amphitheater', yields: { culture: 2, science: 1 }, desc: '+2 Culture, +1 Science' },
       cities: ['Athens', 'Sparta', 'Corinth', 'Thebes', 'Argos', 'Delphi', 'Rhodes', 'Ephesus', 'Miletus', 'Knossos', 'Olympia', 'Pella', 'Megara', 'Eretria', 'Chalcis', 'Marathon', 'Eleusis', 'Piraeus', 'Mycenae', 'Tiryns', 'Epidaurus', 'Mantinea', 'Tegea', 'Messene', 'Pylos', 'Elis', 'Patras', 'Naupactus', 'Delos', 'Naxos', 'Samos', 'Chios', 'Mytilene', 'Smyrna', 'Phocaea', 'Byzantium', 'Larissa', 'Amphipolis', 'Thessaloniki', 'Olynthus'],
       leaders: [
-        L('pericles', 'Pericles', 'Strategos', 'Golden Age of Athens', 'Each Wonder yields +2 Science and +2 Culture; Amphitheaters +2 Culture.', { sciencePerWonder: 2, culturePerWonder: 2, buildingBonus: { amphitheater: { culture: 2 } } }, { aggression: 0.3, expansion: 0.5, science: 0.7, culture: 0.9 }),
+        L('pericles', 'Pericles', 'Strategos', 'Golden Age of Athens', 'Every Inspiration also grants 20% of the civic\'s cost in Culture. Each Wonder yields +2 Science and +2 Culture.', { inspirationDiscount: 0.2, sciencePerWonder: 2, culturePerWonder: 2 }, { aggression: 0.3, expansion: 0.5, science: 0.7, culture: 0.9 }),
         L('leonidas', 'Leonidas', 'King', 'Thermopylae', 'Anti-cavalry +6 Strength; +10 Strength when defending on Hills; units start with a level.', { classBonus: { antcav: 6 }, hillsDefenseBonus: 10, unitsStartXp: 5 }, { aggression: 0.7, expansion: 0.4, science: 0.3, culture: 0.4 }),
         L('alexander', 'Alexander', 'King of Macedon', 'To the Ends of the World', 'No war weariness. Capturing a settlement grants a free technology boost of 60 Science; cavalry +4 Strength.', { warWearinessMult: 0, captureScience: 60, cavalryBonus: 4 }, { aggression: 0.95, expansion: 0.6, science: 0.5, culture: 0.4 })
       ] },

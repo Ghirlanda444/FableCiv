@@ -812,17 +812,19 @@
       if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;
       if (!G.condMet(g, civ, t.eureka.cond)) return;
       civ.boosts[t.id] = g.turn;
-      var gain = Math.round(G.techCost(g, civ, t) * 0.4);
-      civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
-      G.notify(g, civ, { kind: 'tech', text: 'Eureka! ' + t.name + ' boosted (+' + gain + ' Science).', panel: 'tech' });
+      var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Science from a Eureka
+      if (gain) civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
+      var mt = G.masteryOf(t.id, false);
+      G.notify(g, civ, { kind: 'tech', text: 'Eureka! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Science' : '') + '.', panel: 'tech' });
     });
     AU.CIVICS.forEach(function (c) {
       if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
       if (!G.condMet(g, civ, c.inspiration.cond)) return;
       civ.boosts['c:' + c.id] = g.turn;
-      var gain2 = Math.round(G.civicCost(g, civ, c) * 0.4);
-      civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
-      G.notify(g, civ, { kind: 'civic', text: 'Inspiration! ' + c.name + ' boosted (+' + gain2 + ' Culture).', panel: 'civics' });
+      var disc2 = G.civFx(g, civ).inspirationDiscount || 0, gain2 = disc2 ? Math.round(G.civicCost(g, civ, c) * disc2) : 0;
+      if (gain2) civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
+      var mc = G.masteryOf(c.id, true);
+      G.notify(g, civ, { kind: 'civic', text: 'Inspiration! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Culture' : '') + '.', panel: 'civics' });
     });
   };
 
@@ -981,6 +983,19 @@
     G.claimTile(g, s, tileIdx); s.pendingGrowth--;
     return true;
   };
+  // A settlement with Walls (or a Castle) bombards the strongest enemy military unit within 2 tiles once per turn.
+  G.settlementStrike = function (g, s) {
+    if (!G.hasBuilding(s, 'walls') && !G.hasBuilding(s, 'castle')) return null;
+    var U = AU.U, civ = g.civs[s.civ], center = g.tiles[s.tile], best = null, bs = -1;
+    for (var id in g.units) { var v = g.units[id]; if (v.civ === s.civ || !G.isMilitary(v) || !G.atWar(g, s.civ, v.civ)) continue; if (G.dist(center, g.tiles[v.tile]) > 2) continue; var st = U.strength(g, v, { attacking: false }); if (st > bs) { bs = st; best = v; } }
+    if (!best) return null;
+    var dmg = Math.round(U.damage(g, G.settlementStrength(g, s) - bs) * 0.6);
+    best.hp -= dmg; var vciv = best.civ >= 0 ? g.civs[best.civ] : null;
+    if (best.hp <= 0) { G.removeUnit(g, best); if (vciv) G.notify(g, vciv, { kind: 'loss', text: 'Your ' + best.name + ' was destroyed by the walls of ' + s.name + '.', tile: best.tile }); G.log(g, 'The walls of ' + s.name + ' destroyed a ' + best.name + '.', s.civ); }
+    else if (vciv && vciv.isPlayer) G.notify(g, vciv, { kind: 'attack', text: 'The walls of ' + s.name + ' hit your ' + best.name + ' for ' + dmg + '.', tile: best.tile });
+    if (civ.isPlayer) G.notify(g, civ, { kind: 'attack', text: s.name + '\'s walls hit an enemy ' + best.name + ' for ' + dmg + '.', tile: best.tile });
+    return dmg;
+  };
   G.settlementMaxHp = function (g, s) { var hp = 100; if (G.hasBuilding(s, 'walls')) hp += 100; if (G.hasBuilding(s, 'castle')) hp += 100; return hp; };
   G.settlementStrength = function (g, s) {
     var civ = g.civs[s.civ], fx = G.civFx(g, civ);
@@ -1012,6 +1027,7 @@
       if (sent > 0) { var c = G.nearestCity(g, s); if (c) foodFor[c.id] = (foodFor[c.id] || 0) + sent; }
     });
     sets.filter(function (s) { return s.isCity || !s.specialization; }).forEach(function (s) { G.processSettlement(g, s, foodFor[s.id] || 0); });
+    sets.forEach(function (s) { G.settlementStrike(g, s); });
     // upkeep
     civ.gold -= G.unitUpkeep(g, civ);
     if (civ.gold < 0) {

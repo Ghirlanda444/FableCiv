@@ -161,7 +161,7 @@
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
     var nMast = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') !== 0; }).length;
-    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Eureka</b>: meet the condition before you finish the technology and it is 40% cheaper. ⭐ <b>Mastery</b>: finish a technology after its Eureka fired and you keep its permanent bonus. Finish it without the Eureka and the mastery is lost.</p>';
+    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Eureka</b>: an in-game condition for each technology. ⭐ <b>Mastery</b>: finish a technology after its Eureka fired and you keep its permanent bonus. Finish it without the Eureka and the mastery is lost. (Some leaders, like Meiji, also gain Science from Eurekas.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="tech">🌳 View the full technology tree</button><br><br>';
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
@@ -201,7 +201,7 @@
     if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
     var nMastC = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') === 0; }).length;
-    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Inspiration</b>: meet the condition before you finish the civic and it is 40% cheaper. ⭐ <b>Mastery</b>: finish a civic after its Inspiration fired and you keep its permanent bonus.</p>';
+    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Inspiration</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Inspiration fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Culture from Inspirations.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {

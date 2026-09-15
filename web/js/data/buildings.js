@@ -6,7 +6,7 @@
     granary:      { name: 'Granary',       cost: 65,  yields: { food: 2 }, tech: 'pottery' },
     shrine:       { name: 'Shrine',        cost: 70,  yields: { faith: 2, happiness: 1 }, tech: 'mysticism' },
     temple:       { name: 'Temple',        cost: 160, yields: { faith: 4, culture: 1, happiness: 1 }, civic: 'mysticism_civic', requires: 'shrine' },
-    walls:        { name: 'Walls',         cost: 80,  yields: {}, tech: 'masonry', defense: 6, hp: 100, desc: 'City +6 defense, +100 HP, ranged attack' },
+    walls:        { name: 'Walls',         cost: 80,  yields: {}, tech: 'masonry', defense: 6, hp: 100, desc: 'City +6 defense, +100 HP; bombards enemy units within 2 tiles every turn' },
     library:      { name: 'Library',       cost: 90,  yields: { science: 2 }, tech: 'writing', perPop: { science: 0.25 } },
     barracks:     { name: 'Barracks',      cost: 90,  yields: { production: 1 }, tech: 'bronze_working', unitStrength: 1, desc: 'Units built here +1 Strength' },
     water_mill:   { name: 'Water Mill',    cost: 80,  yields: { food: 1, production: 1 }, tech: 'wheel', needs: 'river' },
