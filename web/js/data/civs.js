@@ -184,12 +184,12 @@
       ] },
 
     { id: 'shawnee', name: 'Shawnee', adj: 'Shawnee', difficulty: 'medium', bias: ['forest', 'river'], color: '#6e2c00', color2: '#7fb3d5',
-      ability: { name: 'Kithita', desc: 'Worked River tiles yield +1 Food and +1 Heritage. Independent camps yield triple Gold when dispersed.', fx: { tileBonus: [{ when: 'river', yields: { food: 1, culture: 1 } }], campGoldMult: 3 } },
+      ability: { name: 'Kithita', desc: 'Worked River tiles yield +1 Food and +1 Heritage. Inchibil camps yield triple Gold when dispersed.', fx: { tileBonus: [{ when: 'river', yields: { food: 1, culture: 1 } }], campGoldMult: 3 } },
       uu: { id: 'kispoko', name: 'Kispoko Warrior', replaces: 'horseman', strength: 3, moves: 1, forestMove: true, sight: 1, terrainBonus: {forest: 6}, desc: '+3 Strength, +1 Movement, +1 Sight, moves freely through forest, +6 in forest' },
       ui: { id: 'woodland_camp', name: 'Woodland Camp', icon: '🏕️', replaces: 'woodcutter', when: 'forest', yields: { food: 1, gold: 1 }, desc: 'forest woodcutters also give +1 Food and +1 Gold' },
       cities: ['Chalahgawtha', 'Piqua', 'Wapakoneta', 'Kispoko', 'Mekoche', 'Prophetstown', 'Lower Shawneetown', 'Tippecanoe', 'Blue Jacket\'s Town', 'Girty\'s Town', 'Cornstalk\'s Town', 'Hog Creek', 'Old Chillicothe', 'Standing Stone', 'Sonnontio', 'Logstown', 'Eskippakithiki', 'Pekowi', 'Thawikila', 'Hathawekela', 'Wakatomika', 'Mackachack', "Snake's Town", "Moluntha's Town", "Tecumseh's Town", "Black Hoof's Town", 'Lewistown', "Captain Johnny's Town", 'Blue Licks', 'Greenville', 'Cape Girardeau', 'Apple Creek', 'Grand Glaize', 'Willstown', 'Chartierstown', 'Sawcunk', 'Pequea', 'Paxtang', 'Kittanning', 'Salt Lick Town'],
       leaders: [
-        L('tecumseh', 'Tecumseh', 'War Chief', 'Confederacy', 'Units +5 Strength vs independents and +3 inside your borders; units heal +10 in your territory.', { vsIndependents: 5, combatBonusHome: 3, healBonusHome: 10 }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.6 }),
+        L('tecumseh', 'Tecumseh', 'War Chief', 'Confederacy', 'Units +5 Strength vs Inchibils and +3 inside your borders; units heal +10 in your territory.', { vsIndependents: 5, combatBonusHome: 3, healBonusHome: 10 }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.6 }),
         L('cornstalk', 'Cornstalk', 'Chief', 'Council Fire', '+2 Heritage per settlement; Towns grow 20% faster; Farming Towns +2 Food.', { culturePerSettlement: 2, townGrowthMult: 1.2, specializationYields: { farming: { food: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.7 })
       ] },
 

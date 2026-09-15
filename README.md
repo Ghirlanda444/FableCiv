@@ -21,7 +21,7 @@ Design pillars:
   unit, unique building, unique tile improvement, unique town specialization), mixed differently:
   Rome fields the Legion and builds the Forum, the Inca farm hillside Terraces and store food in
   Qollqas, Russia founds Ostrog frontier forts, the Aztecs grow Chinampas on the lakeshore.
-- **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 20 empires) and eight map
+- **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 14 empires) and eight map
   types: Continents, Pangaea, Fractal, Archipelago, Islands, Donut, Inland Sea, Terra.
 - **Game speeds.** Quick, Standard, Epic and Marathon scale research, production, growth and the
   turn limit.

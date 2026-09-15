@@ -270,7 +270,7 @@
     landTiles.forEach(function (t) { t._score = siteScore(t); });
     landTiles.sort(function (a, b) { return b._score - a._score; });
     var starts = [];
-    var minDist = Math.max(7, Math.floor(Math.sqrt(landTiles.length / nStarts) * 1.15));
+    var minDist = Math.max(7, Math.floor(Math.sqrt(landTiles.length / nStarts) * 1.35));
     while (starts.length < nStarts && minDist >= 6) {
       starts = [];
       for (var li = 0; li < landTiles.length && starts.length < nStarts; li++) {
@@ -295,7 +295,7 @@
         if (starts.length < nStarts) minDist--;
       }
     }
-    // Barbarian camps far from starts
+    // Inchibil camps far from starts
     var camps = [];
     var campCands = landTiles.filter(function (t) {
       if (t.hills === false && t.feature === null && rng.chance(0.5)) return false;

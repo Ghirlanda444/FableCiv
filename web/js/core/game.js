@@ -550,6 +550,7 @@
     if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
@@ -562,6 +563,7 @@
     if (!d || d.noBuild || G.hasBuilding(s, id)) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
@@ -572,6 +574,7 @@
     if (!s.isCity || g.wonders[id] !== undefined) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     return true;
   };
@@ -589,6 +592,7 @@
     if (!s.isCity || G.hasBuilding(s, id)) return false;
     if (d.tech && !civ.techs[d.tech]) return false;
     if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     var sets = G.civSettlements(g, civ.idx);
     if (sets.some(function (o) { return G.hasBuilding(o, id); })) return false;
     if (d.requiresCount) { var n = 0; sets.forEach(function (o) { if (G.hasBuilding(o, d.requiresCount[0])) n++; }); if (n < d.requiresCount[1]) return false; }
@@ -632,7 +636,8 @@
       var bonus = 0, hasBarracks = false; s.buildings.forEach(function (b) { var d = G.buildingDef(g, civ, b); if (d && d.unitStrength) { bonus += d.unitStrength; hasBarracks = true; } if (AU.NATIONAL[b] && AU.NATIONAL[b].fx && AU.NATIONAL[b].fx.unitStrength) bonus += AU.NATIONAL[b].fx.unitStrength; });
       if (hasBarracks) bonus += G.civFx(g, civ).unitStrengthFromBarracks || 0;
       u.bonusStr = bonus;
-      G.notify(g, civ, { kind: 'unit', text: s.name + ' trained a ' + u.name + '.', tile: tileIdx, unit: u.id });
+      var pc = AU.UNITS[id].popCost || 0; if (pc) s.pop = Math.max(1, s.pop - pc);
+      G.notify(g, civ, { kind: 'unit', text: s.name + ' trained a ' + u.name + (pc ? ' (-' + pc + ' Population)' : '') + '.', tile: tileIdx, unit: u.id });
     } else if (kind === 'building') {
       G.addBuilding(g, s, id);
       var bfx = G.civFx(g, civ);
@@ -835,7 +840,7 @@
       var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Knowledge from a Spark
       if (gain) civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
       var mt = G.masteryOf(t.id, false);
-      G.notify(g, civ, { kind: 'tech', text: 'Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Knowledge' : '') + '.', panel: 'tech' });
+      G.notify(g, civ, { big: true, kind: 'tech', text: '💡 Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Knowledge' : '') + '.', panel: 'tech' });
     });
     AU.CIVICS.forEach(function (c) {
       if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
@@ -844,7 +849,7 @@
       var disc2 = G.civFx(g, civ).inspirationDiscount || 0, gain2 = disc2 ? Math.round(G.civicCost(g, civ, c) * disc2) : 0;
       if (gain2) civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
       var mc = G.masteryOf(c.id, true);
-      G.notify(g, civ, { kind: 'civic', text: 'Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Heritage' : '') + '.', panel: 'civics' });
+      G.notify(g, civ, { big: true, kind: 'civic', text: '💡 Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Heritage' : '') + '.', panel: 'civics' });
     });
   };
 
@@ -1089,11 +1094,13 @@
     var player = G.player(g);
     g.notifications = [];
     G.civSettlements(g, player.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); });
-    // AI empires meet whoever has walked into the land they have explored
-    if (g.turn % 3 === 0) g.civs.forEach(function (a) {
+    // AI empires meet whoever comes within sight of their units (2 tiles) or settlements (3 tiles)
+    g.undo = null;
+    if (g.turn % 2 === 0) g.civs.forEach(function (a) {
       if (a.isPlayer || !a.alive) return;
-      for (var sid0 in g.settlements) { var s0 = g.settlements[sid0]; if (s0.civ !== a.idx && !a.met[s0.civ] && a.explored[s0.tile]) G.meet(g, a.idx, s0.civ); }
-      for (var uid0 in g.units) { var u0 = g.units[uid0]; if (u0.civ >= 0 && u0.civ !== a.idx && !a.met[u0.civ] && a.explored[u0.tile]) G.meet(g, a.idx, u0.civ); }
+      var near = function (tile, r) { var t0 = g.tiles[tile]; Hex.spiral(t0.col, t0.row, r, g.W, g.H).forEach(function (i) { var s0 = G.settlementAt(g, i); if (s0 && s0.civ !== a.idx && !a.met[s0.civ]) G.meet(g, a.idx, s0.civ); G.unitsAt(g, i).forEach(function (o) { if (o.civ >= 0 && o.civ !== a.idx && !a.met[o.civ]) G.meet(g, a.idx, o.civ); }); }); };
+      G.civUnits(g, a.idx).forEach(function (u) { near(u.tile, 2); });
+      G.civSettlements(g, a.idx).forEach(function (s) { near(s.tile, 3); });
     });
     // AI turns
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) AU.AI.takeTurn(g, civ); });

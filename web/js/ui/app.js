@@ -154,6 +154,7 @@
       $('btn-pedia-top').onclick = function () { App.openPanel('pedia', { cat: App.pediaState.cat }); };
       $('btn-end').onclick = function () { if (App._todo && App._todo.length) App.doTodo(0); else App.endTurn(); };
       $('btn-next').onclick = function () { App.nextUnit(); };
+      $('btn-undo').onclick = function () { var g = App.g, d = g && g.undo, u = d && g.units[d.unit]; if (u && AU.U.canUndo(g, u)) { App.sel.unit = u.id; App.action('undomove', {}); } else { $('btn-undo').hidden = true; } };
       $('panel-close').onclick = function () { App.closePanel(); };
       $('top-yields').onclick = function (e) { var y = e.target.closest('.y'); if (y) App.openPanel(y.dataset.panel); };
       $('context').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
@@ -163,6 +164,7 @@
       $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
     refreshHud: function () {
+      if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
       var g = this.g, p = G.player(g); if (!g) return;
       if (AU.Audio) AU.Audio.forEra(p.era || 0);
       var y = G.civYields(g, p);
@@ -181,6 +183,7 @@
       this.refreshNotifs();
       this.refreshContext();
       var need = this.unitsNeedingOrders().length;
+      var ud = g.undo, uu = ud && g.units[ud.unit]; $('btn-undo').hidden = !(uu && AU.U.canUndo(g, uu));
       $('btn-next').textContent = need ? 'Next Unit (' + need + ')' : 'Next Unit';
       $('btn-next').classList.toggle('attention', need > 0);
       $('btn-next').disabled = need === 0;
@@ -218,8 +221,9 @@
     doTodo: function (i) { var it = (this._todo || [])[i]; if (it) { it.go(); this.refreshHud(); this.invalidate(); } },
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
-      var ICON = { faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰', great: '🌟' };
-      var list = g.notifications.slice(-14).reverse();
+      var ICON = { camp: '🏕️', faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰', great: '🌟' };
+      var list = g.notifications.slice(-14).reverse(), self = this, fresh = g.notifications.filter(function (n) { return n.big && !n.seen; });
+      fresh.forEach(function (n) { n.seen = 1; }); if (fresh.length) this.toast(fresh.map(function (n) { return n.text; }).join('  ·  '), 3200 + 800 * fresh.length);
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
         d.innerHTML = '<span class="ni">' + (ICON[n.kind] || '📣') + '</span><span class="nt"></span><span class="nx" data-action="dismiss" data-i="' + d.dataset.i + '">×</span>';
@@ -267,7 +271,7 @@
       else if (res) html += '<div class="tip-res stat">Something may be hidden here (needs ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
-      if (t.camp) html += '<div class="stat">Independent camp</div>';
+      if (t.camp) html += '<div class="stat">🏕️ Inchibil camp: move a military unit onto it to disperse it for Gold.</div>';
       var us = p.visible[tileIdx] ? G.unitsAt(g, tileIdx) : []; if (us.length) html += '<div class="stat">' + us.map(function (u) { return AU.UNITS[u.type].icon + ' ' + u.name; }).join(', ') + '</div>';
       tip.innerHTML = html; tip.hidden = false;
       var rect = $('map').getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
@@ -339,7 +343,7 @@
       if (this.sel.unit && g.units[this.sel.unit]) {
         var u = g.units[this.sel.unit], def = U.def(g, u), own = u.civ === p.idx;
         var t = g.tiles[u.tile];
-        html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">Independent</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
+        html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">Inchibils</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
         html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? 'Str ' + U.strength(g, u, { attacking: false }) : 'Civilian') + (def.ranged ? ' · Ranged ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · Moves ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · Fortified' : '') + (U.isEmbarked(g, u) ? ' · Embarked' : '') + '</div>';
         if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
@@ -366,7 +370,8 @@
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">Fortify</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? 'Stop exploring' : 'Auto-explore') + '</button>';
           html += '<button class="small" data-action="skip">Skip</button><button class="small" data-action="sleep">Sleep</button>';
-          if (u.path && u.path.length) html += '<button class="small" data-action="cancelpath">Cancel move</button>';
+          if (u.path && u.path.length) html += '<button class="small" data-action="cancelpath">Cancel route</button>';
+          if (U.canUndo(g, u)) html += '<button class="small" data-action="undomove">↩ Undo move</button>';
           var upc = U.upgradeCost(g, u); if (upc !== null) html += '<button class="small" data-action="upgrade" ' + (U.canUpgrade(g, u) ? '' : 'disabled') + '>Upgrade → ' + G.unitType(g, p, AU.UNITS[u.type].upgradesTo).name + ' (' + upc + '💰)</button>';
           html += '<button class="small ghost" data-action="disband">Disband</button></div>';
         }
@@ -433,6 +438,7 @@
         case 'sleep': if (u) { U.sleep(g, u); this.afterUnitAction(u, true); } break;
         case 'explore': if (u) { u.auto = !u.auto; if (u.auto) { AU.AI.explore(g, p, u); this.afterUnitAction(u, true); } else this.refreshContext(); } break;
         case 'cancelpath': if (u) { u.path = null; this.updateUnitHighlights(); this.refreshContext(); this.invalidate(); } break;
+        case 'undomove': if (u && U.undoMove(g, u)) { this.toast('Move undone.'); this.selectUnit(u); this.renderer.centerOn(g, u.tile); this.refreshHud(); this.invalidate(); } break;
         case 'upgrade': if (u && U.upgrade(g, u)) { this.toast('Upgraded to ' + u.name + '.'); this.selectUnit(u); } break;
         case 'disband': if (u) { var self = this; this.confirm('Disband ' + u.name + '?', function () { U.disband(g, u); self.deselect(); self.refreshHud(); self.invalidate(); }); } break;
         case 'attack': if (u && d.tile != null) this.doAttack(u, +d.tile); break;

@@ -91,9 +91,9 @@
     tiny:     { name: 'Tiny',     w: 40,  h: 26, civs: 4,  camps: 5 },
     small:    { name: 'Small',    w: 52,  h: 34, civs: 6,  camps: 8 },
     standard: { name: 'Standard', w: 64,  h: 42, civs: 8,  camps: 12 },
-    large:    { name: 'Large',    w: 80,  h: 52, civs: 12, camps: 18 },
-    huge:     { name: 'Huge',     w: 104, h: 66, civs: 16, camps: 26 },
-    enormous: { name: 'Enormous', w: 128, h: 80, civs: 20, camps: 36 }
+    large:    { name: 'Large',    w: 80,  h: 52, civs: 10, camps: 18 },
+    huge:     { name: 'Huge',     w: 104, h: 66, civs: 12, camps: 26 },
+    enormous: { name: 'Enormous', w: 128, h: 80, civs: 14, camps: 36 }
   };
   AU.MAP_TYPES = {
     continents:  { name: 'Continents',  desc: 'Two to four large land masses separated by oceans.' },

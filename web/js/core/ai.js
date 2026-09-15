@@ -1,4 +1,4 @@
-// Computer opponents and independent (barbarian) peoples.
+// Computer opponents and the Inchibils (wild raiders).
 (function (AU) {
   var G = AU.G, U = AU.U, Hex = AU.Hex;
   var AI = AU.AI = {};
@@ -450,7 +450,7 @@
     else U.fortify(g, u);
   };
 
-  // ---------- Independent peoples (barbarians) ----------
+  // ---------- Inchibils (wild raiders) ----------
   AI.barbarianTurn = function (g) {
     for (var bid in g.units) if (g.units[bid].civ < 0) AI.autoPromote(g, g.units[bid]);
     var avgEra = 0, n = 0; g.civs.forEach(function (c) { if (c.alive) { avgEra += c.era; n++; } }); avgEra = n ? Math.round(avgEra / n) : 0;

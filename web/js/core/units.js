@@ -142,9 +142,11 @@
     civ.flags['ev:camp'] = g.turn;
     var gold = Math.round((40 + G.rngInt(g, 40) + Object.keys(civ.techs).length * 2) * (G.civFx(g, civ).campGoldMult || 1));
     civ.gold += gold;
-    // remove barbarian units on the camp
+    // remove the Inchibil units on the camp
     G.unitsAt(g, t.i).forEach(function (o) { if (o.civ < 0) G.removeUnit(g, o); });
-    G.notify(g, civ, { kind: 'camp', text: u.name + ' dispersed an independent camp: +' + gold + ' Gold.', tile: t.i });
+    g.undo = null;
+    G.notify(g, civ, { big: true, kind: 'camp', text: '🏕️ ' + u.name + ' dispersed an Inchibil camp: +' + gold + ' Gold.', tile: t.i });
+    if (civ.isPlayer) { g.quoteQueue = g.quoteQueue || []; g.quoteQueue.push({ kicker: 'Inchibil camp dispersed', title: u.name + ' scatters the Inchibils', text: 'We found their camp and drove them off. The loot is ours: +' + gold + ' Gold.', by: u.name, tile: t.i, cat: 'camp' }); }
     G.log(g, G.civData(civ).name + ' dispersed a camp.', civ.idx);
     var cfx0 = G.civFx(g, civ); if (cfx0.campFaith) civ.bonusFaith = (civ.bonusFaith || 0) + cfx0.campFaith;
   };
@@ -160,8 +162,17 @@
   U.orderMove = function (g, u, target) {
     var path = U.findPath(g, u, target);
     if (!path) return false;
+    var civ0 = U.civ(g, u); if (civ0 && civ0.isPlayer) g.undo = { unit: u.id, tile: u.tile, moves: u.moves, fortify: u.fortify, sleep: u.sleep, movedTurn: u.movedTurn, turn: g.turn };
     u.path = path; u.sleep = false; u.fortify = 0;
     U.followPath(g, u);
+    return true;
+  };
+  // Undo the last move order of this turn: only while nothing else happened since (no attack, capture, camp, founding, end of turn).
+  U.canUndo = function (g, u) { var d = g.undo; return !!(d && d.unit === u.id && d.turn === g.turn && g.units[u.id] && u.tile !== d.tile && !U.tileBlocked(g, u, d.tile, true)); };
+  U.undoMove = function (g, u) {
+    if (!U.canUndo(g, u)) return false;
+    var d = g.undo; G.setUnitTile(g, u, d.tile); u.moves = d.moves; u.fortify = d.fortify; u.sleep = d.sleep; u.movedTurn = d.movedTurn; u.path = null; g.undo = null;
+    var civ = U.civ(g, u); if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return true;
   };
   U.newTurn = function (g, u) {
@@ -305,6 +316,7 @@
     return { unit: mil || us[0], settlement: null };
   };
   U.attack = function (g, u, tileIdx) {
+    g.undo = null;
     if (!U.canAttackTile(g, u, tileIdx)) return null;
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };
@@ -421,6 +433,7 @@
   };
   // ---------- Founding & upgrades ----------
   U.foundCity = function (g, u) {
+    g.undo = null;
     if (u.type !== 'settler' || u.moves <= 0 && false) return false;
     if (!G.canFoundAt(g, u.civ, u.tile)) return false;
     var s = G.foundSettlement(g, u.civ, u.tile);

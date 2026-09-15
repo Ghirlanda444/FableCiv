@@ -1,7 +1,7 @@
 // Unit types. cls: melee | antcav | ranged | siege | cavalry | naval | navalRanged | recon | civilian
 (function (AU) {
   AU.UNITS = {
-    settler:     { name: 'Pioneers',     cls: 'civilian', cost: 80,  moves: 2, strength: 0,  icon: '🧭', desc: 'Founds a new Town.' },
+    settler:     { name: 'Pioneers',     cls: 'civilian', cost: 80,  moves: 2, strength: 0,  icon: '🧭', popCost: 1, desc: 'Founds a new Town. Takes 1 Population from the settlement that trains it (needs pop 2).' },
     scout:       { name: 'Pathfinder',       cls: 'recon',    cls2: 'melee', cost: 30,  moves: 3, strength: 10, sight: 3, icon: '🔭' },
     warrior:     { name: 'Militia',     cls: 'melee',    cost: 40,  moves: 2, strength: 20, icon: '🪓', upgradesTo: 'swordsman' },
     slinger:     { name: 'Sling Hunter',     cls: 'ranged',   cost: 35,  moves: 2, strength: 5,  ranged: 15, range: 1, icon: '🪃', upgradesTo: 'archer' },
@@ -47,7 +47,7 @@
     apostle:     { name: 'Evangelist',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Devotion in a settlement with a Temple.' },
     inquisitor:  { name: 'Faith Warden',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Devotion in a settlement with a Temple.' }
   };
-  // The barbarian roster by era index
+  // The Inchibil (wild raider) roster by era index
   AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank'], ['mech_infantry', 'modern_armor']];
 })(globalThis.AU = globalThis.AU || {});
 
@@ -84,7 +84,7 @@
     if (m.vsCls) for (var c in m.vsCls) out.push('+' + m.vsCls[c] + ' vs ' + ({ melee: 'melee', antcav: 'anti-cavalry', cavalry: 'cavalry', ranged: 'ranged', siege: 'siege', naval: 'naval', navalRanged: 'naval', recon: 'recon' }[c] || c) + ' units');
     if (m.vsSettlements) out.push('+' + m.vsSettlements + ' vs settlements');
     if (m.vsStronger) out.push('+' + m.vsStronger + ' vs units stronger than itself');
-    if (m.vsIndependents) out.push('+' + m.vsIndependents + ' vs independent raiders');
+    if (m.vsIndependents) out.push('+' + m.vsIndependents + ' vs Inchibil raiders');
     if (m.bonusVsDamaged) out.push('+' + m.bonusVsDamaged + ' vs wounded units');
     if (m.terrainBonus) for (var t in m.terrainBonus) out.push('+' + m.terrainBonus[t] + ' on ' + t);
     if (m.openBonus) out.push('+' + m.openBonus + ' on open flat terrain');

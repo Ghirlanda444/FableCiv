@@ -141,7 +141,7 @@
     C('code_of_laws', "First Laws", 0, 0, [], null, { unlocks: 'Autocracy, Oligarchy', cards: ['discipline', 'urban_planning'] }),
     C('craftsmanship', "Artisans", 0, 1, ['code_of_laws'], ['Work 3 tiles with improvements', ['improvedTiles', 3]], { cards: ['agoge', 'ilkum'] }),
     C('foreign_trade', "Caravans", 0, 1, ['code_of_laws'], ['Meet another empire', ['met', 1]], { cards: ['caravansary'], fx: { goldPerSettlement: 1 } }),
-    C('military_tradition', "War Bands", 0, 2, ['craftsmanship'], ['Disperse an independent camp', ['event', 'camp']], { cards: ['survey', 'conscription'] }),
+    C('military_tradition', "War Bands", 0, 2, ['craftsmanship'], ['Disperse an Inchibil camp', ['event', 'camp']], { cards: ['survey', 'conscription'] }),
     C('state_workforce', "Corvée Labor", 0, 3, ['craftsmanship'], ['Build a wonder or a City hall… upgrade a Town into a City', ['cities', 2]], { cards: ['corvee'] }),
     C('early_empire', "First Kingdoms", 0, 3, ['foreign_trade'], ['Grow to 6 population in total', ['totalPop', 6]], { cards: ['colonization'] }),
     C('rituals', "Sacred Rites", 0, 4, ['foreign_trade'], ['Build a Shrine', ['building', 'shrine', 1]], { fx: { happinessBonus: 1 }, cards: ['god_king'] }),
@@ -212,7 +212,7 @@
   // ---------- Policy cards (slotted into the government) ----------
   function P(id, name, type, desc, fx) { return { id: id, name: name, type: type, desc: desc, fx: fx }; }
   AU.POLICIES = {
-    discipline: P('discipline', 'Discipline', 'military', '+5 Strength vs independent units.', { vsIndependents: 5 }),
+    discipline: P('discipline', 'Discipline', 'military', '+5 Strength vs Inchibil units.', { vsIndependents: 5 }),
     urban_planning: P('urban_planning', 'Urban Planning', 'economic', '+1 Production in every settlement.', { citySiteYields: { production: 1 }, townYields: { gold: 1 } }),
     agoge: P('agoge', 'Agoge', 'military', 'Melee, ranged and anti-cavalry units cost 30% less.', { classCostMult: { melee: 0.7, ranged: 0.7, antcav: 0.7 } }),
     ilkum: P('ilkum', 'Ilkum', 'economic', 'Buildings cost 15% less.', { buildingCostMult: 0.85 }),

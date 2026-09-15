@@ -41,8 +41,8 @@
 
   function kindData(kind) {
     return kind === 'civic'
-      ? { list: AU.CIVICS, byId: AU.CIVIC_BY_ID, art: 'civics', boostKey: function (id) { return 'c:' + id; }, boostWord: 'Inspiration', done: function (p, id) { return !!p.civics[id]; }, cur: function (p) { return p.currentCivic; }, prog: function (p, id) { return p.civicProgress[id] || 0; }, cost: function (g, p, t) { return G.civicCost(g, p, t); }, avail: function (p) { return G.availableCivics(p); }, unlocks: function (t) { return [AU.civicFxText(t)].concat(AU.unlocksOfCivic(t.id)).filter(Boolean); }, hint: function (t) { return t.inspiration; }, action: 'civic', rate: 'culture', icon: '🎭', title: 'Civics tree' }
-      : { list: AU.TECHS, byId: AU.TECH_BY_ID, art: 'techs', boostKey: function (id) { return id; }, boostWord: 'Eureka', done: function (p, id) { return !!p.techs[id]; }, cur: function (p) { return p.currentTech; }, prog: function (p, id) { return p.techProgress[id] || 0; }, cost: function (g, p, t) { return G.techCost(g, p, t); }, avail: function (p) { return G.availableTechs(p); }, unlocks: function (t) { return AU.unlocksOfTech(t.id); }, hint: function (t) { return t.eureka; }, action: 'research', rate: 'science', icon: '🔬', title: 'Technology tree' };
+      ? { list: AU.CIVICS, byId: AU.CIVIC_BY_ID, art: 'civics', boostKey: function (id) { return 'c:' + id; }, boostWord: 'Insight', done: function (p, id) { return !!p.civics[id]; }, cur: function (p) { return p.currentCivic; }, prog: function (p, id) { return p.civicProgress[id] || 0; }, cost: function (g, p, t) { return G.civicCost(g, p, t); }, avail: function (p) { return G.availableCivics(p); }, unlocks: function (t) { return [AU.civicFxText(t)].concat(AU.unlocksOfCivic(t.id)).filter(Boolean); }, hint: function (t) { return t.inspiration; }, action: 'civic', rate: 'culture', icon: '🎭', title: 'Civics tree' }
+      : { list: AU.TECHS, byId: AU.TECH_BY_ID, art: 'techs', boostKey: function (id) { return id; }, boostWord: 'Spark', done: function (p, id) { return !!p.techs[id]; }, cur: function (p) { return p.currentTech; }, prog: function (p, id) { return p.techProgress[id] || 0; }, cost: function (g, p, t) { return G.techCost(g, p, t); }, avail: function (p) { return G.availableTechs(p); }, unlocks: function (t) { return AU.unlocksOfTech(t.id); }, hint: function (t) { return t.eureka; }, action: 'research', rate: 'science', icon: '🔬', title: 'Technology tree' };
   }
   function ancestors(byId, id, out) { out = out || {}; var t = byId[id]; if (!t) return out; t.pre.forEach(function (p) { if (!out[p]) { out[p] = true; ancestors(byId, p, out); } }); return out; }
 
@@ -57,13 +57,13 @@
     html += '<div class="tabs era-jump">' + L.eras.map(function (b, i) { return '<button class="small ghost" data-action="treejump" data-col="' + b.from + '">' + b.name + '</button>'; }).join('') + '</div>';
     // details of the selected node
     if (sel) {
-      var done = p && K.done(p, sel.id), cur = p && K.cur(p) === sel.id, can = p && availIds[sel.id], boosted = p && p.boosts && p.boosts[K.boostKey(sel.id)], hint = K.hint(sel);
+      var done = p && K.done(p, sel.id), cur = p && K.cur(p) === sel.id, can = p && availIds[sel.id], boosted = p && p.boosts && p.boosts[K.boostKey(sel.id)] !== undefined, boostTurn = boosted ? p.boosts[K.boostKey(sel.id)] : 0, hint = K.hint(sel);
       var cost = p ? K.cost(g, p, sel) : sel.cost, prog = p ? K.prog(p, sel.id) : 0;
       html += '<div class="tree-detail">' + (AU.Assets.get(K.art, sel.id) ? '<img class="techpic" src="' + AU.Assets.url(K.art, sel.id) + '" alt="">' : '') +
         '<div class="grow"><b>' + sel.name + ' <span class="pill">' + AU.ERAS[sel.era] + '</span> <span class="pill">' + K.icon + ' ' + cost + '</span>' + (done ? ' <span class="pill peace">✓ known</span>' : '') + (cur ? ' <span class="pill" style="background:#2b5db8;color:#fff">in progress ' + Math.floor(prog) + '/' + cost + '</span>' : '') + (boosted && !done ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">' + K.boostWord + ' ✓</span>' : '') + '</b>' +
         '<small>' + (K.unlocks(sel).join(' · ') || 'Leads to further ' + (kind === 'tech' ? 'technologies' : 'civics')) + '</small>' +
         (sel.pre.length ? '<small>Requires: ' + sel.pre.map(function (x) { return K.byId[x].name; }).join(', ') + '</small>' : '') +
-        (hint && !boosted ? '<small>💡 ' + K.boostWord + ': ' + hint.desc + '</small>' : '') + (p && AU.masteryLine ? AU.masteryLine(p, sel.id, kind === 'civic') : (G.masteryOf(sel.id, kind === 'civic') ? '<small>⭐ Mastery: ' + G.masteryOf(sel.id, kind === 'civic').desc + '</small>' : '')) + '</div>' +
+        (hint ? '<small>💡 ' + K.boostWord + ': ' + hint.desc + (boosted ? ' <b class="strong">✓ triggered on turn ' + boostTurn + '</b>' : '') + '</small>' : '') + (p && AU.masteryLine ? AU.masteryLine(p, sel.id, kind === 'civic') : (G.masteryOf(sel.id, kind === 'civic') ? '<small>⭐ Mastery: ' + G.masteryOf(sel.id, kind === 'civic').desc + '</small>' : '')) + '</div>' +
         '<div class="tree-detail-btns">' + (can && !cur ? '<button class="small primary" data-action="' + K.action + '" data-id="' + sel.id + '">' + (kind === 'tech' ? 'Research' : 'Adopt') + '</button>' : '') +
         '<button class="small ghost" data-action="pedia" data-cat="' + K.art + '" data-id="' + sel.id + '">📖</button></div></div>';
     }

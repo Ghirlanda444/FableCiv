@@ -19,7 +19,7 @@
     B('monument_gods', 'Monument to the Gods', 'pantheon', '+15% Production toward Wonders.', { wonderCostMult: 0.87 }),
     B('religious_settlements', 'Devout Settlements', 'pantheon', 'New settlements claim one extra tile and +1 Heritage in every settlement.', { freeExpansion: 1, culturePerSettlement: 1 }),
     B('god_war', 'God of War', 'pantheon', '+10 Devotion whenever a unit dies within 8 tiles of your settlements... simplified: +5 Devotion per kill.', { faithFromKills: 5 }),
-    B('initiation_rites', 'Initiation Rites', 'pantheon', '+50 Devotion when you disperse an independent camp.', { campFaith: 50 })
+    B('initiation_rites', 'Initiation Rites', 'pantheon', '+50 Devotion when you disperse an Inchibil camp.', { campFaith: 50 })
   ];
   // Follower beliefs: every settlement following the religion gets them.
   AU.FOLLOWER_BELIEFS = [
