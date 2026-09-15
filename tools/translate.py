@@ -19,19 +19,24 @@ def request(path, body=None, method='POST'):
     with urllib.request.urlopen(req, timeout=300) as r: return json.loads(r.read().decode('utf-8'))
 
 _model = None
+CANDIDATES = ('grok-4-1-fast-non-reasoning', 'grok-4-fast-non-reasoning', 'grok-4-1-fast', 'grok-4-fast', 'grok-4-1', 'grok-4', 'grok-4-0709', 'grok-3', 'grok-3-fast', 'grok-3-mini', 'grok-3-mini-fast')
+def list_models():
+    ids = []
+    for path, key in (('models', 'data'), ('language-models', 'models')):
+        try:
+            out = request(path, None, 'GET'); ids += [m.get('id') for m in out.get(key, []) if m.get('id')]
+        except Exception as e: print('  could not list %s: %s' % (path, e), flush=True)
+    return ids
 def model():
     global _model
     if _model: return _model
     forced = os.environ.get('XAI_TEXT_MODEL')
     if forced: _model = forced; return forced
-    ids = []
-    try:
-        out = request('language-models', None, 'GET'); ids = [m.get('id') for m in out.get('models', []) if m.get('id')]
-        print('  xAI text models:', ', '.join(ids), flush=True)
-    except Exception as e: print('  could not list models:', e, flush=True)
-    for pref in ('grok-4-fast-non-reasoning', 'grok-4-fast', 'grok-4-1-fast-non-reasoning', 'grok-3-mini', 'grok-3', 'grok-4'):
+    ids = list_models(); print('  xAI models available:', ', '.join(ids) or '(none listed)', flush=True)
+    for pref in CANDIDATES:
         if pref in ids: _model = pref; return pref
-    _model = ids[0] if ids else 'grok-3-mini'; return _model
+    chat = [i for i in ids if 'grok' in i and 'image' not in i and 'video' not in i and 'embed' not in i]
+    _model = chat[0] if chat else CANDIDATES[0]; return _model
 
 def translate_batch(lang, items):
     prompt = ('Translate the following user-interface strings of a cute turn-based strategy game from English to %s. %s\n'
@@ -50,7 +55,10 @@ def translate_batch(lang, items):
             except Exception: pass
             print('  HTTP', e.code, detail, flush=True)
             if e.code == 400 and 'response_format' in body: body.pop('response_format')
-            elif e.code == 404: body['model'] = 'grok-3-mini'
+            elif e.code == 404:
+                global _model
+                nxt = [c for c in CANDIDATES if c != body['model']]; i = CANDIDATES.index(body['model']) if body['model'] in CANDIDATES else -1
+                body['model'] = CANDIDATES[i + 1] if i + 1 < len(CANDIDATES) else nxt[0]; _model = body['model']; print('  trying model', _model, flush=True)
             time.sleep(3 * (attempt + 1))
         except Exception as e:
             print('  retry after error:', e, flush=True); time.sleep(3 * (attempt + 1))
