@@ -113,7 +113,7 @@
         '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
         (c.uu ? '<div><b>Unique unit – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
         (c.ub ? '<div><b>Unique building – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
-        (c.ui ? '<div><b>Unique improvement – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + c.ui.when + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
+        (c.ui ? '<div><b>Unique improvement – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + AU.whenLabel(c.ui.when) + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
         (c.ut ? '<div><b>Unique town – ' + c.ut.icon + ' ' + c.ut.name + ':</b> a town specialization only you can pick (' + c.ut.desc + ').</div>' : '') +
         '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {

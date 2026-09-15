@@ -378,7 +378,7 @@
     if (s.specialization === 'farming' && (imp === 'farm' || imp === 'pasture' || imp === 'fishing')) y.food += 1;
     if (s.specialization === 'mining' && (imp === 'mine' || imp === 'quarry' || imp === 'woodcutter')) y.production += 1;
     if (s.specialization === 'trade' && t.resource) y.gold += 1;
-    var utT = G.civData(civ).ut; if (utT && s.specialization === utT.id && utT.fx && utT.fx.tileYields) { var tw = utT.fx.tileYields.when; if (tw === 'all' || (tw === 'resource' && t.resource) || (tw === 'water' && water) || (tw === 'farm' && imp === 'farm') || (tw === 'mine' && imp === 'mine') || (tw === 'hills' && t.hills)) add(y, utT.fx.tileYields.yields); }
+    var utT = G.civData(civ).ut; if (utT && s.specialization === utT.id && utT.fx && utT.fx.tileYields) { if (G.tileMatches(g, t, utT.fx.tileYields.when, imp)) add(y, utT.fx.tileYields.yields); }
     if (water && G.hasBuilding(s, 'lighthouse')) y.food += 1;
     return y;
   };
@@ -700,7 +700,16 @@
   G.specializationDef = function (civ, spec) { var d = AU.SPECIALIZATIONS[spec]; if (d) return d; var ut = civ && G.civData(civ).ut; return ut && ut.id === spec ? ut : null; };
   G.specializationsFor = function (civ) { var out = {}; for (var k in AU.SPECIALIZATIONS) out[k] = AU.SPECIALIZATIONS[k]; var ut = civ && G.civData(civ).ut; if (ut) out[ut.id] = ut; return out; };
   // An empire's unique improvement applies where the base improvement would be built, on matching tiles.
-  G.uniqueImprovement = function (g, t, civ, imp) { var ui = civ && G.civData(civ).ui; if (!ui || !imp || ui.replaces !== imp) return null; var w = ui.when; if (!w) return ui; if (w === 'hills' && !t.hills) return null; if (w === 'river' && !t.river) return null; if (w === 'coast' && !G.neighbors(g, t).some(function (n) { return G.isWater(g.tiles[n]); })) return null; if (w === 'desert' && t.terrain !== 'desert') return null; if (w === 'flat' && t.hills) return null; if (w === 'forest' && t.feature !== 'forest' && t.feature !== 'jungle') return null; return ui; };
+  // Tile conditions shared by unique improvements (ui.when) and unique town tile bonuses (ut.fx.tileYields.when):
+  // hills, flat, river, coast/water (next to any water), forest (forest or jungle), resource, any terrain id, any feature id, any improvement id.
+  G.tileMatches = function (g, t, w, imp) {
+    if (!w || w === 'all') return true;
+    if (w === 'hills') return !!t.hills; if (w === 'flat') return !t.hills; if (w === 'river') return !!t.river; if (w === 'resource') return !!t.resource;
+    if (w === 'coast' || w === 'water') return G.isWater(t) || G.neighbors(g, t).some(function (n) { return G.isWater(g.tiles[n]); });
+    if (w === 'forest') return t.feature === 'forest' || t.feature === 'jungle';
+    return t.terrain === w || t.feature === w || (imp && imp === w);
+  };
+  G.uniqueImprovement = function (g, t, civ, imp) { var ui = civ && G.civData(civ).ui; if (!ui || !imp || ui.replaces !== imp) return null; return G.tileMatches(g, t, ui.when, imp) ? ui : null; };
   G.improvementName = function (g, t, civ, imp) { var ui = G.uniqueImprovement(g, t, civ, imp); return ui ? ui.name : AU.IMPROVEMENTS[imp].name; };
   G.canSpecialize = function (g, s, spec) { var d = G.specializationDef(g.civs[s.civ], spec); if (!d) return false; return !s.isCity && s.pop >= d.minPop && s.specialization !== spec; };
   G.specialize = function (g, s, spec) {

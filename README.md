@@ -16,11 +16,11 @@ Design pillars:
 - **Civilopedia** for every object in the game, and a **3D city view** that shows each settlement
   built from its real buildings.
 - **Leaders belong to their empire.** Caesar can only rule Rome, Victoria only England.
-  30 empires with 71 leaders (two or three per empire), each leader with their own
-  ability on top of the empire's permanent ability, unique unit and unique building:
-  Rome, Japan, China, America, India, Indonesia, Mongolia, Zulu, Persia, Egypt, Celts, Arabia,
-  France, England, Aztec, Inca, Maya, Shawnee, Greece, Germany, Russia, Spain, Ottomans, Korea,
-  Vietnam, Ethiopia, Mali, Norway, Babylon, Polynesia.
+  40 empires with 95 leaders (two or three per empire), each leader with their own ability on top
+  of the empire's permanent ability. Every empire has **two uniques drawn from four kinds** (unique
+  unit, unique building, unique tile improvement, unique town specialization), mixed differently:
+  Rome fields the Legion and builds the Forum, the Inca farm hillside Terraces and store food in
+  Qollqas, Russia founds Ostrog frontier forts, the Aztecs grow Chinampas on the lakeshore.
 - **Maps.** Six sizes from Tiny (40×26) to Enormous (128×80, 20 empires) and eight map
   types: Continents, Pangaea, Fractal, Archipelago, Islands, Donut, Inland Sea, Terra.
 - **Game speeds.** Quick, Standard, Epic and Marathon scale research, production, growth and the

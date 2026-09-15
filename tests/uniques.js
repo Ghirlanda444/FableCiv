@@ -15,4 +15,20 @@ town.pop = 3; check(G.canSpecialize(g2, town, 'ikhanda'), 'zulu can pick ikhanda
 check(town.specialization === 'ikhanda' && G.hasBuilding(town, 'walls'), 'ikhanda gives walls');
 const c1 = G.purchaseCost(g2, p2, 'unit', 'warrior', town), c0 = G.purchaseCost(g2, p2, 'unit', 'warrior', cap); check(c1 < c0, 'cheaper units in ikhanda ' + c0 + ' -> ' + c1);
 check(!G.canSpecialize(g2, town, 'satrapy'), 'other civs cannot pick satrapy');
+// Second wave of kits: generic tile conditions for improvements and unique towns.
+{
+  const g3 = G.newGame({ playerCiv: 'russia', mapSize: 'small', difficulty: 'prince', seed: 13, mapType: 'continents', speed: 'standard', numCivs: 3 });
+  const p3 = G.player(g3);
+  const tun = g3.tiles.find(x => x.terrain === 'grassland' && !x.hills && !x.feature && !x.resource && !x.natural && x.owner < 0); tun.terrain = 'tundra';
+  check(G.tileMatches(g3, tun, 'tundra'), 'tundra matches by terrain id'); check(!G.tileMatches(g3, tun, 'desert'), 'terrain mismatch');
+  const jun = g3.tiles.find(x => x.terrain === 'grassland' && !x.hills && !x.resource && !x.natural && x.owner < 0 && x !== tun); jun.feature = 'jungle';
+  check(G.tileMatches(g3, jun, 'jungle') && G.tileMatches(g3, jun, 'forest') && G.tileMatches(g3, jun, 'woodcutter', 'woodcutter'), 'feature and improvement conditions');
+  const maya = g3.civs.find(c => c.civId === 'maya') || Object.assign({}, p3, { civId: 'maya' });
+  check(G.uniqueImprovement(g3, jun, maya, 'woodcutter') && G.uniqueImprovement(g3, jun, maya, 'woodcutter').id === 'milpa', 'maya milpa on jungle woodcutter');
+  check(!G.uniqueImprovement(g3, tun, maya, 'woodcutter'), 'no milpa without jungle');
+  check(AU.whenLabel('water') === 'lakeside or coastal' && AU.whenLabel('woodcutter') === 'Woodcutter', 'condition labels');
+  const kinds = {}; AU.CIVS.forEach(c => { const k = ['uu', 'ub', 'ui', 'ut'].filter(x => c[x]); check(k.length === 2, c.id + ' has two uniques'); kinds[k.join('+')] = 1; });
+  check(Object.keys(kinds).length >= 5, 'at least five kit shapes: ' + Object.keys(kinds).join(' '));
+  AU.CIVS.forEach(c => { if (c.ui) check(AU.IMPROVEMENTS[c.ui.replaces], c.id + ' ui replaces a real improvement'); if (c.ut) check(c.ut.minPop && c.ut.fx && c.ut.desc && c.ut.icon, c.id + ' ut is complete'); });
+}
 if (fails) { console.log(fails, 'failures'); process.exit(1); } console.log('uniques tests OK');

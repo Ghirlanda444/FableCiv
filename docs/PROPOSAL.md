@@ -36,10 +36,11 @@ The logo art can be regenerated with the new word for about 10 cents.
 - Unique units keep their historical names (Legion, Samurai, Eagle Warrior, Janissary…). That is history, not
   Firaxis. The Aztec unique is already the Eagle Warrior.
 
-## 3. Uniques: two per civilization, mixed freely
+## 3. Uniques: two per empire, mixed freely (done)
 
-Today every civilization has one unique unit and one unique building. Proposal: every civilization gets
-**two uniques drawn from four kinds**, so the roster stops looking like a template and each civ plays differently.
+Every empire now has **two uniques drawn from four kinds**, so the roster no longer follows one template.
+Current split over the 40 empires: 13 unit + building, 11 unit + town, 9 unit + improvement,
+5 building + improvement, 2 building + town.
 
 | Kind | What it is | Examples |
 | --- | --- | --- |

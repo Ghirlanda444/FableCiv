@@ -171,7 +171,7 @@
     if (u.hp < 100 && (!moved || def.healAlways)) {
       var t = g.tiles[u.tile], heal = 5, cfx = civ ? G.civFx(g, civ) : {};
       var ownerCiv = G.tileOwnerCiv(g, t);
-      if (civ && ownerCiv === u.civ) { heal = 10 + (cfx.healBonusHome || 0); var s = G.settlementAt(g, u.tile); if (s) { heal += 10; if (s.specialization === 'fort') heal += cfx.fortFullHeal ? 100 : 15; } }
+      if (civ && ownerCiv === u.civ) { heal = 10 + (cfx.healBonusHome || 0); var s = G.settlementAt(g, u.tile); if (s) { heal += 10; if (s.specialization === 'fort') heal += cfx.fortFullHeal ? 100 : 15; var utH = G.civData(civ).ut; if (utH && s.specialization === utH.id && utH.fx && utH.fx.heal) heal += utH.fx.heal; } }
       else if (civ && ownerCiv >= 0 && ownerCiv !== u.civ) heal = 5;
       if (u.fortify > 0) heal += 5;
       heal += (cfx.healBonusAll || 0) + (def.healBonus || 0);

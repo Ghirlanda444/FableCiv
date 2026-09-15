@@ -64,6 +64,10 @@
     clearing:   { name: 'Clearing',      yields: { food: 1 }, icon: '🌱' }
   };
 
+  // Plain-language label of a unique improvement / unique town tile condition.
+  AU.WHEN_LABEL = { hills: 'hill', flat: 'flat', river: 'river', coast: 'coastal', water: 'lakeside or coastal', forest: 'forest or jungle', jungle: 'jungle', desert: 'desert', tundra: 'tundra', resource: 'resource' };
+  AU.whenLabel = function (w) { return AU.WHEN_LABEL[w] || (AU.IMPROVEMENTS[w] ? AU.IMPROVEMENTS[w].name : w); };
+
   // Natural wonders occupy one tile (or two for 'pair'), give strong yields, and +science/culture to the discoverer.
   AU.NATURAL_WONDERS = {
     everest:     { name: 'Mount Everest',        terrain: 'mountain', yields: { science: 3, culture: 2 }, adjacent: { science: 1 }, icon: '🏔️', desc: 'The roof of the world. Adjacent worked tiles +1 Knowledge; settlements nearby gain +2 Knowledge.', style: 'peak' },

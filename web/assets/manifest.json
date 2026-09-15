@@ -514,15 +514,6 @@
  },
  {
   "kind": "units",
-  "id": "garde_imperiale",
-  "file": "units/garde_imperiale.png",
-  "name": "Garde Impériale (France unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
   "id": "redcoat",
   "file": "units/redcoat.png",
   "name": "Redcoat (England unique unit)",
@@ -535,15 +526,6 @@
   "id": "eagle_warrior",
   "file": "units/eagle_warrior.png",
   "name": "Eagle Warrior (Aztec unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
-  "id": "hulche",
-  "file": "units/hulche.png",
-  "name": "Hul'che (Maya unique unit)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -622,36 +604,9 @@
  },
  {
   "kind": "units",
-  "id": "shotel",
-  "file": "units/shotel.png",
-  "name": "Shotel Warrior (Ethiopia unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
-  "id": "sofa",
-  "file": "units/sofa.png",
-  "name": "Sofa (Mali unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
   "id": "berserker",
   "file": "units/berserker.png",
   "name": "Berserker (Norway unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
-  "id": "sabum",
-  "file": "units/sabum.png",
-  "name": "Sabum Kibittum (Babylon unique unit)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -706,15 +661,6 @@
   "id": "assyrian_slinger",
   "file": "units/assyrian_slinger.png",
   "name": "Assyrian Sling Hunter (Assyria unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
-  "id": "pitati",
-  "file": "units/pitati.png",
-  "name": "Pitati Bowman (Nubia unique unit)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -9586,36 +9532,9 @@
  },
  {
   "kind": "logo",
-  "id": "tiny_empires_1",
-  "file": "logo/tiny_empires_1.png",
-  "name": "Logo candidate 1",
-  "size": "1024x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "logo",
-  "id": "tiny_empires_2",
-  "file": "logo/tiny_empires_2.png",
-  "name": "Logo candidate 2",
-  "size": "1024x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "logo",
-  "id": "tiny_empires_3",
-  "file": "logo/tiny_empires_3.png",
-  "name": "Logo candidate 3",
-  "size": "1024x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "logo",
-  "id": "tiny_empires_4",
-  "file": "logo/tiny_empires_4.png",
-  "name": "Logo candidate 4",
+  "id": "tiny_empires",
+  "file": "logo/tiny_empires.png",
+  "name": "Logo",
   "size": "1024x512",
   "nobg": false,
   "hires": false
