@@ -52,6 +52,13 @@
 
     // ---------- Screens ----------
     showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
+    renderLangBar: function () {
+      var bar = $('lang-bar'); if (!bar || !AU.I18n) return; var I = AU.I18n, html = '';
+      for (var k in I.LANGS) html += '<button class="small ' + (k === I.lang ? 'on' : 'ghost') + '" data-lang="' + k + '">' + I.LANGS[k] + '</button>';
+      bar.innerHTML = html;
+      bar.querySelectorAll('button').forEach(function (b) { b.onclick = function () { App.setLanguage(b.dataset.lang); }; });
+    },
+    setLanguage: function (lang) { if (!AU.I18n || lang === AU.I18n.lang) return; AU.I18n.setLang(lang); if (this.g) this.save(true); location.reload(); },
     showTitle: function () { $('btn-continue').hidden = !this.hasSave(); var vl = $('version-line'); if (vl) vl.textContent = 'v0.3 · ' + AU.CIVS.length + ' empires · ' + AU.CIVS.reduce(function (n, c) { return n + c.leaders.length; }, 0) + ' leaders · single-player'; this.showScreen('title'); this.paintTitle(); this.showKeyArt(); if (AU.Audio) AU.Audio.play('menu'); this.refreshMusicBtn(); },
     refreshMusicBtn: function () { var b = $('btn-music'); if (b && AU.Audio) { b.textContent = AU.Audio.enabled ? '🎵' : '🔇'; b.title = AU.Audio.enabled ? _('Music on (tap to mute)') : _('Music off'); } },
     showKeyArt: function () { // the painted key art behind the title when it exists; the generated map stays as fallback
@@ -81,6 +88,7 @@
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
       $('btn-tutorial').onclick = function () { AU.Tutorial.start(App); };
+      App.renderLangBar();
       $('tut-skip').onclick = function () { AU.Tutorial.skip(App); };
       $('tut-next').onclick = function () { AU.Tutorial.next(App); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
