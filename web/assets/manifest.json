@@ -3008,6 +3008,38 @@
   "nobg": false
  },
  {
+  "kind": "features",
+  "id": "forest",
+  "file": "features/forest.png",
+  "name": "forest sprite",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "features",
+  "id": "jungle",
+  "file": "features/jungle.png",
+  "name": "jungle sprite",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "features",
+  "id": "marsh",
+  "file": "features/marsh.png",
+  "name": "marsh sprite",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
+  "kind": "features",
+  "id": "hills",
+  "file": "features/hills.png",
+  "name": "hills sprite",
+  "size": "512x512",
+  "nobg": false
+ },
+ {
   "kind": "thrones",
   "id": "mediterranean",
   "file": "thrones/mediterranean.jpg",
