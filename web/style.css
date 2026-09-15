@@ -268,3 +268,18 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
 .tn.kind-military { border-left-width: 5px; } .tn.kind-economic { border-left-width: 5px; } .tn.kind-diplomatic { border-left-width: 5px; } .tn.kind-wildcard { border-left-width: 5px; }
 .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px; margin: 4px 0; font-size: 12px; }
 .rank-grid .scorebar { margin-top: 2px; }
+/* victory screen and hall of fame */
+.victory { text-align: center; padding: 18px 10px 30px; }
+.victory .v-icon { font-size: 64px; line-height: 1; filter: drop-shadow(0 6px 10px rgba(0,0,0,.6)); }
+.victory h1 { color: var(--gold); font-size: 32px; font-family: var(--font-display); margin: 8px 0 6px; }
+.victory.lost h1 { color: #ff9f9f; }
+.victory .v-sub { max-width: 520px; margin: 0 auto 10px; color: var(--text); font-size: 15px; line-height: 1.45; }
+.victory .v-portrait { width: 140px; height: 140px; object-fit: contain; border-radius: 16px; background: var(--panel2); border: 2px solid var(--gold); margin: 8px auto; display: block; }
+.victory.lost .v-portrait { border-color: var(--line); filter: grayscale(.5); }
+.v-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 520px; margin: 10px auto; }
+.v-stats div { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 4px; }
+.v-stats b { display: block; font-size: 18px; color: var(--gold); } .v-stats small { color: var(--muted); font-size: 11px; }
+.v-btns { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 12px; }
+.hall-row .hall-medal { font-size: 20px; min-width: 32px; text-align: center; }
+.hall-row .portrait.small { width: 44px; height: 44px; object-fit: contain; border-radius: 8px; background: var(--panel2); }
+.hall-row.won { border-color: #2f6b3a; } .hall-row.lost { opacity: .85; }

@@ -79,6 +79,7 @@
       window.addEventListener('resize', function () { if (!$('title').hidden) App.showKeyArt(); });
       $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
+      $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
       $('btn-back').onclick = function () { App.showTitle(); };
       $('btn-start').onclick = function () { App.startNewGame(); };

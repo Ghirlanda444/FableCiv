@@ -386,6 +386,7 @@
   // ---------- Menu ----------
   P.render_menu = function (app, g) {
     var html = '<div class="section">';
+    html += '<button class="big ghost" data-action="hall">🏅 Hall of Fame</button><br><br>';
     if (g) html += '<button class="big" data-action="rankings">🏆 Rankings &amp; victory race</button><br><br><button class="big" data-action="policies">🏛️ Government &amp; policies</button><br><br>';
     if (g) html += '<button class="big" data-action="save">Save game</button><br><br>';
     html += '<button class="big" data-action="loadgame" ' + (app.hasSave() ? '' : 'disabled') + '>Load saved game</button><br><br>';
@@ -459,11 +460,34 @@
     return { title: 'Religion', html: html };
   };
   P.render_victory = function (app, g) {
-    var p = G.player(g), v = g.victory, html = '<div class="victory">';
-    if (!p.alive) html += '<h1>Defeat</h1><p>Your empire has been destroyed on turn ' + g.turn + '.</p>';
-    else if (v) { var w = g.civs[v.civ], wd = G.civData(w); html += '<h1>' + (w.isPlayer ? 'Victory!' : 'Defeat') + '</h1><p>' + G.leaderName(w) + ' of ' + wd.name + ' achieved a <b>' + (AU.VICTORIES[v.type] ? AU.VICTORIES[v.type].icon + ' ' + AU.VICTORIES[v.type].name : v.type) + '</b> victory on turn ' + v.turn + '.</p>'; }
-    html += '<p class="stat">Final score: ' + G.score(g, p) + '</p><br><button class="big" data-action="continueplaying">Keep playing</button><br><br><button class="big primary" data-action="newgame">New game</button></div>';
-    return { title: 'Game over', html: html };
+    var p = G.player(g), v = g.victory, d = G.civData(p), won = !!(v && g.civs[v.civ] && g.civs[v.civ].isPlayer);
+    var entry = (AU.Hall && (AU.Hall.record(g) || AU.Hall.entryFor(g))) || null;
+    var kind = !p.alive ? 'defeat' : v ? v.type : 'defeat', VT = kind === 'defeat' ? { icon: '💀', name: 'Defeat' } : AU.VICTORIES[kind] || { icon: '🏁', name: kind };
+    var html = '<div class="victory ' + (won ? 'won' : 'lost') + ' v-' + kind + '">';
+    html += '<div class="v-icon">' + VT.icon + '</div>';
+    if (!p.alive) html += '<h1>Your empire has fallen</h1><p class="v-sub">' + d.name + ' was destroyed on turn ' + g.turn + '. Every empire has its dusk; the next one starts with a New game.</p>';
+    else if (won) html += '<h1>' + VT.name + ' Victory!</h1><p class="v-sub">' + G.leaderName(p) + ' leads ' + d.name + ' to glory on turn ' + v.turn + '. ' + (AU.VICTORIES[kind] ? AU.VICTORIES[kind].desc : '') + '</p>';
+    else { var w = g.civs[v.civ], wd = G.civData(w); html += '<h1>' + wd.name + ' wins</h1><p class="v-sub">' + G.leaderName(w) + ' of ' + wd.name + ' achieved a ' + VT.icon + ' ' + VT.name + ' victory on turn ' + v.turn + '. Your empire lives on, but the age belongs to them.</p>'; }
+    html += '<img class="v-portrait" src="' + AU.Assets.url('leaders', p.leaderId) + '" alt="" onerror="this.remove()">';
+    if (entry) html += '<div class="v-stats"><div><b>' + entry.score + '</b><small>score</small></div><div><b>' + entry.turn + '</b><small>turns</small></div><div><b>' + entry.settlements + '</b><small>settlements</small></div><div><b>' + entry.techs + '</b><small>technologies</small></div><div><b>' + entry.civics + '</b><small>civics</small></div><div><b>' + entry.wonders + '</b><small>wonders</small></div><div><b>' + entry.greats + '</b><small>Great People</small></div><div><b>' + (AU.DIFFICULTIES[entry.difficulty] ? AU.DIFFICULTIES[entry.difficulty].name : entry.difficulty) + '</b><small>difficulty</small></div></div>';
+    var rank = AU.Hall ? AU.Hall.list().findIndex(function (e) { return e.date === g.hallRecorded; }) : -1;
+    html += '<p class="stat">' + (rank >= 0 ? 'Recorded in your Hall of Fame' + (rank < 3 ? ' as ' + AU.Hall.medal(rank) + ' best game' : ' (#' + (rank + 1) + ')') + '.' : '') + '</p>';
+    html += '<div class="v-btns"><button class="big primary" data-action="hall">🏆 Hall of Fame</button><button class="big" data-action="continueplaying">Keep playing</button><button class="big ghost" data-action="newgame">New game</button></div></div>';
+    return { title: won ? 'Victory' : 'Game over', html: html };
+  };
+  // ---------- Hall of Fame ----------
+  P.render_hall = function (app, g) {
+    var list = AU.Hall ? AU.Hall.list() : [], html = '<div class="section"><h3>Hall of Fame</h3><p class="stat">Every finished game on this device, best score first. Score counts settlements, population, technologies, civics, wonders and more.</p>';
+    if (!list.length) html += '<p class="stat">No finished game yet. Win one, or fall gloriously, and it appears here.</p>';
+    list.forEach(function (e, i) {
+      var T = AU.Hall.typeLabel(e.type), dt = new Date(e.date);
+      html += '<div class="row hall-row ' + (e.won ? 'won' : 'lost') + '"><div class="hall-medal">' + AU.Hall.medal(i) + '</div>' + (e.leaderId ? '<img class="portrait small" src="' + AU.Assets.url('leaders', e.leaderId) + '" alt="" onerror="this.remove()">' : '') + '<div class="grow"><b>' + e.leader + ' of ' + e.civ + ' <span class="pill ' + (e.won ? 'peace' : 'war') + '">' + T.icon + ' ' + (e.won ? T.name + ' victory' : e.type === 'defeat' ? 'Defeat' : 'Lost to ' + (e.winner || 'another empire') + ' (' + T.name + ')') + '</span></b>' +
+        '<small>Score <b>' + e.score + '</b> · turn ' + e.turn + ' · ' + (AU.DIFFICULTIES[e.difficulty] ? AU.DIFFICULTIES[e.difficulty].name : e.difficulty) + ' · ' + e.size + ' ' + (AU.MAP_TYPES[e.mapType] ? AU.MAP_TYPES[e.mapType].name : e.mapType || '') + ' · ' + (AU.SPEEDS[e.speed] ? AU.SPEEDS[e.speed].name : e.speed) + ' · ' + e.empires + ' empires</small>' +
+        '<small>' + e.settlements + ' settlements · ' + e.techs + ' techs · ' + e.civics + ' civics · ' + e.wonders + ' wonders · ' + e.greats + ' Great People · ' + dt.toLocaleDateString() + '</small></div></div>';
+    });
+    if (list.length) html += '<br><button class="small ghost" data-action="hallclear">Clear the Hall of Fame</button>';
+    html += '</div>';
+    return { title: 'Hall of Fame', html: html };
   };
 
   // ---------- Panel actions ----------
@@ -507,6 +531,8 @@
       case 'pediasearch': break;
       case 'civtab': app.panelData.tab = d.tab; app.refreshPanel(); break;
       case 'rankings': app.openPanel('rankings'); break;
+      case 'hall': app.openPanel('hall'); break;
+      case 'hallclear': app.confirm('Clear the whole Hall of Fame? This cannot be undone.', function () { AU.Hall.clear(); app.refreshPanel(); }); break;
       case 'policies': app.openPanel('civics', { tab: 'policies' }); break;
       case 'policyadd': G.setPolicies(g, p, (p.policies || []).concat([d.id])); app.toast(AU.POLICIES[d.id].name + ' slotted.'); app.refreshPanel(); app.refreshHud(); break;
       case 'policyauto': { var act = p.policies || [], rest = G.availablePolicies(p).filter(function (x) { return act.indexOf(x) < 0; }).sort(function (a2, b2) { var A = AU.POLICIES[a2].fx || {}, B = AU.POLICIES[b2].fx || {}; return (B.yieldMult ? 1 : 0) - (A.yieldMult ? 1 : 0); }); G.setPolicies(g, p, act.concat(rest)); app.toast('Slots filled. Change any card whenever you like.'); app.refreshPanel(); app.refreshHud(); break; }

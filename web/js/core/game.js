@@ -1121,6 +1121,7 @@
     G.civUnits(g, player.idx).forEach(function (u) { if (u.path && u.path.length) AU.U.followPath(g, u); });
     G.refreshVisibility(g, player);
     G.checkVictory(g);
+    if (AU.Hall && (g.victory || !player.alive)) AU.Hall.record(g);
     G.autosaveHook && G.autosaveHook(g);
     return g;
   };
