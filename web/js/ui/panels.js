@@ -357,7 +357,7 @@
         html += '<br><button class="big primary" data-action="enhancerel" ' + (Rl.canEnhance(g, p) && sel.relEnh && sel.relFollower2 ? '' : 'disabled') + '>Enhance ' + rel.name + '</button>';
       }
       var vp = Rl.victoryProgress(g, p);
-      if (vp) html += '<h3>Religious victory</h3><p class="stat">Win when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
+      if (vp) html += '<h3>Religious victory</h3><p class="stat">Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every civilization.</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
       html += '</div>';
     }
     // world religions

@@ -132,6 +132,7 @@
     if (d.perPop) sc += s.pop * 0.3;
     if (d.pct) sc += 3;
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
+    if (y.faith) { var piety = tr.religion !== undefined ? tr.religion : 0.5; sc += y.faith * (0.5 + piety); if (!civ.religion && AU.Religion && AU.Religion.religionsFounded(g) < AU.Religion.maxReligions(g)) sc += (id === 'shrine' ? 5 : 2) * (0.5 + piety); } // faith: pantheon, a Great Prophet, a religion
     return sc / Math.max(40, d.cost) * 100;
   };
   AI.threatened = function (g, civ) { return g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; }); };
@@ -297,6 +298,10 @@
       var names = R.availableNames(g), pref = AU.RELIGION_PREF[civ.civId], nm = names.filter(function (n) { return n.id === pref; })[0] || names[Math.floor(G.rng(g) * names.length)];
       var fol = R.availableBeliefs(g, 'follower'), fdr = R.availableBeliefs(g, 'founder');
       if (nm && fol.length && fdr.length) R.found(g, civ, nm.id, fol[Math.floor(G.rng(g) * fol.length)].id, fdr[Math.floor(G.rng(g) * fdr.length)].id);
+    }
+    if (AU.Great && civ.faith > 250) { // spare Faith recruits the Great Person closest to completion
+      var GPa = AU.Great, bestT = null, bestF = 0.5; AU.GREAT_ORDER.forEach(function (t) { var f = (GPa.state(civ).pts[t] || 0) / GPa.cost(g, civ, t); if (f > bestF && GPa.canPatronize(g, civ, t, 'faith')) { bestF = f; bestT = t; } });
+      if (bestT) GPa.patronize(g, civ, bestT, 'faith');
     }
     if (R.canEnhance(g, civ)) { var en = R.availableBeliefs(g, 'enhancer'), fol2 = R.availableBeliefs(g, 'follower'); if (en.length && fol2.length) R.enhance(g, civ, en[Math.floor(G.rng(g) * en.length)].id, fol2[Math.floor(G.rng(g) * fol2.length)].id); }
     // buy missionaries when there is something to convert

@@ -212,7 +212,7 @@
   R.checkVictory = function (g) {
     if (!g.religions) return null;
     for (var id in g.religions) {
-      var rel = g.religions[id], founder = g.civs[rel.founder]; if (!founder || !founder.alive) continue;
+      var rel = g.religions[id], founder = g.civs[rel.founder]; if (!founder || !founder.alive || (founder.era || 0) < 3) continue; // from the Renaissance on
       var ok = true;
       for (var i = 0; i < g.civs.length; i++) {
         var c = g.civs[i]; if (!c.alive || c.minor) continue;
