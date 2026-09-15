@@ -63,7 +63,7 @@
         '<div class="grow"><b>' + sel.name + ' <span class="pill">' + AU.ERAS[sel.era] + '</span> <span class="pill">' + K.icon + ' ' + cost + '</span>' + (done ? ' <span class="pill peace">✓ known</span>' : '') + (cur ? ' <span class="pill" style="background:#2b5db8;color:#fff">in progress ' + Math.floor(prog) + '/' + cost + '</span>' : '') + (boosted && !done ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">' + K.boostWord + ' ✓</span>' : '') + '</b>' +
         '<small>' + (K.unlocks(sel).join(' · ') || 'Leads to further ' + (kind === 'tech' ? 'technologies' : 'civics')) + '</small>' +
         (sel.pre.length ? '<small>Requires: ' + sel.pre.map(function (x) { return K.byId[x].name; }).join(', ') + '</small>' : '') +
-        (hint && !boosted ? '<small>💡 ' + K.boostWord + ': ' + hint.desc + '</small>' : '') + '</div>' +
+        (hint && !boosted ? '<small>💡 ' + K.boostWord + ': ' + hint.desc + '</small>' : '') + (p && AU.masteryLine ? AU.masteryLine(p, sel.id, kind === 'civic') : (G.masteryOf(sel.id, kind === 'civic') ? '<small>⭐ Mastery: ' + G.masteryOf(sel.id, kind === 'civic').desc + '</small>' : '')) + '</div>' +
         '<div class="tree-detail-btns">' + (can && !cur ? '<button class="small primary" data-action="' + K.action + '" data-id="' + sel.id + '">' + (kind === 'tech' ? 'Research' : 'Adopt') + '</button>' : '') +
         '<button class="small ghost" data-action="pedia" data-cat="' + K.art + '" data-id="' + sel.id + '">📖</button></div></div>';
     }

@@ -7,7 +7,7 @@
 
   function zeroYields() { return { food: 0, production: 0, gold: 0, science: 0, culture: 0, happiness: 0 }; }
   function add(a, b) { return AU.addYields(a, b); }
-  var MULT_OBJ = { yieldMult: 1, capitalMult: 1, cityYieldMult: 1, classCostMult: 1 };
+  var MULT_OBJ = { yieldMult: 1, capitalMult: 1, cityYieldMult: 1, classCostMult: 1, buildingDiscount: 1 };
   var CONCAT = { tileBonus: 1, settlementSiteBonus: 1 };
   var NESTED = { buildingBonus: 1, specializationYields: 1 };
   var ADD_OBJ = { classBonus: 1, classMoves: 1, classBonusVsSettlements: 1, specializedTownYields: 1, townYields: 1, citySiteYields: 1, coastalSettlementYields: 1 };
@@ -164,6 +164,7 @@
     if (fx.despotCombat && (civ.government === 'oligarchy' || civ.government === 'autocracy')) fx.combatBonus = (fx.combatBonus || 0) + fx.despotCombat;
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
+    if (AU.MASTERY) for (var mid in civ.mastery || {}) { var mm = mid.indexOf('c:') === 0 ? AU.MASTERY.civics[mid.slice(2)] : AU.MASTERY.techs[mid]; if (mm && mm.fx) mergeFx(fx, mm.fx); }
     (civ.policies || []).forEach(function (pid) { var pc = AU.POLICIES[pid]; if (pc) mergeFx(fx, pc.fx); });
     if (AU.Religion) AU.Religion.civFx(g, civ).forEach(function (rf) { mergeFx(fx, rf); });
     if (AU.CityStates) AU.CityStates.civFx(g, civ).forEach(function (cf) { mergeFx(fx, cf); });
@@ -361,7 +362,7 @@
         (b.when === 'camp' && imp === 'camp') || (b.when === 'fishing' && imp === 'fishing') || (b.when === 'plantation' && imp === 'plantation') || (b.when === 'mine' && imp === 'mine') || (b.when === 'pasture' && imp === 'pasture') ||
         (b.when === 'jungle' && (t.feature === 'jungle' || t.feature === 'marsh')) || (b.when === 'desert' && t.terrain === 'desert') ||
         (b.when === 'cold' && (t.terrain === 'tundra' || t.terrain === 'snow')) ||
-        (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm') || (b.when === 'quarry' && imp === 'quarry') || (b.when === 'woodcutter' && imp === 'woodcutter') ||
+        (b.when === 'hills' && t.hills) || (b.when === 'farm' && imp === 'farm') || (b.when === 'quarry' && imp === 'quarry') || (b.when === 'woodcutter' && imp === 'woodcutter') || (b.when === 'well' && imp === 'well') ||
         (b.when === 'wet' && (t.feature === 'marsh' || t.feature === 'oasis')) || (b.when === 'coast' && t.terrain === 'coast') || (b.when === 'lake' && t.terrain === 'lake') ||
         (b.when === 'plains' && t.terrain === 'plains') || (b.when === 'grassland' && t.terrain === 'grassland') || (b.when === 'tundra' && t.terrain === 'tundra') || (b.when === 'snow' && t.terrain === 'snow') ||
         (b.when === 'sacred' && G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.natural || nt.terrain === 'mountain'; })) || (b.when === 'strategic' && t.resource && AU.RESOURCES[t.resource].kind === 'strategic') || (b.when === 'luxury' && t.resource && AU.RESOURCES[t.resource].kind === 'luxury');
@@ -528,7 +529,7 @@
       if (fx.classCostMult && fx.classCostMult[d.cls]) cost *= fx.classCostMult[d.cls];
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && fx.navalCostMult) cost *= fx.navalCostMult;
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && s && G.hasBuilding(s, 'colossus')) cost *= 0.8;
-    } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1); }
+    } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1) * (fx.buildingDiscount && fx.buildingDiscount[id] || 1); }
     else if (kind === 'wonder') { cost = AU.WONDERS[id].cost * (fx.wonderCostMult || 1); }
     else if (kind === 'national') { cost = AU.NATIONAL[id].cost * (fx.buildingCostMult || 1); }
     else if (kind === 'project') { cost = AU.PROJECTS[id].cost * (fx.projectCostMult || 1); }
@@ -710,8 +711,20 @@
   G.availableCivics = function (civ) { return AU.CIVICS.filter(function (t) { return !civ.civics[t.id] && t.pre.every(function (p) { return civ.civics[p]; }); }); };
   G.techCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).techCostMult || 1) * G.speed(g)); };
   G.civicCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).civicCostMult || 1) * G.speed(g)); };
+  // Mastery: a technology or civic finished after its Eureka / Inspiration fired keeps a permanent bonus.
+  G.masteryOf = function (id, isCivic) { return AU.MASTERY ? (isCivic ? AU.MASTERY.civics[id] : AU.MASTERY.techs[id]) : null; };
+  G.hasMastery = function (civ, id, isCivic) { return !!(civ.mastery && civ.mastery[isCivic ? 'c:' + id : id]); };
+  G.grantMastery = function (g, civ, id, isCivic) {
+    var key = isCivic ? 'c:' + id : id, m = G.masteryOf(id, isCivic);
+    if (!m || !civ.boosts || !civ.boosts[key]) return false;
+    civ.mastery = civ.mastery || {}; civ.mastery[key] = g.turn; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    var name = isCivic ? AU.CIVIC_BY_ID[id].name : AU.TECH_BY_ID[id].name;
+    G.notify(g, civ, { kind: isCivic ? 'civic' : 'tech', text: '⭐ Mastery of ' + name + ': ' + m.desc + '.', panel: isCivic ? 'civics' : 'tech' });
+    return true;
+  };
   G.learnTech = function (g, civ, id) {
     civ.techs[id] = g.turn; delete civ.techProgress[id];
+    G.grantMastery(g, civ, id, false);
     if (civ.currentTech === id) civ.currentTech = null;
     civ.era = G.era(civ);
     var fx = G.civFx(g, civ);
@@ -723,6 +736,7 @@
   };
   G.learnCivic = function (g, civ, id) {
     civ.civics[id] = g.turn; delete civ.civicProgress[id];
+    G.grantMastery(g, civ, id, true);
     if (AU.CityStates && !civ.minor) AU.CityStates.grantEnvoy(g, civ, 1, AU.CIVIC_BY_ID[id].name);
     if (civ.currentCivic === id) civ.currentCivic = null;
     var cfx = G.civFx(g, civ); if (cfx.civicScience) civ.bonusScience = (civ.bonusScience || 0) + cfx.civicScience;

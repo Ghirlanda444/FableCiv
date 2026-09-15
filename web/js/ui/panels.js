@@ -31,6 +31,14 @@
     return out;
   }
   AU.unlocksOfTech = unlocksOfTech; AU.unlocksOfCivic = unlocksOfCivic; AU.civicFxText = civicFxText;
+  // "⭐ Mastery: ..." line for a technology or civic row: what it gives and whether it is earned, still possible or missed
+  function masteryLine(civ, id, isCivic) {
+    var m = G.masteryOf(id, isCivic); if (!m) return '';
+    var done = isCivic ? !!civ.civics[id] : !!civ.techs[id], boosted = civ.boosts && civ.boosts[isCivic ? 'c:' + id : id], has = G.hasMastery(civ, id, isCivic);
+    var state = has ? '<span class="pill" style="background:#4a3a10;color:#ffe9a8">earned</span>' : done ? '<span class="pill">missed</span>' : boosted ? '<span class="pill" style="background:#2a4a1e;color:#b6f0c4">ready: finish it to earn</span>' : '<span class="pill">needs the ' + (isCivic ? 'Inspiration' : 'Eureka') + ' first</span>';
+    return '<small>⭐ Mastery: ' + m.desc + ' ' + state + '</small>';
+  }
+  AU.masteryLine = masteryLine;
   function civicFxText(c) {
     var out = [];
     if (c.unlocks) out.push('Government: ' + c.unlocks);
@@ -152,13 +160,14 @@
   P.render_tech = function (app, g) {
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
-    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies. One continuous tree: nothing resets between eras.</p>';
+    var nMast = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') !== 0; }).length;
+    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Eureka</b>: meet the condition before you finish the technology and it is 40% cheaper. ⭐ <b>Mastery</b>: finish a technology after its Eureka fired and you keep its permanent bonus. Finish it without the Eureka and the mastery is lost.</p>';
     html += '<button class="big gold" data-action="tree" data-kind="tech">🌳 View the full technology tree</button><br><br>';
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
       var cost = G.techCost(g, p, t), prog = p.techProgress[t.id] || 0, cur = p.currentTech === t.id;
       var boosted = p.boosts && p.boosts[t.id];
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '">' + (AU.Assets.get('techs', t.id) ? '<img class="techpic" src="' + AU.Assets.url('techs', t.id) + '" alt="">' : '') + '<div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">Eureka ✓</span>' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small>' + (t.eureka && !boosted ? '<small>💡 Eureka: ' + t.eureka.desc + '</small>' : '') + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
+      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '">' + (AU.Assets.get('techs', t.id) ? '<img class="techpic" src="' + AU.Assets.url('techs', t.id) + '" alt="">' : '') + '<div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">Eureka ✓</span>' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small>' + (t.eureka && !boosted ? '<small>💡 Eureka: ' + t.eureka.desc + '</small>' : '') + masteryLine(p, t.id, false) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
@@ -167,7 +176,7 @@
       html += '<div class="section"><h3>' + era + ' Era</h3>';
       list.forEach(function (t) {
         var done = !!p.techs[t.id];
-        html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + t.name + (p.boosts && p.boosts[t.id] && !done ? ' 💡' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || '—') + '</small>' + (!done && t.pre.length ? '<small>Requires: ' + t.pre.map(function (x) { return AU.TECH_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && t.eureka ? '<small>💡 ' + t.eureka.desc + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.techCost(g, p, t) + '</span>') + '</div>';
+        html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + t.name + (p.boosts && p.boosts[t.id] && !done ? ' 💡' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || '—') + '</small>' + (!done && t.pre.length ? '<small>Requires: ' + t.pre.map(function (x) { return AU.TECH_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && t.eureka ? '<small>💡 ' + t.eureka.desc + '</small>' : '') + masteryLine(p, t.id, false) + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.techCost(g, p, t) + '</span>') + '</div>';
       });
       html += '</div>';
     });
@@ -191,19 +200,20 @@
     var others = availCards.filter(function (id) { return active.indexOf(id) < 0; });
     if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
-    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics.</p>';
+    var nMastC = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') === 0; }).length;
+    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Inspiration</b>: meet the condition before you finish the civic and it is 40% cheaper. ⭐ <b>Mastery</b>: finish a civic after its Inspiration fired and you keep its permanent bonus.</p>';
     html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
       var cost = G.civicCost(g, p, c), prog = p.civicProgress[c.id] || 0, cur = p.currentCivic === c.id, boosted = p.boosts && p.boosts['c:' + c.id];
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="civic" data-id="' + c.id + '">' + (AU.Assets.get('civics', c.id) ? '<img class="techpic" src="' + AU.Assets.url('civics', c.id) + '" alt="">' : '') + '<div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#3a2a4a;color:#e6c8ff">Inspired ✓</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || 'Leads to further civics') + '</small>' + (c.inspiration && !boosted ? '<small>💡 Inspiration: ' + c.inspiration.desc + '</small>' : '') + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
+      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="civic" data-id="' + c.id + '">' + (AU.Assets.get('civics', c.id) ? '<img class="techpic" src="' + AU.Assets.url('civics', c.id) + '" alt="">' : '') + '<div class="grow"><b>' + c.name + ' <span class="pill">' + AU.ERAS[c.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#3a2a4a;color:#e6c8ff">Inspired ✓</span>' : '') + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || 'Leads to further civics') + '</small>' + (c.inspiration && !boosted ? '<small>💡 Inspiration: ' + c.inspiration.desc + '</small>' : '') + masteryLine(p, c.id, true) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.culture) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%;background:var(--cult)"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">adopting</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
       var list = AU.CIVICS.filter(function (t) { return t.era === ei && avail.indexOf(t) < 0; });
       if (!list.length) return;
       html += '<div class="section"><h3>' + era + ' Era</h3>';
-      list.forEach(function (c) { var done = !!p.civics[c.id]; html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + c.name + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && c.inspiration ? '<small>💡 ' + c.inspiration.desc + '</small>' : '') + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.civicCost(g, p, c) + '</span>') + '</div>'; });
+      list.forEach(function (c) { var done = !!p.civics[c.id]; html += '<div class="row ' + (done ? 'done' : 'locked') + '"><div class="grow"><b>' + c.name + '</b><small>' + ([civicFxText(c)].concat(unlocksOfCivic(c.id)).filter(Boolean).join(' · ') || '—') + '</small>' + (!done && c.pre.length ? '<small>Requires: ' + c.pre.map(function (x) { return AU.CIVIC_BY_ID[x].name; }).join(', ') + '</small>' : '') + (!done && c.inspiration ? '<small>💡 ' + c.inspiration.desc + '</small>' : '') + masteryLine(p, c.id, true) + '</div>' + (done ? '<span class="pill">✓</span>' : '<span class="pill">' + G.civicCost(g, p, c) + '</span>') + '</div>'; });
       html += '</div>';
     });
     return { title: 'Civics & Government', html: html };

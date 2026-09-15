@@ -209,10 +209,14 @@
     if ((def.abroadBonus || def.homeContinentBonus) && civ) { var cc0 = G.capitalContinent(g, civ); if (cc0 !== -2 && t.continent >= 0) { if (def.abroadBonus && t.continent !== cc0) str += def.abroadBonus; if (def.homeContinentBonus && t.continent === cc0) str += def.homeContinentBonus; } }
     if (def.garrisonBonus && G.settlementAt(g, u.tile)) str += def.garrisonBonus;
     if (vsU0 && def.vsCls && def.vsCls[AU.UNITS[vsU0.type].cls]) str += def.vsCls[AU.UNITS[vsU0.type].cls];
+    // class counters: spears beat horses, horses run down archers and siege engines
+    if (vsU0) { var vcls = AU.UNITS[vsU0.type].cls; if (cls === 'antcav' && vcls === 'cavalry') str += 10; if (cls === 'cavalry' && (vcls === 'ranged' || vcls === 'siege')) str += 5; }
     if (vsU0 && vsU0.civ < 0 && def.vsIndependents) str += def.vsIndependents;
     {
       var nb = G.neighbors(g, t), adjF = 0, adjS = 0, intim = 0;
       for (var ni = 0; ni < nb.length; ni++) { var nus = G.unitsAt(g, nb[ni]); for (var nj = 0; nj < nus.length; nj++) { var o = nus[nj]; if (!G.isMilitary(o)) continue; if (o.civ === u.civ) { adjF++; if (o.type === u.type) adjS++; } else if (G.atWar(g, u.civ, o.civ)) { var od = U.def(g, o); if (od.intimidate) intim = Math.max(intim, od.intimidate); } } }
+      // flanking (+2 per adjacent friendly military unit when attacking) and support (+2 each when defending), max 3 units
+      if (!(ctx && ctx.ranged)) str += Math.min(3, adjF) * 2;
       if (def.flank) str += Math.min(3, adjF) * def.flank;
       if (def.flankSame) str += Math.min(3, adjS) * def.flankSame;
       str -= intim;
