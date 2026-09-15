@@ -80,6 +80,9 @@
       $('btn-continue').onclick = function () { if (!App.load()) App.toast('No saved game found.'); };
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
+      $('btn-tutorial').onclick = function () { AU.Tutorial.start(App); };
+      $('tut-skip').onclick = function () { AU.Tutorial.skip(App); };
+      $('tut-next').onclick = function () { AU.Tutorial.next(App); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
       $('btn-back').onclick = function () { App.showTitle(); };
       $('btn-start').onclick = function () { App.startNewGame(); };
@@ -179,6 +182,7 @@
     },
     refreshHud: function () {
       if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
+      if (AU.Tutorial) AU.Tutorial.update(this);
       var g = this.g, p = G.player(g); if (!g) return;
       if (AU.Audio) AU.Audio.forEra(p.era || 0);
       var y = G.civYields(g, p);

@@ -22,6 +22,7 @@
     <div class="title-buttons">
       <button id="btn-continue" class="big primary" hidden>Continue</button>
       <button id="btn-new" class="big primary">New Game</button>
+      <button id="btn-tutorial" class="big ghost">🎓 Tutorial</button>
       <button id="btn-help" class="big ghost">How to Play</button>
       <button id="btn-hall" class="big ghost">🏅 Hall of Fame</button>
       <button id="btn-pedia" class="big ghost">📖 Chibipedia</button>
@@ -67,6 +68,7 @@
     <div id="top-turn"></div>
   </div>
   <div id="notifs"></div>
+  <div id="tutorial" class="tutorial" hidden><div class="tut-step"></div><div class="tut-text"></div><div class="tut-btns"><button id="tut-skip" class="small ghost">Skip tutorial</button><button id="tut-next" class="small primary" hidden>Got it ▶</button></div></div>
   <div id="bottombar">
     <div id="context"></div>
     <div id="turn-controls">
@@ -127,6 +129,7 @@
 <script src="js/ui/cityview.js"></script>
 <script src="js/ui/citymap.js"></script>
 <script src="js/ui/halloffame.js"></script>
+<script src="js/ui/tutorial.js"></script>
 <script src="js/ui/app.js"></script>
 </body>
 </html>
