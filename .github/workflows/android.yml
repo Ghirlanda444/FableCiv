@@ -38,6 +38,7 @@ jobs:
 
       - name: Build
         run: |
+          node tools/asset-manifest.js
           cd android
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug

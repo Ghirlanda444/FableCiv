@@ -21,7 +21,9 @@ jobs:
         with:
           node-version: "20"
       - name: Single-file HTML
-        run: node tools/bundle-html.js Chibilization.html
+        run: |
+          node tools/asset-manifest.js
+          node tools/bundle-html.js Chibilization.html
       - name: Prepare desktop app
         shell: bash
         run: |
