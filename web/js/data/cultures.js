@@ -12,9 +12,9 @@
   };
   var MAP = {
     rome: 'mediterranean', greece: 'mediterranean', carthage: 'mediterranean', byzantium: 'mediterranean', spain: 'mediterranean', portugal: 'mediterranean',
-    germany: 'european', france: 'european', england: 'european', celts: 'european', norway: 'european', netherlands: 'european', poland: 'european', russia: 'european',
+    germany: 'european', austria_hungary: 'european', france: 'european', england: 'european', celts: 'european', norway: 'european', netherlands: 'european', poland: 'european', russia: 'european',
     america: 'european',
-    china: 'east_asian', qin: 'east_asian', japan: 'east_asian', korea: 'east_asian', mongolia: 'east_asian',
+    china: 'east_asian', japan: 'east_asian', korea: 'east_asian', mongolia: 'east_asian',
     vietnam: 'south_asian', khmer: 'south_asian', indonesia: 'south_asian',
     india: 'south_asian',
     persia: 'middle_eastern', arabia: 'middle_eastern', ottoman: 'middle_eastern', babylon: 'middle_eastern', assyria: 'middle_eastern', egypt: 'middle_eastern',

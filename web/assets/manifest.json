@@ -424,15 +424,6 @@
  },
  {
   "kind": "units",
-  "id": "ji_halberdier",
-  "file": "units/ji_halberdier.png",
-  "name": "Ji Halberdier (Qin unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
   "id": "minuteman",
   "file": "units/minuteman.png",
   "name": "Minuteman (America unique unit)",
@@ -670,6 +661,15 @@
   "id": "maori_warrior",
   "file": "units/maori_warrior.png",
   "name": "Toa (Polynesia unique unit)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "kuk_field_gun",
+  "file": "units/kuk_field_gun.png",
+  "name": "k.u.k. Field Gun (Austria-Hungary unique unit)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -1576,6 +1576,15 @@
  },
  {
   "kind": "leaders",
+  "id": "qin",
+  "file": "leaders/qin.png",
+  "name": "Qin Shi Huang (China)",
+  "size": "512x640",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "leaders",
   "id": "taizong",
   "file": "leaders/taizong.png",
   "name": "Emperor Taizong (China)",
@@ -1597,24 +1606,6 @@
   "id": "kublai",
   "file": "leaders/kublai.png",
   "name": "Kublai Khan (China)",
-  "size": "512x640",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "leaders",
-  "id": "qin",
-  "file": "leaders/qin.png",
-  "name": "Qin Shi Huang (Qin)",
-  "size": "512x640",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "leaders",
-  "id": "duke_xiao",
-  "file": "leaders/duke_xiao.png",
-  "name": "Duke Xiao (Qin)",
   "size": "512x640",
   "nobg": false,
   "hires": false
@@ -2179,6 +2170,33 @@
  },
  {
   "kind": "leaders",
+  "id": "franz_joseph",
+  "file": "leaders/franz_joseph.png",
+  "name": "Franz Joseph I (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "leaders",
+  "id": "maria_theresa",
+  "file": "leaders/maria_theresa.png",
+  "name": "Maria Theresa (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "leaders",
+  "id": "sisi",
+  "file": "leaders/sisi.png",
+  "name": "Elisabeth (Austria-Hungary)",
+  "size": "512x640",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "leaders",
   "id": "hannibal",
   "file": "leaders/hannibal.png",
   "name": "Hannibal Barca (Carthage)",
@@ -2620,15 +2638,6 @@
  },
  {
   "kind": "civs",
-  "id": "qin",
-  "file": "civs/qin.png",
-  "name": "Qin emblem",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "civs",
   "id": "america",
   "file": "civs/america.png",
   "name": "America emblem",
@@ -2866,6 +2875,15 @@
   "id": "polynesia",
   "file": "civs/polynesia.png",
   "name": "Polynesia emblem",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "civs",
+  "id": "austria_hungary",
+  "file": "civs/austria_hungary.png",
+  "name": "Austria-Hungary emblem",
   "size": "512x512",
   "nobg": false,
   "hires": false

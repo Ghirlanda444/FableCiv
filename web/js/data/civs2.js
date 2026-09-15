@@ -3,6 +3,17 @@
 (function (AU) {
   function L(id, name, title, abName, abDesc, fx, ai) { return { id: id, name: name, title: title, ability: { name: abName, desc: abDesc, fx: fx }, ai: ai }; }
   var MORE = [
+    { id: 'austria_hungary', name: 'Austria-Hungary', adj: 'Austro-Hungarian', difficulty: 'easy', bias: ['plains', 'river'], color: '#000000', color2: '#ffd700',
+      ability: { name: 'Ausgleich', desc: '+1 Culture and +1 Happiness in every settlement. Captured settlements gain +2 extra Happiness.', fx: { culturePerSettlement: 1, happinessBonus: 1, capturedHappiness: 2 } },
+      uu: { id: 'kuk_field_gun', name: 'k.u.k. Field Gun', replaces: 'field_cannon', ranged: 5, moves: 1, defense: 4, vsSettlements: 5, costMult: 1.15, desc: '+5 Ranged Strength, +1 Movement, +4 defending, +5 vs settlements, costs 15% more' },
+      ub: { id: 'theresian_academy', name: 'Theresian Academy', replaces: 'military_academy', yields: { production: 2, science: 2 }, unitStrength: 1, desc: '+2 Production, +2 Science, units built here +1 extra Strength' },
+      cities: ['Vienna', 'Budapest', 'Prague', 'Trieste', 'Kraków', 'Lemberg', 'Zagreb', 'Sarajevo', 'Innsbruck', 'Graz', 'Linz', 'Salzburg', 'Brno', 'Pressburg', 'Ljubljana', 'Czernowitz', 'Debrecen', 'Szeged', 'Klagenfurt', 'Temesvár', 'Pécs', 'Fiume', 'Pola', 'Görz', 'Bozen', 'Trento', 'Olmütz', 'Troppau', 'Teschen', 'Przemyśl', 'Tarnów', 'Kaschau', 'Klausenburg', 'Hermannstadt', 'Kronstadt', 'Zara', 'Spalato', 'Ragusa', 'Mostar', 'Miskolc'],
+      leaders: [
+        L('franz_joseph', 'Franz Joseph I', 'Emperor-King', 'Ringstraße', 'Each Wonder yields +2 Culture. Buildings cost 10% less. +1 Happiness in every settlement.', { culturePerWonder: 2, buildingCostMult: 0.9, happinessBonus: 1 }, { aggression: 0.4, expansion: 0.6, science: 0.5, culture: 0.8 }),
+        L('maria_theresa', 'Maria Theresa', 'Empress', 'Theresian Reforms', 'Settlements grow 15% faster. Libraries +1 Science. Units gain 25% more experience.', { growthMult: 1.15, buildingBonus: { library: { science: 1 } }, xpMult: 1.25 }, { aggression: 0.4, expansion: 0.6, science: 0.7, culture: 0.6 }),
+        L('sisi', 'Elisabeth', 'Empress', 'Queen of Hungary', '+20% Tourism. Each worked Luxury yields +1 Culture. +1 Happiness in every settlement.', { tourismMult: 1.2, luxuryCulture: 1, happinessBonus: 1 }, { aggression: 0.2, expansion: 0.5, science: 0.5, culture: 0.9 })
+      ] },,
+
     { id: 'carthage', name: 'Carthage', adj: 'Carthaginian', difficulty: 'medium', bias: ['coast', 'desert'], color: '#66023c', color2: '#e6cf9c',
       ability: { name: 'Emporia', desc: 'Coastal settlements +2 Gold. Trade Outposts yield +2 extra Gold. Naval units cost 15% less.', fx: { coastalSettlementYields: { gold: 2 }, specializationYields: { trade: { gold: 2 } }, navalCostMult: 0.85 } },
       uu: { id: 'quinquereme', name: 'Quinquereme', replaces: 'galley', strength: 5, moves: 1, goldOnKill: 30, costMult: 1.15, desc: '+5 Strength, +1 Movement, +30 Gold per kill, costs 15% more' },

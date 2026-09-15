@@ -7,7 +7,6 @@ module.exports = {
   hojo: 'Hojo Tokimune: young samurai with a topknot, stern narrow eyes, purple and black kamakura-era armour with red lacing, a tachi sword',
   meiji: 'Emperor Meiji: short black hair parted to the side, full moustache and goatee, 19th-century black military uniform with gold epaulettes and medals',
   qin: 'Qin Shi Huang: long black beard and moustache, stern eyes, black imperial robe with red and gold dragons, flat mianguan crown with hanging bead strings',
-  duke_xiao: 'Duke Xiao of Qin: Warring States ruler, thin moustache, black and gold court robe with a tall black official cap, calm calculating look',
   taizong: 'Emperor Taizong of Tang: strong-jawed emperor with a short beard, yellow imperial robe with dragon embroidery, black futou cap with wings, warm confident smile',
   wu: 'Empress Wu Zetian: elegant Tang-dynasty lady, elaborate black updo with golden phoenix hairpins, red and gold silk robe, confident regal smile',
   kublai: 'Kublai Khan: round face with a thin drooping moustache and chin beard, Mongol fur-trimmed hat with red tassel, white and gold Yuan robe',
