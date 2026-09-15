@@ -212,7 +212,7 @@
   R.checkVictory = function (g) {
     if (!g.religions) return null;
     for (var id in g.religions) {
-      var rel = g.religions[id], founder = g.civs[rel.founder]; if (!founder || !founder.alive || (founder.era || 0) < 3) continue; // from the Renaissance on
+      var rel = g.religions[id], founder = g.civs[rel.founder]; if (!founder || !founder.alive || (founder.era || 0) < 4) continue; // from the Industrial era on
       var ok = true;
       for (var i = 0; i < g.civs.length; i++) {
         var c = g.civs[i]; if (!c.alive || c.minor) continue;
@@ -220,6 +220,8 @@
         var fol = sets.filter(function (s) { return s.religion === id; }).length;
         if (fol * 2 < sets.length) { ok = false; break; }
       }
+      // and at least 60% of every settlement in the world follows it
+      if (ok) { var allS = 0, folS = 0; for (var sid in g.settlements) { var s0 = g.settlements[sid]; if (g.civs[s0.civ] && g.civs[s0.civ].minor) continue; allS++; if (s0.religion === id) folS++; } if (folS < allS * 0.6) ok = false; }
       if (ok && g.civs.filter(function (c) { return c.alive && !c.minor; }).length > 1) return { type: 'religion', civ: rel.founder, turn: g.turn };
     }
     return null;

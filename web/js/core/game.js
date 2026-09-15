@@ -518,7 +518,8 @@
     var free = 4 + Object.keys(civ.techs).length / 8 + (G.civFx(g, civ).freeUpkeep || 0);
     return Math.max(0, Math.floor(n - free));
   };
-  G.growthCost = function (pop, g) { return Math.floor((15 + 8 * (pop - 1) + Math.pow(pop - 1, 1.5)) * (g ? G.speed(g) : 1)); };
+  // Big settlements grow slower: from pop 8 each extra citizen adds 12% to the food needed, so mega-cities stop at a sane size.
+  G.growthCost = function (pop, g) { return Math.floor((15 + 8 * (pop - 1) + Math.pow(pop - 1, 1.5)) * (1 + Math.max(0, pop - 8) * 0.12) * (g ? G.speed(g) : 1)); };
   G.era = function (civ) { var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
 
   // ---------- Production / purchasing ----------
@@ -734,8 +735,9 @@
   // ---------- Research ----------
   G.availableTechs = function (civ) { return AU.TECHS.filter(function (t) { return !civ.techs[t.id] && t.pre.every(function (p) { return civ.techs[p]; }); }); };
   G.availableCivics = function (civ) { return AU.CIVICS.filter(function (t) { return !civ.civics[t.id] && t.pre.every(function (p) { return civ.civics[p]; }); }); };
-  G.techCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).techCostMult || 1) * G.speed(g)); };
-  G.civicCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).civicCostMult || 1) * G.speed(g)); };
+  // Later eras cost more per point of Knowledge and Heritage (+20% per era) so a game lasts the eight eras.
+  G.techCost = function (g, civ, t) { return Math.round(t.cost * (1 + 0.2 * (t.era || 0)) * (G.civFx(g, civ).techCostMult || 1) * G.speed(g)); };
+  G.civicCost = function (g, civ, t) { return Math.round(t.cost * (1 + 0.2 * (t.era || 0)) * (G.civFx(g, civ).civicCostMult || 1) * G.speed(g)); };
   // Mastery: a technology or civic finished after its Spark / Insight fired keeps a permanent bonus.
   G.masteryOf = function (id, isCivic) { return AU.MASTERY ? (isCivic ? AU.MASTERY.civics[id] : AU.MASTERY.techs[id]) : null; };
   G.hasMastery = function (civ, id, isCivic) { return !!(civ.mastery && civ.mastery[isCivic ? 'c:' + id : id]); };
@@ -904,11 +906,11 @@
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
   G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / 100); };
-  // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Industrial era or later).
+  // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Modern era or later).
   G.cultureProgress = function (g, civ) {
     var v = G.visitors(g, civ), need = 0;
     g.civs.forEach(function (o) { if (o.alive && !o.minor && o.idx !== civ.idx) need = Math.max(need, G.domesticTourists(g, o)); });
-    return { visitors: v, need: need + 1, ready: civ.era >= 4 && v > need };
+    return { visitors: v, need: need + 1, ready: civ.era >= 5 && v > need }; // from the Modern era on
   };
 
   // ---------- Score & victory ----------
@@ -948,7 +950,7 @@
     if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1));
     if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
-    if (s.specialization && !s.isCity && surplus > 0) { sends = surplus * (fx.townFoodMult || 1); }
+    if (s.specialization && !s.isCity && surplus > 0) { sends = Math.min(surplus, 6) * (fx.townFoodMult || 1); } // a town feeds its City with at most 6 Food per turn
     else {
       s.food += surplus;
       var cost = G.growthCost(s.pop, g);

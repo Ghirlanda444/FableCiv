@@ -356,7 +356,7 @@
       html += '</div>';
     }
     var cp = G.cultureProgress(g, p);
-    html += '<div class="section"><h3>' + _('Fame') + ' &amp; ' + _('Renown victory') + '</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' ' + _('Fame') + '/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">' + _('Win by Renown when your foreign visitors exceed the domestic tourists of every rival (Industrial era or later). Fame comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.') + '</p>' +
+    html += '<div class="section"><h3>' + _('Fame') + ' &amp; ' + _('Renown victory') + '</h3><div class="yields"><span>🧳 +' + G.tourism(g, p) + ' ' + _('Fame') + '/turn</span><span>✈️ ' + cp.visitors + ' foreign visitors</span><span>🏠 need ' + cp.need + '</span></div><p class="stat">' + _('Win by Renown when your foreign visitors exceed the domestic tourists of every rival (Modern era or later). Fame comes from wonders, museums, amphitheaters, broadcast towers, stadiums and natural wonders inside your borders, and grows with each era.') + '</p>' +
       g.civs.filter(function (o) { return o.alive && o.idx !== p.idx && p.met && p.met[o.idx]; }).map(function (o) { var dom = G.domesticTourists(g, o); return '<div class="row"><div class="grow">' + G.civData(o).name + '</div><small>' + Math.min(100, Math.round(cp.visitors / (dom + 1) * 100)) + '% (' + cp.visitors + '/' + (dom + 1) + ')</small></div>'; }).join('') + '</div>';
     var lux = G.luxuryCount(g, p);
     html += '<div class="section"><h3>' + _('Resources') + '</h3><div class="yields">' + (lux.luxuries.map(function (r) { return '<span>' + AU.RESOURCES[r].icon + ' ' + AU.RESOURCES[r].name + '</span>'; }).join('') || '<span class="stat">' + _('no luxuries yet (work tiles with luxury resources for happiness)') + '</span>') +
@@ -451,7 +451,7 @@
         html += '<br><button class="big primary" data-action="enhancerel" ' + (Rl.canEnhance(g, p) && sel.relEnh && sel.relFollower2 ? '' : 'disabled') + '>' + _('Enhance') + ' ' + rel.name + '</button>';
       }
       var vp = Rl.victoryProgress(g, p);
-      if (vp) html += '<h3>' + _('Devout victory') + '</h3><p class="stat">' + _('Win, from the Renaissance era on, when your religion is the majority in at least half of the settlements of every empire.') + '</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
+      if (vp) html += '<h3>' + _('Devout victory') + '</h3><p class="stat">' + _('Win, from the Industrial era on, when your religion is the majority in at least half of the settlements of every empire.') + '</p>' + vp.map(function (r) { return '<div class="row"><div class="grow">' + (r.ok ? '✅ ' : '⬜ ') + G.civData(r.civ).name + '</div><small>' + r.followers + '/' + r.total + '</small></div>'; }).join('');
       html += '</div>';
     }
     // world religions
