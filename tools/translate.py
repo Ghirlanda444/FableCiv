@@ -27,16 +27,26 @@ def list_models():
             out = request(path, None, 'GET'); ids += [m.get('id') for m in out.get(key, []) if m.get('id')]
         except Exception as e: print('  could not list %s: %s' % (path, e), flush=True)
     return ids
+def probe(m):
+    """One tiny chat request: True when the account may use this model."""
+    try:
+        request('chat/completions', {'model': m, 'messages': [{'role': 'user', 'content': 'Reply with OK'}], 'max_tokens': 5}); return True
+    except urllib.error.HTTPError as e:
+        try: detail = e.read().decode('utf-8', 'replace')[:160]
+        except Exception: detail = ''
+        print('  %s: HTTP %s %s' % (m, e.code, detail), flush=True); return False
+    except Exception as e:
+        print('  %s: %s' % (m, e), flush=True); return False
 def model():
     global _model
     if _model: return _model
     forced = os.environ.get('XAI_TEXT_MODEL')
     if forced: _model = forced; return forced
-    ids = list_models(); print('  xAI models available:', ', '.join(ids) or '(none listed)', flush=True)
-    for pref in CANDIDATES:
-        if pref in ids: _model = pref; return pref
-    chat = [i for i in ids if 'grok' in i and 'image' not in i and 'video' not in i and 'embed' not in i]
-    _model = chat[0] if chat else CANDIDATES[0]; return _model
+    ids = list_models(); print('  xAI models listed for this key:', ', '.join(ids) or '(none)', flush=True)
+    chat = [i for i in ids if 'grok' in i and not any(x in i for x in ('image', 'video', 'embed', 'imagine'))]
+    for m in [c for c in CANDIDATES if c in ids] + chat + [c for c in CANDIDATES if c not in ids]:
+        if probe(m): _model = m; print('  using model', m, flush=True); return m
+    sys.exit('No text model is available to this xAI API key (only image models are listed). Open console.x.ai, edit the API key, and allow a chat model such as grok-4-fast-non-reasoning (or set the XAI_TEXT_MODEL repository variable). Nothing was translated.')
 
 def translate_batch(lang, items):
     prompt = ('Translate the following user-interface strings of a cute turn-based strategy game from English to %s. %s\n'
@@ -55,10 +65,7 @@ def translate_batch(lang, items):
             except Exception: pass
             print('  HTTP', e.code, detail, flush=True)
             if e.code == 400 and 'response_format' in body: body.pop('response_format')
-            elif e.code == 404:
-                global _model
-                nxt = [c for c in CANDIDATES if c != body['model']]; i = CANDIDATES.index(body['model']) if body['model'] in CANDIDATES else -1
-                body['model'] = CANDIDATES[i + 1] if i + 1 < len(CANDIDATES) else nxt[0]; _model = body['model']; print('  trying model', _model, flush=True)
+            elif e.code == 404: sys.exit('The model ' + body['model'] + ' is not available to this key any more; nothing more was translated.')
             time.sleep(3 * (attempt + 1))
         except Exception as e:
             print('  retry after error:', e, flush=True); time.sleep(3 * (attempt + 1))
