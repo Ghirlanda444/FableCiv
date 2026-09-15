@@ -5,7 +5,7 @@ remove the background (rembg, with a chroma-key fallback) and save PNGs with tra
 Usage: python3 tools/gen-art.py [--limit N] [--kinds units,leaders] [--seed 7]
 Exits 0 even when some images fail; a later run retries whatever is still missing.
 """
-import argparse, io, json, os, sys, time, urllib.error, urllib.parse, urllib.request
+import re, argparse, io, json, os, sys, time, urllib.error, urllib.parse, urllib.request
 
 ROOT = os.path.join(os.path.dirname(__file__), '..', 'web', 'assets')
 BG_HINT = ''
@@ -180,7 +180,7 @@ def main():
         return sum(1 for n in sizes if n > W * H * 0.06 and n > sizes[0] * 0.25) if sizes else 0
     def work(it):
         path = os.path.join(ROOT, it['file'])
-        prompt = prompts.get(it['file'].replace('.png', ''), it['name'])
+        prompt = prompts.get(re.sub(r'\.(png|jpg)$', '', it['file']), it['name'])  # PROMPTS.md keys have no extension
         w, h = it['size'].split('x')
         best = None
         for attempt in range(3):

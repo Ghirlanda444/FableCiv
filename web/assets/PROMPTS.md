@@ -1,4 +1,4 @@
-# Artwork wanted (1095 pictures)
+# Artwork wanted (1092 pictures)
 
 Save each image as **web/assets/<kind>/<id>.png** (jpg for terrain, techs and civics) (PNG with transparency; the generation script removes the white background automatically). The game uses a picture the moment the file exists and keeps its built-in look for anything missing, so you can add them in any order.
 
@@ -2303,11 +2303,5 @@ Style guide for every prompt: Cute chibi 3D game render in the style of Clash of
 
 ## logo
 
-- **logo/chibilization_1.png** (1024x512) — Logo candidate 1
-  > Mobile game title logo: the single word "CHIBILIZATION" written in big chunky rounded 3D golden cartoon letters with a thick dark brown outline, glossy bevelled toy-like lettering, slightly arched, a tiny golden crown sitting on the first letter and two small green laurel leaves at the sides, in the style of Clash of Clans and Kingshot game logos. The word must be spelled exactly C-H-I-B-I-L-I-Z-A-T-I-O-N with no other words, no tagline, no subtitle. Centred, isolated on a plain white background, no watermark.
-- **logo/chibilization_2.png** (1024x512) — Logo candidate 2
-  > Mobile game title logo: the single word "CHIBILIZATION" written in big chunky rounded 3D golden cartoon letters with a thick dark brown outline, glossy bevelled toy-like lettering, slightly arched, a tiny golden crown sitting on the first letter and two small green laurel leaves at the sides, in the style of Clash of Clans and Kingshot game logos. The word must be spelled exactly C-H-I-B-I-L-I-Z-A-T-I-O-N with no other words, no tagline, no subtitle. Centred, isolated on a plain white background, no watermark.
-- **logo/chibilization_3.png** (1024x512) — Logo candidate 3
-  > Mobile game title logo: the single word "CHIBILIZATION" written in big chunky rounded 3D golden cartoon letters with a thick dark brown outline, glossy bevelled toy-like lettering, slightly arched, a tiny golden crown sitting on the first letter and two small green laurel leaves at the sides, in the style of Clash of Clans and Kingshot game logos. The word must be spelled exactly C-H-I-B-I-L-I-Z-A-T-I-O-N with no other words, no tagline, no subtitle. Centred, isolated on a plain white background, no watermark.
-- **logo/chibilization_4.png** (1024x512) — Logo candidate 4
+- **logo/chibilization.png** (1024x512) — Logo
   > Mobile game title logo: the single word "CHIBILIZATION" written in big chunky rounded 3D golden cartoon letters with a thick dark brown outline, glossy bevelled toy-like lettering, slightly arched, a tiny golden crown sitting on the first letter and two small green laurel leaves at the sides, in the style of Clash of Clans and Kingshot game logos. The word must be spelled exactly C-H-I-B-I-L-I-Z-A-T-I-O-N with no other words, no tagline, no subtitle. Centred, isolated on a plain white background, no watermark.
