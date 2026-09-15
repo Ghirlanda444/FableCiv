@@ -541,15 +541,6 @@
  },
  {
   "kind": "units",
-  "id": "warakaq",
-  "file": "units/warakaq.png",
-  "name": "Warak'aq (Inca unique unit)",
-  "size": "512x512",
-  "nobg": false,
-  "hires": false
- },
- {
-  "kind": "units",
   "id": "hulche",
   "file": "units/hulche.png",
   "name": "Hul'che (Maya unique unit)",
@@ -9516,7 +9507,7 @@
   "kind": "civics",
   "id": "social_media",
   "file": "civics/social_media.jpg",
-  "name": "Viral Culture",
+  "name": "Viral Heritage",
   "size": "512x512",
   "nobg": true,
   "hires": false
@@ -9570,7 +9561,7 @@
   "kind": "civics",
   "id": "cultural_hegemony",
   "file": "civics/cultural_hegemony.jpg",
-  "name": "Global Culture",
+  "name": "Global Heritage",
   "size": "512x512",
   "nobg": true,
   "hires": false
