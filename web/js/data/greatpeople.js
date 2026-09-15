@@ -1,4 +1,4 @@
-// Great People: seven kinds, earned with Great Person points from buildings and wonders (Civ 4/6 style).
+// Great People: seven kinds, earned with Great Person points from buildings and wonders.
 // Each kind has its own points, its own rising cost and a list of historical names in era order.
 (function (AU) {
   AU.GREAT_TYPES = {

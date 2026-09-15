@@ -1,4 +1,4 @@
-// Leader screens (Civ 2 style audience): portrait, emissary header, what the leader says, a list of options.
+// Leader screens: portrait, emissary header, what the leader says, a list of options.
 // Used for first contact, proposals from the AI, denouncements and the "Talk" button of the diplomacy panel.
 (function (AU) {
   var G = AU.G, D = AU.Diplo, CS = AU.CityStates;

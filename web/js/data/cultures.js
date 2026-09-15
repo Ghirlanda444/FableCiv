@@ -1,4 +1,4 @@
-// Artistic art groups (like Civilization IV's art styles): every civilization belongs to one, and units and
+// Artistic art groups : every civilization belongs to one, and units and
 // buildings can have a picture per group (web/assets/units/<culture>/<unit>.png), falling back to the shared picture.
 (function (AU) {
   AU.CULTURES = {

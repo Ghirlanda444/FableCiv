@@ -177,7 +177,7 @@
       }
       if (ok && path.length >= 2) { path.forEach(function (p) { tiles[p].river = true; }); riverPaths.push([riverSources[s]].concat(path, [mouth])); made++; }
     }
-    // Navigable rivers (Civ 7 style): the lower reach of every long river is wide enough for ships.
+    // Navigable rivers: the lower reach of every long river is wide enough for ships.
     // Land units cross it as land; naval units sail it; settlements next to it count as coastal.
     riverPaths.forEach(function (rp) {
       var body = rp.slice(1, rp.length - 1); if (body.length < 6) return;

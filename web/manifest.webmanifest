@@ -7,6 +7,6 @@
   "orientation": "any",
   "background_color": "#0b0e14",
   "theme_color": "#0b0e14",
-  "description": "A cute Civilization-style 4X game: 50 civilizations, religion, city-states, towns and cities.",
+  "description": "A cute chibi strategy game: 40 civilizations, religion, free cities, towns and cities, eight eras.",
   "icons": [{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
 }

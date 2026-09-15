@@ -1,4 +1,4 @@
-// "Build your palace" (Civ 1 & 2): as your people prosper they offer to add a piece to the palace.
+// "Build your palace": as your people prosper they offer to add a piece to the palace.
 // Every piece is chosen in an architectural style; styles can be mixed freely.
 (function (AU) {
   // Pieces in build order. x/y/w are layout positions on a 640x400 canvas (bottom-anchored), z is draw order.

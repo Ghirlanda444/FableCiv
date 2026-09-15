@@ -43,7 +43,7 @@
     ocean: [22, 66, 120], coast: [46, 132, 190], lake: [64, 150, 214],
     grassland: [98, 156, 66], plains: [176, 160, 82], desert: [222, 200, 140], tundra: [140, 146, 120], snow: [230, 236, 240], mountain: [120, 116, 110]
   };
-  var ISO = 0.62; // vertical squash of the isometric (Civ 3 style) view
+  var ISO = 0.62; // vertical squash of the isometric view
   function hexPath(ctx, cx, cy, r, sy) {
     sy = sy || 1; ctx.beginPath();
     for (var i = 0; i < 6; i++) { var a = Math.PI / 180 * (60 * i - 30); var x = cx + r * Math.cos(a), y = cy + r * Math.sin(a) * sy; if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }

@@ -86,7 +86,7 @@
     colony_ship:      { name: 'Launch Colony Ship',     cost: 1800, tech: 'spaceflight', requiresProject: 'moon_landing', desc: 'Final step: win a Knowledge Victory.' }
   };
 
-  // Civ 7 style town specializations. A specialized town stops growing and sends its surplus food to the nearest city.
+  // Town specializations. A specialized town stops growing and sends its surplus food to the nearest city.
   AU.SPECIALIZATIONS = {
     farming:  { name: 'Farming Town',  minPop: 5, desc: 'Worked Farms, Pastures and Fishing Boats +1 Food. Surplus Food feeds your nearest City.', icon: '🌾' },
     mining:   { name: 'Mining Town',   minPop: 5, desc: 'Worked Mines, Quarries and Woodcutters +1 Production (converted to Gold).', icon: '⛏️' },

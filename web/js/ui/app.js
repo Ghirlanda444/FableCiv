@@ -189,7 +189,7 @@
       if (todo.length) { be.innerHTML = todo[0].icon + ' ' + todo[0].text + (todo.length > 1 ? ' <small>+' + (todo.length - 1) + ' more</small>' : ''); be.classList.add('todo'); $('btn-pass').hidden = false; }
       else { be.textContent = 'End Turn'; be.classList.remove('todo'); $('btn-pass').hidden = true; }
     },
-    // Everything that still needs a decision before the turn can end, most important first (Civ 6 style).
+    // Everything that still needs a decision before the turn can end, most important first.
     todo: function () {
       var g = this.g, p = G.player(g), list = [], self = this;
       if (!g) return list;

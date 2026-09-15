@@ -1,4 +1,4 @@
-// City view: a live 3D scene of one settlement built from its actual buildings (the Civ 3 "look inside" screen).
+// City view: a live 3D scene of one settlement built from its actual buildings .
 (function (AU) {
   var G = AU.G, P = AU.Panels, R = AU.HEX_R;
   var $ = function (id) { return document.getElementById(id); };
