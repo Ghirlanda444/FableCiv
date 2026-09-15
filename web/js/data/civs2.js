@@ -35,26 +35,6 @@
         L('sobieski', 'Jan III Sobieski', 'King', 'Relief of Vienna', 'Cavalry +5 Strength. Units +3 Strength within 3 tiles of your settlements. +5 Faith per kill.', { cavalryBonus: 5, nearHomeBonus: 3, faithFromKills: 5 }, { aggression: 0.75, expansion: 0.5, science: 0.4, culture: 0.5 })
       ] },
 
-    { id: 'sumer', name: 'Sumer', adj: 'Sumerian', difficulty: 'medium', bias: ['river', 'plains'], color: '#c9b27c', color2: '#2f4858',
-      ability: { name: 'Cuneiform', desc: 'Worked River tiles yield +1 Science. Gain 10 Science whenever you learn a civic.', fx: { tileBonus: [{ when: 'river', yields: { science: 1 } }], civicScience: 10 } },
-      uu: { id: 'war_cart', name: 'War Cart', replaces: 'scout', strength: 8, movesAfterAttack: true, costMult: 1.3, desc: '+8 Strength, can move after attacking, costs 30% more (an onager-drawn battle cart that scouts and raids)' },
-      ub: { id: 'edubba', name: 'Edubba', replaces: 'monument', yields: { culture: 1, science: 2 }, desc: '+1 Culture, +2 Science' },
-      cities: ['Uruk', 'Ur', 'Eridu', 'Lagash', 'Kish', 'Nippur', 'Umma', 'Larsa', 'Adab', 'Shuruppak', 'Girsu', 'Bad-tibira', 'Sippar', 'Isin', 'Zabalam', 'Kuara', 'Dilbat', 'Marad', 'Kutha', 'Akshak', 'Nina', 'Larak', 'Kisurra', 'Der', 'Eshnunna', 'Tutub', 'Kazallu', 'Awan', 'Mari', 'Borsippa', 'Puzrish-Dagan', 'Urum', 'Apisal', 'Ubaid', 'Jemdet Nasr', 'Khafajah', 'Ishchali', 'Tell Agrab', 'Abu Salabikh', 'Nagar'],
-      leaders: [
-        L('gilgamesh', 'Gilgamesh', 'Lugal of Uruk', 'Epic of Gilgamesh', 'Units heal +10 everywhere and +5 Strength vs independent raiders. Killing a unit grants +8 Culture.', { healBonusAll: 10, vsIndependents: 5, culturePerKill: 8 }, { aggression: 0.7, expansion: 0.5, science: 0.4, culture: 0.6 }),
-        L('urnammu', 'Ur-Nammu', 'King of Ur', 'Code of Ur-Nammu', 'Wonders cost 15% less. +1 Happiness in every settlement and settlements grow 10% faster.', { wonderCostMult: 0.85, happinessBonus: 1, growthMult: 1.1 }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
-      ] },
-
-    { id: 'hittites', name: 'Hittites', adj: 'Hittite', difficulty: 'medium', bias: ['hills', 'plains'], color: '#556b2f', color2: '#e6d8ad',
-      ability: { name: 'Land of Hatti', desc: 'Melee units +2 Strength and cost 15% less. Settlements founded on Hills +1 Production.', fx: { meleeBonus: 2, classCostMult: { melee: 0.85 }, settlementSiteBonus: [{ when: 'hills', yields: { production: 1 } }] } },
-      uu: { id: 'three_man_chariot', name: 'Three-Man Chariot', replaces: 'horseman', strength: 3, openBonus: 6, flank: 2, costMult: 1.15, desc: '+3 Strength, +6 on open flat terrain, +2 per adjacent friendly unit, costs 15% more' },
-      ub: { id: 'iron_smithy', name: 'Iron Smithy', replaces: 'workshop', yields: { production: 3, science: 1 }, desc: '+3 Production, +1 Science' },
-      cities: ['Hattusa', 'Kanesh', 'Tarhuntassa', 'Sapinuwa', 'Sarissa', 'Alaca Höyük', 'Zalpa', 'Nerik', 'Kussara', 'Arinna', 'Ankuwa', 'Kummanni', 'Karkemish', 'Alalakh', 'Ugarit', 'Tuwanuwa', 'Purushanda', 'Hahha', 'Hurma', 'Samuha', 'Tegarama', 'Ishuwa', 'Hakpis', 'Tapikka', 'Kizzuwatna', 'Adaniya', 'Lawazantiya', 'Malatya', 'Kummuh', 'Tarsa', 'Ura', 'Pala', 'Tumanna', 'Wilusa', 'Apasa', 'Nenassa', 'Durmitta', 'Hanhana', 'Katapa', 'Shalatiwara'],
-      leaders: [
-        L('suppiluliuma', 'Suppiluliuma I', 'Great King', 'Great King of Hatti', 'Captured settlements keep all buildings. Units +4 Strength vs settlements. +15 Gold per kill.', { captureKeepBuildings: true, vsSettlements: 4, goldPerKill: 15 }, { aggression: 0.85, expansion: 0.6, science: 0.4, culture: 0.3 }),
-        L('hattusili', 'Hattusili III', 'Great King', 'Treaty of Kadesh', '+1 Happiness per settlement. Units +5 Strength when defending in your borders and heal +10 there. +10 Culture when you learn a technology.', { happinessBonus: 1, homeDefenseBonus: 5, healBonusHome: 10, techCulture: 10 }, { aggression: 0.4, expansion: 0.6, science: 0.6, culture: 0.6 })
-      ] },
-
     { id: 'assyria', name: 'Assyria', adj: 'Assyrian', difficulty: 'hard', bias: ['river', 'plains'], color: '#6b8e23', color2: '#f5e6c8',
       ability: { name: 'Deportation', desc: 'Captured settlements lose no population and grant +40 Science. Siege units +5 Strength vs settlements. -1 Happiness in every settlement.', fx: { captureNoPopLoss: true, captureScience: 40, classBonusVsSettlements: { siege: 5 }, happinessBonus: -1 } },
       uu: { id: 'assyrian_slinger', name: 'Assyrian Sling Hunter', replaces: 'slinger', ranged: 5, strength: 5, range: 1, vsSettlements: 5, costMult: 1.3, desc: '+5 Ranged Strength, +5 Strength, +1 Range, +5 vs settlements, costs 30% more' },
@@ -73,17 +53,6 @@
       leaders: [
         L('amanirenas', 'Amanirenas', 'Kandake', 'One-Eyed Queen', 'Units +6 Strength when defending inside your borders and +4 vs units from another continent. +15 Gold per kill.', { homeDefenseBonus: 6, combatBonusVsInvaders: 4, goldPerKill: 15 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.5 }),
         L('piye', 'Piye', 'Pharaoh of Kush', 'Conqueror of Egypt', '+5 Faith per kill. Captured settlements keep their buildings. Units +3 Strength against civilizations that share your religion.', { faithFromKills: 5, captureKeepBuildings: true, combatBonusOwnReligion: 3 }, { aggression: 0.75, expansion: 0.6, science: 0.4, culture: 0.5 })
-      ] },
-
-    { id: 'holy_roman_empire', name: 'Holy Roman Empire', adj: 'Imperial', difficulty: 'medium', bias: ['forest', 'river'], color: '#8e7cc3', color2: '#1a1a1a',
-      ability: { name: 'Reichstag', desc: '+1 Happiness per Shrine you own. +1 Faith per settlement. Settlements following your religion +1 Science.', fx: { happinessPerShrine: 1, faithPerSettlement: 1, sciencePerFollowerSettlement: 1 } },
-      uu: { id: 'genoese_crossbowman', name: 'Genoese Arbalester', replaces: 'crossbowman', ranged: 3, defense: 4, defVsRanged: 8, costMult: 1.1, desc: '+3 Ranged Strength, +4 defending, +8 defending against ranged attacks (pavise), costs 10% more' },
-      ub: { id: 'kaiserpfalz', name: 'Kaiserpfalz', replaces: 'castle', yields: { culture: 2, faith: 1, happiness: 1 }, desc: '+2 Culture, +1 Faith, +1 Happiness' },
-      cities: ['Aachen', 'Regensburg', 'Worms', 'Speyer', 'Goslar', 'Augsburg', 'Würzburg', 'Bamberg', 'Ulm', 'Lübeck', 'Bremen', 'Basel', 'Zürich', 'Bern', 'Wetzlar', 'Fulda', 'Erfurt', 'Quedlinburg', 'Paderborn', 'Konstanz', 'Freiburg', 'Passau', 'Eger', 'Metz', 'Besançon', 'Arles', 'Pavia', 'Ingelheim', 'Gelnhausen', 'Kaiserslautern', 'Rothenburg', 'Nördlingen', 'Esslingen', 'Memmingen', 'Kempten', 'Lindau', 'Dinkelsbühl', 'Verdun', 'Cambrai', 'Lucca'],
-      leaders: [
-        L('charlemagne', 'Charlemagne', 'Emperor of the Romans', 'Carolingian Renaissance', 'Settlements following your religion +1 Culture. Gain 10 Science when you learn a civic and a free Civic when you build your first Library.', { culturePerFollowerSettlement: 1, civicScience: 10, freeCivicOnBuilding: 'library' }, { aggression: 0.6, expansion: 0.7, science: 0.6, culture: 0.7 }),
-        L('otto', 'Otto I', 'Holy Roman Emperor', 'Ottonian Church', 'Every new settlement starts with a free Shrine. Your religion spreads 25% faster. Units +4 Strength when defending inside your borders.', { freeBuilding: 'shrine', pressureMult: 1.25, homeDefenseBonus: 4 }, { aggression: 0.5, expansion: 0.6, science: 0.5, culture: 0.6 }),
-        L('charles_v', 'Charles V', 'Emperor', 'Plus Ultra', 'Units +3 Strength on continents other than your capital\'s. +1 Gold per settlement. Settlements founded on another continent start with +1 population.', { combatBonusAbroad: 3, goldPerSettlement: 1, abroadFoundPop: 1 }, { aggression: 0.6, expansion: 0.8, science: 0.5, culture: 0.5 })
       ] },
 
     { id: 'portugal', name: 'Portugal', adj: 'Portuguese', difficulty: 'easy', bias: ['coast'], color: '#7cb518', color2: '#c1121f',
@@ -106,26 +75,6 @@
         L('dewitt', 'Johan de Witt', 'Grand Pensionary', 'True Freedom', '+10% Gold. Gain 20 Gold whenever you learn a technology. Naval units cost 15% less.', { yieldMult: { gold: 1.1 }, techGold: 20, navalCostMult: 0.85 }, { aggression: 0.2, expansion: 0.7, science: 0.8, culture: 0.5 })
       ] },
 
-    { id: 'sweden', name: 'Sweden', adj: 'Swedish', difficulty: 'easy', bias: ['tundra', 'coast'], color: '#3b7dd8', color2: '#ffd400',
-      ability: { name: 'Nobel Prize', desc: '+1 Happiness in every settlement. Gain 10 Culture whenever you learn a technology and 10 Science whenever you learn a civic.', fx: { happinessBonus: 1, techCulture: 10, civicScience: 10 } },
-      uu: { id: 'carolean', name: 'Carolean', replaces: 'musketman', strength: 3, attack: 6, terrainBonus: { tundra: 5, snow: 5 }, costMult: 1.1, desc: '+3 Strength, +6 when attacking (gå på), +5 on tundra and snow, costs 10% more' },
-      ub: { id: 'folkskola', name: 'Folkskola', replaces: 'library', yields: { science: 2, happiness: 1 }, desc: '+2 Science, +1 Happiness' },
-      cities: ['Stockholm', 'Uppsala', 'Sigtuna', 'Birka', 'Gothenburg', 'Malmö', 'Visby', 'Kalmar', 'Lund', 'Örebro', 'Västerås', 'Linköping', 'Norrköping', 'Jönköping', 'Gävle', 'Umeå', 'Luleå', 'Kiruna', 'Sundsvall', 'Karlstad', 'Falun', 'Helsingborg', 'Borås', 'Växjö', 'Nyköping', 'Vadstena', 'Skara', 'Strängnäs', 'Västervik', 'Karlskrona', 'Halmstad', 'Kristianstad', 'Härnösand', 'Östersund', 'Söderköping', 'Eskilstuna', 'Uddevalla', 'Trollhättan', 'Piteå', 'Skellefteå'],
-      leaders: [
-        L('gustavus', 'Gustavus Adolphus', 'Lion of the North', 'Combined Arms', 'Ranged units +3 Strength and cavalry +3 Strength. Units gain 50% more experience.', { classBonus: { ranged: 3 }, cavalryBonus: 3, xpMult: 1.5 }, { aggression: 0.8, expansion: 0.5, science: 0.5, culture: 0.4 }),
-        L('kristina', 'Kristina', 'Queen', 'Minerva of the North', '+10% Science. Each Wonder yields +2 Culture. Universities +2 Culture.', { yieldMult: { science: 1.1 }, culturePerWonder: 2, buildingBonus: { university: { culture: 2 } } }, { aggression: 0.2, expansion: 0.5, science: 0.9, culture: 0.8 })
-      ] },
-
-    { id: 'brazil', name: 'Brazil', adj: 'Brazilian', difficulty: 'easy', bias: ['jungle', 'coast'], color: '#00c853', color2: '#ffdf00',
-      ability: { name: 'Carnaval', desc: '+10% Culture and +20% Tourism. +1 Happiness in every settlement.', fx: { yieldMult: { culture: 1.1 }, tourismMult: 1.2, happinessBonus: 1 } },
-      uu: { id: 'minas_geraes', name: 'Minas Geraes', replaces: 'battleship', strength: 5, ranged: 5, cultureOnKill: 20, costMult: 1.15, desc: '+5 Strength, +5 Ranged Strength, +20 Culture per kill, costs 15% more' },
-      ub: { id: 'sambadrome', name: 'Sambadrome', replaces: 'stadium', yields: { happiness: 2, culture: 4 }, desc: '+2 Happiness, +4 Culture' },
-      cities: ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Brasília', 'Recife', 'Belo Horizonte', 'Fortaleza', 'Manaus', 'Curitiba', 'Porto Alegre', 'Belém', 'Goiânia', 'Florianópolis', 'Natal', 'São Luís', 'Maceió', 'João Pessoa', 'Vitória', 'Cuiabá', 'Campo Grande', 'Teresina', 'Aracaju', 'Ouro Preto', 'Olinda', 'Santos', 'Campinas', 'Niterói', 'Petrópolis', 'Paraty', 'Diamantina', 'Porto Seguro', 'Ilhéus', 'Macapá', 'Boa Vista', 'Palmas', 'Porto Velho', 'Rio Branco', 'Londrina', 'Joinville', 'Pelotas'],
-      leaders: [
-        L('pedro', 'Pedro II', 'Emperor', 'The Magnanimous', 'Universities +2 Culture. Gain 10 Culture whenever you learn a technology. +1 Happiness in every settlement.', { buildingBonus: { university: { culture: 2 } }, techCulture: 10, happinessBonus: 1 }, { aggression: 0.2, expansion: 0.6, science: 0.8, culture: 0.8 }),
-        L('vargas', 'Getúlio Vargas', 'President', 'Estado Novo', '+10% Production in Cities. Towns convert Production to Gold at 120%. Units cost 10% less.', { cityYieldMult: { production: 1.1 }, townGoldMult: 1.2, unitCostMult: 0.9 }, { aggression: 0.5, expansion: 0.7, science: 0.6, culture: 0.5 })
-      ] },
-
     { id: 'khmer', name: 'Khmer', adj: 'Khmer', difficulty: 'hard', bias: ['river', 'jungle'], color: '#a67c52', color2: '#0b3d2e',
       ability: { name: 'Devaraja', desc: 'Settlements founded on a river +2 Faith and +1 Culture. Worked River tiles +1 Food. Units +2 Strength against civilizations that share your religion.', fx: { settlementSiteBonus: [{ when: 'river', yields: { faith: 2, culture: 1 } }], tileBonus: [{ when: 'river', yields: { food: 1 } }], combatBonusOwnReligion: 2 } },
       uu: { id: 'domrey', name: 'Domrey', replaces: 'catapult', strength: 6, ranged: 3, moves: 1, costMult: 1.2, desc: '+6 Strength, +3 Ranged Strength, +1 Movement (a ballista carried on an elephant), costs 20% more' },
@@ -134,37 +83,6 @@
       leaders: [
         L('jayavarman', 'Jayavarman VII', 'Devaraja', 'Bayon', 'Each Wonder yields +2 Faith. Wonders cost 10% less. +1 Happiness in every settlement.', { faithPerWonder: 2, wonderCostMult: 0.9, happinessBonus: 1 }, { aggression: 0.4, expansion: 0.5, science: 0.5, culture: 0.8 }),
         L('suryavarman', 'Suryavarman II', 'Devaraja', 'Angkor Wat', 'Your religion spreads 30% faster. Settlements following your religion +1 Culture. Units +3 Strength against civilizations that share your religion (stacks with Devaraja).', { pressureMult: 1.3, culturePerFollowerSettlement: 1, combatBonusOwnReligion: 3 }, { aggression: 0.7, expansion: 0.6, science: 0.4, culture: 0.6 })
-      ] },
-
-    { id: 'siam', name: 'Siam', adj: 'Siamese', difficulty: 'medium', bias: ['river', 'jungle'], color: '#1cb5b5', color2: '#ffd700',
-      ability: { name: 'Mandala', desc: 'Specialized Towns yield +1 Gold and +1 Culture. Each worked Luxury gives +1 extra Happiness.', fx: { specializedTownYields: { gold: 1, culture: 1 }, luxuryHappinessBonus: 1 } },
-      uu: { id: 'wild_tiger', name: 'Wild Tiger Corps', replaces: 'infantry', strength: 5, forestMove: true, terrainBonus: { jungle: 5 }, costMult: 1.1, desc: '+5 Strength, forest and jungle cost no extra movement, +5 in jungle, costs 10% more' },
-      ub: { id: 'wat', name: 'Wat', replaces: 'amphitheater', yields: { culture: 2, faith: 2 }, desc: '+2 Culture, +2 Faith' },
-      cities: ['Ayutthaya', 'Sukhothai', 'Bangkok', 'Thonburi', 'Chiang Mai', 'Nakhon Si Thammarat', 'Phitsanulok', 'Si Satchanalai', 'Kamphaeng Phet', 'Nakhon Ratchasima', 'Ubon Ratchathani', 'Chanthaburi', 'Songkhla', 'Phuket', 'Ratchaburi', 'Kanchanaburi', 'Nakhon Pathom', 'Suphan Buri', 'Chiang Rai', 'Lampang', 'Lamphun', 'Nan', 'Phrae', 'Tak', 'Uttaradit', 'Nakhon Sawan', 'Chai Nat', 'Sing Buri', 'Ang Thong', 'Saraburi', 'Prachuap Khiri Khan', 'Chumphon', 'Surat Thani', 'Trang', 'Pattani', 'Yala', 'Khon Kaen', 'Udon Thani', 'Roi Et', 'Nong Khai'],
-      leaders: [
-        L('ramkhamhaeng', 'Ramkhamhaeng', 'King of Sukhothai', 'Thai Script', 'Gain 15 Culture whenever you learn a technology. +1 Culture and +1 Happiness in every settlement.', { techCulture: 15, culturePerSettlement: 1, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.6, science: 0.6, culture: 0.8 }),
-        L('naresuan', 'Naresuan', 'King of Ayutthaya', 'Elephant Duel', 'Cavalry +4 Strength. Units +5 Strength when defending inside your borders. +10 Gold per kill.', { cavalryBonus: 4, homeDefenseBonus: 5, goldPerKill: 10 }, { aggression: 0.7, expansion: 0.5, science: 0.4, culture: 0.5 })
-      ] },
-
-    { id: 'austria_hungary', name: 'Austria-Hungary', adj: 'Austro-Hungarian', difficulty: 'easy', bias: ['plains', 'river'], color: '#000000', color2: '#ffd700',
-      ability: { name: 'Ausgleich', desc: '+1 Culture and +1 Happiness in every settlement. Captured settlements gain +2 extra Happiness.', fx: { culturePerSettlement: 1, happinessBonus: 1, capturedHappiness: 2 } },
-      uu: { id: 'kuk_field_gun', name: 'k.u.k. Field Gun', replaces: 'field_cannon', ranged: 5, moves: 1, defense: 4, vsSettlements: 5, costMult: 1.15, desc: '+5 Ranged Strength, +1 Movement, +4 defending, +5 vs settlements, costs 15% more' },
-      ub: { id: 'theresian_academy', name: 'Theresian Academy', replaces: 'military_academy', yields: { production: 2, science: 2 }, unitStrength: 1, desc: '+2 Production, +2 Science, units built here +1 extra Strength' },
-      cities: ['Vienna', 'Budapest', 'Prague', 'Trieste', 'Kraków', 'Lemberg', 'Zagreb', 'Sarajevo', 'Innsbruck', 'Graz', 'Linz', 'Salzburg', 'Brno', 'Pressburg', 'Ljubljana', 'Czernowitz', 'Debrecen', 'Szeged', 'Klagenfurt', 'Temesvár', 'Pécs', 'Fiume', 'Pola', 'Görz', 'Bozen', 'Trento', 'Olmütz', 'Troppau', 'Teschen', 'Przemyśl', 'Tarnów', 'Kaschau', 'Klausenburg', 'Hermannstadt', 'Kronstadt', 'Zara', 'Spalato', 'Ragusa', 'Mostar', 'Miskolc'],
-      leaders: [
-        L('franz_joseph', 'Franz Joseph I', 'Emperor-King', 'Ringstraße', 'Each Wonder yields +2 Culture. Buildings cost 10% less. +1 Happiness in every settlement.', { culturePerWonder: 2, buildingCostMult: 0.9, happinessBonus: 1 }, { aggression: 0.4, expansion: 0.6, science: 0.5, culture: 0.8 }),
-        L('maria_theresa', 'Maria Theresa', 'Empress', 'Theresian Reforms', 'Settlements grow 15% faster. Libraries +1 Science. Units gain 25% more experience.', { growthMult: 1.15, buildingBonus: { library: { science: 1 } }, xpMult: 1.25 }, { aggression: 0.4, expansion: 0.6, science: 0.7, culture: 0.6 }),
-        L('sisi', 'Elisabeth', 'Empress', 'Queen of Hungary', '+20% Tourism. Each worked Luxury yields +1 Culture. +1 Happiness in every settlement.', { tourismMult: 1.2, luxuryCulture: 1, happinessBonus: 1 }, { aggression: 0.2, expansion: 0.5, science: 0.5, culture: 0.9 })
-      ] },
-
-    { id: 'scotland', name: 'Scotland', adj: 'Scottish', difficulty: 'medium', bias: ['hills', 'coast'], color: '#4b4bcf', color2: '#f0f0f0',
-      ability: { name: 'Scottish Enlightenment', desc: 'Settlements founded on Hills +1 Science. Universities +2 Science. Units +5 Strength when defending on Hills.', fx: { settlementSiteBonus: [{ when: 'hills', yields: { science: 1 } }], buildingBonus: { university: { science: 2 } }, hillsDefenseBonus: 5 } },
-      uu: { id: 'highlander', name: 'Highlander', replaces: 'rifleman', strength: 3, roughBonus: 6, ignoreHills: true, costMult: 1.1, desc: '+3 Strength, +6 on hills, forest and jungle, hills cost no extra movement, costs 10% more' },
-      ub: { id: 'distillery', name: 'Distillery', replaces: 'granary', yields: { food: 1, gold: 2, happiness: 1 }, desc: '+1 Food, +2 Gold, +1 Happiness' },
-      cities: ['Edinburgh', 'Glasgow', 'Scone', 'Stirling', 'Perth', 'Dundee', 'Aberdeen', 'Inverness', 'St Andrews', 'Dunfermline', 'Dumfries', 'Ayr', 'Elgin', 'Kirkwall', 'Lerwick', 'Fort William', 'Oban', 'Falkirk', 'Paisley', 'Kilmarnock', 'Dumbarton', 'Arbroath', 'Montrose', 'Forfar', 'Linlithgow', 'Haddington', 'Berwick', 'Jedburgh', 'Kelso', 'Melrose', 'Peebles', 'Lanark', 'Hamilton', 'Greenock', 'Stornoway', 'Wick', 'Thurso', 'Dornoch', 'Nairn', 'Banff'],
-      leaders: [
-        L('bruce', 'Robert the Bruce', 'King of Scots', 'Bannockburn', 'Anti-cavalry units +4 Strength. Units +6 Strength when defending inside your borders and heal +10 there.', { classBonus: { antcav: 4 }, homeDefenseBonus: 6, healBonusHome: 10 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.5 }),
-        L('james_iv', 'James IV', 'King of Scots', 'Flower of Scotland', 'Naval units cost 15% less. Gain 20 Gold whenever you learn a technology. +1 Culture per settlement.', { navalCostMult: 0.85, techGold: 20, culturePerSettlement: 1 }, { aggression: 0.4, expansion: 0.6, science: 0.8, culture: 0.7 })
       ] },
 
     { id: 'kongo', name: 'Kongo', adj: 'Kongolese', difficulty: 'hard', bias: ['jungle', 'river'], color: '#f4a261', color2: '#264653',
@@ -177,35 +95,6 @@
         L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your religion spreads 50% faster. Settlements following your religion +1 Science. Every settlement gets a free Shrine once Mysticism is known.', { pressureMult: 1.5, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
       ] },
 
-    { id: 'mapuche', name: 'Mapuche', adj: 'Mapuche', difficulty: 'hard', bias: ['hills', 'forest'], color: '#b5838d', color2: '#0b3954',
-      ability: { name: 'Toqui', desc: 'Units +5 Strength when defending inside your borders and +4 vs units from another continent. Killing a unit grants +6 Culture.', fx: { homeDefenseBonus: 5, combatBonusVsInvaders: 4, culturePerKill: 6 } },
-      uu: { id: 'malon_raider', name: 'Malón Raider', replaces: 'horseman', strength: 2, goldOnKill: 25, movesAfterAttack: true, ignoreHills: true, costMult: 1.15, desc: '+2 Strength, can move after attacking, hills cost no extra movement, +25 Gold per kill, costs 15% more' },
-      ub: { id: 'pukara', name: 'Pukara', replaces: 'walls', yields: { production: 2, faith: 1 }, desc: '+2 Production, +1 Faith' },
-      cities: ['Arauco', 'Tucapel', 'Purén', 'Angol', 'Cañete', 'Lumaco', 'Villarrica', 'Temuco', 'Lebu', 'Tirúa', 'Collipulli', 'Traiguén', 'Boroa', 'Imperial', 'Toltén', 'Pitrufquén', 'Curacautín', 'Lonquimay', 'Carahue', 'Pucón', 'Panguipulli', 'Chol Chol', 'Freire', 'Cunco', 'Melipeuco', 'Vilcún', 'Curarrehue', 'Loncoche', 'Gorbea', 'Mariquina', 'Lanco', 'Máfil', 'Paillaco', 'Futrono', 'Osorno', 'Puerto Saavedra', 'Quilacahuín', 'Mulchén', 'Nacimiento', 'Los Sauces'],
-      leaders: [
-        L('lautaro', 'Lautaro', 'Toqui', 'Ambush at Tucapel', 'Units +6 Strength in Forest and Rainforest. Units heal +10 in your territory and gain 50% more experience.', { combatBonusForest: 6, healBonusHome: 10, xpMult: 1.5 }, { aggression: 0.7, expansion: 0.4, science: 0.3, culture: 0.5 }),
-        L('galvarino', 'Galvarino', 'Weichafe', 'Blades for Hands', 'Melee units +5 Strength when attacking. Units fight at full strength no matter how damaged. Killing a unit grants +6 extra Culture.', { meleeAttackBonus: 5, noDamagePenalty: true, culturePerKill: 6 }, { aggression: 0.9, expansion: 0.4, science: 0.2, culture: 0.4 })
-      ] },
-
-    { id: 'australia', name: 'Australia', adj: 'Australian', difficulty: 'hard', bias: ['coast', 'desert'], color: '#79b473', color2: '#2b2118',
-      ability: { name: 'Land of Plenty', desc: 'Coastal settlements +1 Production and +1 Science. Worked Pastures +1 Production. Units +3 Strength on continents other than your capital\'s.', fx: { coastalSettlementYields: { production: 1, science: 1 }, tileBonus: [{ when: 'pasture', yields: { production: 1 } }], combatBonusAbroad: 3 } },
-      uu: { id: 'light_horse', name: 'Light Horse', replaces: 'cavalry', strength: 3, moves: 1, terrainBonus: { desert: 6 }, costMult: 1.1, desc: '+3 Strength, +1 Movement, +6 on desert, costs 10% more' },
-      ub: { id: 'outback_station', name: 'Outback Station', replaces: 'railway_station', yields: { production: 2, gold: 2, food: 2 }, desc: '+2 Production, +2 Gold, +2 Food' },
-      cities: ['Canberra', 'Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Hobart', 'Darwin', 'Newcastle', 'Wollongong', 'Geelong', 'Gold Coast', 'Cairns', 'Townsville', 'Toowoomba', 'Ballarat', 'Bendigo', 'Launceston', 'Alice Springs', 'Broken Hill', 'Kalgoorlie', 'Albany', 'Fremantle', 'Mackay', 'Rockhampton', 'Bundaberg', 'Dubbo', 'Wagga Wagga', 'Albury', 'Tamworth', 'Port Augusta', 'Mount Gambier', 'Broome', 'Port Hedland', 'Coffs Harbour', 'Bathurst', 'Orange', 'Mildura', 'Shepparton', 'Devonport'],
-      leaders: [
-        L('curtin', 'John Curtin', 'Prime Minister', 'Home Front', 'Units +5 Strength when defending inside your borders and heal +10 there. Units cost 10% less.', { homeDefenseBonus: 5, healBonusHome: 10, unitCostMult: 0.9 }, { aggression: 0.4, expansion: 0.5, science: 0.6, culture: 0.5 }),
-        L('menzies', 'Robert Menzies', 'Prime Minister', 'The Forgotten People', '+1 Happiness in every settlement. Universities +2 Science. Settlements grow 10% faster.', { happinessBonus: 1, buildingBonus: { university: { science: 2 } }, growthMult: 1.1 }, { aggression: 0.2, expansion: 0.6, science: 0.8, culture: 0.6 })
-      ] },
-
-    { id: 'georgia', name: 'Georgia', adj: 'Georgian', difficulty: 'hard', bias: ['hills', 'mountain'], color: '#ff4d6d', color2: '#ffffff',
-      ability: { name: 'Kartvelian Fastness', desc: 'Settlements founded on Hills +1 Faith and +1 Culture. Walls cost half. Units +3 Strength against civilizations that share your religion.', fx: { settlementSiteBonus: [{ when: 'hills', yields: { faith: 1, culture: 1 } }], wallsMult: 0.5, combatBonusOwnReligion: 3 } },
-      uu: { id: 'monaspa', name: 'Monaspa', replaces: 'knight', strength: 3, defense: 4, homeBonus: 5, costMult: 1.1, desc: '+3 Strength, +4 defending, +5 inside your borders, costs 10% more' },
-      ub: { id: 'tsikhe_church', name: 'Tsikhe Church', replaces: 'shrine', yields: { faith: 2, culture: 2 }, desc: '+2 Faith, +2 Culture' },
-      cities: ['Tbilisi', 'Kutaisi', 'Mtskheta', 'Batumi', 'Gori', 'Telavi', 'Rustavi', 'Poti', 'Sukhumi', 'Zugdidi', 'Akhaltsikhe', 'Vardzia', 'Gelati', 'Uplistsikhe', 'Sighnaghi', 'Kvareli', 'Dmanisi', 'Bolnisi', 'Tskhinvali', 'Ozurgeti', 'Senaki', 'Samtredia', 'Khashuri', 'Borjomi', 'Kaspi', 'Gurjaani', 'Lagodekhi', 'Dedoplistskaro', 'Marneuli', 'Gardabani', 'Tianeti', 'Dusheti', 'Stepantsminda', 'Mestia', 'Oni', 'Ambrolauri', 'Chiatura', 'Zestafoni', 'Tkibuli', 'Kobuleti'],
-      leaders: [
-        L('tamar', 'Tamar', 'King of Kings', 'Golden Age of Georgia', 'Settlements following your religion +1 Culture. +1 Faith and +1 Happiness in every settlement.', { culturePerFollowerSettlement: 1, faithPerSettlement: 1, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.6, science: 0.5, culture: 0.9 }),
-        L('david_builder', 'David IV', 'The Builder', 'Didgori', 'Units +5 Strength vs units from another continent and gain 50% more experience. Buildings cost 10% less.', { combatBonusVsInvaders: 5, xpMult: 1.5, buildingCostMult: 0.9 }, { aggression: 0.6, expansion: 0.6, science: 0.5, culture: 0.6 })
-      ] }
   ];
   MORE.forEach(function (c) { AU.CIVS.push(c); });
   AU.indexCivs();

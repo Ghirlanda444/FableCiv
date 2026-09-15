@@ -11,15 +11,15 @@
     mesoamerican: { name: 'Indigenous American', people: 'copper-brown skin, straight black hair, dark eyes', gear: 'Aztec, Maya, Inca and Native North American style with feathered headdresses, beadwork, jade and obsidian weapons', arch: 'Indigenous American architecture with stepped stone pyramids, carved glyphs, painted plaster, longhouses and totem carvings' }
   };
   var MAP = {
-    rome: 'mediterranean', greece: 'mediterranean', carthage: 'mediterranean', byzantium: 'mediterranean', spain: 'mediterranean', portugal: 'mediterranean', georgia: 'mediterranean',
-    germany: 'european', france: 'european', england: 'european', scotland: 'european', celts: 'european', norway: 'european', sweden: 'european', netherlands: 'european', holy_roman_empire: 'european', austria_hungary: 'european', poland: 'european', russia: 'european',
-    america: 'european', australia: 'european', brazil: 'european',
-    china: 'east_asian', japan: 'east_asian', korea: 'east_asian', mongolia: 'east_asian',
-    vietnam: 'south_asian', khmer: 'south_asian', siam: 'south_asian', indonesia: 'south_asian',
+    rome: 'mediterranean', greece: 'mediterranean', carthage: 'mediterranean', byzantium: 'mediterranean', spain: 'mediterranean', portugal: 'mediterranean',
+    germany: 'european', france: 'european', england: 'european', celts: 'european', norway: 'european', netherlands: 'european', poland: 'european', russia: 'european',
+    america: 'european',
+    china: 'east_asian', qin: 'east_asian', japan: 'east_asian', korea: 'east_asian', mongolia: 'east_asian',
+    vietnam: 'south_asian', khmer: 'south_asian', indonesia: 'south_asian',
     india: 'south_asian',
-    persia: 'middle_eastern', arabia: 'middle_eastern', ottoman: 'middle_eastern', babylon: 'middle_eastern', sumer: 'middle_eastern', hittites: 'middle_eastern', assyria: 'middle_eastern', egypt: 'middle_eastern',
+    persia: 'middle_eastern', arabia: 'middle_eastern', ottoman: 'middle_eastern', babylon: 'middle_eastern', assyria: 'middle_eastern', egypt: 'middle_eastern',
     zulu: 'african', mali: 'african', ethiopia: 'african', kongo: 'african', nubia: 'african',
-    aztec: 'mesoamerican', maya: 'mesoamerican', inca: 'mesoamerican', mapuche: 'mesoamerican',
+    aztec: 'mesoamerican', maya: 'mesoamerican', inca: 'mesoamerican',
     shawnee: 'mesoamerican', polynesia: 'south_asian',
     // city-states
     venice: 'mediterranean', bologna: 'mediterranean', valletta: 'mediterranean', geneva: 'european', vilnius: 'european', armagh: 'european', preslav: 'european', wolin: 'european', brussels: 'european',

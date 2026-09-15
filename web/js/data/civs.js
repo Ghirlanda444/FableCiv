@@ -29,12 +29,22 @@
     { id: 'china', name: 'China', adj: 'Chinese', difficulty: 'easy', bias: ['river', 'grassland'], color: '#2e8b57', color2: '#f7e04b',
       ability: { name: 'Mandate of Heaven', desc: 'Civics cost 10% less. Settlements may expand into a fourth ring of tiles.', fx: { civicCostMult: 0.9, expansionRadius: 1 } },
       uu: { id: 'crouching_tiger', name: 'Crouching Tiger', replaces: 'crossbowman', ranged: 3, extraAttack: true, costMult: 1.3, desc: '+3 Ranged Strength, fires twice per turn, costs 30% more' },
-      ub: { id: 'great_wall_tower', name: 'Great Wall', replaces: 'walls', yields: { culture: 2, gold: 1 }, desc: '+2 Culture, +1 Gold' },
+      ub: { id: 'pagoda', name: 'Pagoda', replaces: 'temple', yields: { culture: 2, faith: 1 }, desc: '+2 Culture, +1 Faith' },
       cities: ['Xi\'an', 'Beijing', 'Nanjing', 'Luoyang', 'Guangzhou', 'Hangzhou', 'Chengdu', 'Kaifeng', 'Suzhou', 'Wuhan', 'Xiamen', 'Tianjin', 'Anyang', 'Handan', 'Datong', 'Taiyuan', 'Jinan', 'Qufu', 'Xuzhou', 'Yangzhou', 'Ningbo', 'Fuzhou', 'Quanzhou', 'Changsha', 'Nanchang', 'Chongqing', 'Kunming', 'Guilin', 'Lanzhou', 'Dunhuang', 'Xianyang', 'Zhengzhou', 'Shenyang', 'Harbin', 'Qingdao', 'Wuxi', 'Shaoxing', 'Guiyang', 'Nanning', 'Shanghai'],
       leaders: [
-        L('qin', 'Qin Shi Huang', 'First Emperor', 'Terracotta Legions', 'Wonders cost 20% less. Every settlement starts with free Walls once Masonry is known.', { wonderCostMult: 0.8, freeBuildingWithTech: { walls: 'masonry' } }, { aggression: 0.4, expansion: 0.6, science: 0.6, culture: 0.6 }),
+        L('taizong', 'Emperor Taizong', 'Emperor', 'Zhenguan Era', '+10% Science and Culture. +1 Science per settlement. Cavalry +2 Strength.', { yieldMult: { science: 1.1, culture: 1.1 }, sciencePerSettlement: 1, classBonus: { cavalry: 2 } }, { aggression: 0.45, expansion: 0.6, science: 0.8, culture: 0.7 }),
         L('wu', 'Wu Zetian', 'Empress', 'Silk and Ink', 'Each worked Luxury resource yields +2 Culture. +1 Happiness in every settlement.', { luxuryCulture: 2, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.8 }),
         L('kublai', 'Kublai Khan', 'Emperor', 'Grand Canal', 'Towns send 50% more food to Cities and yield +2 Gold when specialized. Cavalry +3 Strength.', { townFoodMult: 1.5, specializedTownYields: { gold: 2 }, cavalryBonus: 3 }, { aggression: 0.6, expansion: 0.7, science: 0.5, culture: 0.4 })
+      ] },
+
+    { id: 'qin', name: 'Qin', adj: 'Qin', difficulty: 'medium', bias: ['hills', 'river'], color: '#1b1b1b', color2: '#d4a929',
+      ability: { name: 'Legalism', desc: 'Military units cost 15% less Production. Walls cost 30% less. Settlements +2 Defense.', fx: { unitCostMult: 0.85, buildingDiscount: { walls: 0.7 }, cityDefense: 2 } },
+      uu: { id: 'ji_halberdier', name: 'Ji Halberdier', replaces: 'spearman', strength: 4, costMult: 1.1, desc: '+4 Strength, costs 10% more' },
+      ub: { id: 'great_wall_tower', name: 'Great Wall', replaces: 'walls', yields: { culture: 2, gold: 1 }, desc: '+2 Culture, +1 Gold' },
+      cities: ['Xianyang', 'Yong', 'Liyang', 'Chencang', 'Lantian', 'Hanzhong', 'Longxi', 'Yueyang', 'Shangjun', 'Beidi', 'Jiuyuan', 'Langya', 'Wuguan', 'Nanzheng', 'Jiangzhou', 'Xiadu', 'Pingyang', 'Anyi', 'Handan', 'Daliang', 'Linzi', 'Ying', 'Shouchun', 'Wuyang', 'Guiji', 'Panyu', 'Xiangping', 'Dunhuang'],
+      leaders: [
+        L('qin', 'Qin Shi Huang', 'First Emperor', 'Terracotta Legions', 'Wonders cost 20% less. Every settlement starts with free Walls once Masonry is known.', { wonderCostMult: 0.8, freeBuildingWithTech: { walls: 'masonry' } }, { aggression: 0.4, expansion: 0.6, science: 0.6, culture: 0.6 }),
+        L('duke_xiao', 'Duke Xiao', 'Duke', "Shang Yang's Reforms", 'Farms +1 Production. Capital +2 Production. Melee and anti-cavalry units +2 Strength.', { tileBonus: [{ when: 'farm', yields: { production: 1 } }], capitalYields: { production: 2 }, classBonus: { melee: 2, antcav: 2 } }, { aggression: 0.65, expansion: 0.6, science: 0.45, culture: 0.3 })
       ] },
 
     { id: 'america', name: 'America', adj: 'American', difficulty: 'easy', bias: ['plains', 'river'], color: '#1f3f8f', color2: '#ffffff',

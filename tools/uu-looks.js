@@ -1,5 +1,6 @@
 // How every unique unit looks (one line each, used by the art manifest). Ships: ship only, no people.
 module.exports = {
+  ji_halberdier: 'a Qin-dynasty soldier of the Warring States in black lacquered lamellar armour with a topknot, holding a long ji halberd (a spear with a side blade)',
   legion: 'a Roman legionary in lorica segmentata with a red rectangular scutum shield, gladius and a crested helmet',
   samurai: 'a Japanese samurai in lacquered o-yoroi armour with a horned kabuto helmet, holding a katana',
   crouching_tiger: 'a Chinese Ming-era soldier next to a small bronze "crouching tiger" cannon on a wooden stand',

@@ -2,6 +2,7 @@
 module.exports = {
   rome: 'a golden Roman aquila eagle with spread wings above a laurel wreath',
   japan: 'a red rising sun with white rays behind a red torii gate',
+  qin: 'a black tiger-shaped bronze tally (hufu) split in two halves with golden inscriptions',
   china: 'a golden coiled Chinese dragon',
   america: 'a bald eagle head in profile with a ring of white stars',
   india: 'the Ashoka chakra, a 24-spoke wheel, over a pink lotus flower',
