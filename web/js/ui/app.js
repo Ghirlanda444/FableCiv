@@ -78,7 +78,7 @@
       AU.CIVS.slice().sort(function (x, y) { var ox = x.difficulty in ORDER ? ORDER[x.difficulty] : 1, oy = y.difficulty in ORDER ? ORDER[y.difficulty] : 1; return ox - oy || x.name.localeCompare(y.name); }).forEach(function (c) {
         var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
         var em = AU.Assets.get('civs', c.id);
-        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + (em ? '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="">' : '') + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
+        d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="" onerror="this.remove()">' + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
         d.onclick = function () { App.setup.civ = c.id; App.setup.leader = c.leaders[0].id; App.showSetupDetail(); grid.querySelectorAll('.civ-card').forEach(function (x) { x.classList.toggle('selected', x.dataset.civ === c.id); }); };
         grid.appendChild(d);
       });
@@ -105,7 +105,7 @@
         '<h3 style="margin-top:10px">Choose a leader</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
         var portrait = AU.Assets.get('leaders', l.id);
-        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + (portrait ? '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="">' : '') + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
       });
       html += '</div>';
       $('civ-detail').innerHTML = html;
