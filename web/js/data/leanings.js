@@ -4,7 +4,7 @@
     domination: { name: 'Conquest', icon: '⚔️', desc: 'Hold every rival\'s original capital.' },
     science: { name: 'Star Voyage', icon: '🚀', desc: 'Research Space Travel, build a Spaceport and complete the three space projects in your capital.' },
     culture: { name: 'Renown', icon: '🎭', desc: 'From the Modern era on, your foreign visitors outnumber the domestic tourists of every rival.' },
-    religion: { name: 'Devotion', icon: '🕊️', desc: 'From the Renaissance era on, your religion is the majority in at least half of every empire\'s settlements.' },
+    religion: { name: 'Devotion', icon: '🕊️', desc: 'From the Industrial era on, your religion is the majority in at least half of every empire\'s settlements and in 60% of all settlements.' },
     score: { name: 'Legacy', icon: '🏆', desc: 'The highest score when the turn limit is reached.' }
   };
   // Explicit leanings for well-known leaders; everyone else is read from their personality traits.
