@@ -35,7 +35,7 @@
   function masteryLine(civ, id, isCivic) {
     var m = G.masteryOf(id, isCivic); if (!m) return '';
     var done = isCivic ? !!civ.civics[id] : !!civ.techs[id], boosted = civ.boosts && civ.boosts[isCivic ? 'c:' + id : id], has = G.hasMastery(civ, id, isCivic);
-    var state = has ? '<span class="pill" style="background:#4a3a10;color:#ffe9a8">earned</span>' : done ? '<span class="pill">missed</span>' : boosted ? '<span class="pill" style="background:#2a4a1e;color:#b6f0c4">ready: finish it to earn</span>' : '<span class="pill">needs the ' + (isCivic ? 'Inspiration' : 'Eureka') + ' first</span>';
+    var state = has ? '<span class="pill" style="background:#4a3a10;color:#ffe9a8">earned</span>' : done ? '<span class="pill">missed</span>' : boosted ? '<span class="pill" style="background:#2a4a1e;color:#b6f0c4">ready: finish it to earn</span>' : '<span class="pill">needs the ' + (isCivic ? 'Insight' : 'Spark') + ' first</span>';
     return '<small>⭐ Mastery: ' + m.desc + ' ' + state + '</small>';
   }
   AU.masteryLine = masteryLine;
@@ -88,7 +88,7 @@
       if (s.civ === p.idx && (p.religion || p.pantheon)) {
         var fu = ['missionary', 'apostle', 'inquisitor'].filter(function (id) { var d0 = AU.UNITS[id]; return (id === 'missionary' ? (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple')) && p.religion : G.hasBuilding(s, 'temple') && p.religion); });
         if (fu.length) html += '<div class="actions">' + fu.map(function (id) { var c0 = Rl.unitCost(g, p, id); return '<button class="small" data-action="buyfaith" data-id="' + s.id + '" data-item="' + id + '" ' + (Rl.canBuyUnit(g, s, id) ? '' : 'disabled') + '>' + AU.UNITS[id].icon + ' ' + AU.UNITS[id].name + ' ' + c0 + ' 🕊️</button>'; }).join('') + '</div>';
-        else if (!p.religion) html += '<p class="stat">Found a religion to buy Missionaries here (needs a Shrine).</p>';
+        else if (!p.religion) html += '<p class="stat">Found a religion to buy Preachers here (needs a Shrine).</p>';
       }
     }
     html += '</div>';
@@ -161,13 +161,13 @@
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
     var nMast = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') !== 0; }).length;
-    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Eureka</b>: an in-game condition for each technology. ⭐ <b>Mastery</b>: finish a technology after its Eureka fired and you keep its permanent bonus. Finish it without the Eureka and the mastery is lost. (Some leaders, like Meiji, also gain Science from Eurekas.)</p>';
+    html += '<p class="stat">' + y.science.toFixed(1) + ' 🔬 per turn · ' + Object.keys(p.techs).length + '/' + AU.TECHS.length + ' technologies · ⭐ ' + nMast + ' masteries. One continuous tree: nothing resets between eras.</p><p class="stat">💡 <b>Spark</b>: an in-game condition for each technology. ⭐ <b>Mastery</b>: finish a technology after its Spark fired and you keep its permanent bonus. Finish it without the Spark and the mastery is lost. (Some leaders, like Meiji, also gain Science from Sparks.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="tech">🌳 View the full technology tree</button><br><br>';
     html += '<div class="section"><h3>Available</h3>';
     avail.forEach(function (t) {
       var cost = G.techCost(g, p, t), prog = p.techProgress[t.id] || 0, cur = p.currentTech === t.id;
       var boosted = p.boosts && p.boosts[t.id];
-      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '">' + (AU.Assets.get('techs', t.id) ? '<img class="techpic" src="' + AU.Assets.url('techs', t.id) + '" alt="">' : '') + '<div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">Eureka ✓</span>' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small>' + (t.eureka && !boosted ? '<small>💡 Eureka: ' + t.eureka.desc + '</small>' : '') + masteryLine(p, t.id, false) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
+      html += '<div class="row clickable ' + (cur ? 'active' : '') + '" data-action="research" data-id="' + t.id + '">' + (AU.Assets.get('techs', t.id) ? '<img class="techpic" src="' + AU.Assets.url('techs', t.id) + '" alt="">' : '') + '<div class="grow"><b>' + t.name + ' <span class="pill">' + AU.ERAS[t.era] + '</span>' + (boosted ? ' <span class="pill" style="background:#2a4a1e;color:#b6f0c4">Spark ✓</span>' : '') + '</b><small>' + (unlocksOfTech(t.id).join(', ') || 'Leads to further technologies') + '</small>' + (t.eureka && !boosted ? '<small>💡 Eureka: ' + t.eureka.desc + '</small>' : '') + masteryLine(p, t.id, false) + '<small>' + Math.floor(prog) + '/' + cost + ' · ' + turns(cost, prog, y.science) + '</small>' + (cur ? '<div class="progress"><i style="width:' + (prog / cost * 100) + '%"></i></div>' : '') + '</div>' + (cur ? '<span class="pill">researching</span>' : '') + '</div>';
     });
     html += '</div>';
     AU.ERAS.forEach(function (era, ei) {
@@ -201,7 +201,7 @@
     if (others.length) { html += '<h3 style="margin-top:10px">Available cards</h3>'; others.forEach(function (id) { var pc = AU.POLICIES[id], fits = free[pc.type] > 0 || free.wildcard > 0; html += '<div class="row ' + (fits ? '' : 'locked') + '"><div class="grow"><b>' + pc.name + ' <span class="pill">' + pc.type + '</span></b><small>' + pc.desc + '</small></div><button class="small primary" data-action="policyadd" data-id="' + id + '" ' + (fits ? '' : 'disabled') + '>Slot</button></div>'; }); }
     html += '</div>';
     var nMastC = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') === 0; }).length;
-    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Inspiration</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Inspiration fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Culture from Inspirations.)</p>';
+    html += '<p class="stat">' + y.culture.toFixed(1) + ' 🎭 per turn · ' + Object.keys(p.civics).length + '/' + AU.CIVICS.length + ' civics · ⭐ ' + nMastC + ' masteries.</p><p class="stat">💡 <b>Insight</b>: an in-game condition for each civic. ⭐ <b>Mastery</b>: finish a civic after its Insight fired and you keep its permanent bonus. (Some leaders, like Pericles, also gain Culture from Insights.)</p>';
     html += '<button class="big gold" data-action="tree" data-kind="civic">🌳 View the full civics tree</button><br><br>';
     html += '<div class="section"><h3>Available civics</h3>';
     avail.forEach(function (c) {
@@ -317,7 +317,7 @@
     html += '<button class="big ghost" data-action="toggleyields">' + (app.settings.yields ? 'Hide' : 'Show') + ' tile yields on the map (Y)</button><br><br>';
     html += '<button class="big ghost" data-action="togglestrict">End Turn button: ' + (app.settings.strictTurn ? 'must clear the to-do list first' : 'to-do first, Pass anytime') + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">History log</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? 'Hide' : 'Show') + ' hex grid</button><br><br>';
-    html += '<button class="big ghost" data-action="pedia">📖 Civilopedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
+    html += '<button class="big ghost" data-action="pedia">📖 Chibipedia</button><br><br><button class="big ghost" data-action="help">How to play</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="quit">Quit to title</button>';
     html += '</div><p class="stat">Chibilization. Autosaves at the end of every turn.</p>';
     return { title: 'Menu', html: html };
@@ -326,7 +326,7 @@
     var html = '<div class="help">' +
       '<h3>The idea</h3><p>Ages Unbroken blends the classic Civilization formula with the settlement system of the newest generation: you found <b>Towns</b>, upgrade the important ones into <b>Cities</b>, and your civilization stays the same from the first turn to the last. There are no era resets, no crises and no changing civilizations: each leader rules only their own people, and every tech and civic you unlock stays with you.</p>' +
       '<h3>Towns and Cities</h3><p>Your capital is a City. New settlements are Towns. Towns have no production queue: their production becomes gold, and you buy buildings and units in them with gold. Towns grow by themselves. Once a Town reaches pop 5 you can <b>specialize</b> it (Farming, Mining, Trade, Fort, Urban Center): it stops growing and sends surplus food to your nearest City. Pay gold to <b>upgrade</b> a Town into a City whenever you want a real production hub.</p>' +
-      '<h3>Growth and tiles</h3><p>There are no builders. Every time a settlement grows you pick a tile within three rings; the new citizen claims and improves it automatically (farm, mine, fishing boats, pasture, plantation…). Tiles with luxury resources give happiness, strategic resources unlock units such as Swordsmen (Iron) or Knights (Horses).</p>' +
+      '<h3>Growth and tiles</h3><p>There are no builders. Every time a settlement grows you pick a tile within three rings; the new citizen claims and improves it automatically (farm, mine, fishing boats, pasture, plantation…). Tiles with luxury resources give happiness, strategic resources unlock units such as Swordbearers (Iron) or Chevaliers (Horses).</p>' +
       '<h3>Units</h3><p>Tap a unit to select it, tap a highlighted tile to move (far tiles create multi-turn routes). Tap a red tile to attack: the estimated damage is shown, tap again to confirm. Ranged units attack from a distance without taking damage. Melee units capture settlements when their HP reaches 0. Units heal when they do not move; Fortify to defend and heal faster. One military and one civilian unit per tile.</p>' +
       '<h3>Research and civics</h3><p>Science drives the technology tree, culture drives civics. Civics unlock governments (Autocracy, Republic, Monarchy, Democracy…) which you can switch between at any time from the Civics panel.</p>' +
       '<h3>Diplomacy</h3><p>Other leaders remember your wars. Declare war from the Diplomacy panel; AI leaders will offer or accept peace when a war goes badly for them. Independent camps (🏕️) spawn raiders: disperse them for gold.</p>' +

@@ -10,7 +10,7 @@
       cities: ['Carthage', 'Utica', 'Hadrumetum', 'Hippo Regius', 'Leptis Magna', 'Gades', 'Carthago Nova', 'Panormus', 'Lilybaeum', 'Motya', 'Sabratha', 'Oea', 'Thapsus', 'Kerkouane', 'Hippo Diarrhytus', 'Tharros', 'Sulci', 'Caralis', 'Nora', 'Ebusus', 'Malaca', 'Sexi', 'Abdera', 'Tingis', 'Lixus', 'Rusadir', 'Icosium', 'Zama', 'Sicca', 'Thugga', 'Bulla Regia', 'Cirta', 'Theveste', 'Capsa', 'Tacapae', 'Gigthis', 'Meninx', 'Selinus', 'Eryx', 'Olbia'],
       leaders: [
         L('hannibal', 'Hannibal Barca', 'Suffete', 'Crossing the Alps', 'Units can cross Mountains. Cavalry +4 Strength; all units +4 Strength on continents other than your capital\'s.', { mountainsPassable: true, classBonus: { cavalry: 4 }, combatBonusAbroad: 4 }, { aggression: 0.85, expansion: 0.5, science: 0.4, culture: 0.4 }),
-        L('dido', 'Dido', 'Queen', 'Byrsa Hide', 'Gain 60 Gold when you found a settlement. Settlers cost 10% less. Coastal settlements +1 Food and +1 Culture.', { foundGold: 60, settlerCostMult: 0.9, coastalSettlementYields: { food: 1, culture: 1 } }, { aggression: 0.3, expansion: 0.9, science: 0.5, culture: 0.6 })
+        L('dido', 'Dido', 'Queen', 'Byrsa Hide', 'Gain 60 Gold when you found a settlement. Pioneers cost 10% less. Coastal settlements +1 Food and +1 Culture.', { foundGold: 60, settlerCostMult: 0.9, coastalSettlementYields: { food: 1, culture: 1 } }, { aggression: 0.3, expansion: 0.9, science: 0.5, culture: 0.6 })
       ] },
 
     { id: 'byzantium', name: 'Byzantium', adj: 'Byzantine', difficulty: 'medium', bias: ['coast', 'hills'], color: '#4a1259', color2: '#f5c542',
@@ -31,7 +31,7 @@
       cities: ['Kraków', 'Warszawa', 'Gniezno', 'Poznań', 'Wrocław', 'Gdańsk', 'Lublin', 'Toruń', 'Łódź', 'Szczecin', 'Płock', 'Sandomierz', 'Kalisz', 'Radom', 'Częstochowa', 'Bydgoszcz', 'Białystok', 'Rzeszów', 'Kielce', 'Opole', 'Katowice', 'Olsztyn', 'Elbląg', 'Legnica', 'Przemyśl', 'Zamość', 'Tarnów', 'Włocławek', 'Łęczyca', 'Sieradz', 'Wieliczka', 'Malbork', 'Grudziądz', 'Chełmno', 'Koszalin', 'Słupsk', 'Gorzów', 'Zielona Góra', 'Nowy Sącz', 'Piotrków'],
       leaders: [
         L('casimir', 'Casimir III', 'The Great', 'Poland of Brick', 'Buildings cost 15% less and Walls cost half. Settlements grow 10% faster.', { buildingCostMult: 0.85, wallsMult: 0.5, growthMult: 1.1 }, { aggression: 0.3, expansion: 0.7, science: 0.6, culture: 0.6 }),
-        L('jadwiga', 'Jadwiga', 'King of Poland', 'Apostle Queen', 'Your religion spreads 50% faster and religious units cost 25% less. Start with a free Pantheon.', { pressureMult: 1.5, religiousUnitCostMult: 0.75, freePantheon: true }, { aggression: 0.2, expansion: 0.5, science: 0.6, culture: 0.8 }),
+        L('jadwiga', 'Jadwiga', 'King of Poland', 'Evangelist Queen', 'Your religion spreads 50% faster and religious units cost 25% less. Start with a free Pantheon.', { pressureMult: 1.5, religiousUnitCostMult: 0.75, freePantheon: true }, { aggression: 0.2, expansion: 0.5, science: 0.6, culture: 0.8 }),
         L('sobieski', 'Jan III Sobieski', 'King', 'Relief of Vienna', 'Cavalry +5 Strength. Units +3 Strength within 3 tiles of your settlements. +5 Faith per kill.', { cavalryBonus: 5, nearHomeBonus: 3, faithFromKills: 5 }, { aggression: 0.75, expansion: 0.5, science: 0.4, culture: 0.5 })
       ] },
 
@@ -57,7 +57,7 @@
 
     { id: 'assyria', name: 'Assyria', adj: 'Assyrian', difficulty: 'hard', bias: ['river', 'plains'], color: '#6b8e23', color2: '#f5e6c8',
       ability: { name: 'Deportation', desc: 'Captured settlements lose no population and grant +40 Science. Siege units +5 Strength vs settlements. -1 Happiness in every settlement.', fx: { captureNoPopLoss: true, captureScience: 40, classBonusVsSettlements: { siege: 5 }, happinessBonus: -1 } },
-      uu: { id: 'assyrian_slinger', name: 'Assyrian Slinger', replaces: 'slinger', ranged: 5, strength: 5, range: 1, vsSettlements: 5, costMult: 1.3, desc: '+5 Ranged Strength, +5 Strength, +1 Range, +5 vs settlements, costs 30% more' },
+      uu: { id: 'assyrian_slinger', name: 'Assyrian Sling Hunter', replaces: 'slinger', ranged: 5, strength: 5, range: 1, vsSettlements: 5, costMult: 1.3, desc: '+5 Ranged Strength, +5 Strength, +1 Range, +5 vs settlements, costs 30% more' },
       ub: { id: 'lamassu_gate', name: 'Lamassu Gate', replaces: 'walls', yields: { culture: 2, happiness: 1 }, desc: '+2 Culture, +1 Happiness' },
       cities: ['Assur', 'Nineveh', 'Kalhu', 'Dur-Sharrukin', 'Arbela', 'Harran', 'Imgur-Enlil', 'Kar-Tukulti-Ninurta', 'Tarbisu', 'Ekallatum', 'Shubat-Enlil', 'Guzana', 'Til Barsip', 'Arrapha', 'Nasibina', 'Kilizu', 'Shibaniba', 'Dur-Katlimmu', 'Tushhan', 'Amedi', 'Kurbail', 'Qatna', 'Hadatu', 'Halzi', 'Rasappa', 'Sikan', 'Qattara', 'Idu', 'Apku', 'Shadikanni', 'Nuzi', 'Kalzu', 'Nahur', 'Talmussu', "Sam'al", 'Arzuhina', 'Lahiru', 'Mazamua', 'Hindanu', 'Suhu'],
       leaders: [
@@ -67,7 +67,7 @@
 
     { id: 'nubia', name: 'Nubia', adj: 'Nubian', difficulty: 'medium', bias: ['desert', 'river'], color: '#e2725b', color2: '#2b2b2b',
       ability: { name: 'Ta-Seti', desc: 'Ranged units +2 Strength and cost 15% less. Worked Desert tiles yield +1 Faith.', fx: { classBonus: { ranged: 2 }, classCostMult: { ranged: 0.85 }, tileBonus: [{ when: 'desert', yields: { faith: 1 } }] } },
-      uu: { id: 'pitati', name: 'Pitati Archer', replaces: 'archer', ranged: 3, sight: 1, xpMult: 0.5, costMult: 0.85, desc: '+3 Ranged Strength, +1 Sight, +50% experience, 15% cheaper' },
+      uu: { id: 'pitati', name: 'Pitati Bowman', replaces: 'archer', ranged: 3, sight: 1, xpMult: 0.5, costMult: 0.85, desc: '+3 Ranged Strength, +1 Sight, +50% experience, 15% cheaper' },
       ub: { id: 'meroitic_temple', name: 'Meroitic Temple', replaces: 'shrine', yields: { faith: 2, culture: 1, happiness: 1 }, desc: '+2 Faith, +1 Culture, +1 Happiness' },
       cities: ['Meroë', 'Napata', 'Kerma', 'Faras', 'Dongola', 'Soba', 'Qustul', 'Buhen', 'Semna', 'Sai', 'Sedeinga', 'Jebel Barkal', 'Kawa', 'Sanam', 'Tabo', 'Musawwarat', 'Naqa', 'Wad ban Naqa', 'Basa', 'Dangeil', 'Amara', 'Kurgus', 'Tombos', 'Kurru', 'Nuri', 'Argo', 'Qasr Ibrim', 'Ballana', 'Kalabsha', 'Dakka', 'Aniba', 'Mirgissa', 'Uronarti', 'Shalfak', 'Askut', 'Kumma', 'Debeira', 'Serra', 'Sesebi', 'Wadi Halfa'],
       leaders: [
@@ -77,7 +77,7 @@
 
     { id: 'holy_roman_empire', name: 'Holy Roman Empire', adj: 'Imperial', difficulty: 'medium', bias: ['forest', 'river'], color: '#8e7cc3', color2: '#1a1a1a',
       ability: { name: 'Reichstag', desc: '+1 Happiness per Shrine you own. +1 Faith per settlement. Settlements following your religion +1 Science.', fx: { happinessPerShrine: 1, faithPerSettlement: 1, sciencePerFollowerSettlement: 1 } },
-      uu: { id: 'genoese_crossbowman', name: 'Genoese Crossbowman', replaces: 'crossbowman', ranged: 3, defense: 4, defVsRanged: 8, costMult: 1.1, desc: '+3 Ranged Strength, +4 defending, +8 defending against ranged attacks (pavise), costs 10% more' },
+      uu: { id: 'genoese_crossbowman', name: 'Genoese Arbalester', replaces: 'crossbowman', ranged: 3, defense: 4, defVsRanged: 8, costMult: 1.1, desc: '+3 Ranged Strength, +4 defending, +8 defending against ranged attacks (pavise), costs 10% more' },
       ub: { id: 'kaiserpfalz', name: 'Kaiserpfalz', replaces: 'castle', yields: { culture: 2, faith: 1, happiness: 1 }, desc: '+2 Culture, +1 Faith, +1 Happiness' },
       cities: ['Aachen', 'Regensburg', 'Worms', 'Speyer', 'Goslar', 'Augsburg', 'Würzburg', 'Bamberg', 'Ulm', 'Lübeck', 'Bremen', 'Basel', 'Zürich', 'Bern', 'Wetzlar', 'Fulda', 'Erfurt', 'Quedlinburg', 'Paderborn', 'Konstanz', 'Freiburg', 'Passau', 'Eger', 'Metz', 'Besançon', 'Arles', 'Pavia', 'Ingelheim', 'Gelnhausen', 'Kaiserslautern', 'Rothenburg', 'Nördlingen', 'Esslingen', 'Memmingen', 'Kempten', 'Lindau', 'Dinkelsbühl', 'Verdun', 'Cambrai', 'Lucca'],
       leaders: [
@@ -174,7 +174,7 @@
       cities: ['Mbanza Kongo', 'Mbanza Mbata', 'Mbanza Nsundi', 'Mbanza Mpangu', 'Mbanza Mpemba', 'Mbanza Soyo', 'Mbanza Wembo', 'Mbanza Mbamba', 'Kabasa', 'Matamba', 'Loango', 'Mpinda', 'Ngoyo', 'Kakongo', 'Cabinda', 'Nkusu', 'Wandu', 'Nkondo', 'Mbwila', 'Kinsundi', 'Bumbu', 'Ndembo', 'Zombo', 'Kibangu', 'Lemba', 'Mbula', 'Kongo dia Nlaza', 'Mbanza Nkanda', 'Vunda', 'Mpangala', 'Kinkanga', 'Mukondo', 'Noki', 'Boma', 'Matadi', 'Songololo', 'Kimpese', 'Mbanza-Ngungu', 'Malanza', 'Mpumbu'],
       leaders: [
         L('nzinga', 'Nzinga Mbande', 'Ngola', 'Queen of Matamba', 'Units +5 Strength vs units from another continent and +4 in Rainforest and Marsh. Units heal +10 in your territory.', { combatBonusVsInvaders: 5, combatBonusJungle: 4, healBonusHome: 10 }, { aggression: 0.6, expansion: 0.5, science: 0.4, culture: 0.5 }),
-        L('afonso', 'Afonso I', 'Manikongo', 'Apostle of Kongo', 'Your religion spreads 50% faster. Settlements following your religion +1 Science. Every settlement gets a free Shrine once Mysticism is known.', { pressureMult: 1.5, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
+        L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your religion spreads 50% faster. Settlements following your religion +1 Science. Every settlement gets a free Shrine once Mysticism is known.', { pressureMult: 1.5, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
       ] },
 
     { id: 'mapuche', name: 'Mapuche', adj: 'Mapuche', difficulty: 'hard', bias: ['hills', 'forest'], color: '#b5838d', color2: '#0b3954',

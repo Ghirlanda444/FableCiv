@@ -711,7 +711,7 @@
   G.availableCivics = function (civ) { return AU.CIVICS.filter(function (t) { return !civ.civics[t.id] && t.pre.every(function (p) { return civ.civics[p]; }); }); };
   G.techCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).techCostMult || 1) * G.speed(g)); };
   G.civicCost = function (g, civ, t) { return Math.round(t.cost * (G.civFx(g, civ).civicCostMult || 1) * G.speed(g)); };
-  // Mastery: a technology or civic finished after its Eureka / Inspiration fired keeps a permanent bonus.
+  // Mastery: a technology or civic finished after its Spark / Insight fired keeps a permanent bonus.
   G.masteryOf = function (id, isCivic) { return AU.MASTERY ? (isCivic ? AU.MASTERY.civics[id] : AU.MASTERY.techs[id]) : null; };
   G.hasMastery = function (civ, id, isCivic) { return !!(civ.mastery && civ.mastery[isCivic ? 'c:' + id : id]); };
   G.grantMastery = function (g, civ, id, isCivic) {
@@ -764,7 +764,7 @@
   };
   G.freeSlots = function (civ) { var slots = Object.assign({}, G.policySlots(civ)); (civ.policies || []).forEach(function (id) { var t = AU.POLICIES[id].type; if (slots[t] > 0) slots[t]--; else slots.wildcard--; }); return slots; };
 
-  // ---------- Eurekas & inspirations ----------
+  // ---------- Sparks & insights ----------
   G.condMet = function (g, civ, cond) {
     var type = cond[0], a = cond[1], n = cond[2] || 1, sets = G.civSettlements(g, civ.idx), units = G.civUnits(g, civ.idx);
     function anyOf(v) { return String(a).split('|').indexOf(v) >= 0; }
@@ -812,10 +812,10 @@
       if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;
       if (!G.condMet(g, civ, t.eureka.cond)) return;
       civ.boosts[t.id] = g.turn;
-      var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Science from a Eureka
+      var disc = G.civFx(g, civ).eurekaDiscount || 0, gain = disc ? Math.round(G.techCost(g, civ, t) * disc) : 0; // only some leaders get Science from a Spark
       if (gain) civ.techProgress[t.id] = Math.min(G.techCost(g, civ, t) - 1, (civ.techProgress[t.id] || 0) + gain);
       var mt = G.masteryOf(t.id, false);
-      G.notify(g, civ, { kind: 'tech', text: 'Eureka! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Science' : '') + '.', panel: 'tech' });
+      G.notify(g, civ, { kind: 'tech', text: 'Spark! ' + t.name + (mt ? ': finish it to earn its mastery (' + mt.desc + ')' : '') + (gain ? ' · +' + gain + ' Science' : '') + '.', panel: 'tech' });
     });
     AU.CIVICS.forEach(function (c) {
       if (civ.civics[c.id] || civ.boosts['c:' + c.id] || !c.inspiration) return;
@@ -824,7 +824,7 @@
       var disc2 = G.civFx(g, civ).inspirationDiscount || 0, gain2 = disc2 ? Math.round(G.civicCost(g, civ, c) * disc2) : 0;
       if (gain2) civ.civicProgress[c.id] = Math.min(G.civicCost(g, civ, c) - 1, (civ.civicProgress[c.id] || 0) + gain2);
       var mc = G.masteryOf(c.id, true);
-      G.notify(g, civ, { kind: 'civic', text: 'Inspiration! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Culture' : '') + '.', panel: 'civics' });
+      G.notify(g, civ, { kind: 'civic', text: 'Insight! ' + c.name + (mc ? ': finish it to earn its mastery (' + mc.desc + ')' : '') + (gain2 ? ' · +' + gain2 + ' Culture' : '') + '.', panel: 'civics' });
     });
   };
 

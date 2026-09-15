@@ -1,40 +1,40 @@
 // Unit types. cls: melee | antcav | ranged | siege | cavalry | naval | navalRanged | recon | civilian
 (function (AU) {
   AU.UNITS = {
-    settler:     { name: 'Settler',     cls: 'civilian', cost: 80,  moves: 2, strength: 0,  icon: '🧭', desc: 'Founds a new Town.' },
-    scout:       { name: 'Scout',       cls: 'recon',    cls2: 'melee', cost: 30,  moves: 3, strength: 10, sight: 3, icon: '🔭' },
-    warrior:     { name: 'Warrior',     cls: 'melee',    cost: 40,  moves: 2, strength: 20, icon: '🪓', upgradesTo: 'swordsman' },
-    slinger:     { name: 'Slinger',     cls: 'ranged',   cost: 35,  moves: 2, strength: 5,  ranged: 15, range: 1, icon: '🪃', upgradesTo: 'archer' },
-    archer:      { name: 'Archer',      cls: 'ranged',   cost: 60,  moves: 2, strength: 15, ranged: 25, range: 2, tech: 'archery', icon: '🏹', upgradesTo: 'crossbowman' },
-    spearman:    { name: 'Spearman',    cls: 'antcav',   cost: 65,  moves: 2, strength: 25, tech: 'bronze_working', icon: '🔱', upgradesTo: 'pikeman' },
-    swordsman:   { name: 'Swordsman',   cls: 'melee',    cost: 90,  moves: 2, strength: 36, tech: 'iron_working', resource: 'iron', icon: '⚔️', upgradesTo: 'musketman' },
-    horseman:    { name: 'Horseman',    cls: 'cavalry',  cost: 80,  moves: 4, strength: 36, tech: 'horseback_riding', resource: 'horses', icon: '🐎', upgradesTo: 'knight' },
-    catapult:    { name: 'Catapult',    cls: 'siege',    cost: 120, moves: 2, strength: 23, ranged: 35, range: 2, tech: 'engineering', icon: '🪨', upgradesTo: 'bombard' },
-    galley:      { name: 'Galley',      cls: 'naval',    cost: 65,  moves: 3, strength: 30, tech: 'sailing', icon: '⛵', upgradesTo: 'caravel' },
-    crossbowman: { name: 'Crossbowman', cls: 'ranged',   cost: 180, moves: 2, strength: 30, ranged: 40, range: 2, tech: 'machinery', icon: '🏹', upgradesTo: 'field_cannon' },
-    pikeman:     { name: 'Pikeman',     cls: 'antcav',   cost: 180, moves: 2, strength: 41, tech: 'military_tactics', icon: '🔱', upgradesTo: 'rifleman' },
-    knight:      { name: 'Knight',      cls: 'cavalry',  cost: 220, moves: 4, strength: 48, tech: 'stirrups', resource: 'horses', icon: '🐴', upgradesTo: 'cavalry' },
-    musketman:   { name: 'Musketman',   cls: 'melee',    cost: 240, moves: 2, strength: 55, tech: 'gunpowder', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
-    bombard:     { name: 'Bombard',     cls: 'siege',    cost: 280, moves: 2, strength: 35, ranged: 45, range: 2, tech: 'metal_casting', resource: 'niter', icon: '💣', upgradesTo: 'artillery' },
-    caravel:     { name: 'Caravel',     cls: 'naval',    cost: 240, moves: 4, strength: 45, tech: 'cartography', icon: '⛵', ocean: true, upgradesTo: 'ironclad' },
-    field_cannon:{ name: 'Field Cannon',cls: 'ranged',   cost: 330, moves: 2, strength: 45, ranged: 60, range: 2, tech: 'ballistics', resource: 'niter', icon: '🎯', upgradesTo: 'machine_gun' },
-    cavalry:     { name: 'Cavalry',     cls: 'cavalry',  cost: 330, moves: 5, strength: 62, tech: 'military_science', resource: 'horses', icon: '🐎', upgradesTo: 'tank' },
-    rifleman:    { name: 'Rifleman',    cls: 'antcav',   cost: 360, moves: 2, strength: 65, tech: 'rifling', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
-    ironclad:    { name: 'Ironclad',    cls: 'naval',    cost: 380, moves: 4, strength: 55, tech: 'steam_power', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'submarine' },
-    artillery:   { name: 'Artillery',   cls: 'siege',    cost: 430, moves: 2, strength: 50, ranged: 70, range: 2, tech: 'steel', resource: 'coal', icon: '🎇' },
-    infantry:    { name: 'Infantry',    cls: 'melee',    cost: 430, moves: 2, strength: 70, tech: 'replaceable_parts', icon: '🪖', upgradesTo: 'mech_infantry' },
-    machine_gun: { name: 'Machine Gun', cls: 'ranged',   cost: 450, moves: 2, strength: 60, ranged: 75, range: 2, tech: 'replaceable_parts', icon: '🔩' },
-    battleship:  { name: 'Battleship',  cls: 'navalRanged', cost: 480, moves: 5, strength: 60, ranged: 70, range: 3, tech: 'steel', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'destroyer' },
-    tank:        { name: 'Tank',        cls: 'cavalry',  cost: 480, moves: 4, strength: 80, tech: 'combustion', resource: 'oil', icon: '🛡️', upgradesTo: 'modern_armor' },
-    mech_infantry:{ name: 'Mechanized Infantry', cls: 'melee', cost: 560, moves: 3, strength: 90, tech: 'plastics', resource: 'oil', icon: '🚛' },
-    rocket_artillery: { name: 'Rocket Artillery', cls: 'siege', cost: 580, moves: 3, strength: 60, ranged: 95, range: 2, tech: 'rocketry', resource: 'oil', icon: '🚀' },
-    destroyer:   { name: 'Destroyer',   cls: 'navalRanged', cost: 520, moves: 6, strength: 70, ranged: 75, range: 2, tech: 'combustion', resource: 'oil', icon: '⚓', ocean: true },
-    submarine:   { name: 'Submarine',   cls: 'naval',    cost: 560, moves: 5, strength: 85, tech: 'radar', resource: 'oil', icon: '🛥️', ocean: true },
-    modern_armor:{ name: 'Modern Armor', cls: 'cavalry', cost: 700, moves: 5, strength: 100, tech: 'composites', resource: 'oil', icon: '🛡️' },
-    special_forces:{ name: 'Special Forces', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' },
+    settler:     { name: 'Pioneers',     cls: 'civilian', cost: 80,  moves: 2, strength: 0,  icon: '🧭', desc: 'Founds a new Town.' },
+    scout:       { name: 'Pathfinder',       cls: 'recon',    cls2: 'melee', cost: 30,  moves: 3, strength: 10, sight: 3, icon: '🔭' },
+    warrior:     { name: 'Militia',     cls: 'melee',    cost: 40,  moves: 2, strength: 20, icon: '🪓', upgradesTo: 'swordsman' },
+    slinger:     { name: 'Sling Hunter',     cls: 'ranged',   cost: 35,  moves: 2, strength: 5,  ranged: 15, range: 1, icon: '🪃', upgradesTo: 'archer' },
+    archer:      { name: 'Bowman',      cls: 'ranged',   cost: 60,  moves: 2, strength: 15, ranged: 25, range: 2, tech: 'archery', icon: '🏹', upgradesTo: 'crossbowman' },
+    spearman:    { name: 'Spear Guard',    cls: 'antcav',   cost: 65,  moves: 2, strength: 25, tech: 'bronze_working', icon: '🔱', upgradesTo: 'pikeman' },
+    swordsman:   { name: 'Swordbearer',   cls: 'melee',    cost: 90,  moves: 2, strength: 36, tech: 'iron_working', resource: 'iron', icon: '⚔️', upgradesTo: 'musketman' },
+    horseman:    { name: 'Horse Raider',    cls: 'cavalry',  cost: 80,  moves: 4, strength: 36, tech: 'horseback_riding', resource: 'horses', icon: '🐎', upgradesTo: 'knight' },
+    catapult:    { name: 'Stone Thrower',    cls: 'siege',    cost: 120, moves: 2, strength: 23, ranged: 35, range: 2, tech: 'engineering', icon: '🪨', upgradesTo: 'bombard' },
+    galley:      { name: 'Oarship',      cls: 'naval',    cost: 65,  moves: 3, strength: 30, tech: 'sailing', icon: '⛵', upgradesTo: 'caravel' },
+    crossbowman: { name: 'Arbalester', cls: 'ranged',   cost: 180, moves: 2, strength: 30, ranged: 40, range: 2, tech: 'machinery', icon: '🏹', upgradesTo: 'field_cannon' },
+    pikeman:     { name: 'Pike Guard',     cls: 'antcav',   cost: 180, moves: 2, strength: 41, tech: 'military_tactics', icon: '🔱', upgradesTo: 'rifleman' },
+    knight:      { name: 'Chevalier',      cls: 'cavalry',  cost: 220, moves: 4, strength: 48, tech: 'stirrups', resource: 'horses', icon: '🐴', upgradesTo: 'cavalry' },
+    musketman:   { name: 'Musketeer',   cls: 'melee',    cost: 240, moves: 2, strength: 55, tech: 'gunpowder', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
+    bombard:     { name: 'Great Cannon',     cls: 'siege',    cost: 280, moves: 2, strength: 35, ranged: 45, range: 2, tech: 'metal_casting', resource: 'niter', icon: '💣', upgradesTo: 'artillery' },
+    caravel:     { name: 'Carrack',     cls: 'naval',    cost: 240, moves: 4, strength: 45, tech: 'cartography', icon: '⛵', ocean: true, upgradesTo: 'ironclad' },
+    field_cannon:{ name: 'Field Gun',cls: 'ranged',   cost: 330, moves: 2, strength: 45, ranged: 60, range: 2, tech: 'ballistics', resource: 'niter', icon: '🎯', upgradesTo: 'machine_gun' },
+    cavalry:     { name: 'Dragoon',     cls: 'cavalry',  cost: 330, moves: 5, strength: 62, tech: 'military_science', resource: 'horses', icon: '🐎', upgradesTo: 'tank' },
+    rifleman:    { name: 'Fusilier',    cls: 'antcav',   cost: 360, moves: 2, strength: 65, tech: 'rifling', resource: 'niter', icon: '🔫', upgradesTo: 'infantry' },
+    ironclad:    { name: 'Monitor',    cls: 'naval',    cost: 380, moves: 4, strength: 55, tech: 'steam_power', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'submarine' },
+    artillery:   { name: 'Howitzer',   cls: 'siege',    cost: 430, moves: 2, strength: 50, ranged: 70, range: 2, tech: 'steel', resource: 'coal', icon: '🎇' },
+    infantry:    { name: 'Regulars',    cls: 'melee',    cost: 430, moves: 2, strength: 70, tech: 'replaceable_parts', icon: '🪖', upgradesTo: 'mech_infantry' },
+    machine_gun: { name: 'Gunners', cls: 'ranged',   cost: 450, moves: 2, strength: 60, ranged: 75, range: 2, tech: 'replaceable_parts', icon: '🔩' },
+    battleship:  { name: 'Dreadnought',  cls: 'navalRanged', cost: 480, moves: 5, strength: 60, ranged: 70, range: 3, tech: 'steel', resource: 'coal', icon: '🚢', ocean: true, upgradesTo: 'destroyer' },
+    tank:        { name: 'Land Cruiser',        cls: 'cavalry',  cost: 480, moves: 4, strength: 80, tech: 'combustion', resource: 'oil', icon: '🛡️', upgradesTo: 'modern_armor' },
+    mech_infantry:{ name: 'Mechanized Troops', cls: 'melee', cost: 560, moves: 3, strength: 90, tech: 'plastics', resource: 'oil', icon: '🚛' },
+    rocket_artillery: { name: 'Rocket Battery', cls: 'siege', cost: 580, moves: 3, strength: 60, ranged: 95, range: 2, tech: 'rocketry', resource: 'oil', icon: '🚀' },
+    destroyer:   { name: 'Torpedo Ship',   cls: 'navalRanged', cost: 520, moves: 6, strength: 70, ranged: 75, range: 2, tech: 'combustion', resource: 'oil', icon: '⚓', ocean: true },
+    submarine:   { name: 'Attack Sub',   cls: 'naval',    cost: 560, moves: 5, strength: 85, tech: 'radar', resource: 'oil', icon: '🛥️', ocean: true },
+    modern_armor:{ name: 'Heavy Armor', cls: 'cavalry', cost: 700, moves: 5, strength: 100, tech: 'composites', resource: 'oil', icon: '🛡️' },
+    special_forces:{ name: 'Commandos', cls: 'melee', cost: 640, moves: 3, strength: 95, tech: 'stealth', icon: '🥷' },
     fighter:     { name: 'Biplane',     cls: 'air',      cost: 420, moves: 8,  strength: 55, ranged: 60, range: 2, tech: 'flight', resource: 'oil', icon: '✈️', flying: true, sight: 3, upgradesTo: 'jet_fighter', desc: 'Flies over any terrain and water; attacks from 2 tiles. Cannot capture.' },
-    bomber:      { name: 'Bomber',      cls: 'air',      cost: 520, moves: 8,  strength: 45, ranged: 85, range: 2, tech: 'advanced_flight', resource: 'oil', icon: '🛩️', flying: true, sight: 3, vsSettlements: 15, desc: 'Heavy bomber: flies over anything, +15 vs settlements. Cannot capture.' },
-    jet_fighter: { name: 'Jet Fighter', cls: 'air',      cost: 680, moves: 10, strength: 90, ranged: 95, range: 2, tech: 'jet_engines', resource: 'oil', icon: '🛫', flying: true, sight: 4, desc: 'Fast jet: flies over anything, attacks from 2 tiles. Cannot capture.' },
+    bomber:      { name: 'Heavy Bomber',      cls: 'air',      cost: 520, moves: 8,  strength: 45, ranged: 85, range: 2, tech: 'advanced_flight', resource: 'oil', icon: '🛩️', flying: true, sight: 3, vsSettlements: 15, desc: 'Heavy bomber: flies over anything, +15 vs settlements. Cannot capture.' },
+    jet_fighter: { name: 'Jet Interceptor', cls: 'air',      cost: 680, moves: 10, strength: 90, ranged: 95, range: 2, tech: 'jet_engines', resource: 'oil', icon: '🛫', flying: true, sight: 4, desc: 'Fast jet: flies over anything, attacks from 2 tiles. Cannot capture.' },
     great_prophet:   { name: 'Great Prophet',   cls: 'civilian', great: 'prophet',   cost: 0, moves: 3, strength: 0, icon: '🕊️', desc: 'Founds a religion in one of your settlements. Earned with Great Prophet points (Shrines, Temples, Faith).' },
     great_scientist: { name: 'Great Scientist', cls: 'civilian', great: 'scientist', cost: 0, moves: 3, strength: 0, icon: '🔬', desc: 'Completes the technology being researched. Earned with Great Scientist points (Libraries, Universities, Research Labs).' },
     great_engineer:  { name: 'Great Engineer',  cls: 'civilian', great: 'engineer',  cost: 0, moves: 3, strength: 0, icon: '⚙️', desc: 'Adds a big burst of Production to a City. Earned with Great Engineer points (Workshops, Factories, Power Plants).' },
@@ -42,9 +42,9 @@
     great_artist:    { name: 'Great Artist',    cls: 'civilian', great: 'artist',    cost: 0, moves: 3, strength: 0, icon: '🎨', desc: 'Creates a Great Work: +3 Culture and +3 Tourism in a settlement. Earned with Great Artist points (Amphitheaters, Museums).' },
     great_general:   { name: 'Great General',   cls: 'civilian', great: 'general',   cost: 0, moves: 3, strength: 0, icon: '⚔️', desc: '+5 Strength to your land units within 2 tiles. Earned with Great General points (Barracks, Castles, Military Academies).' },
     great_admiral:   { name: 'Great Admiral',   cls: 'civilian', great: 'admiral',   cost: 0, moves: 4, strength: 0, icon: '⚓', desc: '+5 Strength and +1 Movement to your naval units within 2 tiles. Earned with Great Admiral points (Lighthouses, Harbors, Shipyards).' },
-    missionary:  { name: 'Missionary',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Faith in a settlement with a Shrine.' },
-    apostle:     { name: 'Apostle',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Faith in a settlement with a Temple.' },
-    inquisitor:  { name: 'Inquisitor',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Faith in a settlement with a Temple.' }
+    missionary:  { name: 'Preacher',  cls: 'civilian', religious: true, cost: 0, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', desc: 'Spreads your religion (3 charges). Purchased with Faith in a settlement with a Shrine.' },
+    apostle:     { name: 'Evangelist',     cls: 'civilian', religious: true, cost: 0, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', desc: 'Spreads your religion (3 charges, stronger) and debates enemy religious units. Purchased with Faith in a settlement with a Temple.' },
+    inquisitor:  { name: 'Faith Warden',  cls: 'civilian', religious: true, cost: 0, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', desc: 'Removes other religions from your settlements (3 charges). Purchased with Faith in a settlement with a Temple.' }
   };
   // The barbarian roster by era index
   AU.BARBARIAN_UNITS = [['warrior', 'slinger', 'scout'], ['spearman', 'archer', 'horseman'], ['pikeman', 'crossbowman', 'knight'], ['musketman', 'crossbowman'], ['rifleman', 'field_cannon'], ['infantry', 'machine_gun'], ['infantry', 'tank'], ['mech_infantry', 'modern_armor']];
@@ -69,7 +69,7 @@
     }
     return def;
   };
-  // Human-readable summary of a modifier set (used by the Civilopedia and the promotion picker).
+  // Human-readable summary of a modifier set (used by the Chibipedia and the promotion picker).
   AU.modsText = function (m) {
     var out = [];
     if (m.strength) out.push((m.strength > 0 ? '+' : '') + m.strength + ' Strength');

@@ -28,9 +28,9 @@
     B('choral_music', 'Choral Music', 'follower', 'Shrines and Temples give +2 Culture.', { buildingBonus: { shrine: { culture: 2 }, temple: { culture: 2 } } }),
     B('jesuit_education', 'Jesuit Education', 'follower', 'Libraries and Universities give +2 Science.', { buildingBonus: { library: { science: 2 }, university: { science: 2 } } }),
     B('religious_community', 'Religious Community', 'follower', '+1 Happiness, +1 more with a Temple.', { happinessBonus: 1, buildingBonus: { temple: { happiness: 1 } } }),
-    B('divine_inspiration', 'Divine Inspiration', 'follower', 'Each Wonder gives +4 Faith.', { faithPerWonder: 4 }),
+    B('divine_inspiration', 'Divine Insight', 'follower', 'Each Wonder gives +4 Faith.', { faithPerWonder: 4 }),
     B('zealotry', 'Zealotry', 'follower', 'Land military units can be purchased with Faith.', { faithPurchaseUnits: true }),
-    B('warrior_monks', 'Warrior Monks', 'follower', 'Units +4 Strength when fighting in or next to settlements of this religion.', { combatBonusOwnReligion: 4 }),
+    B('warrior_monks', 'Militia Monks', 'follower', 'Units +4 Strength when fighting in or next to settlements of this religion.', { combatBonusOwnReligion: 4 }),
     B('reliquaries', 'Reliquaries', 'follower', 'Settlements of this religion generate +2 Tourism and +1 Gold.', { tourismPerFollower: 2, goldPerSettlement: 1 }),
     B('tithe', 'Tithe', 'follower', '+2 Gold per settlement following this religion.', { goldPerSettlement: 2 })
   ];
@@ -45,7 +45,7 @@
   ];
   // Enhancer beliefs: chosen when the religion is enhanced (second Faith milestone).
   AU.ENHANCER_BELIEFS = [
-    B('missionary_zeal', 'Missionary Zeal', 'enhancer', 'Religious units +1 charge and +1 Movement.', { missionaryCharges: 1, religiousMoves: 1 }),
+    B('missionary_zeal', 'Preacher Zeal', 'enhancer', 'Religious units +1 charge and +1 Movement.', { missionaryCharges: 1, religiousMoves: 1 }),
     B('holy_order', 'Holy Order', 'enhancer', 'Religious units cost 30% less Faith.', { religiousUnitCostMult: 0.7 }),
     B('defender_faith', 'Defender of the Faith', 'enhancer', 'Units +5 Strength when fighting near settlements of this religion; +20 in theological combat.', { combatBonusOwnReligion: 5, religiousStrength: 20 }),
     B('crusade', 'Crusade', 'enhancer', 'Units +8 Strength when attacking settlements that follow this religion but belong to someone else.', { combatBonusVsFollowerSettlements: 8 }),
@@ -66,8 +66,8 @@
   AU.RELIGION_PREF = { india: 'hinduism', china: 'confucianism', japan: 'shinto', arabia: 'islam', ottoman: 'islam', persia: 'zoroastrianism', mongolia: 'tengriism', norway: 'norse', russia: 'orthodoxy', byzantium: 'orthodoxy', georgia: 'orthodoxy', rome: 'catholicism', spain: 'catholicism', france: 'catholicism', poland: 'catholicism', portugal: 'catholicism', holy_roman_empire: 'catholicism', germany: 'protestantism', england: 'protestantism', sweden: 'protestantism', netherlands: 'protestantism', korea: 'buddhism', khmer: 'buddhism', siam: 'buddhism', vietnam: 'buddhism', babylon: 'ancestor_worship', sumer: 'ancestor_worship', mali: 'islam', ethiopia: 'orthodoxy', nubia: 'ancestor_worship', egypt: 'ancestor_worship' };
   // Religious units: bought with Faith only (no combat; captured units are lost).
   AU.RELIGIOUS_UNITS = {
-    missionary: { name: 'Missionary', cls: 'civilian', religious: true, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', requires: 'shrine', desc: 'Spreads your religion: 3 charges, each adds strong pressure to the settlement it stands in.' },
-    apostle: { name: 'Apostle', cls: 'civilian', religious: true, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', requires: 'temple', needsReligion: true, desc: 'A stronger Missionary (3 charges) that can also debate enemy religious units next to it: theological combat removes the loser.' },
-    inquisitor: { name: 'Inquisitor', cls: 'civilian', religious: true, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', requires: 'temple', needsReligion: true, desc: 'Removes foreign religions from your own settlements (3 charges) and defends against enemy Apostles.' }
+    missionary: { name: 'Preacher', cls: 'civilian', religious: true, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', requires: 'shrine', desc: 'Spreads your religion: 3 charges, each adds strong pressure to the settlement it stands in.' },
+    apostle: { name: 'Evangelist', cls: 'civilian', religious: true, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', requires: 'temple', needsReligion: true, desc: 'A stronger Preacher (3 charges) that can also debate enemy religious units next to it: theological combat removes the loser.' },
+    inquisitor: { name: 'Faith Warden', cls: 'civilian', religious: true, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', requires: 'temple', needsReligion: true, desc: 'Removes foreign religions from your own settlements (3 charges) and defends against enemy Evangelists.' }
   };
 })(globalThis.AU = globalThis.AU || {});

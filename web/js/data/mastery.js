@@ -1,4 +1,4 @@
-// Mastery: a permanent bonus earned when a technology or civic is completed AFTER its Eureka / Inspiration fired.
+// Mastery: a permanent bonus earned when a technology or civic is completed AFTER its Spark / Insight fired.
 // Meet the condition first, then finish the research, and the mastery is yours for the rest of the game.
 // Effects use the same keys as civilization abilities, civics and policies (merged into G.civFx).
 (function (AU) {

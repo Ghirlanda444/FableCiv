@@ -23,7 +23,7 @@
       leaders: [
         L('tokugawa', 'Tokugawa Ieyasu', 'Shogun', 'Sakoku', '+5 Strength for units inside your borders and +3 settlement defense. Towns convert Production to Gold at 125%.', { combatBonusHome: 5, cityDefense: 3, townGoldMult: 1.25 }, { aggression: 0.3, expansion: 0.5, science: 0.6, culture: 0.6 }),
         L('hojo', 'Hojo Tokimune', 'Shikken', 'Kamikaze', 'Naval units +6 Strength and +1 Movement. Units on Coast tiles +5 Strength.', { navalBonus: 6, navalMoves: 1, combatBonusCoast: 5 }, { aggression: 0.5, expansion: 0.5, science: 0.5, culture: 0.5 }),
-        L('meiji', 'Emperor Meiji', 'Emperor', 'Restoration', 'Every Eureka also grants 20% of the technology\'s cost in Science. Every building yields +1 Science in Cities.', { eurekaDiscount: 0.2, cityBuildingScience: 1 }, { aggression: 0.35, expansion: 0.5, science: 0.9, culture: 0.6 })
+        L('meiji', 'Emperor Meiji', 'Emperor', 'Restoration', 'Every Spark also grants 20% of the technology\'s cost in Science. Every building yields +1 Science in Cities.', { eurekaDiscount: 0.2, cityBuildingScience: 1 }, { aggression: 0.35, expansion: 0.5, science: 0.9, culture: 0.6 })
       ] },
 
     { id: 'china', name: 'China', adj: 'Chinese', difficulty: 'easy', bias: ['river', 'grassland'], color: '#2e8b57', color2: '#f7e04b',
@@ -38,7 +38,7 @@
       ] },
 
     { id: 'america', name: 'America', adj: 'American', difficulty: 'easy', bias: ['plains', 'river'], color: '#1f3f8f', color2: '#ffffff',
-      ability: { name: 'Manifest Destiny', desc: 'Settlers cost 20% less and move +1. Towns grow 15% faster.', fx: { settlerCostMult: 0.8, civilianMoves: 1, townGrowthMult: 1.15 } },
+      ability: { name: 'Manifest Destiny', desc: 'Pioneers cost 20% less and move +1. Towns grow 15% faster.', fx: { settlerCostMult: 0.8, civilianMoves: 1, townGrowthMult: 1.15 } },
       uu: { id: 'minuteman', name: 'Minuteman', replaces: 'musketman', strength: 3, ignoreTerrain: true, homeBonus: 6, desc: '+3 Strength, all terrain costs 1 movement, +6 inside your borders' },
       ub: { id: 'film_studio', name: 'Film Studio', replaces: 'broadcast_tower', yields: { culture: 4 }, desc: '+4 Culture' },
       cities: ['Washington', 'New York', 'Boston', 'Philadelphia', 'Chicago', 'Los Angeles', 'Atlanta', 'Seattle', 'Houston', 'Denver', 'Miami', 'Detroit', 'San Francisco', 'Baltimore', 'New Orleans', 'St. Louis', 'Pittsburgh', 'Charleston', 'Richmond', 'Savannah', 'Cleveland', 'Cincinnati', 'Minneapolis', 'Kansas City', 'Dallas', 'San Antonio', 'Phoenix', 'Salt Lake City', 'Portland', 'Nashville', 'Memphis', 'Buffalo', 'Milwaukee', 'Providence', 'Hartford', 'Albany', 'Santa Fe', 'Sacramento', 'Omaha', 'Louisville'],
@@ -101,7 +101,7 @@
 
     { id: 'egypt', name: 'Egypt', adj: 'Egyptian', difficulty: 'medium', bias: ['river', 'desert'], color: '#d4ac0d', color2: '#1b2631',
       ability: { name: 'Gift of the Nile', desc: 'Worked River tiles yield +1 Food. Settlements on rivers +1 Production and +1 Culture.', fx: { tileBonus: [{ when: 'river', yields: { food: 1 } }], settlementSiteBonus: [{ when: 'river', yields: { production: 1, culture: 1 } }] } },
-      uu: { id: 'maryannu', name: 'Chariot Archer', replaces: 'archer', ranged: 4, moves: 1, movesAfterAttack: true, terrainBonus: {desert: 6, floodplains: 6}, desc: '+4 Ranged Strength, +1 Movement, can move after attacking, +6 on desert and floodplains' },
+      uu: { id: 'maryannu', name: 'Chariot Bowman', replaces: 'archer', ranged: 4, moves: 1, movesAfterAttack: true, terrainBonus: {desert: 6, floodplains: 6}, desc: '+4 Ranged Strength, +1 Movement, can move after attacking, +6 on desert and floodplains' },
       ub: { id: 'nilometer', name: 'Nilometer', replaces: 'water_mill', yields: { food: 2, gold: 1 }, desc: '+2 Food, +1 Gold' },
       cities: ['Ra-Kedet', 'Thebes', 'Memphis', 'Akhetaten', 'Heliopolis', 'Elephantine', 'Alexandria', 'Pi-Ramesses', 'Abydos', 'Giza', 'Edfu', 'Tanis', 'Saqqara', 'Dendera', 'Kom Ombo', 'Aswan', 'Karnak', 'Hermopolis', 'Herakleopolis', 'Bubastis', 'Sais', 'Buto', 'Avaris', 'Mendes', 'Naukratis', 'Pelusium', 'Thinis', 'Coptos', 'Esna', 'Hierakonpolis', 'Faiyum', 'Crocodilopolis', 'Abu Simbel', 'Buhen', 'Napata', 'Meroe', 'Berenice', 'Nekheb', 'Athribis', 'Xois'],
       leaders: [
@@ -169,7 +169,7 @@
       cities: ['Cusco', 'Machu Picchu', 'Ollantaytambo', 'Vilcabamba', 'Cajamarca', 'Quito', 'Tiwanaku', 'Chan Chan', 'Huánuco', 'Arequipa', 'Pisac', 'Vitcos', 'Sacsayhuamán', 'Vilcashuamán', 'Huánuco Pampa', 'Pachacamac', 'Tumebamba', 'Ingapirca', 'Hatun Xauxa', 'Chinchero', 'Raqchi', 'Choquequirao', 'Tipón', 'Pucara', 'Chucuito', 'Copacabana', 'Cochabamba', 'Samaipata', 'Incallajta', 'Paucartambo', 'Andahuaylas', 'Abancay', 'Ayacucho', 'Huancayo', 'Tarma', 'Chachapoyas', 'Kuelap', 'Paramonga', 'Nazca', 'Puno'],
       leaders: [
         L('pachacuti', 'Pachacuti', 'Sapa Inca', 'Qhapaq Ñan', 'Units +1 Movement inside your borders; worked Hills +1 Production; Mining Towns +2 Gold.', { homeMoves: 1, tileBonus: [{ when: 'hills', yields: { production: 1 } }], specializationYields: { mining: { gold: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.5 }),
-        L('huayna', 'Huayna Capac', 'Sapa Inca', 'Mit\'a Levy', 'Towns convert Production to Gold at 130% and grow 15% faster. Settlers cost 15% less.', { townGoldMult: 1.3, townGrowthMult: 1.15, settlerCostMult: 0.85 }, { aggression: 0.4, expansion: 0.9, science: 0.4, culture: 0.4 })
+        L('huayna', 'Huayna Capac', 'Sapa Inca', 'Mit\'a Levy', 'Towns convert Production to Gold at 130% and grow 15% faster. Pioneers cost 15% less.', { townGoldMult: 1.3, townGrowthMult: 1.15, settlerCostMult: 0.85 }, { aggression: 0.4, expansion: 0.9, science: 0.4, culture: 0.4 })
       ] },
 
     { id: 'maya', name: 'Maya', adj: 'Mayan', difficulty: 'hard', bias: ['jungle'], color: '#117864', color2: '#fdfefe',
@@ -198,7 +198,7 @@
       ub: { id: 'odeon', name: 'Odeon', replaces: 'amphitheater', yields: { culture: 2, science: 1 }, desc: '+2 Culture, +1 Science' },
       cities: ['Athens', 'Sparta', 'Corinth', 'Thebes', 'Argos', 'Delphi', 'Rhodes', 'Ephesus', 'Miletus', 'Knossos', 'Olympia', 'Pella', 'Megara', 'Eretria', 'Chalcis', 'Marathon', 'Eleusis', 'Piraeus', 'Mycenae', 'Tiryns', 'Epidaurus', 'Mantinea', 'Tegea', 'Messene', 'Pylos', 'Elis', 'Patras', 'Naupactus', 'Delos', 'Naxos', 'Samos', 'Chios', 'Mytilene', 'Smyrna', 'Phocaea', 'Byzantium', 'Larissa', 'Amphipolis', 'Thessaloniki', 'Olynthus'],
       leaders: [
-        L('pericles', 'Pericles', 'Strategos', 'Golden Age of Athens', 'Every Inspiration also grants 20% of the civic\'s cost in Culture. Each Wonder yields +2 Science and +2 Culture.', { inspirationDiscount: 0.2, sciencePerWonder: 2, culturePerWonder: 2 }, { aggression: 0.3, expansion: 0.5, science: 0.7, culture: 0.9 }),
+        L('pericles', 'Pericles', 'Strategos', 'Golden Age of Athens', 'Every Insight also grants 20% of the civic\'s cost in Culture. Each Wonder yields +2 Science and +2 Culture.', { inspirationDiscount: 0.2, sciencePerWonder: 2, culturePerWonder: 2 }, { aggression: 0.3, expansion: 0.5, science: 0.7, culture: 0.9 }),
         L('leonidas', 'Leonidas', 'King', 'Thermopylae', 'Anti-cavalry +6 Strength; +10 Strength when defending on Hills; units start with a level.', { classBonus: { antcav: 6 }, hillsDefenseBonus: 10, unitsStartXp: 5 }, { aggression: 0.7, expansion: 0.4, science: 0.3, culture: 0.4 }),
         L('alexander', 'Alexander', 'King of Macedon', 'To the Ends of the World', 'No war weariness. Capturing a settlement grants a free technology boost of 60 Science; cavalry +4 Strength.', { warWearinessMult: 0, captureScience: 60, cavalryBonus: 4 }, { aggression: 0.95, expansion: 0.6, science: 0.5, culture: 0.4 })
       ] },

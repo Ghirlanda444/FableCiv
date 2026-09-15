@@ -1,5 +1,5 @@
 // Full technology and civic trees (Civ style): one column band per era, prerequisite arrows, tap a node for details.
-// Works with or without a running game (from the Civilopedia on the title screen the tree is simply uncoloured).
+// Works with or without a running game (from the Chibipedia on the title screen the tree is simply uncoloured).
 (function (AU) {
   var G = AU.G, P = AU.Panels;
   var $ = function (id) { return document.getElementById(id); };
