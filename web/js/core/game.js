@@ -259,9 +259,14 @@
     var key = 'nat:' + t.natural; if (civ.flags[key]) return; civ.flags[key] = g.turn;
     var NW = AU.NATURAL_WONDERS[t.natural], first = !g.naturalFound[t.natural];
     if (first) g.naturalFound[t.natural] = civ.idx;
-    var bonus = Math.round((first ? 40 : 20) * (1 + civ.era * 0.5) * G.speed(g));
-    civ.bonusCulture = (civ.bonusCulture || 0) + bonus; civ.bonusScience = (civ.bonusScience || 0) + bonus;
-    G.notify(g, civ, { kind: 'wonder', text: (first ? _('You discovered') + ' ' : _('Your explorers found') + ' ') + NW.name + '! +' + bonus + ' ' + _('Knowledge and Heritage.'), tile: t.i });
+    // The reward is a share of what you are currently researching, so it is worth the same at every stage of the game
+    // and never completes a technology or civic on its own (a flat +40 used to finish the first ones on turn 2).
+    var share = first ? 0.3 : 0.15;
+    function refCost(cur, avail, costFn) { var list = cur ? [cur] : avail; if (!list.length) return 0; return Math.min.apply(null, list.map(function (x) { return costFn(g, civ, x); })); }
+    var tRef = refCost(civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null, G.availableTechs(civ), G.techCost), cRef = refCost(civ.currentCivic ? AU.CIVIC_BY_ID[civ.currentCivic] : null, G.availableCivics(civ), G.civicCost);
+    var sci = Math.max(5, Math.round(tRef * share)), cul = Math.max(5, Math.round(cRef * share));
+    civ.bonusCulture = (civ.bonusCulture || 0) + cul; civ.bonusScience = (civ.bonusScience || 0) + sci;
+    G.notify(g, civ, { kind: 'wonder', text: (first ? _('You discovered') + ' ' : _('Your explorers found') + ' ') + NW.name + '! +' + sci + ' ' + _('Knowledge') + ', +' + cul + ' ' + _('Heritage') + '.', tile: t.i });
     G.quote(g, civ, 'natural', t.natural, NW.name, _('Natural wonder discovered'), t.i);
     G.log(g, G.civData(civ).name + ' discovered ' + NW.name + '.', civ.idx);
   };

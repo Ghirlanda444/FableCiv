@@ -22,3 +22,15 @@ check(U.orderMove(g, w, dest) && U.canUndo(g, w), 'second order can be undone');
 // map density
 check(AU.MAP_SIZES.huge.civs === 12 && AU.MAP_SIZES.enormous.civs === 14, 'lower empire counts on big maps');
 if (fails) { console.log(fails, 'failures'); process.exit(1); } console.log('turnfixes tests OK');
+
+// A natural wonder found on turn 1 must never complete the first technology or civic by itself (it used to give a flat +40).
+(function () {
+  const G = AU.G;
+  const g = G.newGame({ playerCiv: 'rome', playerLeader: 'caesar', scenario: 'rise_of_rome', difficulty: 'prince', seed: 5 });
+  const pl = G.player(g); pl.currentTech = G.availableTechs(pl)[0].id; pl.currentCivic = G.availableCivics(pl)[0].id;
+  const t = pl.currentTech, c = pl.currentCivic;
+  if (!(pl.bonusScience > 0)) throw new Error('expected a natural wonder discovery bonus at the start of Rise of Rome');
+  G.endTurn(g);
+  if (pl.techs[t] || pl.civics[c]) throw new Error('natural wonder bonus completed ' + (pl.techs[t] ? t : c) + ' on turn 2');
+  console.log('natural wonder bonus OK: turn 2 progress', Math.round(pl.techProgress[t]), '/', G.techCost(g, pl, AU.TECH_BY_ID[t]));
+})();
