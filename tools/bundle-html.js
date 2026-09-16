@@ -2,7 +2,16 @@
 const fs = require('fs'), path = require('path');
 const web = path.join(__dirname, '..', 'web');
 let html = fs.readFileSync(path.join(web, 'index.html'), 'utf8');
-html = html.replace(/<link rel="stylesheet" href="([^"]+)">/g, (m, href) => '<style>\n' + fs.readFileSync(path.join(web, href), 'utf8') + '\n</style>');
+// stylesheets are inlined; the fonts and UI textures they reference become data URIs so the single file works offline
+function inlineCssUrls(css, baseDir) {
+  return css.replace(/url\((['"]?)([^'")]+)\1\)/g, (m, q, ref) => {
+    if (/^(data:|https?:)/.test(ref)) return m;
+    const file = path.join(baseDir, ref); if (!fs.existsSync(file)) return m;
+    const ext = ref.split('.').pop().toLowerCase(), mime = ext === 'woff2' ? 'font/woff2' : ext === 'png' ? 'image/png' : ext === 'jpg' ? 'image/jpeg' : 'application/octet-stream';
+    return 'url(data:' + mime + ';base64,' + fs.readFileSync(file).toString('base64') + ')';
+  });
+}
+html = html.replace(/<link rel="stylesheet" href="([^"]+)">/g, (m, href) => '<style>\n' + inlineCssUrls(fs.readFileSync(path.join(web, href), 'utf8'), path.dirname(path.join(web, href))) + '\n</style>');
 // artwork present under web/assets becomes data URIs available to the loader
 const assetsDir = path.join(web, 'assets'); const data = {};
 function walkAssets(dir, prefix) { for (const f of fs.readdirSync(dir)) { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) { walkAssets(p, prefix + f + '/'); continue; } if (/\.(png|jpg|jpeg|webp)$/i.test(f)) { const ext = f.split('.').pop().toLowerCase(); data[prefix + f.replace(/\.[^.]+$/, '')] = 'data:image/' + (ext === 'jpg' ? 'jpeg' : ext) + ';base64,' + fs.readFileSync(p).toString('base64'); } } }
