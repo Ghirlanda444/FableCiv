@@ -84,9 +84,9 @@
   Renderer.prototype.featureArt = function (id) { return AU.Assets.get('features', id); };
   Renderer.prototype.drawArt = function (ctx, img, x, y, w, anchorY) { var h = w * img.height / img.width; ctx.drawImage(img, x - w / 2, y - h * (anchorY === undefined ? 0.5 : anchorY), w, h); };
   Renderer.prototype.tileSprite = function (t, rz, groundOnly) {
-    var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
-    var ftex = t.feature ? this.terrainTexture(t.feature) : null, htex = t.hills ? this.terrainTexture('hills') : null;
-    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.hills ? 'h' : '') + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0) + (ftex ? 1 : 0) + (htex ? 1 : 0) + '|' + (this._wsh ? Math.max(0, this._wsh[t.i]) : 0);
+    var tex = this.terrainTexture(t.terrain), feat = t.feature ? this.featureArt(t.feature) : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
+    var ftex = t.feature ? this.terrainTexture(t.feature) : null;
+    var key = t.terrain + '|' + (groundOnly ? 'g' : (t.hills ? 1 : 0) + '|' + (t.feature || '')) + '|' + (t.hills ? 'h' : '') + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (tex ? 1 : 0) + (feat ? 1 : 0) + (mtn ? 1 : 0) + (ftex ? 1 : 0) + '|' + (this._wsh ? Math.max(0, this._wsh[t.i]) : 0);
     var sp = this.sprites[key];
     if (sp) return sp;
     if (this.spriteCount > 2400) { this.sprites = {}; this.spriteCount = 0; }
@@ -96,26 +96,26 @@
   // Upright feature sprite (hills, mountains, trees...) for the isometric view, drawn after the squashed ground.
   Renderer.prototype.featureSprite = function (t, rz) {
     if (!t.hills && !t.feature && t.terrain !== 'mountain') return null;
-    var needHills = t.hills && t.terrain !== 'mountain' && !this.terrainTexture('hills'), needFeat = t.feature && !this.terrainTexture(t.feature);
-    if (!needHills && !needFeat && t.terrain !== 'mountain') return null;
-    var feat = t.feature ? this.featureArt(t.feature) : null, hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
-    var key = 'F|' + t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (feat ? 1 : 0) + (hillsArt ? 1 : 0) + (mtn ? 1 : 0);
+    var needFeat = t.feature && !this.terrainTexture(t.feature);
+    if (!needFeat && t.terrain !== 'mountain') return null;
+    var feat = t.feature ? this.featureArt(t.feature) : null, mtn = t.terrain === 'mountain' ? this.featureArt('mountain') : null;
+    var key = 'F|' + t.terrain + '|' + (t.hills ? 1 : 0) + '|' + (t.feature || '') + '|' + (t.i % 4) + '|' + rz + '|' + (feat ? 1 : 0) + (mtn ? 1 : 0);
     var sp = this.sprites[key]; if (sp) return sp;
     if (this.spriteCount > 2400) { this.sprites = {}; this.spriteCount = 0; }
     var w = Math.ceil(rz * SQ3) + 2, h = Math.ceil(rz * 2.6) + 2, cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-    var ctx = cv.getContext('2d'), cx = w / 2, cy = h - rz - 1, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0)), base = PAL[t.terrain], detail = rz >= 14;
-    this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtn, feat, true);
+    var lift = t.hills && t.terrain !== 'mountain' ? HILL_LIFT * rz * this.isoY() : 0; // trees stand on the raised hill top
+    var ctx = cv.getContext('2d'), cx = w / 2, cy = h - rz - 1 + lift, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0)), base = PAL[t.terrain], detail = rz >= 14;
+    this.paintFeatures(ctx, t, cx, cy - lift, rz, base, rnd, detail, null, mtn, feat, true);
     cv.anchorY = cy; this.sprites[key] = cv; this.spriteCount++;
     return cv;
   };
   Renderer.prototype.paintFeatures = function (ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, noClip) {
     function clipped(fn) { if (noClip) { fn(); return; } ctx.save(); hexPath(ctx, cx, cy, rz + 0.8); ctx.clip(); fn(); ctx.restore(); }
     var self = this;
-    var texHills = !!this.terrainTexture('hills'), texFeat = t.feature && !!this.terrainTexture(t.feature);
-    if (t.hills && t.terrain !== 'mountain' && !texHills) { if (hillsArt) this.drawArt(ctx, hillsArt, cx, cy + rz * 0.05, rz * 1.95); else clipped(function () { self.paintHills(ctx, cx, cy, rz, base, rnd, detail); }); }
+    var texFeat = t.feature && !!this.terrainTexture(t.feature);
     if (t.terrain === 'mountain') { if (mtnArt) this.drawArt(ctx, mtnArt, cx, cy, rz * 2.05, 0.55); else clipped(function () { self.paintMountain(ctx, cx, cy, rz, rnd, detail); }); }
     if (t.feature && !texFeat) {
-      if (featArt) this.drawArt(ctx, featArt, cx, cy - (t.hills ? rz * 0.12 : 0), rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
+      if (featArt) this.drawArt(ctx, featArt, cx, cy, rz * (t.feature === 'oasis' ? 1.5 : 1.85), 0.55);
       else clipped(function () {
         if (t.feature === 'forest') self.paintTrees(ctx, cx, cy, rz, rnd, detail, false, t.hills);
         if (t.feature === 'jungle') self.paintTrees(ctx, cx, cy, rz, rnd, detail, true, t.hills);
@@ -133,15 +133,18 @@
     for (var k = 0; k < 24; k++) { var a = Math.PI * 2 * k / 24 - Math.PI / 6, rr = r * wob(variant, a); var x = cx + rr * Math.cos(a), y = cy + rr * Math.sin(a) * sy; if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
     ctx.closePath();
   }
+  var HILL_LIFT = 0.5; // hills rise this fraction of the hex radius above the flat ground (sprite space, before the iso squash)
   var LAND_OVER = 1.14; // land sprites reach this far beyond the hex radius (they overlap and blend)
   var SAND = [222, 204, 150], SAND_WET = [196, 178, 122], ROCK = [118, 112, 104], MANGROVE = [52, 96, 56], SHALLOW = [86, 196, 214], DEEP = [14, 44, 88], COASTC = [26, 86, 148], LAKEC = [56, 150, 210], RIVERC = [64, 160, 222];
   Renderer.prototype.paintTile = function (t, rz, groundOnly) {
     var water = AU.TERRAIN[t.terrain].water;
     if (water) return this.paintWater(t, rz);
-    var Rw = rz * LAND_OVER, w = Math.ceil(Rw * 2.3) + 2, h = w;
+    var hills = t.hills && t.terrain !== 'mountain', lift = hills ? Math.round(HILL_LIFT * rz) : 0;
+    var Rw = rz * LAND_OVER, w = Math.ceil(Rw * 2.3) + 2, h = w + lift * 2;
     var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
     var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, variant = t.i % 4, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
     var base = PAL[t.terrain], detail = rz >= 14;
+    if (hills) { this.paintHillSide(ctx, cx, cy, rz, Rw, variant, base, lift); cy -= lift; } // the top surface sits higher: the tile reads as a raised block
     ctx.save(); wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.clip();
     var tex = this.terrainTexture(t.terrain), painted = !!tex;
     if (painted) {
@@ -163,8 +166,7 @@
       var edge = ctx.createRadialGradient(cx, cy, rz * 0.55, cx, cy, rz * 1.15); edge.addColorStop(0, 'rgba(0,0,0,0)'); edge.addColorStop(1, 'rgba(0,0,0,0.2)'); ctx.fillStyle = edge; ctx.fillRect(0, 0, w, h);
       return true;
     }
-    t._texFeat = false; t._texHills = false;
-    if (t.hills && t.terrain !== 'mountain' && overlayTex('hills', 0.85, 0.34)) t._texHills = true;
+    t._texFeat = false;
     if (t.feature && (t.feature === 'forest' || t.feature === 'jungle' || t.feature === 'marsh') && overlayTex(t.feature, 0.95, 0.3)) t._texFeat = true;
     if (detail && !painted) {
       var n = Math.round(rz * 1.2);
@@ -179,12 +181,14 @@
         ctx.fillStyle = 'rgba(160,190,230,0.25)'; for (var sn = 0; sn < 4; sn++) { ctx.beginPath(); ctx.ellipse(cx + (rnd() - 0.5) * rz, cy + (rnd() - 0.5) * rz, rz * 0.3, rz * 0.12, 0, 0, Math.PI * 2); ctx.fill(); }
       }
     }
+    if (hills) this.paintHillTop(ctx, cx, cy, rz, Rw, variant, base, rnd, detail);
     ctx.restore();
-    // soft, irregular edge: fade the rim out so neighbouring tiles blend into each other
-    ctx.save(); ctx.globalCompositeOperation = 'destination-in';
-    var mask = ctx.createRadialGradient(cx, cy, Rw * 0.78, cx, cy, Rw * 1.1); mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = mask; wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.fill(); ctx.restore();
-    var hillsArt = t.hills && t.terrain !== 'mountain' ? this.featureArt('hills') : null, mtnArt = t.terrain === 'mountain' ? this.featureArt('mountain') : null, featArt = t.feature ? this.featureArt(t.feature) : null;
+    if (!hills) { // soft, irregular edge: fade the rim out so neighbouring tiles blend into each other (hills keep a crisp raised rim)
+      ctx.save(); ctx.globalCompositeOperation = 'destination-in';
+      var mask = ctx.createRadialGradient(cx, cy, Rw * 0.78, cx, cy, Rw * 1.1); mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = mask; wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.fill(); ctx.restore();
+    }
+    var hillsArt = null, mtnArt = t.terrain === 'mountain' ? this.featureArt('mountain') : null, featArt = t.feature ? this.featureArt(t.feature) : null;
     if (!groundOnly) this.paintFeatures(ctx, t, cx, cy, rz, base, rnd, detail, hillsArt, mtnArt, featArt, false);
     return cv;
   };
@@ -249,15 +253,37 @@
     var g = ctx.createRadialGradient(c, c, 0, c, c, r); g.addColorStop(0, 'rgba(6,12,22,1)'); g.addColorStop(0.72, 'rgba(6,12,22,1)'); g.addColorStop(1, 'rgba(6,12,22,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.fill();
     this.sprites[key] = cv; this.spriteCount++; return cv;
   };
-  Renderer.prototype.paintHills = function (ctx, cx, cy, rz, base, rnd, detail) {
+  // Hills: the tile is a raised block in its own terrain colour (plains hills stay plains-coloured, grassland
+  // hills grassland-coloured). A darker side wall below, a lit rim above, and a few broad rounded ridges on top.
+  Renderer.prototype.paintHillSide = function (ctx, cx, cy, rz, Rw, variant, base, lift) {
+    var wall = mix(base, [46, 34, 24], 0.5), wallLo = mix(base, [30, 22, 16], 0.68);
+    // ground shadow under the block
+    ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.13)'; wobblyPath(ctx, cx + rz * 0.05, cy + lift * 0.25, Rw * 1.05, variant); ctx.fill(); ctx.restore();
+    // side wall: the lower outline swept up to the top outline (fill the union of the outline shifted every px)
+    var g1 = ctx.createLinearGradient(cx - Rw, 0, cx + Rw, 0); g1.addColorStop(0, rgb(wall, 1.12)); g1.addColorStop(0.5, rgb(wall)); g1.addColorStop(1, rgb(wallLo));
+    ctx.fillStyle = g1;
+    for (var y = lift; y >= 0; y -= 1) { wobblyPath(ctx, cx, cy - y, Rw * 1.02, variant); ctx.fill(); }
+    // strata lines along the wall
+    ctx.save(); ctx.strokeStyle = 'rgba(0,0,0,0.14)'; ctx.lineWidth = Math.max(1, rz * 0.03);
+    for (var k = 1; k <= 2; k++) { wobblyPath(ctx, cx, cy - lift * k / 3, Rw * 1.0, variant); ctx.stroke(); }
+    ctx.restore();
+  };
+  Renderer.prototype.paintHillTop = function (ctx, cx, cy, rz, Rw, variant, base, rnd, detail) {
+    // a touch lighter than the flat tile (raised ground catches the light)
+    ctx.fillStyle = 'rgba(255,255,255,0.06)'; ctx.fillRect(0, 0, cx * 2, cy * 2 + rz * 2);
+    // broad rounded ridges in the terrain's own palette: lit from the upper left
     var n = 3;
     for (var k = 0; k < n; k++) {
-      var hx = cx + (k - 1) * rz * 0.42 + (rnd() - 0.5) * rz * 0.15, hy = cy + rz * (0.15 + (k % 2) * 0.22), hr = rz * (0.34 + rnd() * 0.1);
-      var g1 = ctx.createLinearGradient(hx - hr, hy, hx + hr, hy);
-      g1.addColorStop(0, rgb(base, 1.15)); g1.addColorStop(1, rgb(base, 0.62));
-      ctx.fillStyle = g1; ctx.beginPath(); ctx.moveTo(hx - hr, hy); ctx.quadraticCurveTo(hx - hr * 0.3, hy - hr * 1.15, hx + hr * 0.15, hy - hr * 0.7); ctx.quadraticCurveTo(hx + hr * 0.6, hy - hr * 0.35, hx + hr, hy); ctx.closePath(); ctx.fill();
-      if (detail) { ctx.fillStyle = 'rgba(0,0,0,0.14)'; ctx.beginPath(); ctx.ellipse(hx, hy + 1, hr, hr * 0.14, 0, 0, Math.PI); ctx.fill(); }
+      var hx = cx + (k - 1) * rz * 0.5 + (rnd() - 0.5) * rz * 0.2, hy = cy + rz * (0.05 + (k % 2) * 0.32) - rz * 0.1, hr = rz * (0.46 + rnd() * 0.12);
+      var g1 = ctx.createLinearGradient(hx - hr, hy - hr, hx + hr * 0.8, hy);
+      g1.addColorStop(0, rgb(base, 1.28)); g1.addColorStop(0.5, rgb(base, 1.02)); g1.addColorStop(1, rgb(base, 0.7));
+      ctx.fillStyle = g1; ctx.beginPath(); ctx.moveTo(hx - hr, hy); ctx.quadraticCurveTo(hx - hr * 0.35, hy - hr * 1.05, hx + hr * 0.1, hy - hr * 0.7); ctx.quadraticCurveTo(hx + hr * 0.62, hy - hr * 0.4, hx + hr, hy); ctx.closePath(); ctx.fill();
+      if (detail) { ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.beginPath(); ctx.ellipse(hx + hr * 0.05, hy + 1, hr, hr * 0.13, 0, 0, Math.PI); ctx.fill(); }
     }
+    // lit rim on the upper left, shaded rim on the lower right
+    ctx.save(); ctx.lineWidth = Math.max(1.2, rz * 0.07);
+    var rim = ctx.createLinearGradient(cx - Rw, cy - Rw, cx + Rw, cy + Rw); rim.addColorStop(0, 'rgba(255,255,255,0.45)'); rim.addColorStop(0.5, 'rgba(255,255,255,0.05)'); rim.addColorStop(1, 'rgba(0,0,0,0.35)');
+    ctx.strokeStyle = rim; wobblyPath(ctx, cx, cy, Rw * 0.99, variant); ctx.stroke(); ctx.restore();
   };
   Renderer.prototype.paintMountain = function (ctx, cx, cy, rz, rnd, detail) {
     var peaks = [[cx - rz * 0.35, cy + rz * 0.5, rz * 0.55, rz * 0.9], [cx + rz * 0.25, cy + rz * 0.55, rz * 0.62, rz * 1.15], [cx + rz * 0.65, cy + rz * 0.5, rz * 0.4, rz * 0.6]];
@@ -386,7 +412,9 @@
       }
     }
     // pass 1b: land tiles with soft irregular edges (rows back to front so the overlaps read as a painted map)
-    for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
+    // flat ground first, then the raised hill blocks (each in row order) so a hill always stands on top of its flat neighbours
+    for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; if (t.hills && t.terrain !== 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
+    for (var lh = 0; lh < landTiles.length; lh++) { t = landTiles[lh]; if (!t.hills || t.terrain === 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
     if (!lowDetail) { // slow colour drift across the land (lighter and darker patches, like a painted map)
       var mot = this.mottleSprites(Math.round(rzs));
       for (var lm = 0; lm < landTiles.length; lm++) { t = landTiles[lm]; var mv = Math.sin(t.col * 0.55 + t.row * 0.31) * Math.cos(t.row * 0.47 - t.col * 0.19) + Math.sin(t.col * 0.17 + t.row * 0.9) * 0.5; if (Math.abs(mv) < 0.25) continue; ctx.globalAlpha = Math.min(0.16, Math.abs(mv) * 0.12); drawSprite(mv > 0 ? mot[0] : mot[1], S(t)); }
