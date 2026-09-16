@@ -303,12 +303,17 @@
         reg.addEventListener('updatefound', function () {
           var nw = reg.installing; if (!nw) return;
           nw.addEventListener('statechange', function () {
-            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.toast(_('A new version of Tiny Empires is ready. It loads the next time you open the game (or from Menu).'), 6000); if (self.panel === 'menu') self.refreshPanel(); }
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) { self.updateReady = true; self.showUpdateBar(); if (self.panel === 'menu') self.refreshPanel(); }
           });
         });
       }).catch(function () {});
       var refreshing = false;
       navigator.serviceWorker.addEventListener('controllerchange', function () { if (refreshing) return; refreshing = true; if (!self.g) location.reload(); });
+    },
+    // A banner that stays until the player restarts: an update must never go unnoticed mid-game.
+    showUpdateBar: function () {
+      var bar = $('update-bar'), self = this; if (!bar) return; bar.hidden = false;
+      $('update-go').onclick = function () { if (self.g) self.save(true); location.reload(); };
     },
     // Long-press tooltip: what is on this tile (terrain, feature, resource, yields, owner).
     showTileTip: function (tileIdx, x, y) {
