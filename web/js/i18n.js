@@ -32,7 +32,7 @@
   I.REGISTRIES = ['TECHS', 'CIVICS', 'UNITS', 'BUILDINGS', 'WONDERS', 'NATIONAL', 'NATURAL_WONDERS', 'RESOURCES', 'TERRAIN', 'FEATURES', 'IMPROVEMENTS', 'CIVS', 'CITY_STATES', 'CITY_STATE_TYPES', 'PANTHEONS', 'FOLLOWER_BELIEFS', 'FOUNDER_BELIEFS', 'ENHANCER_BELIEFS', 'RELIGION_NAMES', 'GOVERNMENTS', 'POLICIES', 'PROJECTS', 'PROMOTIONS', 'SPECIALIZATIONS', 'MASTERY', 'GREAT_TYPES', 'VICTORIES', 'LEANINGS', 'DIFFICULTIES', 'MAP_SIZES', 'MAP_TYPES', 'SPEEDS', 'CULTURES', 'PALACE_PIECES', 'ERAS', 'ENVOY_TIERS', 'WHEN_LABEL'];
   // Visits every translatable string of the data; fn(str) may return a replacement.
   I.walkData = function (fn) {
-    I.REGISTRIES.forEach(function (r) { if (!AU[r] || r === 'ERAS') return; if (r === 'NATURAL_WONDERS') { for (var nk in AU[r]) { var nw = AU[r][nk], keep = nw.name; walk(nw, fn, 1); nw.name = keep; } return; } walk(AU[r], fn, 0); }); // natural wonders keep their real names in every language
+    I.REGISTRIES.forEach(function (r) { if (!AU[r] || r === 'ERAS') return; if (r === 'NATURAL_WONDERS') { for (var nk in AU[r]) { var nw = AU[r][nk], keep = nw.name; delete nw.name; walk(nw, fn, 1); nw.name = keep; } return; } walk(AU[r], fn, 0); }); // natural wonders keep their real names in every language
     if (AU.ERAS) for (var e = 0; e < AU.ERAS.length; e++) { var re = fn(AU.ERAS[e]); if (re !== undefined) AU.ERAS[e] = re; }
     if (AU.Diplo && AU.Diplo.AGENDAS) walk(AU.Diplo.AGENDAS, fn, 0);
     if (AU.QUOTES) for (var qc in AU.QUOTES) for (var qi in AU.QUOTES[qc]) { var q = AU.QUOTES[qc][qi]; if (q && q.text) { var rq = fn(q.text); if (rq !== undefined) q.text = rq; } }
