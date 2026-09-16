@@ -131,7 +131,8 @@ def main():
     kinds = [k for k in args.kinds.split(',') if k]
     skips = [k for k in args.skip.split(',') if k and k.lower() != 'none']  # 'none' = generate everything, cultural variants included
     forced = [f.strip() for f in args.force.split(',') if f.strip()]
-    def is_forced(it): return any(it['kind'] == f or it['kind'].startswith(f) or (it['kind'] + '/' + it['id']) == f for f in forced)
+    # 'units' forces only the base units; 'units/' forces every cultural variant; 'features/jungle' forces one picture
+    def is_forced(it): return any(it['kind'] == f or (f.endswith('/') and it['kind'].startswith(f)) or (it['kind'] + '/' + it['id']) == f for f in forced)
     order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs', 'techs', 'civics']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []
