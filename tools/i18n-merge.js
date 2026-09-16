@@ -4,7 +4,7 @@ const fs = require('fs'), path = require('path');
 const dir = path.join(__dirname, '..', 'web', 'i18n'), parts = path.join(dir, 'parts');
 const NAMES = { it: 'Italian', es: 'Spanish', de: 'German', fr: 'French', nl: 'Dutch', zh: 'Simplified Chinese', ru: 'Russian', bg: 'Bulgarian' };
 const keys = JSON.parse(fs.readFileSync(path.join(dir, 'keys.json'), 'utf8')), keySet = new Set(keys);
-let langs = process.argv.slice(2);
+let langs = process.argv.slice(2).filter(a => !a.startsWith('--'));
 if (!langs.length) langs = Array.from(new Set(fs.readdirSync(parts).map(f => f.split('-')[0]).filter(l => NAMES[l])));
 for (const lang of langs) {
   const file = path.join(dir, lang + '.json');

@@ -19,7 +19,7 @@ function callT(p) { return p.indexOf("'") >= 0 ? '_("' + enc(p, '"') + '")' : "_
 function translatable(p) {
   const letters = (p.match(/[A-Za-z]/g) || []).length; if (letters < 3) return false;
   const words = p.split(/\s+/);
-  if (words.length === 1) { if (p === p.toLowerCase()) return false; if (/[_\/#@.]/.test(p)) return false; return true; }
+  if (words.length === 1) { if (p === p.toLowerCase()) return false; if (/[_\/#@.]/.test(p)) return false; if (/^[a-z]+[A-Z]/.test(p)) return false; return true; } // camelCase and snake_case are identifiers
   const lower = p === p.toLowerCase();
   if (lower) { if (KEEP_LOWER.has(p)) return true; if (words.some(w => CSS.has(w.replace(/[.,!?'’%:()]/g, '')) || /[-_\/#]/.test(w))) return false; return words.length >= 4 || /[.!?]$/.test(p); }
   if (words.some(w => /[_\/#]/.test(w))) return false;

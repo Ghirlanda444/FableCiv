@@ -18,10 +18,10 @@
   I.setLang = function (lang) { try { localStorage.setItem('te_lang', lang); } catch (e) {} };
   // ---------- data ----------
   var KEYS = { name: 1, desc: 1, adj: 1, title: 1, line: 1, unlocks: 1, hint: 1, label: 1, kicker: 1, text: 1, look: 0 };
-  var SKIP = { cities: 1, id: 1, replaces: 1, cards: 1, pre: 1, fx: 1, ai: 1, bias: 1, color: 1, color2: 1, icon: 1, slots: 1, yields: 1, cond: 1, when: 1, terrain: 1, civ: 1, civId: 1, leaders: 0 };
+  var SKIP = { needs: 1, feature: 1, requiresCount: 1, requires: 1, unit: 1, cities: 1, id: 1, replaces: 1, cards: 1, pre: 1, fx: 1, ai: 1, bias: 1, color: 1, color2: 1, icon: 1, slots: 1, yields: 1, cond: 1, when: 1, terrain: 1, civ: 1, civId: 1, leaders: 0 };
   function walk(o, fn, depth) {
     if (!o || typeof o !== 'object' || depth > 5) return;
-    if (Array.isArray(o)) { for (var i = 0; i < o.length; i++) { if (typeof o[i] === 'string') { /* arrays of plain strings (eras) */ var r = fn(o[i]); if (r !== undefined) o[i] = r; } else walk(o[i], fn, depth + 1); } return; }
+    if (Array.isArray(o)) { for (var i = 0; i < o.length; i++) if (o[i] && typeof o[i] === 'object') walk(o[i], fn, depth + 1); return; } // arrays of plain strings are ids (needs, feature, requiresCount…), never text
     for (var k in o) {
       if (!Object.prototype.hasOwnProperty.call(o, k) || SKIP[k]) continue;
       var v = o[k];
@@ -32,8 +32,10 @@
   I.REGISTRIES = ['TECHS', 'CIVICS', 'UNITS', 'BUILDINGS', 'WONDERS', 'NATIONAL', 'NATURAL_WONDERS', 'RESOURCES', 'TERRAIN', 'FEATURES', 'IMPROVEMENTS', 'CIVS', 'CITY_STATES', 'CITY_STATE_TYPES', 'PANTHEONS', 'FOLLOWER_BELIEFS', 'FOUNDER_BELIEFS', 'ENHANCER_BELIEFS', 'RELIGION_NAMES', 'GOVERNMENTS', 'POLICIES', 'PROJECTS', 'PROMOTIONS', 'SPECIALIZATIONS', 'MASTERY', 'GREAT_TYPES', 'VICTORIES', 'LEANINGS', 'DIFFICULTIES', 'MAP_SIZES', 'MAP_TYPES', 'SPEEDS', 'CULTURES', 'PALACE_PIECES', 'ERAS', 'ENVOY_TIERS', 'WHEN_LABEL'];
   // Visits every translatable string of the data; fn(str) may return a replacement.
   I.walkData = function (fn) {
-    I.REGISTRIES.forEach(function (r) { if (AU[r]) walk(AU[r], fn, 0); });
+    I.REGISTRIES.forEach(function (r) { if (!AU[r] || r === 'ERAS') return; if (r === 'NATURAL_WONDERS') { for (var nk in AU[r]) { var nw = AU[r][nk], keep = nw.name; walk(nw, fn, 1); nw.name = keep; } return; } walk(AU[r], fn, 0); }); // natural wonders keep their real names in every language
+    if (AU.ERAS) for (var e = 0; e < AU.ERAS.length; e++) { var re = fn(AU.ERAS[e]); if (re !== undefined) AU.ERAS[e] = re; }
     if (AU.Diplo && AU.Diplo.AGENDAS) walk(AU.Diplo.AGENDAS, fn, 0);
+    if (AU.QUOTES) for (var qc in AU.QUOTES) for (var qi in AU.QUOTES[qc]) { var q = AU.QUOTES[qc][qi]; if (q && q.text) { var rq = fn(q.text); if (rq !== undefined) q.text = rq; } }
     if (AU.WHEN_LABEL) for (var k in AU.WHEN_LABEL) { var r2 = fn(AU.WHEN_LABEL[k]); if (r2 !== undefined) AU.WHEN_LABEL[k] = r2; }
   };
   I.applyData = function () { if (!I.dict) return; I.walkData(function (s) { var v = I.dict[s]; return v ? v : undefined; }); };

@@ -103,7 +103,7 @@
     if (civ.minor || !minor.alive || G.atWar(g, civ.idx, minor.idx)) return { ok: false, why: 'not possible' };
     if (CS.patron(g, minor) !== civ.idx || CS.tierOf(CS.tiesOf(g, civ, minor)) < 4) return { ok: false, why: _('you must be its Patron with Kin ties (90)') };
     var since = minor.kinSince && minor.kinSince[civ.idx], left = since == null ? CS.UNION_TURNS : Math.max(0, CS.UNION_TURNS - (g.turn - since));
-    if (left > 0) return { ok: false, why: left + ' ' + _('more turn') + (left > 1 ? 's' : '') + ' ' + _('as Kin') };
+    if (left > 0) return { ok: false, why: left + ' ' + (left > 1 ? _('more turns as Kin') : _('more turn as Kin')) };
     var s = G.civSettlements(g, minor.idx)[0], touching = false;
     s.tiles.forEach(function (i) { G.neighbors(g, g.tiles[i]).forEach(function (n) { if (G.tileOwnerCiv(g, g.tiles[n]) === civ.idx) touching = true; }); });
     if (!touching) return { ok: false, why: _('your borders must touch theirs') };

@@ -79,7 +79,7 @@
       AU.CityStates.addTies(g, me, them, AU.CityStates.MEET_TIES * (first ? 2 : 1), 'first contact');
       if (me.isPlayer) {
         me.flags['met:' + them.idx] = g.turn;
-        g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('meetCS'), civ: them.idx, first: first });
+        g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'meetCS', civ: them.idx, first: first });
         G.notify(g, me, { kind: 'meet', text: _('You met the free city of') + ' ' + G.civData(them).name + (first ? ': ' + _('as the first to find it you start with') + ' +10 Ties.' : ': +5 Ties.'), panel: 'diplomacy' });
       }
     });
@@ -233,8 +233,8 @@
       if (r.friendUntil === g.turn && o.isPlayer) G.notify(g, o, { kind: 'diplomacy', text: _('Your friendship with') + ' ' + G.civData(civ).name + ' ' + _('has expired. Renew it in the leader screen.'), panel: 'diplomacy' });
       var rng = G.rng(g);
       if (o.isPlayer) {
-        if (D.wantsFriendship(g, civ, o.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.08 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('proposeFriendship'), civ: civ.idx }); }
-        else if (D.wantsAlliance(g, civ, o.idx) && !D.isAlly(g, civ.idx, o.idx) && rng < 0.1 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: _('proposeAlliance'), civ: civ.idx }); }
+        if (D.wantsFriendship(g, civ, o.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.08 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'proposeFriendship', civ: civ.idx }); }
+        else if (D.wantsAlliance(g, civ, o.idx) && !D.isAlly(g, civ.idx, o.idx) && rng < 0.1 && g.turn - (r.proposedTurn || -99) > 15) { r.proposedTurn = g.turn; g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'proposeAlliance', civ: civ.idx }); }
         else if (r.attitude < -30 && rng < 0.05 && g.turn - r.denouncedTurn > 40) { D.denounce(g, civ.idx, o.idx); g.diploQueue = g.diploQueue || []; g.diploQueue.push({ kind: 'denounced', civ: civ.idx }); }
       } else if (civ.idx < o.idx) { // AI to AI, once per pair
         if (D.wantsFriendship(g, civ, o.idx) && D.wantsFriendship(g, o, civ.idx) && !D.isFriend(g, civ.idx, o.idx) && rng < 0.1) D.declareFriendship(g, civ.idx, o.idx);

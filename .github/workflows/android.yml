@@ -43,12 +43,12 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
 
-      - name: Remove previous release assets (upload fails if a stale copy remains)
+      - name: Recreate the release (so the release date is the build date and stale assets never block the upload)
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete-asset android-latest "app-debug.apk" -y --repo "${{ github.repository }}" || true
+          gh release delete android-latest --cleanup-tag -y --repo "${{ github.repository }}" || true
       - name: Publish latest pre-release
         uses: softprops/action-gh-release@v2
         with:

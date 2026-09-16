@@ -37,6 +37,11 @@
     },
     loop: function () { if (App.dirty && App.g && !$('game').hidden) { App.dirty = false; App.renderer.draw(App.g, App); } requestAnimationFrame(App.loop); },
     invalidate: function () { this.dirty = true; },
+    // Ask the browser to keep our storage even under storage pressure (Chrome grants it to installed apps and engaged sites).
+    persistStorage: function () { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {} },
+    // Save files: a plain JSON file the player can keep anywhere and load on any device.
+    exportSave: function () { if (!this.g) return; try { var blob = new Blob([G.serialize(this.g)], { type: 'application/json' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tiny-empires-' + G.civData(G.player(this.g)).name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-turn' + this.g.turn + '.json'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000); this.toast(_('Save file downloaded.')); } catch (e) { this.toast(_('Could not export the save: ') + e.message); } },
+    importSave: function () { var self = this, inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json'; inp.onchange = function () { var f = inp.files && inp.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { try { var g = G.deserialize(String(r.result)); self.startGameState(g); self.save(true); self.toast(_('Save file loaded.')); } catch (e) { self.toast(_('That file is not a Tiny Empires save: ') + e.message); } }; r.readAsText(f); }; inp.click(); },
     hasSave: function () { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } },
     save: function (silent) { try { localStorage.setItem(SAVE_KEY, G.serialize(this.g)); if (!silent) this.toast(_('Game saved.')); return true; } catch (e) { if (!silent) this.toast(_('Could not save') + ': ' + e.message); return false; } },
     load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; this.startGameState(G.deserialize(j)); return true; } catch (e) { this.toast(_('Could not load save') + ': ' + e.message); return false; } },
@@ -88,7 +93,7 @@
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
       $('btn-tutorial').onclick = function () { AU.Tutorial.start(App); };
-      App.renderLangBar();
+      App.renderLangBar(); App.persistStorage();
       $('tut-skip').onclick = function () { AU.Tutorial.skip(App); };
       $('tut-next').onclick = function () { AU.Tutorial.next(App); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
@@ -268,7 +273,7 @@
     },
     // Hosted version: service worker for offline play and automatic updates (only over http/https).
     setupUpdates: function () {
-      if (!(_('serviceWorker') in navigator) || !/^https?:/.test(location.protocol)) return;
+      if (!('serviceWorker' in navigator) || !/^https?:/.test(location.protocol)) return;
       var self = this;
       navigator.serviceWorker.register('sw.js').then(function (reg) {
         // artwork warm-up so the game also works offline later
