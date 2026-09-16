@@ -243,6 +243,14 @@
     this.world.rocks = inst('bush', 'rock', rockList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.06 * e[4], e[3], e[4] * 1.3, e[4] * 0.8, e[4], k * 0.7); });
     this.world.mangroves = inst('bush', 'mangrove', mangList, function (e, k, m) { place(m, k, e[1], e[2] + R * 0.12 * e[4], e[3], e[4], e[4] * 0.7, e[4], k); });
     this.world.reefList = reefList; this.world.rockList = rockList; this.world.mangList = mangList;
+    // resources: the painted resource icon as a small billboard on the tile (hidden until the tile is explored and its technology known)
+    var resList = [], playerR = G.player(g);
+    for (var i5 = 0; i5 < g.tiles.length; i5++) {
+      var t5 = g.tiles[i5]; if (!t5.resource) continue; var Rs5 = AU.RESOURCES[t5.resource]; if (!Rs5) continue;
+      var p5 = tileXZ(t5), rx5 = p5[0] + R * 0.38, rz5 = p5[1] + R * 0.28, tex5 = AU.Assets.texture('resources', t5.resource);
+      var spr = new T.Sprite(new T.SpriteMaterial({ map: tex5 || null, transparent: true, alphaTest: 0.1, depthTest: true })); spr.scale.set(R * 0.6, R * 0.6, 1); spr.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.32, rz5); spr.userData.tile = i5; spr.userData.res = t5.resource; spr.visible = false; group.add(spr); resList.push(spr);
+    }
+    this.world.resSprites = resList;
     // natural wonders: one landmark mesh + a label, per style
     var natGroup = new T.Group(); group.add(natGroup); var self2 = this;
     g.tiles.forEach(function (t) {
@@ -298,6 +306,7 @@
   };
   P.rebuildRivers = function (g) {
     var T = window.THREE, w = this.world, explored = G.player(g).explored, self = this;
+    if (w.resSprites) { var plR = G.player(g); w.resSprites.forEach(function (sp) { var Rs = AU.RESOURCES[sp.userData.res]; sp.visible = !!explored[sp.userData.tile] && (!Rs.revealTech || !!plR.techs[Rs.revealTech]); if (!sp.material.map) { var tx = AU.Assets.texture('resources', sp.userData.res); if (tx) { sp.material.map = tx; sp.material.needsUpdate = true; } } }); }
     var cnt = 0; for (var i = 0; i < explored.length; i++) cnt += explored[i];
     if (w.riverSig === cnt) return; w.riverSig = cnt;
     if (w.rivers) { w.rivers.children.forEach(function (c) { c.geometry.dispose(); }); w.group.remove(w.rivers); }

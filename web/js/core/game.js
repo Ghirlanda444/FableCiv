@@ -742,8 +742,8 @@
   G.masteryOf = function (id, isCivic) { return AU.MASTERY ? (isCivic ? AU.MASTERY.civics[id] : AU.MASTERY.techs[id]) : null; };
   G.hasMastery = function (civ, id, isCivic) { return !!(civ.mastery && civ.mastery[isCivic ? 'c:' + id : id]); };
   G.grantMastery = function (g, civ, id, isCivic) {
-    var key = isCivic ? 'c:' + id : id, m = G.masteryOf(id, isCivic);
-    if (!m || !civ.boosts || !civ.boosts[key]) return false;
+    var key = isCivic ? 'c:' + id : id, m = G.masteryOf(id, isCivic), def = isCivic ? AU.CIVIC_BY_ID[id] : AU.TECH_BY_ID[id], cond = def && (isCivic ? def.inspiration : def.eureka);
+    if (!m || (cond && !(civ.boosts && civ.boosts[key]))) return false; // no Spark or Insight at all: the mastery comes with the discovery
     civ.mastery = civ.mastery || {}; civ.mastery[key] = g.turn; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     var name = isCivic ? AU.CIVIC_BY_ID[id].name : AU.TECH_BY_ID[id].name;
     G.notify(g, civ, { kind: isCivic ? 'civic' : 'tech', text: '⭐ ' + _('Mastery of') + ' ' + name + ': ' + m.desc + '.', panel: isCivic ? 'civics' : 'tech' });

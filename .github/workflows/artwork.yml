@@ -15,6 +15,10 @@ on:
         description: "Image generator: pollinations (free) or xai (Grok Imagine, uses the XAI_API_KEY secret)"
         required: false
         default: "pollinations"
+      force:
+        description: "Regenerate even existing pictures: comma-separated kinds (units,units/) or kind/id pairs (features/jungle). Empty = only missing pictures"
+        required: false
+        default: ""
       skip:
         description: "Kind prefixes to leave out unless named in kinds (default: the per-culture unit/building variants; write none to generate everything)"
         required: false
@@ -50,6 +54,7 @@ jobs:
           LIMIT: ${{ github.event.inputs.limit }}
           ART_PROVIDER: ${{ github.event.inputs.provider }}
           SKIP_KINDS: ${{ github.event.inputs.skip }}
+          FORCE: ${{ github.event.inputs.force }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           XAI_IMAGE_MODEL: ${{ vars.XAI_IMAGE_MODEL }}
         run: |
@@ -62,14 +67,16 @@ jobs:
             if [ "$limit" != "0" ] && [ "$remaining" -lt 12 ]; then step=$remaining; fi
             before=$(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)
             python3 tools/gen-art.py --limit $step --kinds "$KINDS" || true
+            # a forced run overwrites pictures, so count changed files too
+            changed=$(git status --porcelain web/assets | wc -l)
             after=$(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)
-            if [ "$after" -gt "$before" ]; then
+            if [ "$after" -gt "$before" ] || [ "$changed" -gt 0 ]; then
               git add web/assets
               git commit -q -m "Artwork: $((after-before)) generated pictures (total $after) [skip ci]" || true
               git pull --rebase -q origin main || true
               git push -q origin HEAD:main || true
             fi
-            if [ "$after" -eq "$before" ]; then echo "no new pictures in this batch, stopping"; break; fi
+            if [ "$after" -eq "$before" ] && [ "$changed" -eq 0 ]; then echo "no new pictures in this batch, stopping"; break; fi
             if [ "$limit" != "0" ]; then remaining=$((remaining-step)); fi
           done
           echo "pictures now: $(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)"

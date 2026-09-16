@@ -9,7 +9,7 @@
     setup: { civ: 'rome' }, busy: false,
 
     settings: { graphics: '2d', yields: false, iso: true, music: true, musicVolume: 0.7 }, pediaState: { cat: 'concepts' },
-    loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); if (!s.v || s.v < 2) { s.graphics = '2d'; s.v = 2; } Object.assign(this.settings, s); } catch (e) {} },
+    loadSettings: function () { try { var s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); if (!s.v || s.v < 2) { s.graphics = '2d'; s.v = 2; } Object.assign(this.settings, s); } catch (e) {} if (this.settings.tips === undefined) this.settings.tips = true; if (!this.settings.resourceStyle) this.settings.resourceStyle = 'plain'; },
     saveSettings: function () { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this.settings)); } catch (e) {} },
     webglOk: function () { try { var c = document.createElement('canvas'); return !!(window.THREE && (c.getContext('webgl2') || c.getContext('webgl'))); } catch (e) { return false; } },
     makeRenderer: function () {
@@ -21,7 +21,7 @@
       try { this.renderer = use3d ? new AU.Renderer3D(cv) : new AU.Renderer(cv); }
       catch (e) { console.warn('3' + _('D renderer failed, falling back to 2D'), e); this.settings.graphics = '2d'; this.renderer = new AU.Renderer(cv); }
       if (cam) this.renderer.cam = cam;
-      this.renderer.showYields = !!this.settings.yields; this.renderer.iso = this.settings.iso !== false;
+      this.renderer.showYields = !!this.settings.yields; this.renderer.resourceBadge = this.settings.resourceStyle === 'badge'; this.renderer.iso = this.settings.iso !== false;
       this.renderer.resize(); this.bindInput(); this.invalidate();
     },
     init: function () {
@@ -96,6 +96,9 @@
       App.renderLangBar(); App.persistStorage();
       $('tut-skip').onclick = function () { AU.Tutorial.skip(App); };
       $('tut-next').onclick = function () { AU.Tutorial.next(App); };
+      $('tut-go').onclick = function () { AU.Tutorial.go(App); };
+      $('tip-ok').onclick = function () { AU.Tips.close(App); };
+      $('tip-off').onclick = function () { AU.Tips.disable(App); };
       $('btn-pedia').onclick = function () { App.showScreen('game'); App.openPanel('pedia', { cat: 'concepts' }); };
       $('btn-back').onclick = function () { App.showTitle(); };
       $('btn-start').onclick = function () { App.startNewGame(); };
@@ -196,6 +199,7 @@
     refreshHud: function () {
       if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
       if (AU.Tutorial) AU.Tutorial.update(this);
+      if (AU.Tips) AU.Tips.update(this);
       var g = this.g, p = G.player(g); if (!g) return;
       if (AU.Audio) AU.Audio.forEra(p.era || 0);
       var y = G.civYields(g, p);
@@ -334,6 +338,8 @@
       $('confirm-yes').onclick = function () { box.hidden = true; onYes(); };
       $('confirm-no').onclick = function () { box.hidden = true; };
     },
+    // A short explanation card (reuses the quote card without a quote).
+    info: function (kicker, title, text) { var box = $('quote'); $('quote-kicker').textContent = kicker || ''; $('quote-title').textContent = title; $('quote-text').textContent = text; $('quote-by').textContent = ''; var art = $('quote-art'); art.hidden = true; art.removeAttribute('src'); var bx = box.querySelector('.quote-box'); bx.classList.remove('reveal', 'natural'); void bx.offsetWidth; bx.classList.add('reveal'); box.hidden = false; var self = this; $('quote-ok').onclick = function () { box.hidden = true; setTimeout(function () { self.showQuotes(); }, 120); }; },
     toast: function (msg, ms) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(this._toastT); this._toastT = setTimeout(function () { t.hidden = true; }, ms || 2200); },
 
     // ---------- Selection & context ----------

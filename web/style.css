@@ -290,3 +290,7 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
 .lang-bar { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 10px; }
 .lang-bar button.small { padding: 4px 8px; font-size: 12px; }
 .lang-list { display: flex; flex-wrap: wrap; gap: 6px; }
+/* newbie tips */
+.tip-card { position: absolute; left: 10px; right: 10px; bottom: calc(150px + var(--safe-bottom)); z-index: 7; background: linear-gradient(180deg, #2b3050, #1d2340); border: 2px solid #ffd96a; border-radius: 14px; padding: 10px 12px; box-shadow: 0 6px 18px rgba(0,0,0,.55); font-size: 13.5px; line-height: 1.4; }
+.tip-card .tip-title { font-family: var(--font-display); font-weight: 800; color: var(--gold); font-size: 15px; margin-bottom: 3px; }
+.yields .clickable { cursor: pointer; text-decoration: underline dotted rgba(255,255,255,.35); text-underline-offset: 3px; }

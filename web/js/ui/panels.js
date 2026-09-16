@@ -4,10 +4,22 @@
   var P = AU.Panels = {};
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  // What each yield does, in plain words (tap a yield in the city panel).
+  var YIELD_INFO = {
+    food: ['🌾', _('Food'), _('Feeds the citizens: each one eats 2 Food. The surplus fills the growth bar and a new citizen appears when it is full; a deficit starves the settlement. A specialized Town sends its surplus Food to your nearest City instead of growing.')],
+    production: ['⚙️', _('Production'), _('Builds what is in the queue: units, buildings, wonders and projects. In a Town, Production is turned into Gold instead. It comes from worked mines, quarries, woodcutters, hills and buildings such as the Workshop.')],
+    gold: ['💰', _('Gold'), _('The treasury pays unit upkeep every turn; what is left buys units and buildings in any settlement, upgrades Towns into Cities, gifts Free cities and patronizes Great People. Markets, trade tiles, caravans and Towns make Gold.')],
+    science: ['🔬', _('Knowledge'), _('Fills the technology you are researching. Every citizen gives a little, Libraries and Universities give more, specialists give') + ' +2 ' + _('each. Technologies unlock units, buildings and eras.')],
+    culture: ['🎭', _('Heritage'), _('Fills the civic you are adopting and expands your borders. Monuments, Amphitheaters and wonders make Heritage. Civics unlock governments and policy cards.')],
+    faith: ['🕊️', _('Devotion'), _('Comes from Shrines and Temples. Spend it on a pantheon, on enhancing your religion, on religious units and on recruiting Great People early.')],
+    happiness: ['😊', _('Happiness'), _('Citizens want luxuries and entertainment. Above zero the settlement is content. Below zero it grows at half speed and its yields drop by 15% (30% at -5 or worse). Luxury resources, Amphitheaters, Markets and some policy cards raise it.')]
+  };
+  AU.YIELD_INFO = YIELD_INFO;
   function yieldsHtml(y, opts) {
     var parts = [];
     var map = { food: ['🌾', 'food'], production: ['⚙️', 'prod'], gold: ['💰', 'goldc'], science: ['🔬', 'sci'], culture: ['🎭', 'cult'], faith: ['🕊️', 'faith'], happiness: ['😊', ''] };
-    AU.YIELD_KEYS.forEach(function (k) { if (y[k] && (!opts || !opts.skip || opts.skip.indexOf(k) < 0)) parts.push('<span class="' + map[k][1] + '">' + map[k][0] + (y[k] > 0 && opts && opts.plus ? '+' : '') + (Math.round(y[k] * 10) / 10) + '</span>'); });
+    var info = opts && opts.info;
+    AU.YIELD_KEYS.forEach(function (k) { if (y[k] && (!opts || !opts.skip || opts.skip.indexOf(k) < 0)) parts.push('<span class="' + map[k][1] + (info ? ' clickable' : '') + '"' + (info ? ' data-action="yieldinfo" data-id="' + k + '" title="' + _('Tap for an explanation') + '"' : '') + '>' + map[k][0] + (y[k] > 0 && opts && opts.plus ? '+' : '') + (Math.round(y[k] * 10) / 10) + '</span>'); });
     return parts.join(' ');
   }
   function turns(cost, prog, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) + 't' : '∞'; }
@@ -35,6 +47,7 @@
   function masteryLine(civ, id, isCivic) {
     var m = G.masteryOf(id, isCivic); if (!m) return '';
     var done = isCivic ? !!civ.civics[id] : !!civ.techs[id], boosted = civ.boosts && civ.boosts[isCivic ? 'c:' + id : id], has = G.hasMastery(civ, id, isCivic);
+    var defM = isCivic ? AU.CIVIC_BY_ID[id] : AU.TECH_BY_ID[id]; if (defM && !(isCivic ? defM.inspiration : defM.eureka) && !has) return '<small>⭐ ' + _('Mastery') + ': ' + m.desc + ' <span class="pill">' + _('earned on completion') + '</span></small>';
     var state = has ? '<span class="pill" style="background:#4a3a10;color:#ffe9a8">earned</span>' : done ? '<span class="pill">missed</span>' : boosted ? '<span class="pill" style="background:#2a4a1e;color:#b6f0c4">' + _('ready: finish it to earn') + '</span>' : '<span class="pill">needs the ' + (isCivic ? _('Insight') : _('Spark')) + ' first</span>';
     return '<small>⭐ ' + _('Mastery') + ': ' + m.desc + ' ' + state + '</small>';
   }
@@ -78,7 +91,7 @@
     var civ = g.civs[s.civ], p = G.player(g), y = G.settlementYields(g, s), fx = G.civFx(g, civ);
     var html = '';
     var growthCost = G.growthCost(s.pop), surplus = y.food - s.pop * 2;
-    html += '<div class="section"><div class="yields">' + yieldsHtml(y, { skip: ['happiness'] }) + '<span>' + (y.happiness < 0 ? '😠 ' : '😊 ') + y.happiness + '</span></div>';
+    html += '<div class="section"><div class="yields">' + yieldsHtml(y, { skip: ['happiness'], info: true }) + '<span class="clickable" data-action="yieldinfo" data-id="happiness">' + (y.happiness < 0 ? '😠 ' : '😊 ') + y.happiness + '</span></div><p class="stat">' + _('Tap a yield to learn what it does.') + '</p>';
     html += '<p class="stat">' + _('Population') + ' ' + s.pop + (s.specialists ? ' (' + s.specialists + ' specialists)' : '') + ' · ' + _('Food') + ' ' + Math.floor(s.food) + '/' + growthCost + ' (' + (s.specialization && !s.isCity ? 'sends surplus to ' + (G.nearestCity(g, s) ? G.nearestCity(g, s).name : 'no city') : surplus > 0 ? 'grows in ' + turns(growthCost, s.food, surplus * (fx.growthMult || 1)) : surplus < 0 ? 'starving!' : 'stagnant') + ')' +
       ' · ' + _('Defense') + ' ' + G.settlementStrength(g, s) + ' · HP ' + s.hp + '/' + G.settlementMaxHp(g, s) + (y.happiness < 0 ? ' · <b style="color:#e05252">' + _('Unhappy: yields reduced') + '</b>' : '') + '</p>';
     html += '<div class="progress"><i style="width:' + Math.min(100, s.food / growthCost * 100) + '%;background:var(--food)"></i></div>';
@@ -134,7 +147,7 @@
       else { var pr = AU.PROJECTS[id]; name = '🚀 ' + pr.name; desc = pr.desc; }
       var inQ = G.inQueue(s, kind, id);
       html += '<div class="row"><div class="grow"><b>' + name + '</b><small>' + desc + '</small><small>' + cost + ' ⚙️' + (s.isCity ? ' (' + turns(cost, s.progress[kind + ':' + id] || 0, y.production) + ')' : '') + '</small></div>' +
-        (s.isCity ? '<button class="small primary" data-action="enqueue" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (inQ && kind !== 'unit' ? 'disabled' : '') + '>' + (inQ && kind !== 'unit' ? _('Queued') : _('Build')) + '</button>' : '') +
+        (s.isCity ? '<button class="small primary" data-action="enqueue" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (inQ && kind !== 'unit' ? 'disabled' : '') + '>' + (inQ && kind !== 'unit' ? _('Queued') : s.queue.length ? _('Add to queue') : _('Build')) + '</button>' : '') +
         (kind !== 'wonder' && kind !== 'project' && kind !== 'national' ? '<button class="small" data-action="buy" data-id="' + s.id + '" data-kind="' + kind + '" data-item="' + id + '" ' + (civ.gold >= buyCost ? '' : 'disabled') + '>' + buyCost + ' 💰</button>' : '') + '</div>';
     });
     html += '</div>';
@@ -401,6 +414,8 @@
     var Au = AU.Audio; if (Au) html += '<div class="row"><div class="grow"><b>🎵 ' + _('Music') + ': ' + (Au.enabled ? 'on' : 'off') + '</b><small>' + (Au.enabled ? _('Now') + ': ' + Au.status() + ' · volume ' + Math.round(Au.volume * 100) + '%' : _('Silent')) + '</small></div><button class="small" data-action="musicvol" data-d="-1" ' + (Au.enabled ? '' : 'disabled') + '>−</button><button class="small" data-action="musicvol" data-d="1" ' + (Au.enabled ? '' : 'disabled') + '>+</button><button class="small ' + (Au.enabled ? '' : 'primary') + '" data-action="togglemusic">' + (Au.enabled ? _('Mute') : 'Turn on') + '</button></div>';
     html += '<button class="big ghost" data-action="tree" data-kind="tech">🌳 ' + _('Technology & civics trees') + '</button><br><br>';
     html += '<button class="big ghost" data-action="toggleyields">' + (app.settings.yields ? _('Hide') : _('Show')) + ' ' + _('tile yields on the map (Y)') + '</button><br><br>';
+    html += '<button class="big ghost" data-action="toggletips">💡 ' + _('Newbie tips') + ': ' + (app.settings.tips === false ? _('off') : _('on')) + '</button><br><br>';
+    html += '<button class="big ghost" data-action="toggleresbadge">' + _('Resource icons') + ': ' + (app.settings.resourceStyle === 'badge' ? _('in a circle') : _('on the terrain')) + ' (' + _('switch') + ')</button><br><br>';
     html += '<button class="big ghost" data-action="togglestrict">End Turn button: ' + (app.settings.strictTurn ? 'must clear the to-do list first' : _('to-do first, Pass anytime')) + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="log">' + _('History log') + '</button><br><br><button class="big ghost" data-action="togglegrid">' + (app.renderer.showGrid ? _('Hide') : _('Show')) + ' hex grid</button><br><br>';
     html += '<button class="big ghost" data-action="pedia">📖 ' + _('Chibipedia') + '</button><br><br><button class="big ghost" data-action="help">' + _('How to play') + '</button><br><br>';
@@ -500,7 +515,10 @@
     switch (name) {
       case 'citytab': app.panelData.tab = d.tab; app.refreshPanel(); break;
       case 'citygrow': s = g.settlements[+d.id]; if (s && G.expandTo(g, s, +d.tile)) { app.toast(_('A citizen now works that tile.')); app.panelData.tile = +d.tile; app.refreshPanel(); app.refreshHud(); app.invalidate(); } break;
-      case 'enqueue': s = g.settlements[+d.id]; if (s && G.enqueue(g, s, d.kind, d.item)) app.refreshPanel(); break;
+      case 'enqueue': s = g.settlements[+d.id]; if (s && G.enqueue(g, s, d.kind, d.item)) { if (s.queue.length > 1) app.toast(_('Added to the queue (position') + ' ' + s.queue.length + ').'); app.refreshPanel(); } break;
+      case 'yieldinfo': { var yi = AU.YIELD_INFO[d.id]; if (yi) app.info(_('Yield'), yi[0] + ' ' + _(yi[1]), _(yi[2])); break; }
+      case 'toggletips': app.settings.tips = app.settings.tips === false; app.saveSettings(); app.refreshPanel(); break;
+      case 'toggleresbadge': app.settings.resourceStyle = app.settings.resourceStyle === 'badge' ? 'plain' : 'badge'; app.saveSettings(); if (app.renderer) app.renderer.resourceBadge = app.settings.resourceStyle === 'badge'; app.invalidate(); app.refreshPanel(); break;
       case 'dequeue': s = g.settlements[+d.id]; if (s) { G.dequeue(g, s, +d.index); app.refreshPanel(); } break;
       case 'buy': s = g.settlements[+d.id]; if (s) { if (G.purchase(g, s, d.kind, d.item)) { app.toast('Purchased.'); var qi = s.queue.findIndex(function (q) { return q.kind === d.kind && q.id === d.item; }); if (qi >= 0 && d.kind !== 'unit') s.queue.splice(qi, 1); } else app.toast(_('Not enough gold.')); app.refreshPanel(); } break;
       case 'upgradecity': s = g.settlements[+d.id]; if (s && G.upgradeToCity(g, s)) { app.toast(s.name + ' ' + _('is now a City!')); app.refreshPanel(); } break;

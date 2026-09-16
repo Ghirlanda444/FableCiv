@@ -115,6 +115,7 @@ def main():
     ap.add_argument('--seed', type=int, default=7)
     ap.add_argument('--delay', type=float, default=4.0)
     ap.add_argument('--skip', default=os.environ.get('SKIP_KINDS') or '', help='comma-separated kind prefixes to leave out, e.g. units/,buildings/ (the per-culture variants)')
+    ap.add_argument('--force', default=os.environ.get('FORCE') or '', help='comma-separated kinds (prefix match, e.g. units,units/) and/or kind/id pairs (features/jungle) to regenerate even if the picture exists')
     ap.add_argument('--provider', default=os.environ.get('ART_PROVIDER') or 'pollinations', help='pollinations (free) or xai (Grok Imagine, needs XAI_API_KEY)')
     args = ap.parse_args()
     items = json.load(open(os.path.join(ROOT, 'manifest.json')))
@@ -129,13 +130,15 @@ def main():
             prompts[cur] = line[4:].strip()
     kinds = [k for k in args.kinds.split(',') if k]
     skips = [k for k in args.skip.split(',') if k and k.lower() != 'none']  # 'none' = generate everything, cultural variants included
+    forced = [f.strip() for f in args.force.split(',') if f.strip()]
+    def is_forced(it): return any(it['kind'] == f or it['kind'].startswith(f) or (it['kind'] + '/' + it['id']) == f for f in forced)
     order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs', 'techs', 'civics']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []
     for it in items:
         if kinds and it['kind'] not in kinds: continue
         if any(it['kind'].startswith(sk) for sk in skips) and it['kind'] not in kinds: continue
-        if os.path.exists(os.path.join(ROOT, it['file'])) or os.path.exists(os.path.join(ROOT, os.path.splitext(it['file'])[0] + '.png')): continue
+        if not is_forced(it) and (os.path.exists(os.path.join(ROOT, it['file'])) or os.path.exists(os.path.join(ROOT, os.path.splitext(it['file'])[0] + '.png'))): continue
         todo.append(it)
         if args.limit and len(todo) >= args.limit: break
     from concurrent.futures import ThreadPoolExecutor

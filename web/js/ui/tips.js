@@ -1,0 +1,42 @@
+// Newbie tips: a short card the first time something happens (first Spark, first empire met, first Pioneers…).
+// Shown once per device, never during the tutorial, and switched off from the menu or from the card itself.
+(function (AU) {
+  var G = AU.G, U = AU.U;
+  var T = AU.Tips = {};
+  T.LIST = [
+    { id: 'capital', title: _('Your capital'), text: _('This is your capital, a City: it builds units and buildings with Production ⚙️ and grows with Food 🌾. Tap it and press Manage to see its tiles and queue.'), when: function (g, p) { return !!p.capital; } },
+    { id: 'growth', title: _('A settlement grew'), text: _('Every time a settlement grows you choose the tile the new citizen works. The citizen also builds the right improvement there (farm, mine, pasture…). Pick tiles with the yields you need.'), when: function (g, p) { return G.civSettlements(g, p.idx).some(function (s) { return s.pop >= 2 || s.pendingGrowth > 0; }); } },
+    { id: 'spark', title: _('Your first Spark'), text: _('A Spark 💡 is a small deed tied to a technology (work a pasture, meet an empire…). Do it before the research is finished and the technology also grants its Mastery ⭐, a permanent bonus. Civics work the same with Insights.'), when: function (g, p) { return !!(p.boosts && Object.keys(p.boosts).length); } },
+    { id: 'meet', title: _('You met another empire'), text: _('Other leaders remember what you do. Open the Diplomacy panel to see their attitude and agenda, make peace, or declare war. The Rankings 🏆 button compares every empire you have met.'), when: function (g, p) { return g.civs.some(function (c) { return !c.minor && c.idx !== p.idx && p.met && p.met[c.idx]; }); } },
+    { id: 'freecity', title: _('A Free city'), text: _('Free cities are independent single cities with a leader. Build Ties with them through caravans, garrisons, gifts and quests: at 30 you are a Partner, at 60 the Patron with a special bonus, at 90 Kin.'), when: function (g, p) { return g.civs.some(function (c) { return c.minor && p.met && p.met[c.idx]; }); } },
+    { id: 'inchibils', title: _('The Inchibils'), text: _('The Inchibils are wild raiders, not an empire. Their camps 🏕️ send raiders at nearby units and settlements. Move a military unit onto a camp to disperse it for Gold.'), when: function (g, p) { var vis = p.visible || p.explored; for (var id in g.units) { var u = g.units[id]; if (u.civ < 0 && vis[u.tile]) return true; } return g.camps.some(function (c) { return vis[c.tile]; }); } },
+    { id: 'pioneers', title: _('Pioneers'), text: _('Pioneers found a new settlement. New settlements are Towns: no queue, their production becomes Gold, and you buy things there. Settle at least four tiles away from other settlements, near rivers, hills or the coast.'), when: function (g, p) { return !!p.capital && G.civUnits(g, p.idx).some(function (u) { return u.type === 'settler'; }); } },
+    { id: 'ranged', title: _('A ranged unit'), text: _('Ranged units attack from a distance and take no damage back. Keep them behind a melee unit: they are weak when attacked. Tap a red tile to see the damage before you confirm.'), when: function (g, p) { return G.civUnits(g, p.idx).some(function (u) { return U.isRanged(u); }); } },
+    { id: 'policy', title: _('Policy cards'), text: _('Civics give you policy cards and your government gives you slots. Open ☰ → Government') + ' &amp; policies, tap a card to slot it, and change cards whenever you like, for free.', when: function (g, p) { return G.availablePolicies(p).length > 0; } },
+    { id: 'pantheon', title: _('Devotion and a pantheon'), text: _('Devotion 🕊️ comes from Shrines and Temples. With 25 Devotion you choose a pantheon: one small belief for the whole game. Later a Great Prophet can found a religion.'), when: function (g, p) { return (p.faith || 0) >= 20 && !p.pantheon; } },
+    { id: 'specialize', title: _('A Town can specialize'), text: _("At pop 5 a Town can become a Farming, Mining, Trade, Fort or Urban town (or your empire's own kind). A specialized Town stops growing and sends its surplus Food to your nearest City. You can also pay Gold to upgrade a Town into a City."), when: function (g, p) { return G.civSettlements(g, p.idx).some(function (s) { return !s.isCity && s.pop >= 5; }); } },
+    { id: 'unhappy', title: _('Unhappiness'), text: _('A settlement with 😠 negative Happiness grows at half speed and produces less. Work luxury resources, build Amphitheaters and Markets, or slot a policy card that gives Happiness.'), when: function (g, p) { return G.civSettlements(g, p.idx).some(function (s) { return G.settlementYields(g, s).happiness < 0; }); } },
+    { id: 'great', title: _('A Great Person'), text: _('Great People are earned with points from buildings and wonders. Each kind has one power: a Scientist finishes a technology, an Engineer boosts a build, a Prophet founds a religion. Tap the unit to see what it can do.'), when: function (g, p) { return G.civUnits(g, p.idx).some(function (u) { return AU.UNITS[u.type].great; }); } },
+    { id: 'war', title: _('War'), text: _('You are at war. Units heal when they do not move and heal faster inside your borders or fortified. Settlements with Walls bombard attackers. Peace can be offered from the Diplomacy panel once the war goes badly for the other side.'), when: function (g, p) { return g.civs.some(function (c) { return !c.minor && c.idx !== p.idx && c.alive && G.atWar(g, p.idx, c.idx); }); } },
+    { id: 'era', title: _('A new era'), text: _('Eras come from your technologies and civics. Later eras cost more Knowledge and Heritage per step, unlock stronger units, and open new victories: Renown from the Modern era, Devotion from the Industrial era.'), when: function (g, p) { return (p.era || 0) >= 1; } }
+  ];
+  T.enabled = function (app) { return app.settings.tips !== false; };
+  T.seen = function (app) { app.settings.tipsSeen = app.settings.tipsSeen || {}; return app.settings.tipsSeen; };
+  // Called after every UI refresh: shows the first tip whose condition holds and that was never shown on this device.
+  T.update = function (app) {
+    var g = app.g, box = document.getElementById('tip-card'); if (!box || !g) return;
+    if (!T.enabled(app) || g.tutorial || !box.hidden) return;
+    var qb = document.getElementById('quote'), lb = document.getElementById('leader'); if ((qb && !qb.hidden) || (lb && !lb.hidden)) return;
+    var p = G.player(g), seen = T.seen(app);
+    for (var i = 0; i < T.LIST.length; i++) {
+      var tip = T.LIST[i]; if (seen[tip.id]) continue;
+      var ok = false; try { ok = tip.when(g, p); } catch (e) { ok = false; }
+      if (!ok) continue;
+      seen[tip.id] = g.turn; app.saveSettings();
+      box.querySelector('.tip-title').textContent = '💡 ' + _(tip.title); box.querySelector('.tip-text').innerHTML = _(tip.text); box.hidden = false;
+      return;
+    }
+  };
+  T.close = function (app) { var box = document.getElementById('tip-card'); if (box) box.hidden = true; };
+  T.disable = function (app) { app.settings.tips = false; app.saveSettings(); T.close(app); app.toast(_('Tips are off. Turn them back on from the menu.'), 2500); };
+})(globalThis.AU = globalThis.AU || {});

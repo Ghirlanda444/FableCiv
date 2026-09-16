@@ -2,7 +2,7 @@
 // Heuristics: HTML tags, CSS classes, identifiers, paths, keys used in comparisons and object keys are left alone;
 // fragments with real words (an uppercase letter, several words, or common lowercase phrases) are wrapped.
 const fs = require('fs'), path = require('path');
-const FILES = ['ui/app.js', 'ui/panels.js', 'ui/tree.js', 'ui/pedia.js', 'ui/diplo.js', 'ui/palace.js', 'ui/citymap.js', 'ui/cityview.js', 'ui/halloffame.js', 'ui/tutorial.js', 'ui/audio.js',
+const FILES = ['ui/app.js', 'ui/panels.js', 'ui/tree.js', 'ui/pedia.js', 'ui/diplo.js', 'ui/palace.js', 'ui/citymap.js', 'ui/cityview.js', 'ui/halloffame.js', 'ui/tutorial.js', 'ui/tips.js', 'ui/audio.js',
   'core/game.js', 'core/units.js', 'core/citystates.js', 'core/diplomacy.js', 'core/religion.js', 'core/greatpeople.js', 'core/palace.js', 'core/ai.js'];
 const CSS = new Set(('row clickable active locked done pill small primary ghost big grow stat section card notif tabs on war peace selected hidden portrait techpic yields meta actions progress plink ' +
   'div span class id style src alt href img button data action br hr p h1 h2 h3 h4 table td tr th ul li input select option label title disabled checked value type width height background color border display margin padding font size px em rem flex grid none block inline left right top bottom center auto solid dashed rgba rgb var calc ' +
