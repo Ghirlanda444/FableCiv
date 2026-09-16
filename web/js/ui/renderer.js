@@ -139,12 +139,12 @@
   Renderer.prototype.paintTile = function (t, rz, groundOnly) {
     var water = AU.TERRAIN[t.terrain].water;
     if (water) return this.paintWater(t, rz);
-    var hills = t.hills && t.terrain !== 'mountain', lift = hills ? Math.round(HILL_LIFT * rz) : 0;
+    var hills = t.hills && t.terrain !== 'mountain', lift = hills && !this.flatHills ? Math.round(HILL_LIFT * rz) : 0;
     var Rw = rz * LAND_OVER, w = Math.ceil(Rw * 2.3) + 2, h = w + lift * 2;
     var cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.hexW = w; cv.hexH = h;
     var ctx = cv.getContext('2d'), cx = w / 2, cy = h / 2, variant = t.i % 4, rnd = lcg(t.i % 4 + 11 + (t.hills ? 5 : 0) + (t.feature ? 17 : 0));
     var base = PAL[t.terrain], detail = rz >= 14;
-    if (hills) { this.paintHillSide(ctx, cx, cy, rz, Rw, variant, base, lift); cy -= lift; } // the top surface sits higher: the tile reads as a raised block
+    if (lift) { this.paintHillSide(ctx, cx, cy, rz, Rw, variant, base, lift); cy -= lift; } // the top surface sits higher: the tile reads as a raised block
     ctx.save(); wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.clip();
     var tex = this.terrainTexture(t.terrain), painted = !!tex;
     if (painted) {
@@ -183,7 +183,7 @@
     }
     if (hills) this.paintHillTop(ctx, cx, cy, rz, Rw, variant, base, rnd, detail);
     ctx.restore();
-    if (!hills) { // soft, irregular edge: fade the rim out so neighbouring tiles blend into each other (hills keep a crisp raised rim)
+    if (!lift) { // soft, irregular edge: fade the rim out so neighbouring tiles blend into each other (hills keep a crisp raised rim)
       ctx.save(); ctx.globalCompositeOperation = 'destination-in';
       var mask = ctx.createRadialGradient(cx, cy, Rw * 0.78, cx, cy, Rw * 1.1); mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = mask; wobblyPath(ctx, cx, cy, Rw * 1.02, variant); ctx.fill(); ctx.restore();
@@ -338,6 +338,18 @@
   Renderer.prototype.drawGlyph = function (ctx, ch, x, y, size) { var gp = this.glyph(ch, Math.max(6, Math.round(size))); ctx.drawImage(gp, x - gp.width / 2, y - gp.height / 2); };
 
   var hexPathBase = hexPath;
+  Renderer.prototype._allOnes = function (n) { if (!this._ones || this._ones.length !== n) this._ones = new Uint8Array(n).fill(1); return this._ones; };
+  // Paint the whole map's ground (terrain, shores, rivers, no features or fog) into one canvas: the 3D view drapes it
+  // over its height field so both views share the same painted look. Returns the canvas plus the world rect it covers.
+  Renderer.paintGroundAtlas = function (g, maxPx) {
+    var worldW = R * SQ3 * (g.W + 1), worldH = R * 1.5 * (g.H + 1), x0 = -R * SQ3 * 0.5, y0 = -R * 0.75;
+    var zoom = Math.min(1.1, (maxPx || 4096) / Math.max(worldW, worldH));
+    var cv = document.createElement('canvas'); cv.width = Math.ceil(worldW * zoom); cv.height = Math.ceil(worldH * zoom);
+    var rd = new Renderer(cv); rd.dpr = 1; rd.w = cv.width; rd.h = cv.height; rd.iso = false; rd.flatHills = true; rd.groundOnly = true;
+    rd.cam = { x: x0 + (cv.width / 2) / zoom, y: y0 + (cv.height / 2) / zoom, zoom: zoom };
+    rd.draw(g, null);
+    return { canvas: cv, x0: x0, y0: y0, w: worldW, h: worldH };
+  };
   // ---------- main draw ----------
   Renderer.prototype.draw = function (g, app) {
     var ctx = this.ctx, z = this.cam.zoom, dpr = this.dpr, self = this;
@@ -348,7 +360,8 @@
     var tl = this.screenToWorld(0, 0), br = this.screenToWorld(this.w, this.h);
     var r0 = Math.max(0, Math.floor(tl[1] / (R * 1.5)) - 1), r1 = Math.min(g.H - 1, Math.ceil(br[1] / (R * 1.5)) + 1);
     var c0 = Math.max(0, Math.floor(tl[0] / (R * SQ3)) - 1), c1 = Math.min(g.W - 1, Math.ceil(br[0] / (R * SQ3)) + 1);
-    var explored = player.explored, visible = player.visible || explored;
+    var groundOnly = !!this.groundOnly; // atlas mode (3D view): the whole map, ground and rivers only, no fog, features, units or overlays
+    var explored = groundOnly ? this._allOnes(g.tiles.length) : player.explored, visible = groundOnly ? explored : (player.visible || explored);
     var lowDetail = rz < 12, midDetail = rz < 20;
     var hl = this.highlights;
     var r, c, i, t, cc, sx, sy;
@@ -413,8 +426,8 @@
     }
     // pass 1b: land tiles with soft irregular edges (rows back to front so the overlaps read as a painted map)
     // flat ground first, then the raised hill blocks (each in row order) so a hill always stands on top of its flat neighbours
-    for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; if (t.hills && t.terrain !== 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
-    for (var lh = 0; lh < landTiles.length; lh++) { t = landTiles[lh]; if (!t.hills || t.terrain === 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso), S(t)); }
+    for (var lj = 0; lj < landTiles.length; lj++) { t = landTiles[lj]; if (t.hills && t.terrain !== 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso || groundOnly), S(t)); }
+    for (var lh = 0; lh < landTiles.length; lh++) { t = landTiles[lh]; if (!t.hills || t.terrain === 'mountain') continue; drawSprite(this.tileSprite(t, Math.round(rzs), iso || groundOnly), S(t)); }
     if (!lowDetail) { // slow colour drift across the land (lighter and darker patches, like a painted map)
       var mot = this.mottleSprites(Math.round(rzs));
       for (var lm = 0; lm < landTiles.length; lm++) { t = landTiles[lm]; var mv = Math.sin(t.col * 0.55 + t.row * 0.31) * Math.cos(t.row * 0.47 - t.col * 0.19) + Math.sin(t.col * 0.17 + t.row * 0.9) * 0.5; if (Math.abs(mv) < 0.25) continue; ctx.globalAlpha = Math.min(0.16, Math.abs(mv) * 0.12); drawSprite(mv > 0 ? mot[0] : mot[1], S(t)); }
@@ -473,6 +486,7 @@
         }
       }
     }
+    if (groundOnly) return;
     // pass 1d: upright features (isometric view), back to front
     if (iso) for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
       i = r * g.W + c; t = g.tiles[i];
