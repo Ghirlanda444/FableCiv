@@ -38,26 +38,35 @@
   };
   G.speed = function (g) { return (AU.SPEEDS[g.speed] || AU.SPEEDS.standard).mult; };
   G.newGame = function (opts) {
-    var size = AU.MAP_SIZES[opts.mapSize || 'small'];
-    var numCivs = Math.min(AU.CIVS.length, opts.numCivs || size.civs);
+    var sc = opts.scenario && AU.SCENARIOS ? AU.SCENARIOS[opts.scenario] : null, tpl = sc ? AU.scenarioTemplate(sc) : null;
+    var size = sc ? { w: tpl.w, h: tpl.h, camps: sc.camps || 12 } : AU.MAP_SIZES[opts.mapSize || 'small'];
+    var numCivs = sc ? sc.civs.length : Math.min(AU.CIVS.length, opts.numCivs || size.civs);
     var seed = opts.seed || (Date.now() & 0x7fffffff);
     var rng = new AU.RNG(seed ^ 0x5bd1e995);
-    var speed = AU.SPEEDS[opts.speed] ? opts.speed : 'standard';
-    var map = AU.generateMap({ seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)) });
+    var speed = AU.SPEEDS[opts.speed] ? opts.speed : (sc && sc.speed) || 'standard';
+    var map = AU.generateMap({ seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)), template: tpl });
     numCivs = Math.min(numCivs, map.starts.length);
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
       wonders: {}, religions: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
-      playerIdx: 0, rngState: rng.s, speed: speed, mapType: opts.mapType || 'continents'
+      playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null
     };
-    // pick civs: player's chosen one first, then random others
-    var pool = AU.CIVS.map(function (c) { return c.id; }).filter(function (id) { return id !== opts.playerCiv; });
-    rng.shuffle(pool);
-    var ids = [opts.playerCiv].concat(pool.slice(0, Math.max(0, numCivs - 1)));
+    // pick civs: player's chosen one first, then random others (a scenario fixes the cast and their leaders)
+    var ids, scStart = {};
+    if (sc) {
+      var playerCiv = sc.civs.some(function (cv) { return cv.civ === opts.playerCiv; }) ? opts.playerCiv : sc.civs[0].civ;
+      sc.civs.forEach(function (cv, k) { scStart[cv.civ] = map.starts[k]; });
+      ids = [playerCiv].concat(sc.civs.map(function (cv) { return cv.civ; }).filter(function (id) { return id !== playerCiv; }));
+      map.starts = ids.map(function (id) { return scStart[id]; }).concat(map.starts.slice(sc.civs.length));
+    } else {
+      var pool = AU.CIVS.map(function (c) { return c.id; }).filter(function (id) { return id !== opts.playerCiv; });
+      rng.shuffle(pool);
+      ids = [opts.playerCiv].concat(pool.slice(0, Math.max(0, numCivs - 1)));
+    }
     ids.forEach(function (id, idx) {
-      var data = AU.CIV_BY_ID[id];
-      var leader = idx === 0 && opts.playerLeader && AU.LEADER_BY_ID[opts.playerLeader] && AU.LEADER_BY_ID[opts.playerLeader].civId === id ? opts.playerLeader : rng.pick(data.leaders).id;
+      var data = AU.CIV_BY_ID[id], scCiv = sc ? sc.civs.filter(function (cv) { return cv.civ === id; })[0] : null;
+      var leader = idx === 0 && opts.playerLeader && AU.LEADER_BY_ID[opts.playerLeader] && AU.LEADER_BY_ID[opts.playerLeader].civId === id ? opts.playerLeader : scCiv && AU.LEADER_BY_ID[scCiv.leader] ? scCiv.leader : rng.pick(data.leaders).id;
       var civ = { idx: idx, civId: id, leaderId: leader, isPlayer: idx === 0, alive: true, gold: 0, techs: {}, civics: {}, currentTech: null, currentCivic: null,
         techProgress: {}, civicProgress: {}, government: 'chiefdom', explored: new Array(g.W * g.H).fill(0), visible: null, rel: {},
         capital: null, originalCapital: null, cityNameIdx: 0, era: 0, score: 0, met: {}, unitsBuilt: 0, stats: { kills: 0, captures: 0 },
@@ -66,23 +75,28 @@
     });
     g.civs.forEach(function (a) { g.civs.forEach(function (b) { if (a !== b) a.rel[b.idx] = { war: false, attitude: (G.civFx(g, b).attitudeBonus || 0), warSince: -1, peaceUntil: -1 }; }); });
     G.assignColors(g);
-    // Start biases: each empire (player first) takes the free start that suits it best.
+    // Start biases: each empire (player first) takes the free start that suits it best (scenarios fix every start).
     var pool = map.starts.slice(), picked = [];
-    g.civs.forEach(function (civ) {
+    if (sc) { picked = pool.splice(0, g.civs.length); }
+    else g.civs.forEach(function (civ) {
       var data = AU.CIV_BY_ID[civ.civId], bias = data.bias || [], best = 0, bs = -1e9;
-      pool.forEach(function (tileIdx, k) { var sc = G.biasScore(g, g.tiles[tileIdx], bias) - k * 0.15; if (sc > bs) { bs = sc; best = k; } });
+      pool.forEach(function (tileIdx, k) { var sc2 = G.biasScore(g, g.tiles[tileIdx], bias) - k * 0.15; if (sc2 > bs) { bs = sc2; best = k; } });
       picked.push(pool.splice(best, 1)[0]);
     });
     map.starts = picked;
     var diff = AU.DIFFICULTIES[g.difficulty];
-    var nStates = opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6);
+    var nStates = sc ? pool.length : opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6);
     // starting units
     g.civs.forEach(function (civ, idx) {
       var start = map.starts[idx];
       var t = g.tiles[start];
-      G.spawnUnit(g, civ.idx, 'settler', start);
-      G.spawnUnit(g, civ.idx, 'warrior', start);
       var nb = Hex.neighborsOf(t.col, t.row, g.W, g.H).filter(function (n) { return G.passable(g, g.tiles[n]); });
+      if (sc && sc.foundCapitals) { // the capital already stands, with its historical name
+        var cap = G.foundSettlement(g, civ.idx, start, true); if (sc.capitalNames && sc.capitalNames[civ.civId]) cap.name = sc.capitalNames[civ.civId];
+        cap.pop = 2; if (!G.hasBuilding(cap, 'monument')) cap.buildings.push('monument');
+        G.spawnUnit(g, civ.idx, 'settler', start); G.spawnUnit(g, civ.idx, 'warrior', start);
+        for (var w2 = 0; w2 < (sc.extraWarriors || 0) && w2 < nb.length; w2++) G.spawnUnit(g, civ.idx, 'warrior', nb[w2]);
+      } else { G.spawnUnit(g, civ.idx, 'settler', start); G.spawnUnit(g, civ.idx, 'warrior', start); }
       if (nb.length) G.spawnUnit(g, civ.idx, 'scout', nb[0]);
       if (!civ.isPlayer) {
         for (var k = 0; k < diff.aiUnits && k < nb.length; k++) G.spawnUnit(g, civ.idx, 'warrior', nb[k]);
@@ -93,7 +107,7 @@
     g.camps.forEach(function (c) { G.spawnUnit(g, -1, 'warrior', c.tile); });
     G.refreshVisibility(g, g.civs[0]);
     G.log(g, _('The world of Ages Unbroken begins. Turn 1.'));
-    if (AU.CityStates && nStates > 0) { AU.CityStates.setup(g, rng, pool, nStates); G.refreshVisibility(g, G.player(g)); }
+    if (AU.CityStates && nStates > 0) { AU.CityStates.setup(g, rng, pool, nStates, map.stateIds); G.refreshVisibility(g, G.player(g)); }
     return g;
   };
 

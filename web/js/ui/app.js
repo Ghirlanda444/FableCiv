@@ -93,6 +93,7 @@
       $('btn-help').onclick = function () { App.showScreen('game'); App.openPanel('help'); };
       $('btn-hall').onclick = function () { App.showScreen('game'); App.openPanel('hall'); };
       $('btn-tutorial').onclick = function () { AU.Tutorial.start(App); };
+      $('btn-scenarios').onclick = function () { App.showScenarios(); };
       App.renderLangBar(); App.persistStorage();
       $('tut-skip').onclick = function () { AU.Tutorial.skip(App); };
       $('tut-next').onclick = function () { AU.Tutorial.next(App); };
@@ -106,10 +107,27 @@
       $('btn-sheet-back').onclick = function () { App.closeSheet(); };
       $('btn-sheet-ok').onclick = function () { App.closeSheet(); };
     },
-    showSetup: function () {
+    // Scenario picker: a list of scenarios, then the normal setup restricted to the scenario's empires.
+    showScenarios: function () {
+      var self = this, list = Object.keys(AU.SCENARIOS || {});
+      if (list.length === 1) { this.showSetup(list[0]); return; }
+      var html = '<div class="lang-list">'; list.forEach(function (id) { var sc = AU.SCENARIOS[id]; html += '<button class="big ghost" data-scenario="' + id + '">' + (sc.icon || '📜') + ' ' + sc.name + '</button>'; }); html += '</div>';
+      this.confirm(html, function () {}); // reuse the dialog frame
+      document.querySelectorAll('#confirm [data-scenario]').forEach(function (b) { b.onclick = function () { $('confirm').hidden = true; self.showSetup(b.dataset.scenario); }; });
+    },
+    showSetup: function (scenarioId) {
       var grid = $('civ-grid'); grid.innerHTML = '';
+      var sc = scenarioId && AU.SCENARIOS ? AU.SCENARIOS[scenarioId] : null; this.setup.scenario = sc ? sc.id : null;
       var ORDER = { easy: 0, medium: 1, hard: 2 }, DLABEL = { easy: '● ' + _('Easy'), medium: '●● ' + _('Medium'), hard: '●●● ' + _('Hard') };
-      AU.CIVS.slice().sort(function (x, y) { var ox = x.difficulty in ORDER ? ORDER[x.difficulty] : 1, oy = y.difficulty in ORDER ? ORDER[y.difficulty] : 1; return ox - oy || x.name.localeCompare(y.name); }).forEach(function (c) {
+      var bar = $('scenario-bar'), title = $('setup-title');
+      if (sc) {
+        var mp = AU.SCENARIO_MAPS && AU.SCENARIO_MAPS[sc.map];
+        bar.hidden = false; bar.innerHTML = '<div class="sc-head"><span class="sc-icon">' + (sc.icon || '📜') + '</span><div class="grow"><b>' + sc.name + '</b><small>' + (mp ? mp.w + '×' + mp.h + ' ' + _('tiles') + ' · ' : '') + sc.civs.length + ' ' + _('empires') + ' · ' + (mp ? mp.states.length + ' ' + _('free cities') : '') + '</small></div></div><p>' + sc.desc + '</p><div class="sc-cast">' + sc.civs.map(function (cv) { var c = AU.CIV_BY_ID[cv.civ], l = AU.LEADER_BY_ID[cv.leader]; return '<span class="pill"><img src="' + AU.Assets.url('civs', cv.civ) + '" alt="" onerror="this.remove()">' + (cv.name || c.name) + (l ? ' · ' + l.name : '') + '</span>'; }).join('') + '</div>';
+        title.textContent = _('Choose your empire'); document.querySelectorAll('.setup-options label').forEach(function (lb) { var sel = lb.querySelector('select,input'); lb.hidden = !!(sel && (sel.id === 'opt-size' || sel.id === 'opt-type' || sel.id === 'opt-civs' || sel.id === 'opt-states')); });
+        var mine = sc.civs.filter(function (cv) { return cv.civ === App.setup.civ; })[0] || sc.civs[0]; App.setup.civ = mine.civ; App.setup.leader = AU.LEADER_BY_ID[mine.leader] ? mine.leader : AU.CIV_BY_ID[mine.civ].leaders[0].id;
+      } else { bar.hidden = true; document.querySelectorAll('.setup-options label').forEach(function (lb) { lb.hidden = false; }); }
+      var civList = sc ? sc.civs.map(function (cv) { return AU.CIV_BY_ID[cv.civ]; }) : AU.CIVS.slice().sort(function (x, y) { var ox = x.difficulty in ORDER ? ORDER[x.difficulty] : 1, oy = y.difficulty in ORDER ? ORDER[y.difficulty] : 1; return ox - oy || x.name.localeCompare(y.name); });
+      civList.forEach(function (c) {
         var d = document.createElement('div'); d.className = 'civ-card diff-' + (c.difficulty || 'medium') + (c.id === App.setup.civ ? ' selected' : ''); d.dataset.civ = c.id;
         var em = AU.Assets.get('civs', c.id);
         d.innerHTML = '<div class="swatch" style="background:' + c.color + ';border-bottom:3px solid ' + c.color2 + '"></div>' + '<img class="emblem" src="' + AU.Assets.url('civs', c.id) + '" alt="" onerror="this.remove()">' + '<b>' + c.name + '</b><span class="dtag ' + (c.difficulty || 'medium') + '">' + (DLABEL[c.difficulty] || DLABEL.medium) + '</span><span>' + c.leaders.length + ' leaders</span>';
@@ -158,7 +176,7 @@
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined };
       this.toast(_('Generating the world…'));
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);

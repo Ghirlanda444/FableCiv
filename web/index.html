@@ -24,6 +24,7 @@
       <button id="btn-continue" class="big primary" hidden>Continue</button>
       <button id="btn-new" class="big primary">New Game</button>
       <button id="btn-tutorial" class="big ghost">🎓 Tutorial</button>
+      <button id="btn-scenarios" class="big ghost">📜 Scenarios</button>
       <button id="btn-help" class="big ghost">How to Play</button>
       <button id="btn-hall" class="big ghost">🏅 Hall of Fame</button>
       <button id="btn-pedia" class="big ghost">📖 Chibipedia</button>
@@ -35,7 +36,8 @@
 
 <div id="setup" class="screen" hidden>
   <div class="setup-inner">
-    <h2>Choose your empire</h2>
+    <h2 id="setup-title">Choose your empire</h2>
+    <div id="scenario-bar" class="scenario-bar" hidden></div>
     <div id="pick-bar" class="pick-bar"></div>
     <p class="hint">Tap an empire to read its bonuses and pick a leader. Each leader rules only their own people.</p>
     <div id="civ-grid" class="civ-grid"></div>
@@ -104,6 +106,8 @@
 <script src="js/data/leanings.js"></script>
 <script src="js/data/religion.js"></script>
 <script src="js/data/citystates.js"></script>
+<script src="js/data/maps/mediterranean.js"></script>
+<script src="js/data/scenarios.js"></script>
 <script src="js/data/cultures.js"></script>
 <script src="js/data/palace.js"></script>
 <script src="js/data/greatpeople.js"></script>

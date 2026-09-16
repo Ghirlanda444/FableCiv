@@ -308,3 +308,8 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
 .tip-card { position: absolute; left: 10px; right: 10px; bottom: calc(150px + var(--safe-bottom)); z-index: 7; background: var(--paper-tex), linear-gradient(180deg, #fbf3e0, #efe0bf); border: 2px solid var(--wood3); border-radius: 14px; padding: 10px 12px; box-shadow: 0 0 0 2px var(--gold2), 0 6px 18px rgba(0,0,0,.55); font-size: 13.5px; line-height: 1.4; color: var(--paper-ink); }
 .tip-card .tip-title { font-family: var(--font-display); font-weight: 800; color: var(--wood3); font-size: 16px; margin-bottom: 3px; }
 .yields .clickable { cursor: pointer; text-decoration: underline dotted rgba(59,38,20,.45); text-underline-offset: 3px; }
+/* scenario banner on the setup screen */
+.scenario-bar { margin: 6px 0 10px; padding: 10px 12px; background: var(--paper-tex), linear-gradient(180deg, #fbf3e0, #efe0bf); border: 2px solid var(--wood3); border-radius: 14px; box-shadow: 0 0 0 2px var(--gold2), 0 4px 12px rgba(0,0,0,.25); font-size: 13.5px; line-height: 1.4; }
+.scenario-bar .sc-head { display: flex; align-items: center; gap: 10px; } .scenario-bar .sc-icon { font-size: 30px; line-height: 1; }
+.scenario-bar b { display: block; font-family: var(--font-display); font-size: 18px; color: var(--wood3); } .scenario-bar small { display: block; color: var(--muted); font-weight: 700; }
+.scenario-bar p { margin: 6px 0; } .scenario-bar .sc-cast { display: flex; flex-wrap: wrap; gap: 4px; } .scenario-bar .sc-cast .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--paper-ink); } .scenario-bar .sc-cast img { width: 16px; height: 16px; object-fit: contain; }

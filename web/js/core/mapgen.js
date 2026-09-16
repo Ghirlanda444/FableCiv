@@ -32,7 +32,8 @@
 
   AU.generateMap = function (opts) {
     var rng = new AU.RNG(opts.seed);
-    var W = opts.width, H = opts.height;
+    var TPL = opts.template || null; // scenario map: real coastline, forced terrain, fixed rivers, starts and free cities
+    var W = TPL ? TPL.w : opts.width, H = TPL ? TPL.h : opts.height;
     var tiles = new Array(W * H);
     var i, c, r;
     for (r = 0; r < H; r++) for (c = 0; c < W; c++) { i = r * W + c; tiles[i] = makeTile(i, c, r); }
@@ -71,10 +72,11 @@
       else if (type === 'continents') { var sp = splitN.at(c * 1.4 / W + 3, r * 1.4 / H + 7); mask = 0.55 + 0.45 * Math.abs(sp - 0.5) * 2; }
       else if (type === 'terra') { var gap = Math.abs(fx + 0.02) < 0.06 ? 0.2 : 1; mask = gap; }
       e = e * (0.3 + 0.7 * edge) * mask;
+      if (TPL) e = TPL.land[i] ? 0.55 + e * 0.3 : 0.1; // the template decides land and sea; noise only shapes the relief
       elev[i] = e; values.push(e);
     }
     values.sort(function (a, b) { return a - b; });
-    var seaLevel = values[Math.floor(values.length * (1 - targetLand))];
+    var seaLevel = TPL ? 0.4 : values[Math.floor(values.length * (1 - targetLand))];
 
     for (i = 0; i < tiles.length; i++) {
       tiles[i].elev = elev[i];
@@ -96,7 +98,7 @@
           n.continent = continentId; stack.push(n.i);
         }
       }
-      if (members.length < 4) { members.forEach(function (m) { tiles[m].terrain = 'ocean'; tiles[m].continent = -1; }); }
+      if (members.length < (TPL ? 1 : 4)) { members.forEach(function (m) { tiles[m].terrain = 'ocean'; tiles[m].continent = -1; }); }
       else { continentSizes[continentId] = members.length; continentId++; }
     }
 
@@ -104,17 +106,19 @@
     for (i = 0; i < tiles.length; i++) {
       var t2 = tiles[i];
       if (t2.terrain === 'ocean') continue;
-      var lat = Math.abs((t2.row / (H - 1)) * 2 - 1); // 0 equator .. 1 pole
+      var lat = TPL ? Math.abs(TPL.latOf(t2.row)) / 90 : Math.abs((t2.row / (H - 1)) * 2 - 1); // 0 equator .. 1 pole
       var temp = 1 - lat + (tempN.at(t2.col * 0.2, t2.row * 0.2) - 0.5) * 0.35;
       var moist = fbm(moistN, t2.col * 0.11, t2.row * 0.11, 3, 2, 0.5);
+      if (TPL) moist -= Math.max(0, (42 - Math.abs(TPL.latOf(t2.row))) * 0.02); // the south of a real map is drier
       var hv = fbm(hillN, t2.col * 0.35, t2.row * 0.35, 3, 2, 0.5) * 0.6 + (t2.elev - seaLevel) / (1 - seaLevel) * 0.9;
-      if (hv > 0.72) { t2.terrain = 'mountain'; continue; }
-      if (hv > 0.52) t2.hills = true;
+      if (TPL) { hv = fbm(hillN, t2.col * 0.35, t2.row * 0.35, 3, 2, 0.5) * 0.9; if (TPL.terrain[i] === 'mountain') { t2.terrain = 'mountain'; continue; } if (TPL.hills[i]) t2.hills = true; else if (hv > 0.6) t2.hills = true; }
+      else { if (hv > 0.72) { t2.terrain = 'mountain'; continue; } if (hv > 0.52) t2.hills = true; }
       if (temp < 0.12) t2.terrain = 'snow';
       else if (temp < 0.28) t2.terrain = 'tundra';
       else if (temp > 0.62 && moist < 0.36) t2.terrain = 'desert';
       else if (moist < 0.5) t2.terrain = 'plains';
       else t2.terrain = 'grassland';
+      if (TPL && TPL.terrain[i] && TPL.terrain[i] !== 'lake') t2.terrain = TPL.terrain[i];
       // features
       if (t2.terrain === 'grassland' || t2.terrain === 'plains' || t2.terrain === 'tundra') {
         if (temp > 0.78 && moist > 0.58 && t2.terrain !== 'tundra') t2.feature = 'jungle';
@@ -124,6 +128,7 @@
     }
 
     // Coast / lakes
+    if (TPL) for (i = 0; i < tiles.length; i++) if (TPL.terrain[i] === 'lake') tiles[i].terrain = 'lake';
     for (i = 0; i < tiles.length; i++) {
       var t3 = tiles[i];
       if (t3.terrain !== 'ocean') continue;
@@ -155,8 +160,15 @@
     var riverSources = [];
     for (i = 0; i < tiles.length; i++) if ((tiles[i].hills || tiles[i].terrain === 'mountain') && !AU.TERRAIN[tiles[i].terrain].water) riverSources.push(i);
     rng.shuffle(riverSources);
-    var riversWanted = Math.floor(landCount / 45);
+    var riversWanted = Math.floor(landCount / (TPL ? 140 : 45));
     var made = 0, riverPaths = [];
+    if (TPL) TPL.rivers.forEach(function (rt) { // fixed rivers: land tiles of the path, the last tile is the mouth (water) when it is water
+      var body = rt.filter(function (ti) { return !AU.TERRAIN[tiles[ti].terrain].water && tiles[ti].terrain !== 'mountain'; });
+      if (body.length < 2) return;
+      var last = tiles[rt[rt.length - 1]], mouth = AU.TERRAIN[last.terrain].water ? last.i : null;
+      body.forEach(function (ti) { tiles[ti].river = true; });
+      riverPaths.push(mouth != null ? body.concat([mouth]) : body.slice());
+    });
     for (var s = 0; s < riverSources.length && made < riversWanted; s++) {
       var cur = tiles[riverSources[s]], path = [], guard = 0, ok = false, mouth = null;
       var visited = {};
@@ -217,7 +229,8 @@
     }
 
     // Natural wonders: a few per map, on matching terrain, apart from each other
-    var naturals = [], wantNat = Math.max(2, Math.round(landCount / 220));
+    var naturals = [], wantNat = TPL ? 0 : Math.max(2, Math.round(landCount / 220));
+    if (TPL) TPL.naturals.forEach(function (nn) { var nt = tiles[nn[1]], NWt = AU.NATURAL_WONDERS[nn[0]]; if (!nt || !NWt) return; if (NWt.terrain === 'mountain') nt.terrain = 'mountain'; else if (!AU.TERRAIN[nt.terrain].water) { nt.terrain = NWt.terrain; nt.hills = !!NWt.hills; } nt.natural = nn[0]; nt.feature = null; nt.resource = null; naturals.push(nt.i); });
     var natIds = rng.shuffle(Object.keys(AU.NATURAL_WONDERS));
     natIds.forEach(function (nid) {
       if (naturals.length >= wantNat) return;
@@ -270,6 +283,7 @@
     landTiles.forEach(function (t) { t._score = siteScore(t); });
     landTiles.sort(function (a, b) { return b._score - a._score; });
     var starts = [];
+    if (TPL) { starts = TPL.starts.concat(TPL.stateTiles).map(function (ti) { return tiles[ti]; }); starts.forEach(function (st) { if (st.terrain === 'mountain') st.terrain = 'plains'; st.natural = null; }); nStarts = starts.length; }
     var minDist = Math.max(7, Math.floor(Math.sqrt(landTiles.length / nStarts) * 1.35));
     while (starts.length < nStarts && minDist >= 6) {
       starts = [];
@@ -309,7 +323,7 @@
       if (far) { camps.push(cc.i); cc.camp = true; }
     }
     landTilesAll.forEach(function (t) { delete t._score; });
-    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths, mapType: type, naturals: naturals };
+    return { width: W, height: H, tiles: tiles, starts: starts.map(function (t) { return t.i; }), camps: camps, continentSizes: continentSizes, rivers: riverPaths, mapType: type, naturals: naturals, stateIds: TPL ? TPL.stateIds : null };
   };
 
   // Base yields of a tile: terrain + hills + feature + resource (resource only if visible to viewer civ, if given)

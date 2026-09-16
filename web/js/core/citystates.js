@@ -11,8 +11,10 @@
   CS.majors = function (g) { return g.civs.filter(function (c) { return !c.minor; }); };
   CS.minors = function (g) { return g.civs.filter(function (c) { return c.minor; }); };
   // Called from G.newGame once the major empires and their starts exist. `starts` = unused start tiles.
-  CS.setup = function (g, rng, starts, count) {
-    var pool = AU.CITY_STATES.slice(); rng.shuffle(pool);
+  CS.setup = function (g, rng, starts, count, ids) {
+    var pool;
+    if (ids) pool = ids.map(function (id) { return AU.CITY_STATE_BY_ID[id]; }).filter(Boolean);
+    else { pool = AU.CITY_STATES.filter(function (s) { return !s.scenario; }); rng.shuffle(pool); }
     var n = Math.min(count, starts.length, pool.length);
     for (var i = 0; i < n; i++) {
       var d = pool[i], idx = g.civs.length;
