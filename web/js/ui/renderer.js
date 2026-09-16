@@ -610,15 +610,27 @@
     var ux = cc[0] + (mil ? 0 : rz * 0.3), uy = cc[1] + (mil ? rz * 0.05 : rz * 0.25), ur = rz * (mil ? 0.4 : 0.3);
     if (G.unitsAt(g, u.tile).length > 1 && mil) ux = cc[0] - rz * 0.2;
     if (t.settlement != null) { ur *= 0.75; ux = cc[0] + (mil ? -rz * 0.58 : rz * 0.58); uy = cc[1] - rz * 0.3; }
-    var ucol = u.civ >= 0 ? G.civColor(g.civs[u.civ]) : '#2b2b2b', ucol2 = u.civ >= 0 ? G.civData(g.civs[u.civ]).color2 : '#e33';
-    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.95, ur * 0.9, ur * 0.35, 0, 0, Math.PI * 2); ctx.fill();
-    var grd = ctx.createRadialGradient(ux - ur * 0.3, uy - ur * 0.3, ur * 0.1, ux, uy, ur);
-    var rc = hexToRgb(ucol); grd.addColorStop(0, rgb(rc, 1.25)); grd.addColorStop(1, rgb(rc, 0.75));
-    ctx.fillStyle = grd; ctx.strokeStyle = isSel ? '#fff' : ucol2; ctx.lineWidth = isSel ? 3 : 1.5;
-    ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    var inch = u.civ < 0, ucol = inch ? '#3a1414' : G.civColor(g.civs[u.civ]), ucol2 = inch ? '#ff5a3c' : G.civData(g.civs[u.civ]).color2;
+    // Owner plate: a thick coloured stand under the figure in the empire's colours (dark red with a skull for the Inchibils), so who owns a unit reads at a glance.
+    ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.95, ur * 1.05, ur * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+    var rc = hexToRgb(ucol);
+    ctx.fillStyle = rgb(rc, 1.0); ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(2, ur * 0.16);
+    ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.0, ur * 0.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.62, ur * 0.75, ur * 0.22, 0, 0, Math.PI * 2); ctx.fill();
+    if (inch) { // ragged edge and skull for the wild raiders
+      ctx.strokeStyle = '#ff5a3c'; ctx.lineWidth = Math.max(1, ur * 0.08); ctx.setLineDash([Math.max(2, ur * 0.18), Math.max(2, ur * 0.12)]); ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.2, ur * 0.52, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.15, ur * 0.5, 0, 0, Math.PI * 2); ctx.stroke(); }
     var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.getChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
     if (art) { var ah = ur * 2.6, aw = ah * art.width / art.height; ctx.drawImage(art, ux - aw / 2, uy - ah + ur * 0.6, aw, ah); }
-    else this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1);
+    else { ctx.fillStyle = rgb(rc, 1.1); ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1); }
+    // Owner badge: the empire's emblem (or a skull) in a small coloured circle at the shoulder
+    var bx = ux + ur * 0.85, by = uy - ur * 0.95, br = Math.max(4, ur * 0.42);
+    ctx.fillStyle = ucol; ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(1.5, br * 0.22); ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    var em = ucv ? AU.Assets.get('civs', ucv.civId) : null;
+    if (em) { ctx.save(); ctx.beginPath(); ctx.arc(bx, by, br * 0.85, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(em, bx - br * 0.85, by - br * 0.85, br * 1.7, br * 1.7); ctx.restore(); }
+    else if (inch) this.drawGlyph(ctx, '☠', bx, by, br * 1.3);
+    else { ctx.fillStyle = ucol2; ctx.font = 'bold ' + Math.round(br * 1.3) + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText((G.civData(ucv).name || '?').charAt(0), bx, by + br * 0.05); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; }
     if (u.hp < 100) { ctx.fillStyle = '#222'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2, 3); ctx.fillStyle = u.hp > 50 ? '#4caf50' : u.hp > 25 ? '#e6b422' : '#e05252'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2 * u.hp / 100, 3); }
     if (u.fortify && mil) { ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1; ctx.strokeRect(ux - ur - 2, uy - ur - 2, ur * 2 + 4, ur * 2 + 4); }
     if (U.level(u) > 0) { ctx.fillStyle = '#f5d76e'; for (var k = 0; k < U.level(u); k++) { ctx.beginPath(); ctx.arc(ux - ur * 0.6 + k * ur * 0.6, uy - ur - 3, Math.max(1.5, ur * 0.12), 0, Math.PI * 2); ctx.fill(); } }
