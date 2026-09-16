@@ -112,7 +112,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--kinds', default='')
-    ap.add_argument('--seed', type=int, default=7)
+    ap.add_argument('--seed', type=int, default=int(os.environ.get('ART_SEED') or 7))
     ap.add_argument('--delay', type=float, default=4.0)
     ap.add_argument('--skip', default=os.environ.get('SKIP_KINDS') or '', help='comma-separated kind prefixes to leave out, e.g. units/,buildings/ (the per-culture variants)')
     ap.add_argument('--force', default=os.environ.get('FORCE') or '', help='comma-separated kinds (prefix match, e.g. units,units/) and/or kind/id pairs (features/jungle) to regenerate even if the picture exists')
@@ -132,7 +132,11 @@ def main():
     skips = [k for k in args.skip.split(',') if k and k.lower() != 'none']  # 'none' = generate everything, cultural variants included
     forced = [f.strip() for f in args.force.split(',') if f.strip()]
     # 'units' forces only the base units; 'units/' forces every cultural variant; 'features/jungle' forces one picture
-    def is_forced(it): return any(it['kind'] == f or (f.endswith('/') and it['kind'].startswith(f)) or (it['kind'] + '/' + it['id']) == f for f in forced)
+    # forced pictures already redone in this run (the workflow calls this script once per batch) are not redone again:
+    # the marker file lives outside the assets and is deleted at the start of every workflow run
+    done_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.art-forced-done')
+    done_set = set(open(done_path).read().split()) if os.path.exists(done_path) else set()
+    def is_forced(it): return (it['kind'] + '/' + it['id']) not in done_set and any(it['kind'] == f or (f.endswith('/') and it['kind'].startswith(f)) or (it['kind'] + '/' + it['id']) == f for f in forced)
     order = ['terrain', 'features', 'units', 'leaders', 'buildings', 'wonders', 'national', 'natural', 'resources', 'civs', 'techs', 'civics']
     items.sort(key=lambda i: order.index(i['kind']) if i['kind'] in order else 99)
     todo = []
@@ -231,7 +235,9 @@ def main():
                 import importlib.util
                 spec = importlib.util.spec_from_file_location('shrink_assets', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shrink-assets.py')); mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
                 mod.shrink(tmp)  # 512 px max, palette PNG or JPEG depending on the kind
-                with lock: stats['done'] += 1
+                with lock:
+                    stats['done'] += 1
+                    with open(done_path, 'a') as df: df.write(it['kind'] + '/' + it['id'] + '\n')
                 time.sleep(args.delay)
                 return
             except Exception as e:

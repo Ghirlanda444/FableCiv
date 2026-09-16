@@ -7,3 +7,4 @@ android/local.properties
 .idea/
 *.iml
 web/i18n/parts/
+tools/.art-forced-done

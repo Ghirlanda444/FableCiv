@@ -23,6 +23,10 @@ on:
         description: "Kind prefixes to leave out unless named in kinds (default: the per-culture unit/building variants; write none to generate everything)"
         required: false
         default: "units/,buildings/"
+      seed:
+        description: "Seed for the pictures (change it to get different results when regenerating)"
+        required: false
+        default: "7"
 
 permissions:
   contents: write
@@ -55,12 +59,14 @@ jobs:
           ART_PROVIDER: ${{ github.event.inputs.provider }}
           SKIP_KINDS: ${{ github.event.inputs.skip }}
           FORCE: ${{ github.event.inputs.force }}
+          ART_SEED: ${{ github.event.inputs.seed }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           XAI_IMAGE_MODEL: ${{ vars.XAI_IMAGE_MODEL }}
         run: |
           git config user.name "fableciv-art-bot"
           git config user.email "art-bot@users.noreply.github.com"
           limit=${LIMIT:-0}; remaining=$limit
+          rm -f tools/.art-forced-done   # forced pictures are redone once per run (the marker stops the batch loop from redoing them)
           for batch in $(seq 1 80); do
             if [ "$limit" != "0" ] && [ "$remaining" -le 0 ]; then break; fi
             step=12
