@@ -173,9 +173,9 @@
     mergeFx(fx, G.leaderData(civ).ability.fx);
     mergeFx(fx, AU.GOVERNMENTS[civ.government].fx);
     if (fx.governmentHappiness && civ.government !== 'chiefdom') fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
-    if (fx.monarchHappiness && (civ.government === 'monarchy' || civ.government === 'theocracy')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.monarchHappiness;
+    if (fx.monarchHappiness && (g.v2 ? true : (civ.government === 'monarchy' || civ.government === 'theocracy'))) fx.happinessBonus = (fx.happinessBonus || 0) + (g.v2 ? Math.ceil(fx.monarchHappiness / 2) : fx.monarchHappiness); // no governments under v2: half of it, always
     if (AU.Palace && !civ.minor) { var ph = AU.Palace.fx(civ).happiness; if (ph) fx.happinessBonus = (fx.happinessBonus || 0) + ph; }
-    if (fx.despotCombat && (civ.government === 'oligarchy' || civ.government === 'autocracy')) fx.combatBonus = (fx.combatBonus || 0) + fx.despotCombat;
+    if (fx.despotCombat && (g.v2 ? true : (civ.government === 'oligarchy' || civ.government === 'autocracy'))) fx.combatBonus = (fx.combatBonus || 0) + (g.v2 ? Math.ceil(fx.despotCombat / 2) : fx.despotCombat);
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
     if (AU.MASTERY) for (var mid in civ.mastery || {}) { var mm = mid.indexOf('c:') === 0 ? AU.MASTERY.civics[mid.slice(2)] : AU.MASTERY.techs[mid]; if (mm && mm.fx) mergeFx(fx, mm.fx); }
@@ -315,7 +315,7 @@
     var fx = G.civFx(g, civ);
     s.pendingGrowth += 1; G.autoExpand(g, s); // the first citizen works the best adjacent tile
     if (fx.freeBuilding) G.addBuilding(g, s, fx.freeBuilding);
-    if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
+    if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (g.v2 ? G.gateOk(g, civ, 'building', fb, AU.BUILDINGS[fb] || {}) : civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
     if (fx.freeExpansion) s.pendingGrowth += fx.freeExpansion;
     if (fx.foundGold) civ.gold += fx.foundGold;
     if (!isCapital && t.continent !== G.capitalContinent(g, civ)) {
@@ -660,8 +660,8 @@
     } else if (kind === 'building') {
       G.addBuilding(g, s, id);
       var bfx = G.civFx(g, civ);
-      if (bfx.freeTechOnBuilding === id && !civ.flags['ft:' + id]) { civ.flags['ft:' + id] = 1; G.grantFreeTech(g, civ); }
-      if (bfx.freeCivicOnBuilding === id && !civ.flags['fc:' + id]) { civ.flags['fc:' + id] = 1; G.grantFreeCivic(g, civ); }
+      if (bfx.freeTechOnBuilding === id && !civ.flags['ft:' + id]) { civ.flags['ft:' + id] = 1; if (g.v2) AU.MasteryWeb.grantFreeSpark(g, civ); else G.grantFreeTech(g, civ); }
+      if (bfx.freeCivicOnBuilding === id && !civ.flags['fc:' + id]) { civ.flags['fc:' + id] = 1; if (g.v2) AU.MasteryWeb.grantFreeSpark(g, civ); else G.grantFreeCivic(g, civ); }
       G.notify(g, civ, { kind: 'build', text: s.name + ' completed ' + G.buildingDef(g, civ, id).name + '.', tile: s.tile, settlement: s.id });
     } else if (kind === 'wonder') {
       if (g.wonders[id] !== undefined) { G.notify(g, civ, { kind: 'build', text: AU.WONDERS[id].name + ' was completed elsewhere; production refunded as gold.', tile: s.tile }); civ.gold += Math.round((s.progress['wonder:' + id] || 0)); return false; }

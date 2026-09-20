@@ -390,7 +390,7 @@
           '<small>' + _('Ties') + ' <span class="strong">' + mine + '</span>/100 · ' + _('Patron') + ': ' + (pat < 0 ? 'none' : pat === p.idx ? '<span class="strong">you</span>' : G.civData(g.civs[pat]).name) + (m.religion ? ' · ' + AU.Religion.icon(g, m.religion) + ' ' + AU.Religion.name(g, m.religion) : '') + '</small>' +
           '<div class="progress"><i style="width:' + mine + '%;background:' + (pat === p.idx ? 'var(--gold)' : 'var(--accent)') + '"></i></div>' +
           '<small>' + (hostile ? '❄️ ' + _('Cold after your attack on a free city') + ' (' + (m.hostileUntil[p.idx] - g.turn) + ' turns)' : src.length ? _('This turn') + ': ' + src.map(function (x) { return '+' + x.n + ' ' + x.text; }).join(', ') : _('Nothing builds Ties right now') + (mine > 0 ? ': they fade slowly' : '')) + '</small>' +
-          '<small><span class="strong">' + d.ability.name + ':</span> ' + d.ability.desc + '</small>' + (m.alive && !war && tier >= 4 && pat === p.idx ? '<small>🤝 ' + _('Union') + ': ' + (us.ok ? '<span class="strong">possible now</span>' : us.why) + '</small>' : '') + '</div>' +
+          '<small><span class="strong">' + d.ability.name + ':</span> ' + d.ability.desc + (g.v2 && /technolog|civic|Oligarchy|Monarchy|Theocracy|Autocracy/i.test(d.ability.desc) ? ' <i>(' + _('Divergence: technology = Spark, civic = Insight, no governments') + ')</i>' : '') + '</small>' + (m.alive && !war && tier >= 4 && pat === p.idx ? '<small>🤝 ' + _('Union') + ': ' + (us.ok ? '<span class="strong">possible now</span>' : us.why) + '</small>' : '') + '</div>' +
           (m.alive ? '<div class="tree-detail-btns"><button class="small primary" data-action="talk" data-id="' + m.idx + '">' + _('Audience') + '</button><button class="small" data-action="csgift" data-id="' + m.idx + '" ' + (AU.Diplo.canGiftCS(g, p.idx, m) ? '' : 'disabled') + '>' + _('Gift') + ' ' + AU.Diplo.giftCost(g, p.idx, m) + '💰</button>' + (us.ok ? '<button class="small gold" data-action="csunion" data-id="' + m.idx + '">' + _('Union') + '</button>' : '') + '</div>' : '') + '</div>';
       });
       html += '</div>';
@@ -465,7 +465,7 @@
     var html = '<div class="section">';
     if (AU.I18n) { html += '<div class="row"><div class="grow"><b>🌐 ' + _('Language') + ': ' + AU.I18n.LANGS[AU.I18n.lang] + '</b><small>' + _('Changing the language reloads the game; your progress is saved first.') + '</small></div></div><div class="actions lang-list">'; for (var lk in AU.I18n.LANGS) html += '<button class="small ' + (lk === AU.I18n.lang ? 'on' : '') + '" data-action="lang" data-id="' + lk + '">' + AU.I18n.LANGS[lk] + '</button>'; html += '</div><br>'; }
     html += '<button class="big ghost" data-action="hall">🏅 ' + _('Hall of Fame') + '</button><br><br>';
-    if (g) html += '<button class="big" data-action="rankings">🏆 ' + _('Rankings') + ' &amp; victory race</button><br><br><button class="big" data-action="policies">🏛️ ' + _('Government') + ' &amp; policies</button><br><br>';
+    if (g) html += '<button class="big" data-action="rankings">🏆 ' + _('Rankings') + ' &amp; victory race</button><br><br>' + (g.v2 ? '<button class="big" data-action="web">💡 ' + _('Mastery Web') + ' &amp; ' + _('Insights') + '</button><br><br>' : '<button class="big" data-action="policies">🏛️ ' + _('Government') + ' &amp; policies</button><br><br>');
     if (g) html += '<button class="big" data-action="save">' + _('Save game') + '</button><br><br>';
     if (g) html += '<button class="big ghost" data-action="exportsave">📤 ' + _('Export save to a file') + '</button><br><br>';
     html += '<button class="big ghost" data-action="importsave">📥 ' + _('Load a save file') + '</button><br><br>';
@@ -578,6 +578,7 @@
     if (AU.Tree && AU.Tree.action(app, name, d)) return;
     switch (name) {
       case 'webtab': app.panelData.tab = d.tab; app.refreshPanel(); break;
+      case 'web': app.openPanel('web'); break;
       case 'study': if (AU.MasteryWeb.study(g, p, d.id)) { app.toast('💡 ' + _('Spark!') + ' ' + AU.V2.NODE_BY_ID[d.id].name); app.refreshPanel(); app.refreshHud(); } break;
       case 'hub': app.openPanel('hub'); break;
       case 'hubpick': if (AU.MasteryWeb.choose(g, p, d.hub, d.branch)) { app.toast('🔮 ' + AU.V2.HUB_BY_ID[d.hub].name + ' → ' + d.branch); if (AU.MasteryWeb.state(p).pendingHubs.length) app.refreshPanel(); else app.openPanel('web', { tab: 'traits' }); app.refreshHud(); } break;

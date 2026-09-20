@@ -54,6 +54,13 @@
   MW.unlock = function (g, civ, id, how) {
     var s = st(civ), node = AU.V2.NODE_BY_ID[id]; if (!node || s.unlocked[id] || s.locked[id]) return false;
     s.unlocked[id] = g.turn; s.log.push({ turn: g.turn, id: id, how: how || 'trigger' }); civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    // abilities written for the classic rules: "whenever you learn a technology" means "whenever a Spark fires" here
+    var fx = G.civFx(g, civ);
+    if (fx.techGold) civ.gold += fx.techGold;
+    if (fx.techCulture) civ.bonusCulture = (civ.bonusCulture || 0) + fx.techCulture;
+    if (fx.eurekaDiscount) civ.bonusScience = (civ.bonusScience || 0) + Math.round(40 * fx.eurekaDiscount);
+    if (fx.inspirationDiscount) civ.bonusCulture = (civ.bonusCulture || 0) + Math.round(40 * fx.inspirationDiscount);
+    MW.grantFreeBuildings(g, civ);
     (node.locks || []).forEach(function (other) { MW.lockPermanent(g, civ, other); });
     G.notify(g, civ, { big: true, kind: 'tech', text: '💡 ' + _('Spark!') + ' ' + node.name + ' — “' + node.joke + '”' + (node.unlocks && node.unlocks.unit ? ' · ' + _('unlocks') + ' ' + (AU.UNITS[node.unlocks.unit] ? AU.UNITS[node.unlocks.unit].name : node.unlocks.unit) : '') + (node.unlocks && node.unlocks.building ? ' · ' + _('unlocks') + ' ' + (AU.BUILDINGS[node.unlocks.building] ? AU.BUILDINGS[node.unlocks.building].name : node.unlocks.building) : ''), panel: 'web' });
     if (node.hub && AU.V2.HUB_BY_ID[node.hub]) MW.fireHub(g, civ, node.hub);
@@ -76,6 +83,7 @@
     var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || s.traits[hubId]) return false;
     var br = hub.branches.filter(function (b) { return b.id === branchId; })[0]; if (!br) return false;
     s.traits[hubId] = branchId; s.pendingHubs = s.pendingHubs.filter(function (h) { return h !== hubId; }); civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    var cfx = G.civFx(g, civ); if (cfx.civicScience) civ.bonusScience = (civ.bonusScience || 0) + cfx.civicScience; // "whenever you learn a civic" = whenever an Insight is decided
     s.log.push({ turn: g.turn, hub: hubId, branch: branchId });
     if (br.greatPerson && AU.GreatPeople && AU.GreatPeople.spawnNamed) AU.GreatPeople.spawnNamed(g, civ, br.greatPerson, hub.name);
     if (hub.turning !== undefined && s.era === hub.turning) MW.advanceEra(g, civ);
@@ -91,12 +99,23 @@
       else MW.advanceEra(g, civ);
     }
   };
+  // "Free Walls once Masonry is known": under v2 the building arrives the moment the empire may build it
+  MW.grantFreeBuildings = function (g, civ) {
+    var fx = G.civFx(g, civ), s = st(civ); if (!fx.freeBuildingWithTech) return;
+    for (var b in fx.freeBuildingWithTech) { if (s.freeGiven && s.freeGiven[b]) continue; var d = AU.BUILDINGS[b]; if (!d || !MW.allows(g, civ, 'building', b, d)) continue; s.freeGiven = s.freeGiven || {}; s.freeGiven[b] = g.turn; G.civSettlements(g, civ.idx).forEach(function (st2) { if (!G.hasBuilding(st2, b)) G.addBuilding(g, st2, b); }); }
+  };
+  // "A free technology/civic when you build your first Library": the cheapest unmet foundation Spark of the age fires
+  MW.grantFreeSpark = function (g, civ) {
+    var s = st(civ), cands = MW.openNodes(s.era).filter(function (n) { return n.pool === 'foundation' && !s.unlocked[n.id] && !s.locked[n.id]; });
+    if (!cands.length) return false; return MW.unlock(g, civ, cands[0].id, 'gift');
+  };
   MW.advanceEra = function (g, civ) {
     var s = st(civ); s.era += 1; civ.era = s.era; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    MW.grantFreeBuildings(g, civ);
     G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].name : '') + ' — “' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].joke : '') + '”', panel: 'web' });
   };
   // Study: Knowledge piles up slowly and can only buy nodes flagged cheap (a safety valve, never a research race).
-  MW.studyCost = function (g, civ, node) { return Math.round(40 * (1 + (st(civ).era || 0) * 0.5) * G.speed(g)); };
+  MW.studyCost = function (g, civ, node) { var fx = G.civFx(g, civ); return Math.round(40 * (1 + (st(civ).era || 0) * 0.5) * G.speed(g) * (fx.techCostMult || 1) * (fx.civicCostMult || 1)); };
   MW.study = function (g, civ, id) { var s = st(civ), n = AU.V2.NODE_BY_ID[id]; if (!n || !n.cheap || s.unlocked[id] || s.locked[id] || s.study < MW.studyCost(g, civ, n)) return false; s.study -= MW.studyCost(g, civ, n); return MW.unlock(g, civ, id, 'study'); };
   // Eras without authored nodes yet (2–7 come in phase 6): Knowledge study advances them so the game stays playable to the end. Temporary.
   MW.provisionalEraCost = function (g, civ) { return Math.round(300 * Math.pow(1.6, st(civ).era) * G.speed(g)); };
