@@ -415,6 +415,8 @@
     var wasCapital = s.isCapital; s.isCapital = false;
     oldCiv.lostSettlements = (oldCiv.lostSettlements || 0) + 1;
     newCiv.stats.captures++; newCiv.flags['ev:capture'] = g.turn;
+    if (newCiv.rel[oldIdx]) newCiv.rel[oldIdx].capturedThisWar = (newCiv.rel[oldIdx].capturedThisWar || 0) + 1; if (oldCiv.rel[newCivIdx]) oldCiv.rel[newCivIdx].lostThisWar = (oldCiv.rel[newCivIdx].lostThisWar || 0) + 1;
+    var nCap = (newCiv.rel[oldIdx] && newCiv.rel[oldIdx].capturedThisWar) || 1; s.unrest = g.turn + 10 + 3 * (nCap - 1); if (s.origCiv === undefined || s.origCiv === newCivIdx) s.origCiv = oldIdx; if (s.origCiv === newCivIdx) s.origCiv = undefined; newCiv.warWeariness = (newCiv.warWeariness || 0) + 6; // conquest fatigue: unrest grows with every capture of the war, weariness at home
     if (fx.captureGold) newCiv.gold += fx.captureGold;
     if (fx.captureCapitalGold && wasCapital) newCiv.gold += fx.captureCapitalGold;
     if (fx.captureCulture) newCiv.bonusCulture = (newCiv.bonusCulture || 0) + fx.captureCulture;

@@ -507,6 +507,8 @@
     if (s.captured && fx.capturedHappiness) happy += fx.capturedHappiness;
     if (civ.warWeariness) happy -= Math.floor(civ.warWeariness / 4);
     if (g.v2 && civ.bondShame > g.turn) happy -= 2; // a broken bond
+    if (s.unrest > g.turn) happy -= 3; // a freshly conquered settlement
+    var smk = g.v2 && AU.Smoke ? AU.Smoke.smoke(g, s) : 0; if (smk) { happy += AU.Smoke.happiness(smk); if (AU.Smoke.heavy(smk)) y.food = Math.max(0, y.food - AU.Smoke.farmTiles(g, s)); if (fx.smokeGold) y.gold += smk * fx.smokeGold; } // Smoke
     y.happiness = happy;
     // percents & multipliers
     y.production *= 1 + pct.production / 100; y.science *= 1 + pct.science / 100;
@@ -519,6 +521,7 @@
     }
     var diff = AU.DIFFICULTIES[g.difficulty], dm = civ.isPlayer ? diff.playerYield : diff.aiYield;
     ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= dm; });
+    if (s.unrest > g.turn) ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= 0.5; }); // unrest: half yields until the people settle
     if (g.v2 && AU.Society) { var tm = AU.Society.tierOf(happy).mult; if (tm < 1 && fx.noUnhappinessPenalty) tm = 1; if (tm !== 1) ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= tm; }); } // Divergence: five moods from Miserable ×0.6 to Joyful ×1.2
     else if (happy < 0 && !fx.noUnhappinessPenalty) { var pen = happy <= -5 ? 0.7 : 0.85; ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= pen; }); }
     y.unitProductionPct = pct.unitProduction;
@@ -883,9 +886,30 @@
   };
 
   // ---------- Diplomacy ----------
+  // Balance of power: an empire holding 40% of the majors' settlements, or twice the next one, is a runaway the world turns against.
+  G.dominance = function (g, civIdx) { var majors = g.civs.filter(function (c) { return c.alive && !c.minor; }); if (majors.length < 3) return 0; var counts = majors.map(function (c) { return G.civSettlements(g, c.idx).length; }), total = counts.reduce(function (a, b) { return a + b; }, 0), mine = G.civSettlements(g, civIdx).length; if (!total || !mine) return 0; var second = Math.max.apply(null, majors.filter(function (c) { return c.idx !== civIdx; }).map(function (c) { return G.civSettlements(g, c.idx).length; })); return Math.max(mine / total, second ? mine / (2 * second) : 0); };
+  // Loyalty: while unrest lasts, an unhappy conquered settlement more than 8 tiles from its new capital may return to its old owner (if alive).
+  G.revoltsTurn = function (g) {
+    for (var id in g.settlements) {
+      var s = g.settlements[id]; if (!(s.unrest > g.turn) || s.origCiv === undefined) continue;
+      var owner = g.civs[s.civ], old = g.civs[s.origCiv]; if (!old || !old.alive || old.minor || old.idx === s.civ) continue;
+      var cap = owner.capital && g.settlements[owner.capital]; var far = !cap || G.dist(g.tiles[cap.tile], g.tiles[s.tile]) > (G.isRunaway(g, owner) ? 5 : 8); // a runaway holds its conquests less firmly
+      if (!far || G.settlementYields(g, s).happiness >= 0) continue;
+      var garrison = G.unitsAt(g, s.tile).some(function (u) { return u.civ === s.civ && G.isMilitary(u); });
+      if (G.rng(g) < (garrison ? 0.05 : 0.15)) {
+        var name = s.name; s.civ = old.idx; s.unrest = g.turn + 5; s.captured = false; s.origCiv = undefined; s.queue = []; s.progress = {}; s.hp = Math.round(G.settlementMaxHp(g, s) * 0.5);
+        G.unitsAt(g, s.tile).forEach(function (u) { if (u.civ === owner.idx) { var away = G.neighbors(g, g.tiles[s.tile]).filter(function (n) { return G.passable(g, g.tiles[n]) && !G.unitsAt(g, n).length && !G.isWater(g.tiles[n]); })[0]; if (away != null) G.setUnitTile(g, u, away); else G.removeUnit(g, u); } });
+        if (!old.capital || !g.settlements[old.capital] || g.settlements[old.capital].civ !== old.idx) { old.capital = s.id; s.isCapital = true; s.isCity = true; G.addBuilding(g, s, 'palace'); }
+        owner._fx = null; old._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+        G.log(g, name + ' rose up and returned to ' + G.civData(old).name + '.', old.idx);
+        g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === owner.idx || c.idx === old.idx)) G.notify(g, c, { kind: c.idx === old.idx ? 'capture' : 'loss', text: '✊ ' + name + ' ' + (c.idx === old.idx ? _('rose up and returned to you!') : _('rose up and returned to') + ' ' + G.civData(old).name + '.'), tile: s.tile, settlement: s.id }); });
+      }
+    }
+  };
+  G.isRunaway = function (g, civ) { return civ && civ.alive && !civ.minor && G.dominance(g, civ.idx) >= 0.4; };
   G.declareWar = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
-    ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn;
+    ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn; ca.rel[b].warBy = a; cb.rel[a].warBy = a; ca.rel[b].capturedThisWar = 0; cb.rel[a].capturedThisWar = 0;
     cb.flags['ev:warDeclaredOnUs'] = g.turn; ca.flags['ev:war'] = g.turn;
     if (AU.CityStates) AU.CityStates.onWarDeclared(g, a, b);
     cb.rel[a].attitude -= 30;
@@ -896,7 +920,8 @@
   };
   G.makePeace = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
-    ca.rel[b].war = false; cb.rel[a].war = false; ca.rel[b].peaceUntil = g.turn + 10; cb.rel[a].peaceUntil = g.turn + 10;
+    var bled = (ca.rel[b].capturedThisWar || 0) + (cb.rel[a].capturedThisWar || 0), truce = 25 + (bled ? 15 : 0); // a peace holds 25 turns, 40 after a war that took settlements
+    ca.rel[b].war = false; cb.rel[a].war = false; ca.rel[b].peaceUntil = g.turn + truce; cb.rel[a].peaceUntil = g.turn + truce;
     ca.rel[b].attitude += 10; cb.rel[a].attitude += 10;
     G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' made peace.', a);
     g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === a || c.idx === b)) G.notify(g, c, { kind: 'peace', text: _('Peace with') + ' ' + G.civData(c.idx === a ? cb : ca).name + '.', panel: 'diplomacy' }); });
@@ -908,7 +933,9 @@
     if (ai.minor && g.turn - rel.warSince >= 5) return true;
     if (g.turn - rel.warSince < 8) return false;
     var mine = G.militaryStrength(g, ai.idx), theirs = G.militaryStrength(g, other);
-    var losing = theirs > mine * 1.2 || (ai.lostSettlements || 0) > 0;
+    var losing = theirs > mine * 1.2 || (rel.lostThisWar || 0) > 0;
+    if ((rel.capturedThisWar || 0) >= 2) return true; // satiated: two settlements taken is a war won
+    if (G.isRunaway(g, g.civs[other]) && !(theirs > mine * 2) && g.turn - rel.warSince < 25) return false; // the world keeps the runaway busy
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
   };
 
@@ -917,6 +944,7 @@
   G.tourism = function (g, civ) {
     var fx = G.civFx(g, civ), t = 0, sets = G.civSettlements(g, civ.idx);
     sets.forEach(function (s) {
+      var t0 = t, heavy = g.v2 && AU.Smoke && AU.Smoke.heavy(AU.Smoke.smoke(g, s));
       if (s.greatWorks) t += s.greatWorks * 3;
       s.buildings.forEach(function (b) {
         if (AU.WONDERS[b]) t += 3;
@@ -924,6 +952,7 @@
         else if (AU.BUILDINGS[b]) { var bd = AU.BUILDINGS[b]; t += bd.tourism !== undefined ? bd.tourism : (bd.yields && bd.yields.culture ? bd.yields.culture * 0.5 : 0); }
       });
       s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
+      if (heavy) t = t0 + (t - t0) * 0.5; // nobody visits a smoky town
     });
     if (AU.Palace && !civ.minor) t += AU.Palace.fx(civ).tourism;
     t *= (1 + civ.era * 0.25) * (1 + (fx.tourismMult || 0));
@@ -1160,6 +1189,9 @@
     if (AU.Religion) AU.Religion.spreadTurn(g);
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
     if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); }
+    if (g.v2 && AU.Climate) AU.Climate.turn(g);
+    G.revoltsTurn(g);
+    g.civs.forEach(function (civ) { if (!civ.isPlayer || !civ.alive) return; var run = G.isRunaway(g, civ); if (run && !civ.flags['runawayWarned']) { civ.flags['runawayWarned'] = g.turn; G.notify(g, civ, { big: true, kind: 'war', text: '⚖️ ' + _('The world grows wary of your size: other leaders cool towards you and will side against you in war.'), panel: 'diplomacy' }); } else if (!run && civ.flags['runawayWarned']) delete civ.flags['runawayWarned']; });
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);

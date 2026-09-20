@@ -173,7 +173,7 @@
     for (var uid in this.unitNodes) this.scene.remove(this.unitNodes[uid].group); this.unitNodes = {};
     this.noise = makeNoise(g.seed || 7);
     var group = new T.Group(); this.scene.add(group);
-    this.world = { g: g, group: group, fogSig: '', borderSig: '', riverSig: -1, borders: null, camps: null, campSig: -1, featSig: '', feats: [] };
+    this.world = { g: g, mapVersion: g.mapVersion || 0, group: group, fogSig: '', borderSig: '', riverSig: -1, borders: null, camps: null, campSig: -1, featSig: '', feats: [] };
     // --- height field (low relief: hills are soft bumps, mountains the only tall shapes)
     var width = R * SQ3 * (g.W + 1), depth = R * 1.5 * (g.H + 1), nx = Math.ceil(width / SAMPLE) + 1, nz = Math.ceil(depth / SAMPLE) + 1;
     var geo = new T.PlaneGeometry(width, depth, nx - 1, nz - 1); geo.rotateX(-Math.PI / 2); geo.translate(width / 2 - R * SQ3 * 0.5, 0, depth / 2 - R * 0.75);
@@ -401,12 +401,13 @@
     }
     return grp;
   };
-  P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
+  P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return (g.v2 && AU.Smoke ? Math.floor(AU.Smoke.smoke(g, s) / 3) : 0) + '|' + artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
   P.buildSettlement = function (g, s) {
     var T = window.THREE, geo = this.geo, mat = this.mat, self = this;
     var t = g.tiles[s.tile], p = tileXZ(t), top = t.navigable ? Math.max(this.tileTop(t), 1.2) : this.tileTop(t), civ = g.civs[s.civ], color = G.civColor(civ);
     var grp = new T.Group(); grp.position.set(p[0], top, p[1]);
     var civMat = new T.MeshLambertMaterial({ color: color });
+    if (g.v2 && AU.Smoke) { var smk3 = AU.Smoke.smoke(g, s); if (smk3 >= 3) { for (var hi = 0; hi < Math.min(3, Math.floor(smk3 / 3)); hi++) { var haze = new T.Mesh(this.geo.disc, new T.MeshBasicMaterial({ color: 0x5a5a64, transparent: true, opacity: Math.min(0.5, 0.18 + smk3 * 0.03), depthWrite: false })); haze.scale.set(1.3 + hi * 0.4, 1, 1.3 + hi * 0.4); haze.position.set((hi % 2 ? 4 : -4) * hi, R * (0.7 + hi * 0.35), 0); grp.add(haze); } } } // smog over a smoky settlement
     // plaza
     var plaza = new T.Mesh(geo.disc, s.isCity ? mat.stone : mat.wood); plaza.scale.set(2.9, 1, 2.9); plaza.position.y = 0.6; plaza.receiveShadow = true; grp.add(plaza);
     // buildings in slots: ring 1 (6) then ring 2 (12)
@@ -540,7 +541,7 @@
   };
 
   P.draw = function (g, app) {
-    if (!this.world || this.world.g !== g) this.buildWorld(g);
+    if (!this.world || this.world.g !== g || this.world.mapVersion !== (g.mapVersion || 0)) this.buildWorld(g); // a climate shift repaints the ground
     this.rebuildFeatures(g, false);
     this.applyFog(g, false);
     this.rebuildBorders(g);

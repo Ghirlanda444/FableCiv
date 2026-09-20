@@ -67,3 +67,9 @@ Left for the owner: pictures for Uprooters, Bandleader, Scarecrow Crew, Cookfire
 Renamed: Commander → **Bandleader** (Civ7 has Army Commanders), Migrant → **Uprooters** (Civ7 has Migrants). Ids stay `commander` and `migrant`.
 
 **Scarecrow Crew** (`scarecrow`, Kid Training Spark, cost 30, Str 8, never attacks): bait. To every other empire it renders and reads as a full Warband of the disguise unit (Militia); its attack preview shows a band's strength. When an enemy attacks a tile where the crew stands alone, the crew is spent and every attacker in the exchange loses its remaining movement and attacks and is *shaken*: -4 Strength for 10 turns at bait level 1, -6 for 15 at level 2, -8 for 20 at level 3. Bait levels come from Sparks (`fx.scarecrowLevel`: Tanner's Yard in the Turret Age, Patent Office in the Puffstack Age). With real fighters on the tile the crew is never the target; one crew per tile. Proposed but not built: Curious Kid, Stakers, Drovers, Festival Wagon, Chronicler (see the chat of 2026-09-20).
+
+## After phase 7b: balance of power, Smoke, Climate (owner request)
+
+- Balance of power (shared AI, classic and Divergence): `G.dominance`/`G.isRunaway`, coalition and cooling in `AI.diplomacy`, satiation and runaway rules in `G.aiAcceptsPeace`, 25/40-turn truces in `G.makePeace`, unrest (`s.unrest`) and conquest fatigue in `U.captureSettlement`, mercy on a last settlement in `AI.warTarget`.
+- Smoke: core/v2/smoke.js (sources, sinks, per-settlement net, happiness and heavy effects hooked in `G.settlementYields` and `G.tourism`), Spark effects `smokeSink`, `forestSinkMult`, `smokeGold` on Public Health, Underground Pipes, Garden Suburb, Green Belt, Coal Furnace; haze in both renderers; AI building scores. tests/smoke.js.
+- Climate: core/v2/climate.js (`target` by age then by world Smoke, `plan`/`apply` with a 5-turn warning, `g.mapVersion` repaints the 3D ground). tests/climate.js.

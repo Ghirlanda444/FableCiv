@@ -586,10 +586,12 @@
     if (hl.path && hl.path.length) { ctx.fillStyle = 'rgba(255,255,255,0.85)'; hl.path.forEach(function (pi) { var p3 = S(g.tiles[pi]); ctx.beginPath(); ctx.arc(p3[0], p3[1], Math.max(2, rzs * 0.12), 0, Math.PI * 2); ctx.fill(); });
       if (hl.pathLabel) { var lp = S(g.tiles[hl.path[hl.path.length - 1]]), fs = Math.max(11, rzs * 0.45); ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; var tw = ctx.measureText(hl.pathLabel).width + fs; ctx.fillStyle = 'rgba(20,24,40,0.9)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5, fs * 0.5) : ctx.rect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5); ctx.fill(); ctx.fillStyle = '#ffe680'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(hl.pathLabel, lp[0], lp[1] - rzs * 0.95); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; } }
     // pass 6: settlements
+    var hazeList = [];
     for (var sid in g.settlements) {
       var st = g.settlements[sid]; t = g.tiles[st.tile];
       if (!explored[t.i] || t.row < r0 || t.row > r1 || t.col < c0 || t.col > c1) continue;
       this.drawSettlement(ctx, g, st, S(t), rzs, player, lowDetail);
+      if (g.v2 && AU.Smoke && !lowDetail) { var smk = AU.Smoke.smoke(g, st); if (smk >= 3) hazeList.push([S(t), smk]); }
     }
     // pass 7: units. Fighters of one side on a tile draw as one figure with a count badge (a Warband under the Divergence rules).
     var stacks = {};
@@ -605,6 +607,8 @@
       var fakeN = members.length === 1 && AU.UNITS[rep.type].decoy && rep.civ !== player.idx ? 3 : members.length; // a Scarecrow Crew fools everyone but its owner
       this.drawUnit(ctx, g, rep, S(g.tiles[rep.tile]), rzs, app, fakeN);
     }
+    // pass 7b: smoke over smoky settlements, above the figures so it reads as weather
+    for (var hz = 0; hz < hazeList.length; hz++) this.drawHaze(ctx, hazeList[hz][0], rzs, hazeList[hz][1]);
     // pass 8: fog for explored-but-not-visible
     ctx.fillStyle = 'rgba(8,14,26,0.42)';
     for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
@@ -615,6 +619,11 @@
     if (hl.selTile >= 0 && (!app || !app.sel.unit)) { var stt = g.tiles[hl.selTile]; var sp2 = S(stt); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; hexPath(ctx, sp2[0], sp2[1], rzs - 1); ctx.stroke(); }
   };
 
+  // Smoke: soft grey puffs drifting up from a smoky settlement.
+  Renderer.prototype.drawHaze = function (ctx, cc, rz, smk) {
+    var a = Math.min(0.78, 0.4 + smk * 0.04), n = Math.min(4, 1 + Math.floor(smk / 3));
+    for (var i = 0; i < n; i++) { var r = rz * (0.42 + i * 0.12), x = cc[0] + (i % 2 ? 1 : -1) * rz * 0.22 * (i + 1) * 0.5, y = cc[1] - rz * (0.85 + i * 0.38); var gr = ctx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(70,70,82,' + a + ')'); gr.addColorStop(0.55, 'rgba(70,70,82,' + (a * 0.8) + ')'); gr.addColorStop(1, 'rgba(70,70,82,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  };
   Renderer.prototype.drawSettlement = function (ctx, g, st, cc, rz, player, lowDetail) {
     var civ = g.civs[st.civ], data = G.civData(civ), col = hexToRgb(G.civColor(civ)), ccol = G.civColor(civ);
     var x = cc[0], y = cc[1];

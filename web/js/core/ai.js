@@ -36,8 +36,13 @@
       var myS = G.militaryStrength(g, civ.idx), theirS = G.militaryStrength(g, o.idx);
       var nearby = AI.borderTension(g, civ, o);
       if (nearby) rel.attitude -= 0.4;
+      var theyRun = !o.minor && G.isRunaway(g, o), iRun = G.isRunaway(g, civ);
+      if (theyRun) rel.attitude -= 1; // nobody likes the empire that swallows the map
       if (g.turn < 25 || rel.peaceUntil > g.turn) return;
       var p = tr.aggression * tr.aggression * 0.03 + (nearby ? 0.01 : 0) + (rel.attitude < -15 ? 0.02 : 0);
+      var runAtWar = theyRun && g.civs.some(function (x) { return x.alive && !x.minor && x.idx !== civ.idx && x.idx !== o.idx && G.atWar(g, x.idx, o.idx); });
+      if (theyRun && rel.attitude < 0) { var coal = myS; g.civs.forEach(function (x) { if (x.alive && !x.minor && x.idx !== civ.idx && x.idx !== o.idx && G.atWar(g, x.idx, o.idx)) coal += G.militaryStrength(g, x.idx); }); if (coal >= theirS * 0.6) { p += runAtWar ? 0.08 : 0.04; theirS = Math.min(theirS, coal * 0.8); } } // coalition: join the war against the runaway once the allies together can match it
+      if (iRun) return; // a runaway starts no new wars; it fights only when attacked
       if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
       if (AU.Diplo && !AU.Diplo.canDeclareWar(g, civ.idx, o.idx)) return;
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
@@ -131,6 +136,7 @@
     var d = G.buildingDef(g, civ, id), tr = civ.ai, y = d.yields || {};
     var sc = (y.food || 0) * 1.4 + (y.production || 0) * 1.5 + (y.gold || 0) * 0.8 + (y.science || 0) * (1 + tr.science) + (y.culture || 0) * (0.8 + tr.culture) + (y.happiness || 0) * 1.5;
     if (d.defense) sc += 2 + tr.aggression * 2 + (AI.threatened(g, civ) ? 4 : 0);
+    if (g.v2 && AU.Smoke) { var smk = AU.Smoke.smoke(g, s); if (AU.Smoke.SINKS[id] && smk >= 3) sc += 4 + smk; if (AU.Smoke.SOURCES[id] && smk >= 5) sc -= 3; }
     if (d.perPop) sc += s.pop * 0.3;
     if (d.pct) sc += 3;
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
@@ -244,8 +250,8 @@
   AI.warTarget = function (g, civ) {
     if (civ._warTarget && civ._warTargetTurn === g.turn) return civ._warTarget;
     var enemies = g.civs.filter(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
-    var best = null, bd = 1e9, cap = civ.capital ? g.tiles[g.settlements[civ.capital].tile] : null;
-    enemies.forEach(function (o) { G.civSettlements(g, o.idx).forEach(function (s) { var d = cap ? G.dist(cap, g.tiles[s.tile]) : 0; d -= (s.hp < 50 ? 5 : 0); if (d < bd) { bd = d; best = s; } }); });
+    var best = null, bd = 1e9, cap = civ.capital ? g.tiles[g.settlements[civ.capital].tile] : null, aggr = (civ.ai || {}).aggression || 0.5;
+    enemies.forEach(function (o) { var sets = G.civSettlements(g, o.idx); if (sets.length === 1 && !o.minor && aggr < 0.8 && civ.rel[o.idx].warBy !== o.idx) return; /* mercy: a last settlement is spared unless they started it or the leader is ruthless */ sets.forEach(function (s) { var d = cap ? G.dist(cap, g.tiles[s.tile]) : 0; d -= (s.hp < 50 ? 5 : 0); if (d < bd) { bd = d; best = s; } }); });
     civ._warTarget = best; civ._warTargetTurn = g.turn;
     return best;
   };
