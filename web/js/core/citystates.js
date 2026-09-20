@@ -49,6 +49,7 @@
     if (civ.minor || !minor.minor || !minor.alive || civ.idx === minor.idx) return 0;
     if (n > 0 && (G.atWar(g, civ.idx, minor.idx) || CS.isHostile(g, civ, minor))) return 0;
     minor.ties = minor.ties || {}; minor.tieTurn = minor.tieTurn || {};
+    if (g.v2 && AU.Society && n > 0 && why) n = n * AU.Society.persuasionMult(minor, why); // Divergence: the city's favourite persuasion counts double
     var before = minor.ties[civ.idx] || 0, after = Math.max(0, Math.min(100, before + n));
     if (n > 0 && !active && after > CS.PASSIVE_CAP) after = Math.max(before, CS.PASSIVE_CAP);
     minor.ties[civ.idx] = after; if (n > 0) minor.tieTurn[civ.idx] = g.turn;
@@ -81,6 +82,7 @@
     var fx = G.civFx(g, civ);
     if (civ.religion && s.religion === civ.religion) out.push({ id: 'religion', n: 1 + (fx.tiesFollowerCity || 0), text: 'shared religion' });
     if (fx.tiesPerTurn) out.push({ id: 'ability', n: fx.tiesPerTurn, text: _("your people's way with free cities") });
+    if (g.v2 && AU.Society) out.forEach(function (src) { var m = AU.Society.persuasionMult(minor, src.id); if (m > 1) { src.n *= m; src.text += ' ×' + m; } });
     return out;
   };
   // Effects a major empire gets from its Ties: Partner, Patron (with the free city's special bonus), Kin.
@@ -96,12 +98,14 @@
       if (tier >= 4 && patron) out.push(tiers[2].fx);
     });
     (civ.unions || []).forEach(function (id) { var d = AU.CITY_STATE_BY_ID[id]; if (d) out.push(d.ability.fx); });
+    (civ.bonds || []).forEach(function (id) { var m = g.civs.filter(function (c) { return c.civId === id; })[0]; if (m && m.alive && CS.patron(g, m) !== civ.idx) out.push(G.civData(m).ability.fx); }); // a bond keeps the bonus even when the Patron seat is lost
     return out;
   };
-  CS.fxKey = function (g, civ) { if (civ.minor) return 'm'; var k = ''; CS.minors(g).forEach(function (m) { k += CS.tierOf(CS.tiesOf(g, civ, m)) + (CS.patron(g, m) === civ.idx ? 's' : '') + ','; }); return k + (civ.unions || []).length; };
+  CS.fxKey = function (g, civ) { if (civ.minor) return 'm'; var k = ''; CS.minors(g).forEach(function (m) { k += CS.tierOf(CS.tiesOf(g, civ, m)) + (CS.patron(g, m) === civ.idx ? 's' : '') + ','; }); return k + (civ.unions || []).length + '|' + (civ.bonds || []).length; };
   CS.suzerainOf = function (g, civ) { return CS.minors(g).filter(function (m) { return m.alive && CS.patron(g, m) === civ.idx; }); };
   // ---------- union ----------
   CS.unionState = function (g, civ, minor) {
+    if (g.v2) return { ok: false, why: _('Divergence: bonds replace unions') };
     if (civ.minor || !minor.alive || G.atWar(g, civ.idx, minor.idx)) return { ok: false, why: 'not possible' };
     if (CS.patron(g, minor) !== civ.idx || CS.tierOf(CS.tiesOf(g, civ, minor)) < 4) return { ok: false, why: _('you must be its Patron with Kin ties (90)') };
     var since = minor.kinSince && minor.kinSince[civ.idx], left = since == null ? CS.UNION_TURNS : Math.max(0, CS.UNION_TURNS - (g.turn - since));
@@ -152,7 +156,7 @@
     minor.gold += 3;
     // a Patron's wars are the free city's wars (Kin always, Patron sometimes)
     var pat = CS.patron(g, minor);
-    if (pat >= 0) { var kinNow = CS.tierOf(minor.ties[pat] || 0) >= 4; g.civs.forEach(function (o) { if (!o.minor && o.alive && o.idx !== pat && G.atWar(g, pat, o.idx) && !G.atWar(g, minor.idx, o.idx) && (kinNow || G.rng(g) < 0.3)) { minor.rel[o.idx].war = true; minor.rel[o.idx].warSince = g.turn; o.rel[minor.idx].war = true; o.rel[minor.idx].warSince = g.turn; if (o.isPlayer) G.notify(g, o, { kind: 'war', text: G.civData(minor).name + ' ' + _('joined the war on the side of its Patron.'), panel: 'diplomacy' }); } }); }
+    if (pat >= 0) { var kinNow = CS.tierOf(minor.ties[pat] || 0) >= 4 || (g.v2 && AU.Society && AU.Society.hasBond(g.civs[pat], minor)); g.civs.forEach(function (o) { if (!o.minor && o.alive && o.idx !== pat && G.atWar(g, pat, o.idx) && !G.atWar(g, minor.idx, o.idx) && (kinNow || G.rng(g) < 0.3)) { minor.rel[o.idx].war = true; minor.rel[o.idx].warSince = g.turn; o.rel[minor.idx].war = true; o.rel[minor.idx].warSince = g.turn; if (o.isPlayer) G.notify(g, o, { kind: 'war', text: G.civData(minor).name + ' ' + _('joined the war on the side of its Patron.'), panel: 'diplomacy' }); } }); }
   };
   // ---------- caravans (trade routes) ----------
   CS.caravanLimit = function (g, civ) { var n = 1; G.civSettlements(g, civ.idx).forEach(function (s) { if (G.hasBuilding(s, 'market')) n++; if (G.hasBuilding(s, 'harbor')) n++; }); return n + (G.civFx(g, civ).extraCaravans || 0); };

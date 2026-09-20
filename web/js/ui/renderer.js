@@ -532,6 +532,7 @@
             if (rart && this.resourceBadge) { ctx.fillStyle = 'rgba(12,16,30,0.62)'; ctx.beginPath(); ctx.arc(rx0, ry0 + rzs * 0.12, rzs * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,240,200,0.55)'; ctx.lineWidth = Math.max(1, rzs * 0.05); ctx.stroke(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.12, rzs * 0.62, 0.92); }
             else if (rart) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(rx0, ry0 + rzs * 0.3, rzs * 0.36, rzs * 0.13, 0, 0, Math.PI * 2); ctx.fill(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.3, rzs * 0.86, 0.92); }
             else { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.3, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44); }
+            if (t.rich != null && rzs > 14) { var np = t.rich + 1, pr = Math.max(1.5, rzs * 0.07), px0 = rx0 - (np - 1) * pr * 1.4, py0 = ry0 + rzs * 0.58; for (var pi = 0; pi < np; pi++) { ctx.fillStyle = '#f5d76e'; ctx.strokeStyle = 'rgba(40,30,10,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(px0 + pi * pr * 2.8, py0, pr, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } } // richness pips
           }
         }
         if (t.worked && t.owner >= 0 && t.settlement == null && !midDetail) {

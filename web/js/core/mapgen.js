@@ -210,6 +210,7 @@
       var t4 = tiles[i];
       if (t4.terrain === 'mountain') continue;
       var p = AU.TERRAIN[t4.terrain].water ? 0.08 : 0.16;
+      if (opts.v2) p *= 0.7; // Divergence: fewer resource tiles, each one richer or poorer
       if (type === 'terra' && t4.col > W * 0.5) p *= 1.8;
       if (!rng.chance(p)) continue;
       var opts2 = resIds.filter(function (id) {
@@ -226,6 +227,7 @@
       var weighted = [];
       opts2.forEach(function (id) { var kind = AU.RESOURCES[id].kind; var w2 = kind === 'bonus' ? 3 : 2; for (var z = 0; z < w2; z++) weighted.push(id); });
       t4.resource = rng.pick(weighted);
+      if (opts.v2) { var rr = rng.next(); t4.rich = rr < 0.2 ? 0 : rr < 0.8 ? 1 : 2; } // poor / normal / rich
     }
 
     // Natural wonders: a few per map, on matching terrain, apart from each other
@@ -338,7 +340,7 @@
     if (t.natural) add(y, AU.NATURAL_WONDERS[t.natural].yields);
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];
-      if (!R.revealTech || !civ || civ.techs[R.revealTech]) add(y, R.yields);
+      if (!R.revealTech || !civ || civ.techs[R.revealTech]) { add(y, R.yields); var ry = AU.Society && AU.Society.richYields(t, R); if (ry) add(y, ry); }
     }
     return y;
   };

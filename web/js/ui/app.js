@@ -234,7 +234,7 @@
         '<span class="y" data-panel="civics">🎭 <b>' + y.culture.toFixed(1) + '</b><small>' + civTxt + '</small></span>' +
         '<span class="y" data-panel="religion">🕊️ <b>' + Math.floor(p.faith || 0) + '</b><small>+' + (y.faith || 0) + (p.religion && g.religions[p.religion] ? ' ' + g.religions[p.religion].icon : '') + '</small></span>' +
         (g.v2 ? '<span class="y" data-panel="empire">🎯 <b>' + Math.floor(p.influence || 0) + '</b><small>+' + G.influenceIncome(g, p) + '</small></span>' : '') +
-        '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>';
+        (g.v2 && AU.Society ? (function () { var md = AU.Society.mood(g, p); return '<span class="y" data-panel="empire">' + md.tier.icon + ' <small>' + _(md.tier.name) + (unhappy ? ' · ' + unhappy + ' 😠' : '') + '</small></span>'; })() : '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>');
       $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' ' + _('Era');
       this.refreshNotifs();
       this.refreshContext();
@@ -329,7 +329,7 @@
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
       var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' ' + _('Hills') : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · ' + _('Navigable River') : t.river ? ' · ' + _('River') : '') + (t.shore ? ' · ' + ({ beach: _('Beach'), cliff: _('Cliffs'), rocks: _('Rocky shore'), mangrove: _('Mangroves'), reef: _('Reef') })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 ' + _('Move cost') + ' ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
-      if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
+      if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b>' + (AU.Society && AU.Society.richOf(t) ? ' <span class="pill">' + ['🟤', '🟡', '🟢'][t.rich] + ' ' + _(AU.Society.richOf(t).name) + (res.kind === 'strategic' ? ' · ' + _('supports') + ' ' + AU.Society.supplyOf(t) : '') + '</span>' : '') + ' <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
       else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';

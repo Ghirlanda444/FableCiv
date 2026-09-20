@@ -331,7 +331,7 @@
     var best = null, bs = -1;
     CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || G.atWar(g, civ.idx, m.idx) || !AU.Diplo.canGiftCS(g, civ.idx, m)) return; var t = CS.tiesOf(g, civ, m); var sc = (t >= 20 && t < 95 ? 2 : 1) + (CS.patron(g, m) === civ.idx ? 1 : 0) + G.rng(g) * 0.5; if (sc > bs) { bs = sc; best = m; } });
     if (best) AU.Diplo.giftCS(g, civ.idx, best);
-    CS.minors(g).forEach(function (m) { if (m.alive && civ.met[m.idx] && CS.unionState(g, civ, m).ok) CS.union(g, civ, m); });
+    if (!g.v2) CS.minors(g).forEach(function (m) { if (m.alive && civ.met[m.idx] && CS.unionState(g, civ, m).ok) CS.union(g, civ, m); });
   };
   AI.moveCaravan = function (g, civ, u) {
     var CS = AU.CityStates; if (u.route != null) return;

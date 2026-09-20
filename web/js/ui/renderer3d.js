@@ -218,6 +218,7 @@
       var t5 = g.tiles[i5]; if (!t5.resource) continue; var Rs5 = AU.RESOURCES[t5.resource]; if (!Rs5) continue;
       var p5 = tileXZ(t5), rx5 = p5[0] + R * 0.38, rz5 = p5[1] + R * 0.28, tex5 = AU.Assets.texture('resources', t5.resource);
       var spr = new T.Sprite(new T.SpriteMaterial({ map: tex5 || null, transparent: true, alphaTest: 0.1, depthTest: true })); spr.scale.set(R * 0.6, R * 0.6, 1); spr.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.32, rz5); spr.userData.tile = i5; spr.userData.res = t5.resource; spr.visible = false; group.add(spr); resList.push(spr);
+      if (t5.rich != null) { var pip = new T.Sprite(new T.SpriteMaterial({ map: this.pipTexture(t5.rich + 1), transparent: true, alphaTest: 0.1, depthTest: true })); pip.scale.set(R * 0.42, R * 0.14, 1); pip.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.06, rz5 + R * 0.22); pip.userData.tile = i5; pip.userData.res = t5.resource; pip.visible = false; group.add(pip); resList.push(pip); } // richness pips
     }
     this.world.resSprites = resList;
     // natural wonder labels (the picture itself is a feature billboard)
@@ -460,6 +461,13 @@
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath(); }
 
   // ---------- units ----------
+  // 1–3 gold pips under a resource: its richness tier.
+  P.pipTexture = function (n) {
+    var T = window.THREE, key = 'pips|' + n; if (this.textures[key]) return this.textures[key];
+    var cv = document.createElement('canvas'); cv.width = 96; cv.height = 32; var ctx = cv.getContext('2d');
+    for (var i = 0; i < n; i++) { var x = 48 + (i - (n - 1) / 2) * 26; ctx.fillStyle = '#f5d76e'; ctx.strokeStyle = 'rgba(40,30,10,0.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, 16, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; this.textures[key] = tex; return tex;
+  };
   P.unitBadge = function (icon, color, color2, hp, level) {
     var T = window.THREE, key = icon + '|' + color + '|' + Math.round(hp / 10) + '|' + level;
     if (this.textures[key]) return this.textures[key];

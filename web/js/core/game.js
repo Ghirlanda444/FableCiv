@@ -44,7 +44,7 @@
     var seed = opts.seed || (Date.now() & 0x7fffffff);
     var rng = new AU.RNG(seed ^ 0x5bd1e995);
     var speed = AU.SPEEDS[opts.speed] ? opts.speed : (sc && sc.speed) || 'standard';
-    var map = AU.generateMap({ seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)), template: tpl });
+    var map = AU.generateMap({ v2: !!opts.v2, seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)), template: tpl });
     numCivs = Math.min(numCivs, map.starts.length);
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
@@ -420,7 +420,7 @@
     G.civSettlements(g, civ.idx).forEach(function (s) {
       s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || !t.resource) return; var R = AU.RESOURCES[t.resource];
         if (R.revealTech && !civ.techs[R.revealTech]) return;
-        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + 1; if (R.kind === 'bonus') bonus[t.resource] = true; });
+        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + (g.v2 && AU.Society ? AU.Society.supplyOf(t) : 1); if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
     if (civ.imports) for (var ir in civ.imports) if (civ.imports[ir] > g.turn && AU.RESOURCES[ir]) { if (AU.RESOURCES[ir].kind === 'luxury') set[ir] = true; else if (AU.RESOURCES[ir].kind === 'strategic') strat[ir] = (strat[ir] || 0) + 1; }
     civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
@@ -501,10 +501,12 @@
       y.gold += (fx.goldPerWonder || 0) * wonders;
       if (fx.capitalYields) add(y, fx.capitalYields);
     }
+    if (g.v2 && s.isCapital && AU.Society) add(y, AU.Society.bondYields(g, civ)); // bonded free cities send half their yields
     // happiness
     var happy = 3 + bY.happiness + (y.happiness || 0) + Math.min(lux, 4) + lux * (fx.luxuryHappinessBonus || 0) + (fx.happinessBonus || 0) + (fx.empireHappiness || 0) - Math.floor(s.pop / 2);
     if (s.captured && fx.capturedHappiness) happy += fx.capturedHappiness;
     if (civ.warWeariness) happy -= Math.floor(civ.warWeariness / 4);
+    if (g.v2 && civ.bondShame > g.turn) happy -= 2; // a broken bond
     y.happiness = happy;
     // percents & multipliers
     y.production *= 1 + pct.production / 100; y.science *= 1 + pct.science / 100;
@@ -517,7 +519,8 @@
     }
     var diff = AU.DIFFICULTIES[g.difficulty], dm = civ.isPlayer ? diff.playerYield : diff.aiYield;
     ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= dm; });
-    if (happy < 0 && !fx.noUnhappinessPenalty) { var pen = happy <= -5 ? 0.7 : 0.85; ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= pen; }); }
+    if (g.v2 && AU.Society) { var tm = AU.Society.tierOf(happy).mult; if (tm < 1 && fx.noUnhappinessPenalty) tm = 1; if (tm !== 1) ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= tm; }); } // Divergence: five moods from Miserable ×0.6 to Joyful ×1.2
+    else if (happy < 0 && !fx.noUnhappinessPenalty) { var pen = happy <= -5 ? 0.7 : 0.85; ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= pen; }); }
     y.unitProductionPct = pct.unitProduction;
     // towns turn production into gold
     y.rawProduction = y.production;
@@ -575,7 +578,7 @@
     if (!G.gateOk(g, civ, 'unit', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
-    if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
+    if (d.resource && (g.v2 && AU.Society ? !AU.Society.canSupply(g, civ, d.resource) : !G.hasResource(g, civ, d.resource))) return false; // Divergence: a resource tile supports 1–3 units by richness
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
     // obsolete? if the upgrade target is buildable, hide the old one (except settler/scout)
     if (d.upgradesTo) { var up = G.unitType(g, civ, d.upgradesTo); if ((g.v2 ? G.gateOk(g, civ, 'unit', d.upgradesTo, up) : (up.tech && civ.techs[up.tech])) && (!up.resource || G.hasResource(g, civ, up.resource))) return false; }
@@ -589,7 +592,7 @@
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
-    if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
+    if (d.resource && (g.v2 && AU.Society ? !AU.Society.canSupply(g, civ, d.resource) : !G.hasResource(g, civ, d.resource))) return false; // Divergence: a resource tile supports 1–3 units by richness
     return true;
   };
   G.canBuildWonder = function (g, s, id) {
@@ -969,7 +972,8 @@
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
     if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1));
-    if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
+    if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
+    else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
     if (s.specialization && !s.isCity && surplus > 0) { sends = Math.min(surplus, 6) * (fx.townFoodMult || 1); } // a town feeds its City with at most 6 Food per turn
     else {
@@ -1154,6 +1158,7 @@
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
+    if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); }
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);
