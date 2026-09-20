@@ -216,6 +216,7 @@
       $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
     refreshHud: function () {
+      var tb = $('topbar'); if (tb && tb.offsetHeight) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px'); // the notification strip sits under the bar whatever its height
       if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
       if (AU.Tutorial) AU.Tutorial.update(this);
       if (AU.Tips) AU.Tips.update(this);
@@ -427,7 +428,7 @@
             Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">' + _('Debate') + ' ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
           }
           if (AU.UNITS[u.type].great && AU.Great) {
-            var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + gt.desc + '</div>';
+            var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + G.abilityDesc(gt) + '</div>';
             AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
           }
           if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">' + _('Route with') + ' ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 ' + _('Ties per turn. Move it to end the route.') + '</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 ' + _('Open trade route') + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">' + _('Walk into the land of a free city you are not at war with.') + '</small>' : ''); }
@@ -611,7 +612,7 @@
     // ---------- Panels ----------
     openPanel: function (name, data) {
       if (this.g && this.g.v2 && (name === 'tree' || name === 'tech')) { name = 'web'; data = data && data.tab ? data : { tab: 'foundation' }; }
-      this.panel = name; this.panelData = data || {};
+      this.panel = name; this.panelData = data || {}; var tipEl = $('tip'); if (tipEl) tipEl.hidden = true;
       $('panel').hidden = false; $('toast').hidden = true;
       AU.Panels.render(this, name, this.panelData);
       $('panel-body').scrollTop = 0;

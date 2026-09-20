@@ -27,5 +27,6 @@
   for (var cid in C) if (AU.CIV_BY_ID[cid]) AU.CIV_BY_ID[cid].ability.descV2 = C[cid];
   if (AU.WONDERS.great_library) AU.WONDERS.great_library.descV2 = '+4 Knowledge and a free foundation Spark.';
   if (AU.WONDERS.oracle) AU.WONDERS.oracle.descV2 = '+3 Heritage, +2 Knowledge and a free foundation Spark.';
+  if (AU.GREAT_TYPES && AU.GREAT_TYPES.scientist) AU.GREAT_TYPES.scientist.descV2 = 'Fires the next foundation Spark of the age at once.';
   if (AU.UNITS.great_scientist) AU.UNITS.great_scientist.descV2 = 'Fires the next foundation Spark of the age at once. Earned with Great Scientist points (Libraries, Universities).';
 })(globalThis.AU = globalThis.AU || {});
