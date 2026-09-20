@@ -75,7 +75,7 @@
   MW.fireHub = function (g, civ, hubId) {
     var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || s.hubsFired[hubId]) return;
     s.hubsFired[hubId] = g.turn;
-    if (hub.turning !== undefined && !civ.isPlayer) { s.aiTurning = { hub: hubId, at: g.turn + 12 }; return; } // the AI lingers a dozen turns before crossing into the next age
+    if (hub.turning !== undefined && !civ.isPlayer) { s.aiTurning = { hub: hubId, at: g.turn + 16 }; return; } // the AI lingers sixteen turns before crossing into the next age
     if (civ.isPlayer) { s.pendingHubs.push(hubId); G.notify(g, civ, { big: true, kind: 'civic', text: '🔮 ' + _('Insight!') + ' ' + hub.name + ': ' + _('a decision awaits'), panel: 'hub' }); }
     else MW.choose(g, civ, hubId, MW.aiPick(g, civ, hub).id);
   };
@@ -92,8 +92,10 @@
     return true;
   };
   MW.foundationCount = function (civ, era) { var s = st(civ), c = 0; AU.V2.NODES.forEach(function (n) { if (n.era === era && n.pool === 'foundation' && s.unlocked[n.id]) c++; }); return c; };
+  MW.MIN_ERA_TURNS = 35; // an age lasts at least this long (scaled by game speed), however fast the Sparks come
   MW.checkEraAdvance = function (g, civ) {
     var s = st(civ), era = AU.V2.ERAS[s.era]; if (!era || !era.advance) return;
+    if (g.turn - (s.eraSince || 0) < Math.round(MW.MIN_ERA_TURNS * G.speed(g))) return;
     if (MW.foundationCount(civ, s.era) >= era.advance && !s.hubsFired['turning:' + s.era]) {
       var th = AU.V2.HUB_BY_ID['turning:' + s.era];
       if (th) { s.turningReady = g.turn; MW.fireHub(g, civ, th.id); }
@@ -111,7 +113,7 @@
     if (!cands.length) return false; return MW.unlock(g, civ, cands[0].id, 'gift');
   };
   MW.advanceEra = function (g, civ) {
-    var s = st(civ); s.era += 1; civ.era = s.era; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    var s = st(civ); s.era += 1; s.eraSince = g.turn; civ.era = s.era; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     MW.grantFreeBuildings(g, civ);
     G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].name : '') + ' — “' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].joke : '') + '”', panel: 'web' });
   };
@@ -134,6 +136,7 @@
     AU.V2.HUBS.forEach(function (h) { if (!h.when || s.hubsFired[h.id] || h.when[0] === 'node') return; if (MW.cond(g, civ, h.when)) MW.fireHub(g, civ, h.id); });
     if (!civ.isPlayer) { var aiCheap = nodes.filter(function (n) { return n.cheap && !s.unlocked[n.id] && !s.locked[n.id]; })[0]; if (aiCheap && s.study >= MW.studyCost(g, civ, aiCheap)) MW.study(g, civ, aiCheap.id); }
     if (!eraNodes.length && s.era < AU.V2.ERAS.length - 1 && s.study >= MW.provisionalEraCost(g, civ)) { s.study -= MW.provisionalEraCost(g, civ); s.hubsFired['turning:' + s.era] = g.turn; s.era += 1; civ._fx = null; G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + AU.V2.ERAS[s.era].name + ' — “' + AU.V2.ERAS[s.era].joke + '”', panel: 'web' }); }
+    MW.checkEraAdvance(g, civ); // the age may have lasted long enough now
     if (s.aiTurning && g.turn >= s.aiTurning.at) { var tp = AU.V2.HUB_BY_ID[s.aiTurning.hub]; s.aiTurning = null; if (tp) MW.choose(g, civ, tp.id, MW.aiPick(g, civ, tp).id); }
     civ.era = s.era;
   };
@@ -146,6 +149,6 @@
     var s = st(civ), nid = MW.nodeFor(kind, id);
     if (nid) return !!s.unlocked[nid];
     if (kind === 'unit' && (id === 'scout' || id === 'settler')) return id === 'scout' || !!s.unlocked.fence || s.era > 0;
-    return MW.v1Era(def) <= s.era;
+    return MW.v1Era(def) <= (s.era >= AU.V2.ERAS.length - 1 ? 99 : s.era); // the last age opens everything the classic tree still holds
   };
 })(globalThis.AU = globalThis.AU || {});

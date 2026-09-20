@@ -7,9 +7,9 @@
   var V2 = AU.V2 = AU.V2 || {};
   V2.ERAS = [
     { id: 0, name: 'Pebble Age', joke: 'Way Too Long Ago', advance: 20, foundationSize: 32 },
-    { id: 1, name: 'Marble Age', joke: 'When Columns Were Cool' }, { id: 2, name: 'Turret Age', joke: 'Everyone Built A Pointy House' },
-    { id: 3, name: 'Easel Age', joke: 'Paint Got Expensive' }, { id: 4, name: 'Puffstack Age', joke: 'The Sky Turned Grey On Purpose' },
-    { id: 5, name: 'Glowbit Age', joke: 'We Split The Tiny Thing' }, { id: 6, name: 'Pixel Age', joke: 'Everything Is A Screen Now' }
+    { id: 1, name: 'Marble Age', joke: 'When Columns Were Cool', advance: 24, foundationSize: 32 }, { id: 2, name: 'Turret Age', joke: 'Everyone Built A Pointy House', advance: 24, foundationSize: 32 },
+    { id: 3, name: 'Easel Age', joke: 'Paint Got Expensive', advance: 24, foundationSize: 32 }, { id: 4, name: 'Puffstack Age', joke: 'The Sky Turned Grey On Purpose', advance: 24, foundationSize: 32 },
+    { id: 5, name: 'Glowbit Age', joke: 'We Split The Tiny Thing', advance: 24, foundationSize: 32 }, { id: 6, name: 'Pixel Age', joke: 'Everything Is A Screen Now', foundationSize: 32 }
   ];
   var N = [];
   function node(o) { o.era = 0; N.push(o); return o; }
