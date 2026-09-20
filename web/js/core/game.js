@@ -50,7 +50,7 @@
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
       wonders: {}, religions: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
-      playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null
+      playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null, v2: !!opts.v2
     };
     // pick civs: player's chosen one first, then random others (a scenario fixes the cast and their leaders)
     var ids, scStart = {};
@@ -180,6 +180,7 @@
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
     if (AU.MASTERY) for (var mid in civ.mastery || {}) { var mm = mid.indexOf('c:') === 0 ? AU.MASTERY.civics[mid.slice(2)] : AU.MASTERY.techs[mid]; if (mm && mm.fx) mergeFx(fx, mm.fx); }
     (civ.policies || []).forEach(function (pid) { var pc = AU.POLICIES[pid]; if (pc) mergeFx(fx, pc.fx); });
+    if (g.v2 && AU.MasteryWeb) AU.MasteryWeb.fx(civ, mergeFx, fx);
     if (AU.Religion) AU.Religion.civFx(g, civ).forEach(function (rf) { mergeFx(fx, rf); });
     if (AU.CityStates) AU.CityStates.civFx(g, civ).forEach(function (cf) { mergeFx(fx, cf); });
     if (fx.peaceScienceMult && !g.civs.some(function (o) { return !o.minor && o.alive && o.idx !== civ.idx && G.atWar(g, civ.idx, o.idx); })) fx.yieldMult = mergeFx({}, { yieldMult: Object.assign({}, fx.yieldMult || {}, { science: (fx.yieldMult && fx.yieldMult.science || 1) * fx.peaceScienceMult }) }).yieldMult;
@@ -1091,6 +1092,7 @@
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
     G.checkBoosts(g, civ);
+    if (g.v2 && AU.MasteryWeb) AU.MasteryWeb.turn(g, civ);
     if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (civ.currentTech) {
       civ.techProgress[civ.currentTech] = (civ.techProgress[civ.currentTech] || 0) + civ._turnScience;

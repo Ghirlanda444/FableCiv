@@ -330,6 +330,7 @@
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };
     u.attackedTurn = g.turn; u.fortify = 0; u.sleep = false; u.path = null;
+    if (civ) civ.flags['ev:combat'] = g.turn; if (target.unit) { var tciv = U.civ(g, target.unit); if (tciv) tciv.flags['ev:combat'] = g.turn; } else if (target.settlement && g.civs[target.settlement.civ]) g.civs[target.settlement.civ].flags['ev:combat'] = g.turn;
     var attackStr = U.strength(g, u, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
     if (target.settlement && (!target.unit || ranged)) {
       // hit the settlement itself (garrison shares walls; ranged always hits the settlement first)
@@ -363,8 +364,9 @@
         result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
         U.killRewards(g, u, def, v);
         if (civ) { var kf = G.civFx(g, civ); if (kf.faithFromKills) civ.bonusFaith = (civ.bonusFaith || 0) + kf.faithFromKills; }
-        if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
+        if (civ) { civ.flags['ev:combat'] = g.turn; civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
+        if (vciv) { vciv.flags['ev:combat'] = g.turn; vciv.flags['ev:unitLost'] = g.turn; if (U.isNaval(v)) vciv.flags['ev:boatLost'] = g.turn; }
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: _('Your') + ' ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
         if (!G.isMilitary(v) && !ranged && U.canCapture(u) && !AU.UNITS[v.type].religious) { // capture civilian: convert
           v.civ = u.civ; v.hp = 100; v.moves = 0; result.capturedUnit = v.id; G.notify(g, civ, { kind: 'capture', text: _('Captured an enemy') + ' ' + v.name + '!', tile: v.tile });
