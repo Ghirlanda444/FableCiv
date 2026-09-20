@@ -4,7 +4,7 @@ const g = G.newGame({ playerCiv: 'rome', playerLeader: 'caesar', mapSize: 'small
 const pl = G.player(g);
 // the player plays itself through the AI so triggers fire from real actions
 pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER_BY_ID[pl.leaderId].ai);
-for (let t = 0; t < 120; t++) { G.endTurn(g); if (g.turn % 30 === 0) { const s = MW.state(pl); console.log('turn', g.turn, 'era', s.era, 'unlocked', Object.keys(s.unlocked).length, 'foundation', MW.foundationCount(pl, 0), 'locked', Object.keys(s.locked).join(','), 'traits', JSON.stringify(s.traits), 'insight', Math.round(s.insight)); } }
+for (let t = 0; t < 120; t++) { G.endTurn(g); if (g.turn % 30 === 0) { const s = MW.state(pl); console.log('turn', g.turn, 'era', s.era, 'unlocked', Object.keys(s.unlocked).length, 'foundation', MW.foundationCount(pl, 0), 'locked', Object.keys(s.locked).join(','), 'traits', JSON.stringify(s.traits), 'study', Math.round(s.study)); } }
 const majors = g.civs.filter(c => !c.minor);
 const never = AU.V2.NODES.filter(n => !majors.some(c => c.v2 && c.v2.unlocked[n.id]));
 console.log('nodes no empire unlocked in 120 turns:', never.map(n => n.id + '(' + n.trigger.type + ':' + n.trigger.cond.join('/') + ')').join(' '));

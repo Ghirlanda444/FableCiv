@@ -137,6 +137,7 @@
       function fill(sel, obj, def) { sel.innerHTML = ''; for (var k in obj) { var o = document.createElement('option'); o.value = k; o.textContent = obj[k].name; if (k === def) o.selected = true; sel.appendChild(o); } }
       fill($('opt-size'), AU.MAP_SIZES, 'small'); fill($('opt-diff'), AU.DIFFICULTIES, 'prince');
       fill($('opt-type'), AU.MAP_TYPES, 'continents'); fill($('opt-speed'), AU.SPEEDS, 'standard');
+      var rs = $('opt-rules'); if (rs) { rs.innerHTML = '<option value="classic">' + _('Classic') + '</option><option value="v2">' + _('Divergence (beta)') + '</option>'; rs.value = this.settings.rules === 'v2' ? 'v2' : 'classic'; var selfR = this; rs.onchange = function () { selfR.settings.rules = this.value; selfR.saveSettings && selfR.saveSettings(); }; }
       var civSel = $('opt-civs'); civSel.innerHTML = '';
       for (var n = 1; n <= 19; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
       var stSel = $('opt-states'); stSel.innerHTML = '';
@@ -176,7 +177,7 @@
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined, v2: $('opt-rules') && $('opt-rules').value === 'v2' };
       this.toast(_('Generating the world…'));
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);
@@ -225,6 +226,7 @@
       function turnsLeft(prog, cost, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) : '∞'; }
       var techTxt = techT ? techT.name + ' (' + turnsLeft(p.techProgress[techT.id] || 0, G.techCost(g, p, techT), y.science) + ')' : 'choose';
       var civTxt = civT ? civT.name + ' (' + turnsLeft(p.civicProgress[civT.id] || 0, G.civicCost(g, p, civT), y.culture) + ')' : 'choose';
+      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮'); }
       var sets = G.civSettlements(g, p.idx), unhappy = sets.filter(function (s) { return G.settlementYields(g, s).happiness < 0; }).length;
       $('top-yields').innerHTML =
         '<span class="y" data-panel="empire">💰 <b>' + Math.floor(p.gold) + '</b><small>' + (y.gold >= 0 ? '+' : '') + y.gold.toFixed(1) + '</small></span>' +
@@ -262,9 +264,10 @@
         if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: _('Enhance your religion'), go: function () { self.openPanel('religion'); } });
       }
       if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: _('Send the caravan to a free city'), go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
-      if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: _('Choose research'), go: function () { self.openPanel('tech'); } });
-      if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: _('Choose civic'), go: function () { self.openPanel('civics'); } });
-      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: _('Empty policy slot'), go: function () { self.openPanel('civics', { tab: 'policies' }); } });
+      if (g.v2 && AU.MasteryWeb) { var vst = AU.MasteryWeb.state(p); if (vst.pendingHubs.length) list.push({ icon: '🔮', text: _('An Insight awaits your decision'), go: function () { self.openPanel('hub'); } }); }
+      if (!g.v2 && !p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: _('Choose research'), go: function () { self.openPanel('tech'); } });
+      if (!g.v2 && !p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: _('Choose civic'), go: function () { self.openPanel('civics'); } });
+      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (!g.v2 && fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: _('Empty policy slot'), go: function () { self.openPanel('civics', { tab: 'policies' }); } });
       var promo = G.civUnits(g, p.idx).filter(function (u) { return U.promosAvailable(u) > 0; });
       if (promo.length) list.push({ icon: '⭐', text: _('Promote') + ' ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
       var need = this.unitsNeedingOrders();
@@ -600,6 +603,7 @@
 
     // ---------- Panels ----------
     openPanel: function (name, data) {
+      if (this.g && this.g.v2 && (name === 'tree' || name === 'tech')) { name = 'web'; data = data && data.tab ? data : { tab: 'foundation' }; }
       this.panel = name; this.panelData = data || {};
       $('panel').hidden = false; $('toast').hidden = true;
       AU.Panels.render(this, name, this.panelData);

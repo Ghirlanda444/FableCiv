@@ -53,6 +53,7 @@
   // ---------- Research ----------
   AI.chooseResearch = function (g, civ) {
     var tr = civ.ai;
+    if (g.v2) { /* v2: the Mastery Web unlocks from play, nothing to pick */ } else {
     if (!civ.currentTech) {
       var av = G.availableTechs(civ);
       if (av.length) {
@@ -73,6 +74,7 @@
     if (!civ.currentCivic) {
       var ac = G.availableCivics(civ);
       if (ac.length) { ac.sort(function (a, b) { return (a.cost - (civ.boosts && civ.boosts['c:' + a.id] ? a.cost * 0.4 : 0)) - (b.cost - (civ.boosts && civ.boosts['c:' + b.id] ? b.cost * 0.4 : 0)) + (G.rng(g) - 0.5) * 30; }); civ.currentCivic = ac[0].id; }
+    }
     }
   };
   AI.choosePolicies = function (g, civ) {
@@ -211,7 +213,7 @@
     area.forEach(function (i) {
       var t = g.tiles[i];
       if (!G.canFoundAt(g, civ.idx, i)) return;
-      if (t.continent !== origin.continent && settler && !civ.techs.sailing) return;
+      if (t.continent !== origin.continent && settler && !(g.v2 ? G.era(civ) >= 1 : civ.techs.sailing)) return;
       var d = G.dist(origin, t);
       var near = 1e9; sets.forEach(function (s) { near = Math.min(near, G.dist(g.tiles[s.tile], t)); });
       if (sets.length && near > 8) return;

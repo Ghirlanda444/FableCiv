@@ -171,7 +171,70 @@
   };
 
   // ---------- Research ----------
+  // ---------- v2: the Mastery Web ----------
+  var CAT_ICON = { Sustenance: '🌾', Shelter: '🏠', Kinship: '🤝', Craft: '🔨', Wayfinding: '🧭' };
+  P.render_web = function (app, g, data) {
+    var MW = AU.MasteryWeb, p = G.player(g), st = MW.state(p), era = AU.V2.ERAS[st.era] || AU.V2.ERAS[0], y = G.civYields(g, p), html = '';
+    var nodes = MW.openNodes(st.era), found = MW.foundationCount(p, st.era);
+    var tab = (data && data.tab) || 'foundation';
+    html += '<p class="stat"><b>' + era.name + '</b> — “' + era.joke + '” · 💡 ' + found + '/' + (era.foundationSize || 32) + ' ' + _('foundation Sparks') + (era.advance ? ' (' + era.advance + ' ' + _('to reach the next age') + ')' : '') + ' · 📚 ' + Math.floor(st.study) + ' ' + _('Knowledge to study') + ' (+' + y.science.toFixed(1) + ')</p>';
+    html += '<p class="stat">' + _('Sparks come from what you do: work tiles, explore, fight, meet people. A few cheap ones can be studied with Knowledge. Paired choices lock their twin for the whole game.') + '</p>';
+    if (!MW.nodesOfEra(st.era).length) html += '<p>' + _('This age has no Sparks of its own yet: Knowledge studies carry you to the next one.') + ' (' + Math.floor(st.study) + '/' + MW.provisionalEraCost(g, p) + ')</p>';
+    if (st.pendingHubs.length) html += '<button class="big primary" data-action="hub">🔮 ' + _('A decision awaits') + '</button><br><br>';
+    html += '<div class="tabs"><button class="small ' + (tab === 'foundation' ? 'on' : '') + '" data-action="webtab" data-tab="foundation">🧱 ' + _('Foundation') + '</button><button class="small ' + (tab === 'branched' ? 'on' : '') + '" data-action="webtab" data-tab="branched">🌿 ' + _('Branches') + '</button><button class="small ' + (tab === 'traits' ? 'on' : '') + '" data-action="webtab" data-tab="traits">🔮 ' + _('Insights') + '</button></div>';
+    function nodeRow(n) {
+      var status = MW.status(p, n.id), cls = status === 'unlocked' ? 'done' : status === 'locked_permanent' ? 'locked' : (n.cheap && st.study >= MW.studyCost(g, p, n) ? 'active clickable' : ''), badge = status === 'unlocked' ? '✅' : status === 'locked_permanent' ? '🔒' : n.cheap ? '📚' : '💡';
+      var unl = []; if (n.unlocks) { if (n.unlocks.unit) unl.push(AU.UNITS[n.unlocks.unit] ? AU.UNITS[n.unlocks.unit].name : n.unlocks.unit); if (n.unlocks.building) unl.push(AU.BUILDINGS[n.unlocks.building] ? AU.BUILDINGS[n.unlocks.building].name : n.unlocks.building); if (n.unlocks.improvement) unl.push(n.unlocks.improvement); }
+      var streak = n.trigger.type === 'state' && n.trigger.turns && status === 'locked_unmet' ? ' (' + (st.streak[n.id] || 0) + '/' + n.trigger.turns + ')' : '';
+      return '<div class="row ' + cls + '" data-action="study" data-id="' + n.id + '"><span class="hall-medal">' + badge + '</span><div class="grow"><b>' + n.name + (n.pair ? ' <span class="kind-pill wildcard">' + _('paired') + '</span>' : '') + '</b><small><i>“' + n.joke + '”</i></small><small>' + (status === 'locked_permanent' ? _('Locked for good: you chose') + ' ' + (AU.V2.NODE_BY_ID[n.pair] ? AU.V2.NODE_BY_ID[n.pair].name : '') : (status === 'unlocked' ? _('Sparked on turn') + ' ' + st.unlocked[n.id] : n.trigger.desc + streak + (n.cheap ? ' · ' + _('or study for') + ' ' + MW.studyCost(g, p, n) + ' 📚' : ''))) + '</small>' + (unl.length ? '<small>' + _('Unlocks') + ': ' + unl.join(', ') + '</small>' : '') + (n.fx ? '<small>' + describeFx(n.fx) + '</small>' : '') + '</div></div>';
+    }
+    if (tab === 'foundation') {
+      var cats = []; nodes.forEach(function (n) { if (n.pool === 'foundation' && cats.indexOf(n.cat) < 0) cats.push(n.cat); });
+      cats.forEach(function (c) { html += '<div class="section"><h3>' + (CAT_ICON[c] || '') + ' ' + c + '</h3>'; nodes.filter(function (n) { return n.pool === 'foundation' && n.cat === c; }).forEach(function (n) { html += nodeRow(n); }); html += '</div>'; });
+    } else if (tab === 'branched') {
+      html += '<div class="section"><h3>' + _('Paired choices: the first Spark locks the other') + '</h3>'; var seen = {};
+      nodes.forEach(function (n) { if (n.pool !== 'branched' || !n.pair || seen[n.id]) return; seen[n.id] = seen[n.pair] = true; html += nodeRow(n) + nodeRow(AU.V2.NODE_BY_ID[n.pair]) + '<div style="height:8px"></div>'; });
+      html += '</div><div class="section"><h3>' + _('Standalone') + '</h3>'; nodes.forEach(function (n) { if (n.pool === 'branched' && !n.pair) html += nodeRow(n); }); html += '</div>';
+    } else {
+      html += '<div class="section"><h3>' + _('Decisions made') + '</h3>';
+      var any = false; AU.V2.HUBS.forEach(function (h) { var b = st.traits[h.id]; if (!b) return; any = true; var br = h.branches.filter(function (x) { return x.id === b; })[0]; html += '<div class="row done"><span class="hall-medal">🔮</span><div class="grow"><b>' + h.name + '</b><small>' + (br ? br.name + ' — ' + describeFx(br.fx) : '') + '</small></div></div>'; });
+      if (!any) html += '<p class="stat">' + _('No Insight decided yet. Insights arrive when your empire does something for the first time.') + '</p>';
+      html += '</div>';
+      if (st.pendingHubs.length) html += '<button class="big primary" data-action="hub">🔮 ' + _('A decision awaits') + '</button>';
+    }
+    return { title: '💡 ' + _('Mastery Web'), html: html };
+  };
+  var FX_LABEL = { combatBonus: function (v) { return _('units') + ' +' + v + ' ' + _('Strength'); }, meleeBonus: function (v) { return _('melee units') + ' +' + v + ' ' + _('Strength'); }, homeDefenseBonus: function (v) { return '+' + v + ' ' + _('Strength defending at home'); }, cityDefense: function (v) { return _('settlements') + ' +' + v + ' ' + _('defense'); }, hillsDefense: function (v) { return '+' + v + ' ' + _('defense on Hills'); },
+    happinessBonus: function (v) { return '+' + v + ' ' + _('Happiness everywhere'); }, growthMult: function (v) { return _('growth') + ' +' + Math.round((v - 1) * 100) + '%'; }, unitCostMult: function (v) { return _('units cost') + ' ' + Math.round((1 - v) * 100) + '% ' + _('less'); }, buildingCostMult: function (v) { return _('buildings cost') + ' ' + Math.round((1 - v) * 100) + '% ' + _('less'); }, settlerCostMult: function (v) { return _('Pioneers cost') + ' ' + Math.round((1 - v) * 100) + '% ' + _('less'); },
+    goldPerSettlement: function (v) { return '+' + v + ' ' + _('Gold per settlement'); }, sciencePerSettlement: function (v) { return '+' + v + ' ' + _('Knowledge per settlement'); }, culturePerSettlement: function (v) { return '+' + v + ' ' + _('Heritage per settlement'); }, faithPerSettlement: function (v) { return '+' + v + ' ' + _('Devotion per settlement'); }, culturePerKill: function (v) { return '+' + v + ' ' + _('Heritage per kill'); },
+    attitudeBonus: function (v) { return _('other leaders start friendlier') + ' (+' + v + ')'; }, warWearinessMult: function (v) { return _('war weariness') + ' ' + Math.round((1 - v) * 100) + '% ' + _('less'); }, xpMult: function (v) { return _('experience') + ' +' + Math.round((v - 1) * 100) + '%'; }, unitsStartXp: function (v) { return _('new units start with') + ' ' + v + ' XP'; }, freeUpkeep: function (v) { return v + ' ' + _('more units free of upkeep'); },
+    reconSight: function (v) { return _('scouts see') + ' +' + v; }, reconMoves: function (v) { return _('scouts move') + ' +' + v; }, homeMoves: function (v) { return '+' + v + ' ' + _('Movement inside your borders'); }, roadMoves: function (v) { return _('faster on roads'); }, housingBonus: function (v) { return '+' + v + ' ' + _('Housing'); }, unitStrengthFromBarracks: function (v) { return _('units from Barracks') + ' +' + v; },
+    greatSlot: function (v) { return _('Great Person slot') + ': ' + v; }, influencePerTurn: function (v) { return '+' + v + ' ' + _('Influence per turn'); }, influenceOnce: function (v) { return '+' + v + ' ' + _('Influence'); }, settlementSight: function (v) { return _('settlements see') + ' +' + v; }, distantProduction: function (v) { return _('distant settlements') + ' +' + v + ' ' + _('Production'); }, caravanRange: function (v) { return _('trade routes reach') + ' +' + v; },
+    diplomacyBasic: function () { return _('diplomacy'); }, kinfolkBasic: function () { return _('Free city dealings'); }, hubsEnabled: function () { return _('Insights begin'); }, revealContinent: function () { return _('your continent is mapped'); }, era2: function () { return _('prepares a later Spark'); } };
+  function describeFx(fx) {
+    var out = []; for (var k in fx) { var v = fx[k];
+      if (FX_LABEL[k]) out.push(FX_LABEL[k](v));
+      else if (k === 'yieldMult') for (var y in v) out.push('+' + Math.round((v[y] - 1) * 100) + '% ' + yieldName(y));
+      else if (k === 'capitalYields' || k === 'citySiteYields' || k === 'coastalSettlementYields' || k === 'townYields') out.push((k === 'capitalYields' ? _('capital') : k === 'coastalSettlementYields' ? _('coastal settlements') : k === 'townYields' ? _('Towns') : _('Cities')) + ' ' + yieldList(v));
+      else if (k === 'capitalMult') { var m = []; for (var ym in v) m.push('+' + Math.round((v[ym] - 1) * 100) + '% ' + yieldName(ym)); out.push(_('capital') + ' ' + m.join(', ')); }
+      else if (k === 'tileBonus' || k === 'settlementSiteBonus') v.forEach(function (tb) { out.push(tb.when + ' ' + _('tiles') + ' ' + yieldList(tb.yields)); });
+      else if (k === 'yieldPerPop') for (var yp in v) out.push('+' + v[yp] + ' ' + yieldName(yp) + ' ' + _('per citizen'));
+      else out.push(k + (v === true ? '' : ' ' + JSON.stringify(v))); }
+    return out.join(' · ');
+  }
+  function yieldName(y) { return { food: _('Food'), production: _('Production'), gold: _('Gold'), science: _('Knowledge'), culture: _('Heritage'), faith: _('Devotion'), happiness: _('Happiness') }[y] || y; }
+  function yieldList(o) { var a = []; for (var k in o) a.push('+' + o[k] + ' ' + yieldName(k)); return a.join(', '); }
+  P.render_hub = function (app, g) {
+    var MW = AU.MasteryWeb, p = G.player(g), st = MW.state(p), id = st.pendingHubs[0], html = '';
+    if (!id) return { title: '🔮 ' + _('Insight'), html: '<p>' + _('Nothing to decide right now.') + '</p>' };
+    var hub = AU.V2.HUB_BY_ID[id];
+    html += '<div class="quote-box" style="max-width:none;box-shadow:none"><div class="quote-kicker">' + _('Insight') + '</div><h2>' + hub.name + '</h2><p>' + _('Choose once. This shapes your empire for the rest of the game.') + '</p></div><br>';
+    hub.branches.forEach(function (b) { html += '<div class="row clickable" data-action="hubpick" data-hub="' + id + '" data-branch="' + b.id + '"><span class="hall-medal">▶</span><div class="grow"><b>' + b.name + '</b><small>' + describeFx(b.fx) + (b.greatPerson ? ' · ' + _('a Great Person joins you') : '') + '</small></div></div>'; });
+    if (st.pendingHubs.length > 1) html += '<p class="stat">' + (st.pendingHubs.length - 1) + ' ' + _('more decisions waiting') + '</p>';
+    return { title: '🔮 ' + _('Insight'), html: html };
+  };
   P.render_tech = function (app, g) {
+    if (g.v2) return P.render_web(app, g, app.panelData);
     var p = G.player(g), y = G.civYields(g, p), html = '';
     var avail = G.availableTechs(p);
     var nMast = Object.keys(p.mastery || {}).filter(function (k) { return k.indexOf('c:') !== 0; }).length;
@@ -205,6 +268,7 @@
     return out;
   }
   P.render_civics = function (app, g, data) {
+    if (g.v2) return P.render_web(app, g, { tab: 'traits' });
     var p = G.player(g), y = G.civYields(g, p), html = '', tab = (data && data.tab) || 'civics';
     var avail = G.availableCivics(p);
     html += '<div class="tabs"><button class="small ' + (tab === 'civics' ? 'on' : '') + '" data-action="civtab" data-tab="civics">🎭 ' + _('Civics') + '</button><button class="small ' + (tab === 'policies' ? 'on' : '') + '" data-action="civtab" data-tab="policies">🏛️ ' + _('Government') + ' &amp; policies</button></div>';
@@ -513,6 +577,10 @@
     var g = app.g, p = g ? G.player(g) : null, s;
     if (AU.Tree && AU.Tree.action(app, name, d)) return;
     switch (name) {
+      case 'webtab': app.panelData.tab = d.tab; app.refreshPanel(); break;
+      case 'study': if (AU.MasteryWeb.study(g, p, d.id)) { app.toast('💡 ' + _('Spark!') + ' ' + AU.V2.NODE_BY_ID[d.id].name); app.refreshPanel(); app.refreshHud(); } break;
+      case 'hub': app.openPanel('hub'); break;
+      case 'hubpick': if (AU.MasteryWeb.choose(g, p, d.hub, d.branch)) { app.toast('🔮 ' + AU.V2.HUB_BY_ID[d.hub].name + ' → ' + d.branch); if (AU.MasteryWeb.state(p).pendingHubs.length) app.refreshPanel(); else app.openPanel('web', { tab: 'traits' }); app.refreshHud(); } break;
       case 'citytab': app.panelData.tab = d.tab; app.refreshPanel(); break;
       case 'citygrow': s = g.settlements[+d.id]; if (s && G.expandTo(g, s, +d.tile)) { app.toast(_('A citizen now works that tile.')); app.panelData.tile = +d.tile; app.refreshPanel(); app.refreshHud(); app.invalidate(); } break;
       case 'enqueue': s = g.settlements[+d.id]; if (s && G.enqueue(g, s, d.kind, d.item)) { if (s.queue.length > 1) app.toast(_('Added to the queue (position') + ' ' + s.queue.length + ').'); app.refreshPanel(); } break;

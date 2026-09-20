@@ -540,7 +540,9 @@
   };
   // Big settlements grow slower: from pop 8 each extra citizen adds 12% to the food needed, so mega-cities stop at a sane size.
   G.growthCost = function (pop, g) { return Math.floor((15 + 8 * (pop - 1) + Math.pow(pop - 1, 1.5)) * (1 + Math.max(0, pop - 8) * 0.12) * (g ? G.speed(g) : 1)); };
-  G.era = function (civ) { var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
+  G.era = function (civ) { if (civ.v2) return civ.v2.era || 0; var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
+  // v2 rules: the Mastery Web decides what can be built; v1 rules: the technology or civic does.
+  G.gateOk = function (g, civ, kind, id, d) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.allows(g, civ, kind, id, d); if (d.tech && !civ.techs[d.tech]) return false; if (d.civic && !civ.civics[d.civic]) return false; return true; };
 
   // ---------- Production / purchasing ----------
   G.itemCost = function (g, civ, kind, id, s) {
@@ -569,21 +571,19 @@
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
     if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'unit', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
     if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
     // obsolete? if the upgrade target is buildable, hide the old one (except settler/scout)
-    if (d.upgradesTo) { var up = G.unitType(g, civ, d.upgradesTo); if (up.tech && civ.techs[up.tech] && (!up.resource || G.hasResource(g, civ, up.resource))) return false; }
+    if (d.upgradesTo) { var up = G.unitType(g, civ, d.upgradesTo); if ((g.v2 ? G.gateOk(g, civ, 'unit', d.upgradesTo, up) : (up.tech && civ.techs[up.tech])) && (!up.resource || G.hasResource(g, civ, up.resource))) return false; }
     return true;
   };
   G.canBuildBuilding = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.BUILDINGS[id];
     if (!d || d.noBuild || G.hasBuilding(s, id)) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'building', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
@@ -593,8 +593,7 @@
   G.canBuildWonder = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.WONDERS[id];
     if (!s.isCity || g.wonders[id] !== undefined) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'wonder', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     return true;
@@ -602,7 +601,7 @@
   G.canBuildProject = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.PROJECTS[id];
     if (!s.isCity || !s.isCapital) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
+    if (!G.gateOk(g, civ, 'project', id, d)) return false;
     if (d.requiresBuilding && !G.hasBuilding(s, d.requiresBuilding)) return false;
     if (civ.projects && civ.projects[id]) return false;
     if (d.requiresProject && !(civ.projects && civ.projects[d.requiresProject])) return false;
@@ -611,8 +610,7 @@
   G.canBuildNational = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.NATIONAL[id];
     if (!s.isCity || G.hasBuilding(s, id)) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'national', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     var sets = G.civSettlements(g, civ.idx);
     if (sets.some(function (o) { return G.hasBuilding(o, id); })) return false;
@@ -1050,7 +1048,7 @@
   G.settlementStrength = function (g, s) {
     var civ = g.civs[s.civ], fx = G.civFx(g, civ);
     var best = 10;
-    for (var u in AU.UNITS) { var d = G.unitType(g, civ, u); if (d.cls === 'civilian' || d.cls === 'naval' || d.cls === 'navalRanged') continue; if (d.tech && !civ.techs[d.tech]) continue; best = Math.max(best, d.strength); }
+    for (var u in AU.UNITS) { var d = G.unitType(g, civ, u); if (d.cls === 'civilian' || d.cls === 'naval' || d.cls === 'navalRanged') continue; if (!G.gateOk(g, civ, 'unit', u, d)) continue; best = Math.max(best, d.strength); }
     var str = best + (s.isCity ? 3 : 0) + (fx.cityDefense || 0);
     var wallsMult = fx.wallsMult || 1;
     if (G.hasBuilding(s, 'walls')) str += 6 * wallsMult;
@@ -1091,17 +1089,17 @@
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
-    G.checkBoosts(g, civ);
-    if (g.v2 && AU.MasteryWeb) AU.MasteryWeb.turn(g, civ);
-    if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
-    if (civ.currentTech) {
+    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; }
+    else G.checkBoosts(g, civ);
+    if (!g.v2 && !civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
+    if (!g.v2 && civ.currentTech) {
       civ.techProgress[civ.currentTech] = (civ.techProgress[civ.currentTech] || 0) + civ._turnScience;
       var t = AU.TECH_BY_ID[civ.currentTech];
       if (civ.techProgress[civ.currentTech] >= G.techCost(g, civ, t)) { var over = civ.techProgress[civ.currentTech] - G.techCost(g, civ, t); G.learnTech(g, civ, t.id); civ.techOverflow = over; }
     }
     if (civ.techOverflow && civ.currentTech === null) { var av2 = G.availableTechs(civ); if (av2.length) { av2.sort(function (a, b) { return a.cost - b.cost; }); civ.techProgress[av2[0].id] = (civ.techProgress[av2[0].id] || 0) + civ.techOverflow; } civ.techOverflow = 0; }
-    if (!civ.currentCivic) { var ac = G.availableCivics(civ); if (ac.length) { ac.sort(function (a, b) { return a.cost - b.cost; }); civ.currentCivic = ac[0].id; } }
-    if (civ.currentCivic) {
+    if (!g.v2 && !civ.currentCivic) { var ac = G.availableCivics(civ); if (ac.length) { ac.sort(function (a, b) { return a.cost - b.cost; }); civ.currentCivic = ac[0].id; } }
+    if (!g.v2 && civ.currentCivic) {
       civ.civicProgress[civ.currentCivic] = (civ.civicProgress[civ.currentCivic] || 0) + civ._turnCulture;
       var c2 = AU.CIVIC_BY_ID[civ.currentCivic];
       if (civ.civicProgress[civ.currentCivic] >= G.civicCost(g, civ, c2)) G.learnCivic(g, civ, c2.id);
