@@ -411,6 +411,7 @@
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
         html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? _('Str') + ' ' + U.strength(g, u, { attacking: false }) : _('Civilian')) + (def.ranged ? ' · ' + _('Ranged') + ' ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · ' + _('Moves') + ' ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · ' + _('Fortified') : '') + (U.isEmbarked(g, u) ? ' · ' + _('Embarked') : '') + '</div>';
         if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
+        if (g.v2 && AU.Warbands && G.isMilitary(u)) { var wb = AU.Warbands.describe(g, u); if (wb) html += '<div class="meta stat">🛡️ ' + _('Warband') + ' (' + wb.fighters.length + '/' + AU.Warbands.MAX + (wb.commander ? ' + 🪶' : '') + '): ' + wb.members.map(function (m) { return AU.UNITS[m.type].icon + ' ' + m.name + (AU.UNITS[m.type].commander ? '' : ' ' + U.strength(g, m, { attacking: false })); }).join(' · ') + ' → ' + _('fights as') + ' <b>' + wb.strength + '</b>' + (own ? ' <button class="small ghost" data-action="warband">' + (this.warbandTogether !== false ? _('Moving together') : _('Moving alone')) + '</button>' : '') + '</div>'; else if (AU.UNITS[u.type].commander) html += '<div class="meta stat">' + _('Alone. Move it onto your fighters to lead them.') + '</div>'; }
         if (def.unique && def.uuDesc) html += '<div class="meta stat">' + def.uuDesc + '</div>';
         if (own && U.promosAvailable(u)) {
           html += '<div class="promo"><b>⭐ ' + _('Promotion available') + '</b> (' + _('heals 50 HP, ends the turn)') + '<div class="actions">' + U.promoChoices(g, u).map(function (pr) { return '<button class="small gold" data-action="dopromote" data-id="' + pr.id + '" title="' + AU.modsText(pr.mods) + '">' + pr.name + '<small>' + AU.modsText(pr.mods) + '</small></button>'; }).join('') + '</div></div>';
@@ -430,6 +431,7 @@
             AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
           }
           if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">' + _('Route with') + ' ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 ' + _('Ties per turn. Move it to end the route.') + '</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 ' + _('Open trade route') + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">' + _('Walk into the land of a free city you are not at war with.') + '</small>' : ''); }
+          if (AU.UNITS[u.type].migrant && AU.Warbands) { var sJ = G.settlementAt(g, u.tile), canJ = AU.Warbands.canJoin(g, u); html += '<button class="small primary" data-action="join" ' + (canJ ? '' : 'disabled') + '>' + _('Join') + (sJ ? ' ' + sJ.name : '') + ' (+1 ' + _('Pop') + ')</button>' + (!canJ ? '<small class="stat">' + _('Walk it into one of your settlements.') + '</small>' : ''); }
           if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? _('Found Town') : _('Found Capital')) + '</button>' + (!can ? '<small class="stat">' + _('Too close to another settlement or invalid terrain.') + '</small>' : ''); }
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">' + _('Fortify') + '</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? _('Stop exploring') : _('Auto-explore')) + '</button>';
@@ -466,6 +468,7 @@
     },
     previewAttack: function (u, tileIdx) {
       var g = this.g, target = U.targetAt(g, u, tileIdx); if (!target) return '';
+      if (g.v2 && AU.Warbands) { var pv = AU.Warbands.preview(g, u, tileIdx); if (!pv) return ''; return (pv.attackers > 1 ? pv.attackers + '× ' : '') + pv.a + ' vs ' + pv.d + (pv.defenders > 1 ? ' (' + pv.defenders + ')' : '') + ' → ~' + pv.est + ' dmg' + (pv.back ? ', take ~' + pv.back : ''); }
       var ranged = U.isRanged(u), a = U.strength(g, u, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
       var d = target.settlement && (!target.unit || ranged) ? G.settlementStrength(g, target.settlement) : U.strength(g, target.unit, { attacking: false, vs: u });
       var est = Math.round(30 * Math.exp(0.04 * (a - d)));
@@ -498,6 +501,8 @@
         case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast(_('Founded') + ' ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
+        case 'join': if (u && AU.Warbands) { var sJ2 = AU.Warbands.join(g, u); if (sJ2) { this.toast(sJ2.name + ' ' + _('grew to') + ' ' + sJ2.pop + '.'); this.deselect(); this.refreshHud(); this.invalidate(); } } break;
+        case 'warband': this.warbandTogether = this.warbandTogether === false; this.refreshContext(); break;
         case 'skip': if (u) { U.skip(g, u); this.afterUnitAction(u, true); } break;
         case 'sleep': if (u) { U.sleep(g, u); this.afterUnitAction(u, true); } break;
         case 'explore': if (u) { u.auto = !u.auto; if (u.auto) { AU.AI.explore(g, p, u); this.afterUnitAction(u, true); } else this.refreshContext(); } break;
@@ -527,7 +532,8 @@
       var msg = [];
       if (res.captured) msg.push(_('Captured') + ' ' + g.settlements[res.settlement].name + '!');
       else if (res.settlementDamage != null) msg.push(_('Hit') + ' ' + g.settlements[res.settlement].name + ' for ' + res.settlementDamage);
-      if (res.defenderDamage != null) msg.push((res.killed ? _('Destroyed the enemy') : _('Dealt') + ' ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
+      if (res.defenderDamage != null) msg.push((res.killed ? _('Destroyed the enemy') + (res.killedCount > 1 ? ' ×' + res.killedCount : '') : _('Dealt') + ' ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
+      if (res.attackersLost > 1 || (res.attackersLost && !res.attackerKilled)) msg.push(res.attackersLost + ' ' + _('of yours fell'));
       if (res.attackerDamage) msg.push('took ' + res.attackerDamage);
       if (res.attackerKilled) msg.push('your unit was lost');
       this.toast(msg.join(', ') + '.');
@@ -557,8 +563,8 @@
         if (ownUnitsThere.length) { this.selectUnit(ownUnitsThere[0]); return; }
         var sHere = G.settlementAt(g, tileIdx);
         if (sHere && sHere.civ === p.idx && !(h.reach && h.reach[tileIdx])) { var path0 = U.findPath(g, u, tileIdx); if (!path0) { this.selectSettlement(sHere); return; } }
-        var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0;
-        if (U.orderMove(g, u, tileIdx)) { if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' ' + _('turns. It keeps walking by itself each turn.'), 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
+        var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0, origin = u.tile;
+        if (U.orderMove(g, u, tileIdx)) { if (g.v2 && AU.Warbands && this.warbandTogether !== false && G.isMilitary(u)) { var nT = AU.Warbands.moveTogether(g, u, origin, tileIdx); if (nT) this.toast(_('The Warband moves together') + ' (' + (nT + 1) + ').', 1500); } if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' ' + _('turns. It keeps walking by itself each turn.'), 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
         this.toast(_('No route there.'));
         return;
       }

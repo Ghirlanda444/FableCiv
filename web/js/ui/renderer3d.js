@@ -482,6 +482,7 @@
       var mil = G.isMilitary(u), p = tileXZ(t), top = this.tileTop(t);
       var ox = mil ? -R * 0.18 : R * 0.3, oz = mil ? R * 0.05 : R * 0.3;
       if (t.settlement != null) { ox = mil ? -R * 0.6 : R * 0.6; oz = -R * 0.45; }
+      if (mil && g.v2) { var band = G.unitsAt(g, u.tile).filter(function (o) { return o.civ === u.civ && G.isMilitary(o); }); if (band.length > 1) { var bi = band.indexOf(u); ox += (bi - (band.length - 1) / 2) * R * 0.26; oz += (bi % 2) * R * 0.14; } } // a Warband fans out across the tile
       var color = u.civ >= 0 ? G.civColor(g.civs[u.civ]) : '#2b2b2b', color2 = u.civ >= 0 ? G.civData(g.civs[u.civ]).color2 : '#e33';
       var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0) + '|' + (AU.Assets.usable3D('units', u.type) ? 'a' : 'p') + (u.civ >= 0 && AU.Assets.usable3D('units', G.unitArtId(g, g.civs[u.civ], u.type)) ? 'u' : '');
       var node = this.unitNodes[id];

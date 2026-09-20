@@ -74,7 +74,7 @@
     for (var i = 0; i < us.length; i++) {
       var o = us[i];
       if (o.civ !== u.civ) return true;
-      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id && !AU.UNITS[o.type].great && !AU.UNITS[u.type].great) return true; // great people may share a tile with anyone of their side
+      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id && !AU.UNITS[o.type].great && !AU.UNITS[u.type].great) { if (g.v2 && AU.Warbands && G.isMilitary(u)) { if (!AU.Warbands.roomFor(g, u, tileIdx)) return true; } else return true; } // great people may share a tile with anyone of their side; v2: up to three fighters and a Commander form a Warband
     }
     var s = G.settlementAt(g, tileIdx);
     if (s && s.civ !== u.civ) return true;
@@ -88,15 +88,18 @@
     var dist = {}, prev = {}, open = new Heap();
     open.push(0, u.tile); dist[u.tile] = 0;
     if (maxCost === undefined) maxCost = 40;
+    var zoc = g.v2 && AU.Warbands && AU.Warbands.zocApplies(g, u), zocCost = zoc ? Math.max(1, G.maxMoves(g, u.civ, u.type, u)) : 0;
     while (open.a.length) {
       var cur = open.pop(), d = cur[0], idx = cur[1];
       if (d > dist[idx]) continue;
       if (d >= maxCost) continue;
       var t = g.tiles[idx], nb = G.neighbors(g, t);
+      var held = zoc && idx !== u.tile && AU.Warbands.zocAt(g, u.civ, idx); // zone of control: a stop here ends the turn, the walk goes on next turn
       for (var k = 0; k < nb.length; k++) {
         var n = nb[k], nt = g.tiles[n];
         var c = U.enterCost(g, u, nt, t);
         if (c === Infinity) continue;
+        if (held) c += zocCost;
         if (U.tileBlocked(g, u, n, false)) continue;
         var nd = d + c;
         if (dist[n] === undefined || nd < dist[n]) { dist[n] = nd; prev[n] = idx; open.push(nd, n); }
@@ -137,6 +140,7 @@
     var cost = U.enterCost(g, u, to, from);
     if (cost === Infinity || u.moves <= 0 || U.tileBlocked(g, u, tileIdx, true)) return false;
     G.setUnitTile(g, u, tileIdx); u.moves = Math.max(0, u.moves - cost); u.fortify = 0; u.sleep = false; u.movedTurn = g.turn;
+    if (g.v2 && AU.Warbands && u.moves > 0 && AU.Warbands.zocApplies(g, u) && AU.Warbands.zocAt(g, u.civ, tileIdx)) { u.moves = 0; u.zocStopped = g.turn; } // zone of control: stepping next to an enemy Warband ends the move
     var civ = U.civ(g, u);
     if (civ) {
       G.revealAround(g, civ, to.col, to.row, G.sight(g, u));
@@ -202,6 +206,7 @@
     if (def.religious && civ) u.moves += G.civFx(g, civ).religiousMoves || 0;
     u.attacksLeft = def.extraAttack ? 2 : 1;
     if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
+    if (g.v2 && AU.Warbands && G.isMilitary(u) && !AU.Warbands.isCommander(u) && AU.Warbands.commanderAt(g, u.tile, u.civ)) u.moves += 1; // a Commander moves its Warband one tile farther
     if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
   };
   U.fortify = function (g, u) { if (!G.isMilitary(u)) return; u.fortify = Math.max(u.fortify, 1); u.path = null; u.moves = 0; };
@@ -300,7 +305,7 @@
   };
   U.canAttackTile = function (g, u, tileIdx) {
     if (u.moves <= 0 || !G.isMilitary(u) || U.isEmbarked(g, u)) return false;
-    if (u.attacksLeft === 0) return false;
+    if (u.attacksLeft === 0 || AU.UNITS[u.type].noAttack) return false;
     var def = U.def(g, u), from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var d = G.dist(from, to);
     var target = U.targetAt(g, u, tileIdx);
@@ -327,6 +332,7 @@
   U.attack = function (g, u, tileIdx) {
     g.undo = null;
     if (!U.canAttackTile(g, u, tileIdx)) return null;
+    if (g.v2 && AU.Warbands) return AU.Warbands.attack(g, u, tileIdx); // Divergence: the whole Warband fights as one
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };
     u.attackedTurn = g.turn; u.fortify = 0; u.sleep = false; u.path = null;

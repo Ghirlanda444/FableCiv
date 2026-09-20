@@ -571,6 +571,7 @@
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
     if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
+    if (d.v2 && !g.v2) return false;
     if (!G.gateOk(g, civ, 'unit', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
@@ -855,6 +856,7 @@
     }
   };
   G.checkBoosts = function (g, civ) {
+    if (g.v2) { if (AU.MasteryWeb) AU.MasteryWeb.evaluate && AU.MasteryWeb.evaluate(g, civ); return; } // Divergence: the Mastery Web fires Sparks, the classic boosts never do
     civ.boosts = civ.boosts || {};
     AU.TECHS.forEach(function (t) {
       if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;

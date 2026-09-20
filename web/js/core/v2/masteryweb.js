@@ -120,6 +120,12 @@
   MW.study = function (g, civ, id) { var s = st(civ), n = AU.V2.NODE_BY_ID[id]; if (!n || !n.cheap || s.unlocked[id] || s.locked[id] || s.study < MW.studyCost(g, civ, n)) return false; s.study -= MW.studyCost(g, civ, n); return MW.unlock(g, civ, id, 'study'); };
   // Eras without authored nodes yet (2–7 come in phase 6): Knowledge study advances them so the game stays playable to the end. Temporary.
   MW.provisionalEraCost = function (g, civ) { return Math.round(300 * Math.pow(1.6, st(civ).era) * G.speed(g)); };
+  // Fire the Sparks whose condition is already met (called after player actions, so a Spark lands the moment it is earned).
+  MW.evaluate = function (g, civ) {
+    if (!AU.V2 || civ.minor || !civ.v2) return;
+    var s = st(civ);
+    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; if (n.trigger.type !== 'state' && MW.triggerMet(g, civ, n)) MW.unlock(g, civ, n.id); });
+  };
   MW.turn = function (g, civ) {
     if (!AU.V2 || civ.minor) return;
     var s = st(civ), y = G.civYields(g, civ); s.study += Math.round((y.science || 0) * 10) / 10;

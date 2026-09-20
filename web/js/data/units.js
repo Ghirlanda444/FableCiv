@@ -3,6 +3,8 @@
   AU.UNITS = {
     settler:     { name: 'Pioneers',     cls: 'civilian', cost: 80,  moves: 2, strength: 0,  icon: '🧭', popCost: 1, desc: 'Founds a new Town. Takes 1 Population from the settlement that trains it (needs pop 2).' },
     scout:       { name: 'Pathfinder',       cls: 'recon',    cls2: 'melee', cost: 30,  moves: 3, strength: 10, sight: 3, icon: '🔭' },
+    commander:   { name: 'Commander',   cls: 'support',  cost: 60,  moves: 2, strength: 10, icon: '🪶', v2: true, commander: true, noAttack: true, era: 0, desc: 'Leads a Warband. The fighters on its tile hit 15% harder and move 1 tile farther. Cannot attack by itself.' },
+    migrant:     { name: 'Migrant',     cls: 'civilian', cost: 50,  moves: 2, strength: 0,  icon: '🎒', v2: true, migrant: true, popCost: 1, era: 0, desc: 'Takes 1 Population from the settlement that trains it and adds it to any other settlement of yours it walks into.' },
     warrior:     { name: 'Militia',     cls: 'melee',    cost: 40,  moves: 2, strength: 20, icon: '🪓', upgradesTo: 'swordsman' },
     slinger:     { name: 'Sling Hunter',     cls: 'ranged',   cost: 35,  moves: 2, strength: 5,  ranged: 15, range: 1, icon: '🪃', upgradesTo: 'archer' },
     archer:      { name: 'Bowman',      cls: 'ranged',   cost: 60,  moves: 2, strength: 15, ranged: 25, range: 2, tech: 'archery', icon: '🏹', upgradesTo: 'crossbowman' },

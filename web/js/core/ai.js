@@ -120,7 +120,7 @@
     return mil < want;
   };
   AI.bestUnitToBuild = function (g, s, wantRanged) {
-    var civ = g.civs[s.civ], opts = G.buildOptions(g, s).units.filter(function (u) { var d = AU.UNITS[u]; return d.cls !== 'civilian' && d.cls !== 'recon' && d.cls !== 'naval' && d.cls !== 'navalRanged'; });
+    var civ = g.civs[s.civ], opts = G.buildOptions(g, s).units.filter(function (u) { var d = AU.UNITS[u]; return d.cls !== 'civilian' && d.cls !== 'recon' && d.cls !== 'naval' && d.cls !== 'navalRanged' && !d.noAttack; });
     if (!opts.length) return null;
     opts.sort(function (a, b) { var da = G.unitType(g, civ, a), db = G.unitType(g, civ, b); return Math.max(db.strength, db.ranged || 0) - Math.max(da.strength, da.ranged || 0); });
     if (wantRanged) { var r = opts.filter(function (u) { return U.isRanged({ type: u }); }); if (r.length) return r[0]; }
@@ -150,6 +150,7 @@
         if (!s.queue.length) {
           var pick = null;
           if (g.v2 && G.claimedCount(g, s) >= 3 && !G.hasBuilding(s, 'boundary_marker') && opts.buildings.indexOf('boundary_marker') >= 0) pick = { kind: 'building', id: 'boundary_marker' };
+          else if (g.v2 && opts.units.indexOf('commander') >= 0 && G.civUnits(g, civ.idx).filter(G.isMilitary).length >= 4 && !G.civUnits(g, civ.idx).some(function (u) { return AU.UNITS[u.type].commander; })) pick = { kind: 'unit', id: 'commander' };
           else if (opts.projects.length) pick = { kind: 'project', id: opts.projects[0] };
           else if (s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 2) pick = { kind: 'unit', id: 'settler' };
           else if (AU.CityStates && civ.civics.foreign_trade && AU.CityStates.caravans(g, civ).length < Math.min(2, AU.CityStates.caravanLimit(g, civ)) && AU.CityStates.minors(g).some(function (m) { return m.alive && civ.met[m.idx] && !G.atWar(g, civ.idx, m.idx) && G.dist(g.tiles[G.civSettlements(g, m.idx)[0].tile], g.tiles[s.tile]) <= 14; }) && G.rng(g) < 0.5) pick = { kind: 'unit', id: 'caravan' };
@@ -268,7 +269,9 @@
       if (AU.UNITS[u.type].caravan) return AI.moveCaravan(g, civ, u);
       if (AU.UNITS[u.type].religious) return AI.moveReligious(g, civ, u);
       if (AU.UNITS[u.type].great) return AI.moveGreat(g, civ, u);
+      if (AU.UNITS[u.type].migrant) return AI.moveMigrant(g, civ, u);
       if (!G.isMilitary(u)) return;
+      if (AU.UNITS[u.type].commander) return AI.moveCommander(g, civ, u);
       if (AU.UNITS[u.type].cls === 'recon' && g.turn < 80) return AI.explore(g, civ, u);
       if (U.isNaval(u)) return AI.moveNaval(g, civ, u);
       AI.moveMilitary(g, civ, u, garrisoned, sets);
@@ -394,6 +397,7 @@
     if (!U.isRanged(u) && tgt.unit) {
       // avoid suicidal melee attacks
       var my = U.strength(g, u, { attacking: true, vs: tgt.unit }), their = U.strength(g, tgt.unit, { attacking: false, vs: u });
+      if (g.v2 && AU.Warbands) { var pv = AU.Warbands.preview(g, u, tgt.tile); if (pv) { my = pv.a; their = pv.d; } }
       if (their - my > 12 && u.hp < 60) return false;
     }
     U.attack(g, u, tgt.tile);
@@ -432,11 +436,32 @@
     if (ung.length) { ung.sort(function (a, b) { return G.dist(t, g.tiles[a.tile]) - G.dist(t, g.tiles[b.tile]); }); garrisoned[ung[0].id] = 1; if (U.orderMove(g, u, ung[0].tile)) return; }
     U.fortify(g, u);
   };
+  // A Commander walks to the biggest Warband without one (nearest first); otherwise it stays with the nearest garrison.
+  AI.moveCommander = function (g, civ, u) {
+    var WB = AU.Warbands, t = g.tiles[u.tile];
+    if (WB.fighters(g, u.tile, civ.idx).length >= 2) { U.fortify(g, u); return; }
+    var seen = {}, best = null, bv = -1e9;
+    G.civUnits(g, civ.idx).forEach(function (o) { if (!G.isMilitary(o) || WB.isCommander(o) || seen[o.tile]) return; seen[o.tile] = true; if (WB.commanderAt(g, o.tile, civ.idx)) return; var n = WB.fighters(g, o.tile, civ.idx).length, d = G.dist(t, g.tiles[o.tile]); var v = n * 4 - d; if (n >= 1 && d <= 10 && v > bv) { bv = v; best = o.tile; } });
+    if (best != null && best !== u.tile) { if (U.orderMove(g, u, best)) return; }
+    if (best === u.tile) { U.fortify(g, u); return; }
+    var home = AI.nearestOwnSettlement(g, civ, t);
+    if (home && home.tile !== u.tile) U.orderMove(g, u, home.tile); else U.fortify(g, u);
+  };
+  // A Migrant joins the nearest settlement that is not the one it left.
+  AI.moveMigrant = function (g, civ, u) {
+    var WB = AU.Warbands, t = g.tiles[u.tile], here = G.settlementAt(g, u.tile);
+    if (here && here.civ === civ.idx && u.aiFrom !== here.id) { WB.join(g, u); return; }
+    if (u.aiFrom === undefined) u.aiFrom = here ? here.id : -1;
+    var best = null, bd = 1e9;
+    G.civSettlements(g, civ.idx).forEach(function (s) { if (s.id === u.aiFrom) return; var d = G.dist(t, g.tiles[s.tile]); if (d < bd) { bd = d; best = s; } });
+    if (best) { if (!U.orderMove(g, u, best.tile)) U.skip(g, u); } else if (here && here.civ === civ.idx) WB.join(g, u); else U.skip(g, u);
+  };
   AI.approachTile = function (g, u, targetTile) {
     // nearest enterable tile adjacent to target (or the target for ranged standoff)
     var tt = g.tiles[targetTile], best = null, bd = 1e9, res = U.dijkstra(g, u);
     var ring = U.isRanged(u) ? Hex.ring(tt.col, tt.row, U.def(g, u).range || 1, g.W, g.H).concat(Hex.ring(tt.col, tt.row, 1, g.W, g.H)) : Hex.ring(tt.col, tt.row, 1, g.W, g.H);
-    ring.forEach(function (i) { if (res.dist[i] === undefined || U.tileBlocked(g, u, i, true)) return; if (res.dist[i] < bd) { bd = res.dist[i]; best = i; } });
+    var wb = g.v2 && AU.Warbands && G.isMilitary(u);
+    ring.forEach(function (i) { if (res.dist[i] === undefined || U.tileBlocked(g, u, i, true)) return; var sc = res.dist[i] - (wb && AU.Warbands.fighters(g, i, u.civ).length ? 1.5 : 0); if (sc < bd) { bd = sc; best = i; } }); // v2: join a friendly Warband next to the target
     if (best == null) {
       // move as close as possible
       for (var idx in res.dist) { var i2 = +idx; if (U.tileBlocked(g, u, i2, true)) continue; var d = G.dist(g.tiles[i2], tt) * 3 + res.dist[i2] * 0.5; if (d < bd) { bd = d; best = i2; } }
