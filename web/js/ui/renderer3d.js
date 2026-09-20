@@ -498,7 +498,7 @@
       if (!node) {
         var grp = new T.Group();
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
-        var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.textureChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
+        var ucv = u.civ >= 0 ? g.civs[u.civ] : null, lookType = AU.UNITS[u.type].decoy && u.civ !== player.idx ? AU.UNITS[u.type].disguise : u.type, art = AU.Assets.textureChain(AU.Assets.unitChain(G.unitArtId(g, ucv, lookType), lookType, ucv ? AU.cultureOf(ucv) : null));
         if (art) { // painted unit as a billboard standing on its base
           var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 0.82 : 0.68);
           var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);

@@ -11,14 +11,32 @@
   WB.on = function (g) { return !!(g && g.v2); };
   WB.isCommander = function (u) { return !!AU.UNITS[u.type].commander; };
   // The fighters of one side on a tile: military units that are neither Commanders nor Great People.
-  WB.fighters = function (g, tileIdx, civIdx) { return G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === civIdx && G.isMilitary(o) && !WB.isCommander(o) && !AU.UNITS[o.type].great; }); };
+  WB.isDecoy = function (u) { return !!AU.UNITS[u.type].decoy; };
+  WB.fighters = function (g, tileIdx, civIdx) { return G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === civIdx && G.isMilitary(o) && !WB.isCommander(o) && !WB.isDecoy(o) && !AU.UNITS[o.type].great; }); };
   WB.commanderAt = function (g, tileIdx, civIdx) { return G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === civIdx && WB.isCommander(o); })[0] || null; };
   // Everyone of the side who travels as the Warband on this tile (fighters plus the Commander).
-  WB.members = function (g, tileIdx, civIdx) { return G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === civIdx && G.isMilitary(o) && !AU.UNITS[o.type].great; }); };
+  WB.members = function (g, tileIdx, civIdx) { return G.unitsAt(g, tileIdx).filter(function (o) { return o.civ === civIdx && G.isMilitary(o) && !WB.isDecoy(o) && !AU.UNITS[o.type].great; }); };
+  // ---------- bait ----------
+  // A Scarecrow Crew's bait level: 1, plus 1 per Bait Spark. Attackers lose 4/6/8 Strength for 10/15/20 turns.
+  WB.baitLevel = function (g, civ) { return 1 + (civ ? (G.civFx(g, civ).scarecrowLevel || 0) : 0); };
+  WB.baitPenalty = function (level) { return 2 + 2 * level; };
+  WB.baitTurns = function (level) { return 5 + 5 * level; };
+  WB.baited = function (g, u) { return u.baited && u.baited.until > g.turn ? u.baited : null; };
+  // The ambush: the attackers spend their turn, carry a Strength penalty for a while, and the crew is gone.
+  WB.springBait = function (g, u, decoy, group) {
+    var owner = U.civ(g, decoy), level = WB.baitLevel(g, owner), pen = WB.baitPenalty(level), turns = WB.baitTurns(level), civ = U.civ(g, u);
+    var result = { attacker: u.id, tile: decoy.tile, baited: true, attackers: group.map(function (o) { return o.id; }), baitLevel: level, baitTurns: turns, baitPenalty: pen };
+    group.forEach(function (o) { o.moves = 0; o.attacksLeft = 0; o.attackedTurn = g.turn; o.fortify = 0; o.sleep = false; o.path = null; o.baited = { until: g.turn + turns, str: pen, by: decoy.civ }; });
+    if (civ) { civ.flags['ev:baited'] = g.turn; G.notify(g, civ, { kind: 'loss', text: '🎃 ' + _('An ambush!') + ' ' + _('That Warband was a Scarecrow Crew:') + ' ' + group.length + ' ' + _('of your units lose their turn and fight') + ' -' + pen + ' ' + _('Strength for') + ' ' + turns + ' ' + _('turns.'), tile: decoy.tile }); }
+    if (owner) { owner.flags['ev:baitSprung'] = g.turn; owner.stats.baits = (owner.stats.baits || 0) + 1; G.notify(g, owner, { kind: 'capture', text: '🎃 ' + decoy.name + ' ' + _('sprang its ambush near') + ' ' + U.nearestName(g, decoy.tile) + ': ' + group.length + ' ' + _('enemy units lose their turn and') + ' -' + pen + ' ' + _('Strength for') + ' ' + turns + ' ' + _('turns.'), tile: decoy.tile }); }
+    G.removeUnit(g, decoy);
+    return result;
+  };
   // May unit u end its move on this tile next to the friends already there?
   WB.roomFor = function (g, u, tileIdx) {
     if (!G.isMilitary(u) || AU.UNITS[u.type].great) return true;
     if (WB.isCommander(u)) { var c = WB.commanderAt(g, tileIdx, u.civ); return !c || c.id === u.id; }
+    if (WB.isDecoy(u)) return !G.unitsAt(g, tileIdx).some(function (o) { return o.civ === u.civ && o.id !== u.id && WB.isDecoy(o); }); // one Scarecrow Crew per tile
     return WB.fighters(g, tileIdx, u.civ).filter(function (o) { return o.id !== u.id; }).length < WB.MAX;
   };
   // Combined strength of a group in one exchange. parts are sorted strongest first.
@@ -52,7 +70,7 @@
     var a = WB.groupStrength(g, group, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
     var d, dGroup = [];
     if (target.settlement && (!target.unit || ranged)) d = G.settlementStrength(g, target.settlement);
-    else { dGroup = WB.defenceGroup(g, target, tileIdx); d = WB.groupStrength(g, dGroup, { attacking: false, vs: a.parts[0].u }).total; if (target.settlement) d = Math.max(d, G.settlementStrength(g, target.settlement) - 5); }
+    else { dGroup = WB.defenceGroup(g, target, tileIdx); d = WB.groupStrength(g, dGroup, { attacking: false, vs: a.parts[0].u }).total; if (target.settlement) d = Math.max(d, G.settlementStrength(g, target.settlement) - 5); if (dGroup.length === 1 && WB.isDecoy(dGroup[0]) && dGroup[0].civ !== u.civ) { var dz = AU.UNITS[AU.UNITS[dGroup[0].type].disguise || 'warrior']; d = Math.round(dz.strength * 2); dGroup = [dGroup[0], dGroup[0], dGroup[0]]; } }
     var est = Math.round(30 * Math.exp(0.04 * (a.total - d)));
     var back = ranged ? 0 : Math.round(30 * Math.exp(0.04 * (d - a.total)) * (target.settlement && !target.unit ? 0.7 : 1));
     return { a: a.total, d: d, est: est, back: back, attackers: group.length, defenders: dGroup.length, commander: !!a.commander };
@@ -66,6 +84,7 @@
     group.forEach(function (o) { o.attackedTurn = g.turn; o.fortify = 0; o.sleep = false; o.path = null; });
     if (civ) civ.flags['ev:combat'] = g.turn;
     if (target.unit) { var tciv = U.civ(g, target.unit); if (tciv) tciv.flags['ev:combat'] = g.turn; } else if (target.settlement && g.civs[target.settlement.civ]) g.civs[target.settlement.civ].flags['ev:combat'] = g.turn;
+    if (target.unit && WB.isDecoy(target.unit) && !target.settlement && !WB.fighters(g, tileIdx, target.unit.civ).length) { var br = WB.springBait(g, u, target.unit, group); if (civ && civ.isPlayer) G.refreshVisibility(g, civ); return br; }
     var atk = WB.groupStrength(g, group, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
     result.attackers = group.map(function (o) { return o.id; }); result.attackStrength = atk.total;
     var xpMult = (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));

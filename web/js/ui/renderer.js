@@ -602,7 +602,8 @@
     for (var sk in stacks) {
       var members = stacks[sk], rep = members[0];
       if (members.length > 1) { var selId = app && app.sel.unit; rep = null; members.forEach(function (m) { if (m.id === selId) rep = m; }); if (!rep) members.forEach(function (m) { if (!rep || (AU.UNITS[m.type].commander ? -1 : AU.U.def(g, m).strength) > (AU.UNITS[rep.type].commander ? -1 : AU.U.def(g, rep).strength)) rep = m; }); }
-      this.drawUnit(ctx, g, rep, S(g.tiles[rep.tile]), rzs, app, members.length);
+      var fakeN = members.length === 1 && AU.UNITS[rep.type].decoy && rep.civ !== player.idx ? 3 : members.length; // a Scarecrow Crew fools everyone but its owner
+      this.drawUnit(ctx, g, rep, S(g.tiles[rep.tile]), rzs, app, fakeN);
     }
     // pass 8: fog for explored-but-not-visible
     ctx.fillStyle = 'rgba(8,14,26,0.42)';
@@ -673,9 +674,9 @@
       ctx.strokeStyle = '#ff5a3c'; ctx.lineWidth = Math.max(1, ur * 0.08); ctx.setLineDash([Math.max(2, ur * 0.18), Math.max(2, ur * 0.12)]); ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.2, ur * 0.52, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     }
     if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.15, ur * 0.5, 0, 0, Math.PI * 2); ctx.stroke(); }
-    var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.getChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
+    var ucv = u.civ >= 0 ? g.civs[u.civ] : null, lookType = AU.UNITS[u.type].decoy && (!app || u.civ !== G.player(g).idx) ? AU.UNITS[u.type].disguise : u.type, art = AU.Assets.getChain(AU.Assets.unitChain(G.unitArtId(g, ucv, lookType), lookType, ucv ? AU.cultureOf(ucv) : null));
     if (art) { var ah = ur * 2.6, aw = ah * art.width / art.height; ctx.drawImage(art, ux - aw / 2, uy - ah + ur * 0.6, aw, ah); }
-    else { ctx.fillStyle = rgb(rc, 1.1); ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1); }
+    else { ctx.fillStyle = rgb(rc, 1.1); ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, AU.UNITS[lookType].icon, ux, uy, ur * 1.1); }
     // Owner badge: the empire's emblem (or a skull) in a small coloured circle at the shoulder
     var bx = ux + ur * 0.85, by = uy - ur * 0.95, br = Math.max(4, ur * 0.42);
     ctx.fillStyle = ucol; ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(1.5, br * 0.22); ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill(); ctx.stroke();

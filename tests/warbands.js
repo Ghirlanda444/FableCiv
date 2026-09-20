@@ -89,15 +89,46 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   assert(U.moveTo(gc, wc, bc) && wc.moves === 1, 'classic: no zone of control');
 }
 
-// ---- v2: Migrant joins a settlement; classic games cannot build v2 units
+// ---- v2: a Scarecrow Crew springs its ambush
+{
+  const g = fresh(true); clear(g); const [a, b, c] = flatPair(g);
+  g.civs[0].rel[1].war = true; g.civs[1].rel[0].war = true;
+  const crew = G.spawnUnit(g, 0, 'scarecrow', b), e1 = G.spawnUnit(g, 1, 'warrior', c), e2 = G.spawnUnit(g, 1, 'slinger', c);
+  [e1, e2].forEach(u => { u.moves = 2; u.attacksLeft = 1; });
+  assert(!U.canAttackTile(g, crew, c), 'a Scarecrow Crew never attacks');
+  const pv = WB.preview(g, e1, b);
+  assert(pv.defenders === 3 && pv.d >= 30, 'to the enemy the crew looks like a full Warband (' + pv.d + ')');
+  const before = U.strength(g, e1, { attacking: true });
+  const res = U.attack(g, e1, b);
+  assert(res && res.baited && res.attackers.length === 1, 'attacking the crew springs the bait (melee only joins the melee strike)');
+  assert(!g.units[crew.id], 'the crew is spent');
+  assert(e1.moves === 0 && e1.attacksLeft === 0, 'the attacker loses the rest of its turn');
+  assert(WB.baited(g, e1) && WB.baited(g, e1).until === g.turn + 10 && U.strength(g, e1, { attacking: true }) === before - 4, 'level 1 bait: -4 Strength for 10 turns (' + before + ' → ' + U.strength(g, e1, { attacking: true }) + ')');
+  g.turn += 10; assert(!WB.baited(g, e1) && U.strength(g, e1, { attacking: true }) === before, 'the penalty wears off');
+  // a Bait Spark raises the level
+  const g2 = fresh(true); clear(g2); const [a2, b2, c2] = flatPair(g2);
+  g2.civs[0].rel[1].war = true; g2.civs[1].rel[0].war = true;
+  AU.MasteryWeb.state(g2.civs[0]).unlocked.t_tannery = 1; g2.civs[0]._fx = null;
+  assert(WB.baitLevel(g2, g2.civs[0]) === 2, 'a Bait Spark makes level 2');
+  const crew2 = G.spawnUnit(g2, 0, 'scarecrow', b2), w = G.spawnUnit(g2, 1, 'warrior', c2), w2 = G.spawnUnit(g2, 1, 'warrior', c2); [w, w2].forEach(u => { u.moves = 2; u.attacksLeft = 1; });
+  const r2 = U.attack(g2, w, b2);
+  assert(r2.baited && r2.attackers.length === 2 && WB.baited(g2, w).str === 6 && WB.baited(g2, w2).until === g2.turn + 15, 'level 2: both attackers shaken, -6 for 15 turns');
+  // with real fighters on the tile the crew is not the target
+  const g3 = fresh(true); clear(g3); const [a3, b3, c3] = flatPair(g3);
+  g3.civs[0].rel[1].war = true; g3.civs[1].rel[0].war = true;
+  G.spawnUnit(g3, 0, 'scarecrow', b3); const real = G.spawnUnit(g3, 0, 'warrior', b3); const att = G.spawnUnit(g3, 1, 'warrior', c3); att.moves = 2; att.attacksLeft = 1;
+  assert(U.targetAt(g3, att, b3).unit.id === real.id, 'a real fighter on the tile is the target, not the crew');
+}
+
+// ---- v2: Uprooters join a settlement; classic games cannot build v2 units
 {
   const g = fresh(true); const p = G.player(g);
   const settler = G.civUnits(g, p.idx).filter(u => u.type === 'settler')[0];
   const s = U.foundCity(g, settler);
   const m = G.spawnUnit(g, p.idx, 'migrant', s.tile); m.moves = 2;
-  const pop = s.pop; assert(WB.join(g, m) && s.pop === pop + 1 && !g.units[m.id], 'a Migrant joins for +1 population');
+  const pop = s.pop; assert(WB.join(g, m) && s.pop === pop + 1 && !g.units[m.id], 'Uprooters join for +1 population');
   const gc = fresh(false); const pc = G.player(gc); const sc = U.foundCity(gc, G.civUnits(gc, pc.idx).filter(u => u.type === 'settler')[0]);
-  assert(!G.canBuildUnit(gc, sc, 'commander') && !G.canBuildUnit(gc, sc, 'migrant'), 'classic games never offer Commander or Migrant');
+  assert(!G.canBuildUnit(gc, sc, 'commander') && !G.canBuildUnit(gc, sc, 'migrant') && !G.canBuildUnit(gc, sc, 'scarecrow'), 'classic games never offer Bandleader, Uprooters or Scarecrow Crew');
 }
 
 // ---- v2: a 60-turn AI game with wars stays consistent

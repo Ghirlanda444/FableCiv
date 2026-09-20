@@ -297,6 +297,7 @@
       if (ctx && ctx.vs && ctx.vs.type && cls === 'antcav' && AU.UNITS[ctx.vs.type].cls === 'cavalry') str += 10;
     }
     if (!def.noDamagePenalty && !fx.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
+    if (u.baited && u.baited.until > g.turn) str -= u.baited.str; // shaken by a Scarecrow Crew's ambush
     return Math.max(1, str);
   };
   U.damage = function (g, diff) {
@@ -321,12 +322,12 @@
   U.targetAt = function (g, u, tileIdx) {
     var s = G.settlementAt(g, tileIdx);
     if (s && G.atWar(g, u.civ, s.civ)) {
-      var garrison = G.unitsAt(g, tileIdx).filter(function (o) { return G.isMilitary(o); })[0];
+      var garrison = G.unitsAt(g, tileIdx).filter(function (o) { return G.isMilitary(o) && !AU.UNITS[o.type].decoy; })[0];
       return { settlement: s, unit: garrison || null };
     }
     var us = G.unitsAt(g, tileIdx).filter(function (o) { return o.civ !== u.civ && G.atWar(g, u.civ, o.civ); });
     if (!us.length) return null;
-    var mil = us.filter(G.isMilitary)[0];
+    var mil = us.filter(function (o) { return G.isMilitary(o) && !AU.UNITS[o.type].decoy; })[0] || us.filter(G.isMilitary)[0]; // a Scarecrow Crew is the target only when it stands alone
     return { unit: mil || us[0], settlement: null };
   };
   U.attack = function (g, u, tileIdx) {

@@ -52,7 +52,7 @@ Chibipedia: the Technologies, Civics, Governments and Policy Cards categories hi
 
 Translations: `web/js/i18n.js` walks the v2 data (Spark names, jokes, trigger texts, hub and branch names, age names, unit joke names, Society tier and persuasion names) and the `descV2` wording; 1,370 new strings translated into the 8 languages (parts `<lang>-v2-*.json`).
 
-Left for the owner: pictures for Migrant, Commander, Cookfire, Kiln, Playfield, Boundary Marker and Growth Hall (paid generation, needs approval); City Focus slots (spec item deferred); Great People from hub payoffs (`spawnNamed` hook).
+Left for the owner: pictures for Uprooters, Bandleader, Scarecrow Crew, Cookfire, Kiln, Playfield, Boundary Marker and Growth Hall (paid generation, needs approval); City Focus slots (spec item deferred); Great People from hub payoffs (`spawnNamed` hook).
 
 ## Decisions needed from the owner
 
@@ -61,3 +61,9 @@ Left for the owner: pictures for Migrant, Commander, Cookfire, Kiln, Playfield, 
 3. Ship v2 as a replacement (v1 saves become legacy) or as a mode next to v1 for a while? Default: replacement at phase 2, v1 saves still loadable.
 4. The spec's Era 1 has 33 named Sustenance/… nodes in the tables but asks for exactly 32 (Chase the Goats moved to Branched). Default: a "Goat Path" pasture node fills the seventh Sustenance slot.
 5. Insight currency name clashes with v1's "Insight" (civic Sparks). Default: v2 calls the trickle "Insight" and drops the v1 term with the cut-over.
+
+## New units (owner request, after phase 7b)
+
+Renamed: Commander → **Bandleader** (Civ7 has Army Commanders), Migrant → **Uprooters** (Civ7 has Migrants). Ids stay `commander` and `migrant`.
+
+**Scarecrow Crew** (`scarecrow`, Kid Training Spark, cost 30, Str 8, never attacks): bait. To every other empire it renders and reads as a full Warband of the disguise unit (Militia); its attack preview shows a band's strength. When an enemy attacks a tile where the crew stands alone, the crew is spent and every attacker in the exchange loses its remaining movement and attacks and is *shaken*: -4 Strength for 10 turns at bait level 1, -6 for 15 at level 2, -8 for 20 at level 3. Bait levels come from Sparks (`fx.scarecrowLevel`: Tanner's Yard in the Turret Age, Patent Office in the Puffstack Age). With real fighters on the tile the crew is never the target; one crew per tile. Proposed but not built: Curious Kid, Stakers, Drovers, Festival Wagon, Chronicler (see the chat of 2026-09-20).
