@@ -310,10 +310,10 @@
     t.settlement = s.id;
     g.settlements[s.id] = s;
     G.claimTile(g, s, tileIdx, true);
-    G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.owner < 0) { nt.owner = s.id; s.tiles.push(n); } });
+    if (!g.v2) G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.owner < 0) { nt.owner = s.id; s.tiles.push(n); } }); // v2: the centre tile only, every tile after is earned by growth
     if (isCapital) { civ.capital = s.id; civ.originalCapital = s.id; G.addBuilding(g, s, 'palace'); }
     var fx = G.civFx(g, civ);
-    s.pendingGrowth += 1; G.autoExpand(g, s); // the first citizen works the best adjacent tile
+    s.pendingGrowth += 1; G.autoExpand(g, s); // the first citizen works the best adjacent tile (v2: this is the first of the three free claims)
     if (fx.freeBuilding) G.addBuilding(g, s, fx.freeBuilding);
     if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (g.v2 ? G.gateOk(g, civ, 'building', fb, AU.BUILDINGS[fb] || {}) : civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
     if (fx.freeExpansion) s.pendingGrowth += fx.freeExpansion;
@@ -583,6 +583,7 @@
   G.canBuildBuilding = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.BUILDINGS[id];
     if (!d || d.noBuild || G.hasBuilding(s, id)) return false;
+    if (d.v2 && !g.v2) return false;
     if (!G.gateOk(g, civ, 'building', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
@@ -1015,20 +1016,37 @@
     s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || i === s.tile) return; var y = G.tileYields(g, t, s); var v = y.food * 2 + y.production + y.gold; if (v < wv) { wv = v; worst = t; } });
     if (worst) worst.worked = false;
   };
+  // v2 city growth: every population point may claim one tile. The centre and the first two are free; from the fourth
+  // a claim also costs Influence (15 per tile beyond the third, rising) and needs an Expansion building in the settlement.
+  G.claimedCount = function (g, s) { var n = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked) n++; }); return n; };
+  G.claimCost = function (g, s) { var n = G.claimedCount(g, s); return n < 3 ? 0 : 10 * (n - 2); };
+  // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus ability bonuses.
+  G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + (G.civFx(g, civ).influencePerTurn || 0); };
+  G.claimBlocker = function (g, s) { // null when the next claim may happen, else why not
+    if (!g.v2) return null;
+    var n = G.claimedCount(g, s); if (n < 3) return null;
+    if (!G.hasBuilding(s, 'boundary_marker') && !G.hasBuilding(s, 'growth_hall')) return 'building';
+    var civ = g.civs[s.civ]; if ((civ.influence || 0) < G.claimCost(g, s)) return 'influence';
+    return null;
+  };
+  G.payClaim = function (g, s) { if (!g.v2) return; var cost = G.claimCost(g, s); if (cost > 0) { var civ = g.civs[s.civ]; civ.influence = (civ.influence || 0) - cost; } };
   G.autoExpand = function (g, s) {
+    if (g.v2 && !G.hasBuilding(s, 'growth_hall') && s.pendingGrowth > 1) { s.specialists += s.pendingGrowth - 1; s.pendingGrowth = 1; } // without a Growth Hall only one claim waits; the rest become specialists
     while (s.pendingGrowth > 0) {
+      if (G.claimBlocker(g, s)) break;
       var cands = G.expansionCandidates(g, s);
       if (!cands.length) { s.specialists += s.pendingGrowth; s.pendingGrowth = 0; break; }
       if (s.specialists > 0 && cands.length && false) {}
       var best = null, bv = -1e9;
       cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); if (v > bv) { bv = v; best = i; } });
-      G.claimTile(g, s, best); s.pendingGrowth--;
+      G.payClaim(g, s); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
   G.expandTo = function (g, s, tileIdx) {
     if (s.pendingGrowth <= 0) return false;
     if (G.expansionCandidates(g, s).indexOf(tileIdx) < 0) return false;
-    G.claimTile(g, s, tileIdx); s.pendingGrowth--;
+    if (G.claimBlocker(g, s)) return false;
+    G.payClaim(g, s); G.claimTile(g, s, tileIdx); s.pendingGrowth--;
     return true;
   };
   // A settlement with Walls (or a Castle) bombards the strongest enemy military unit within 2 tiles once per turn.
@@ -1089,7 +1107,7 @@
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
-    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; }
+    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; civ.influence = (civ.influence || 0) + G.influenceIncome(g, civ); }
     else G.checkBoosts(g, civ);
     if (!g.v2 && !civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (!g.v2 && civ.currentTech) {

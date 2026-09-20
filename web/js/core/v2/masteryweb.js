@@ -60,6 +60,7 @@
     if (fx.techCulture) civ.bonusCulture = (civ.bonusCulture || 0) + fx.techCulture;
     if (fx.eurekaDiscount) civ.bonusScience = (civ.bonusScience || 0) + Math.round(40 * fx.eurekaDiscount);
     if (fx.inspirationDiscount) civ.bonusCulture = (civ.bonusCulture || 0) + Math.round(40 * fx.inspirationDiscount);
+    if (node.fx && node.fx.influenceOnce) civ.influence = (civ.influence || 0) + node.fx.influenceOnce;
     MW.grantFreeBuildings(g, civ);
     (node.locks || []).forEach(function (other) { MW.lockPermanent(g, civ, other); });
     G.notify(g, civ, { big: true, kind: 'tech', text: '💡 ' + _('Spark!') + ' ' + node.name + ' — “' + node.joke + '”' + (node.unlocks && node.unlocks.unit ? ' · ' + _('unlocks') + ' ' + (AU.UNITS[node.unlocks.unit] ? AU.UNITS[node.unlocks.unit].name : node.unlocks.unit) : '') + (node.unlocks && node.unlocks.building ? ' · ' + _('unlocks') + ' ' + (AU.BUILDINGS[node.unlocks.building] ? AU.BUILDINGS[node.unlocks.building].name : node.unlocks.building) : ''), panel: 'web' });
@@ -133,7 +134,7 @@
   // Effects of unlocked nodes and chosen traits, merged into the empire's effect set.
   MW.fx = function (civ, merge, fx) { var s = civ.v2; if (!s) return; for (var id in s.unlocked) { var n = AU.V2.NODE_BY_ID[id]; if (n && n.fx) merge(fx, n.fx); } for (var h in s.traits) { var hub = AU.V2.HUB_BY_ID[h]; if (!hub) continue; var br = hub.branches.filter(function (b) { return b.id === s.traits[h]; })[0]; if (br && br.fx) merge(fx, br.fx); } };
   MW.nodeFor = function (kind, id) { if (!MW._idx) { MW._idx = {}; AU.V2.NODES.forEach(function (n) { if (n.unlocks) for (var k in n.unlocks) MW._idx[k + ':' + n.unlocks[k]] = n.id; }); } return MW._idx[kind + ':' + id] || null; };
-  MW.v1Era = function (def) { var t = def.tech && AU.TECH_BY_ID[def.tech], c = def.civic && AU.CIVIC_BY_ID[def.civic]; return Math.max(t ? t.era : 0, c ? c.era : 0); };
+  MW.v1Era = function (def) { if (def.era !== undefined) return def.era; var t = def.tech && AU.TECH_BY_ID[def.tech], c = def.civic && AU.CIVIC_BY_ID[def.civic]; return Math.max(t ? t.era : 0, c ? c.era : 0); };
   // Is this unit/building/wonder available under v2 rules? Named by a node → that node; else its v1 era must be reached.
   MW.allows = function (g, civ, kind, id, def) {
     var s = st(civ), nid = MW.nodeFor(kind, id);

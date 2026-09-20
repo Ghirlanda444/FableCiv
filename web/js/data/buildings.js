@@ -4,6 +4,8 @@
     palace:       { name: 'Palace',        cost: 0,   yields: { production: 2, science: 2, culture: 1, gold: 3, happiness: 1 }, noBuild: true, desc: 'Seat of government. Moves with your capital.' },
     monument:     { name: 'Monument',      cost: 60,  yields: { culture: 2 } },
     granary:      { name: 'Granary',       cost: 65,  yields: { food: 2 }, tech: 'pottery' },
+    boundary_marker: { name: 'Boundary Marker', cost: 45, yields: { culture: 1 }, v2: true, era: 0, desc: 'Divergence rules: lets the settlement claim tiles beyond its first three (each claim also costs Influence).' },
+    growth_hall:  { name: 'Growth Hall', cost: 140, yields: { culture: 1, happiness: 1 }, v2: true, era: 2, requires: 'boundary_marker', desc: 'Divergence rules: growth events queue up instead of turning into specialists when Influence is short.' },
     shrine:       { name: 'Shrine',        cost: 70,  yields: { faith: 2, happiness: 1 }, tech: 'mysticism' },
     temple:       { name: 'Temple',        cost: 160, yields: { faith: 4, culture: 1, happiness: 1 }, civic: 'mysticism_civic', requires: 'shrine' },
     walls:        { name: 'Walls',         cost: 80,  yields: {}, tech: 'masonry', defense: 6, hp: 100, desc: 'City +6 defense, +100 HP; bombards enemy units within 2 tiles every turn' },
