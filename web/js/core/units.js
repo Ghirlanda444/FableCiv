@@ -126,7 +126,7 @@
   };
   // Tiles reachable this turn (moves > 0 rule: can always enter a tile if any movement left)
   U.reachableNow = function (g, u) {
-    var out = {}, res = U.dijkstra(g, u, u.moves);
+    var out = {}; if (!G.canOrder(g, u)) return out; var res = U.dijkstra(g, u, u.moves);
     for (var idx in res.dist) {
       var i = +idx; if (i === u.tile) continue;
       var p = res.prev[i];
@@ -139,6 +139,7 @@
     var from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var cost = U.enterCost(g, u, to, from);
     if (cost === Infinity || u.moves <= 0 || U.tileBlocked(g, u, tileIdx, true)) return false;
+    if (!G.spendOrder(g, u)) return false; // no Command left this turn
     G.setUnitTile(g, u, tileIdx); u.moves = Math.max(0, u.moves - cost); u.fortify = 0; u.sleep = false; u.movedTurn = g.turn;
     if (g.v2 && AU.Warbands && u.moves > 0 && AU.Warbands.zocApplies(g, u) && AU.Warbands.zocAt(g, u.civ, tileIdx)) { u.moves = 0; u.zocStopped = g.turn; } // zone of control: stepping next to an enemy Warband ends the move
     var civ = U.civ(g, u);
@@ -184,7 +185,7 @@
   U.canUndo = function (g, u) { var d = g.undo; return !!(d && d.unit === u.id && d.turn === g.turn && g.units[u.id] && u.tile !== d.tile && !U.tileBlocked(g, u, d.tile, true)); };
   U.undoMove = function (g, u) {
     if (!U.canUndo(g, u)) return false;
-    var d = g.undo; G.setUnitTile(g, u, d.tile); u.moves = d.moves; u.fortify = d.fortify; u.sleep = d.sleep; u.movedTurn = d.movedTurn; u.path = null; g.undo = null;
+    var d = g.undo; G.setUnitTile(g, u, d.tile); u.moves = d.moves; G.refundOrder(g, u); u.fortify = d.fortify; u.sleep = d.sleep; u.movedTurn = d.movedTurn; u.path = null; g.undo = null;
     var civ = U.civ(g, u); if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return true;
   };
@@ -213,7 +214,7 @@
   U.skip = function (g, u) { u.moves = 0; };
   U.sleep = function (g, u) { u.sleep = true; u.path = null; u.moves = 0; };
   U.disband = function (g, u) { G.removeUnit(g, u); };
-  U.needsOrders = function (g, u) { return u.moves > 0 && !u.sleep && !u.fortify && !(u.path && u.path.length); };
+  U.needsOrders = function (g, u) { return u.moves > 0 && !u.sleep && !u.fortify && !(u.path && u.path.length) && G.canOrder(g, u); };
 
   // ---------- Combat ----------
   U.strength = function (g, u, ctx) {
@@ -304,9 +305,10 @@
     var r = 0.8 + G.rng(g) * 0.4;
     return Math.max(1, Math.round(30 * Math.exp(0.04 * diff) * r));
   };
-  U.canAttackTile = function (g, u, tileIdx) {
+  U.canAttackTile = function (g, u, tileIdx, ignoreOrder) {
     if (u.moves <= 0 || !G.isMilitary(u) || U.isEmbarked(g, u)) return false;
     if (u.attacksLeft === 0 || AU.UNITS[u.type].noAttack) return false;
+    if (!ignoreOrder && !G.canOrder(g, u)) return false; // no Command left this turn
     var def = U.def(g, u), from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var d = G.dist(from, to);
     var target = U.targetAt(g, u, tileIdx);
@@ -333,6 +335,7 @@
   U.attack = function (g, u, tileIdx) {
     g.undo = null;
     if (!U.canAttackTile(g, u, tileIdx)) return null;
+    if (!G.spendOrder(g, u)) return null;
     if (g.v2 && AU.Warbands) return AU.Warbands.attack(g, u, tileIdx); // Divergence: the whole Warband fights as one
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };

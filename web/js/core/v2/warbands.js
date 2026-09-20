@@ -56,7 +56,7 @@
   // The fighters who join unit u in an attack on a tile: same kind (ranged or melee) and able to strike it.
   WB.attackGroup = function (g, u, tileIdx) {
     var ranged = U.isRanged(u);
-    return WB.fighters(g, u.tile, u.civ).filter(function (o) { return o.id === u.id || (U.isRanged(o) === ranged && U.canAttackTile(g, o, tileIdx)); });
+    return WB.fighters(g, u.tile, u.civ).filter(function (o) { return o.id === u.id || (U.isRanged(o) === ranged && U.canAttackTile(g, o, tileIdx, true)); }); // the band strikes on the initiator's order
   };
   WB.defenceGroup = function (g, target, tileIdx) {
     var v = target.unit; if (!v) return [];
@@ -81,7 +81,7 @@
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u), civ = U.civ(g, u);
     var result = { attacker: u.id, ranged: ranged, tile: tileIdx, warband: true };
     var group = WB.attackGroup(g, u, tileIdx);
-    group.forEach(function (o) { o.attackedTurn = g.turn; o.fortify = 0; o.sleep = false; o.path = null; });
+    group.forEach(function (o) { o.attackedTurn = g.turn; o.fortify = 0; o.sleep = false; o.path = null; o.orderedTurn = g.turn; });
     if (civ) civ.flags['ev:combat'] = g.turn;
     if (target.unit) { var tciv = U.civ(g, target.unit); if (tciv) tciv.flags['ev:combat'] = g.turn; } else if (target.settlement && g.civs[target.settlement.civ]) g.civs[target.settlement.civ].flags['ev:combat'] = g.turn;
     if (target.unit && WB.isDecoy(target.unit) && !target.settlement && !WB.fighters(g, tileIdx, target.unit.civ).length) { var br = WB.springBait(g, u, target.unit, group); if (civ && civ.isPlayer) G.refreshVisibility(g, civ); return br; }

@@ -886,6 +886,34 @@
   };
 
   // ---------- Diplomacy ----------
+  // Command: how many units an empire can order in a turn. Old World's orders, reshaped: a base plus settlements and
+  // command buildings, minus bureaucracy beyond eight settlements. A unit's first action of the turn spends 1 Command,
+  // 2 when it stands more than 5 tiles from any of the empire's settlements, 3 beyond 10: far campaigns are slow to direct.
+  G.COMMAND_BASE = 5; G.COMMAND_BUILDINGS = { palace: 3, barracks: 1, castle: 1, military_academy: 2, telegraph_office: 2, railway_station: 1, airport: 2, broadcast_tower: 1, computer_center: 1, grand_arsenal: 2 };
+  G.commandMax = function (g, civ) {
+    if (civ.minor || civ.idx < 0) return 999;
+    var sets = G.civSettlements(g, civ.idx), n = G.COMMAND_BASE + sets.length, fx = G.civFx(g, civ);
+    sets.forEach(function (s) { if (s.unrest > g.turn) { n -= 1; return; } s.buildings.forEach(function (b) { n += G.COMMAND_BUILDINGS[b] || 0; }); });
+    if (sets.length > 8) n -= Math.floor((sets.length - 8) / 3); // bureaucracy
+    n += fx.commandBonus || 0;
+    return Math.max(3, Math.round(n));
+  };
+  G.commandLeft = function (g, civ) { return civ.command === undefined ? G.commandMax(g, civ) : civ.command; };
+  G.resetCommand = function (g, civ) { civ.command = G.commandMax(g, civ); };
+  G.orderCost = function (g, u) {
+    if (u.civ < 0 || g.civs[u.civ].minor) return 0;
+    var t = g.tiles[u.tile], best = 99; G.civSettlements(g, u.civ).forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
+    return best <= 5 ? 1 : best <= 10 ? 2 : 3;
+  };
+  G.canOrder = function (g, u) { if (u.civ < 0 || g.civs[u.civ].minor) return true; if (u.orderedTurn === g.turn) return true; return G.commandLeft(g, g.civs[u.civ]) >= G.orderCost(g, u); };
+  // A unit's first action of the turn spends its order; later actions of the same turn are free.
+  G.spendOrder = function (g, u) {
+    if (u.civ < 0 || g.civs[u.civ].minor || u.orderedTurn === g.turn) return true;
+    var civ = g.civs[u.civ], cost = G.orderCost(g, u); if (civ.command === undefined) civ.command = G.commandMax(g, civ);
+    if (civ.command < cost) return false;
+    civ.command -= cost; u.orderedTurn = g.turn; u.orderCost = cost; return true;
+  };
+  G.refundOrder = function (g, u) { if (u.orderedTurn !== g.turn) return; var civ = g.civs[u.civ]; if (civ) civ.command = (civ.command || 0) + (u.orderCost || 1); u.orderedTurn = -1; };
   // Balance of power: an empire holding 40% of the majors' settlements, or twice the next one, is a runaway the world turns against.
   G.dominance = function (g, civIdx) { var majors = g.civs.filter(function (c) { return c.alive && !c.minor; }); if (majors.length < 3) return 0; var counts = majors.map(function (c) { return G.civSettlements(g, c.idx).length; }), total = counts.reduce(function (a, b) { return a + b; }, 0), mine = G.civSettlements(g, civIdx).length; if (!total || !mine) return 0; var second = Math.max.apply(null, majors.filter(function (c) { return c.idx !== civIdx; }).map(function (c) { return G.civSettlements(g, c.idx).length; })); return Math.max(mine / total, second ? mine / (2 * second) : 0); };
   // Loyalty: while unrest lasts, an unhappy conquered settlement more than 8 tiles from its new capital may return to its old owner (if alive).
@@ -935,7 +963,6 @@
     var mine = G.militaryStrength(g, ai.idx), theirs = G.militaryStrength(g, other);
     var losing = theirs > mine * 1.2 || (rel.lostThisWar || 0) > 0;
     if ((rel.capturedThisWar || 0) >= 2) return true; // satiated: two settlements taken is a war won
-    if (G.isRunaway(g, g.civs[other]) && !(theirs > mine * 2) && g.turn - rel.warSince < 25) return false; // the world keeps the runaway busy
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
   };
 
@@ -1180,7 +1207,7 @@
       G.civSettlements(g, a.idx).forEach(function (s) { near(s.tile, 3); });
     });
     // AI turns
-    g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) AU.AI.takeTurn(g, civ); });
+    g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) { G.resetCommand(g, civ); AU.AI.takeTurn(g, civ); } });
     AU.AI.barbarianTurn(g);
     // city ranged attacks
     for (var sid in g.settlements) AU.U.settlementAttack(g, g.settlements[sid]);
@@ -1191,11 +1218,12 @@
     if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); }
     if (g.v2 && AU.Climate) AU.Climate.turn(g);
     G.revoltsTurn(g);
-    g.civs.forEach(function (civ) { if (!civ.isPlayer || !civ.alive) return; var run = G.isRunaway(g, civ); if (run && !civ.flags['runawayWarned']) { civ.flags['runawayWarned'] = g.turn; G.notify(g, civ, { big: true, kind: 'war', text: '⚖️ ' + _('The world grows wary of your size: other leaders cool towards you and will side against you in war.'), panel: 'diplomacy' }); } else if (!run && civ.flags['runawayWarned']) delete civ.flags['runawayWarned']; });
+    g.civs.forEach(function (civ) { if (!civ.isPlayer || !civ.alive) return; var run = G.isRunaway(g, civ); if (run && !civ.flags['runawayWarned']) { civ.flags['runawayWarned'] = g.turn; G.notify(g, civ, { big: true, kind: 'war', text: '⚖️ ' + _('The world grows wary of your size: other leaders trust you less, and a wide realm is slow to command.'), panel: 'diplomacy' }); } else if (!run && civ.flags['runawayWarned']) delete civ.flags['runawayWarned']; });
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);
     g.turn++;
+    G.resetCommand(g, player);
     // player start of turn: continue paths, visibility
     G.civUnits(g, player.idx).forEach(function (u) { if (u.path && u.path.length) AU.U.followPath(g, u); });
     G.refreshVisibility(g, player);

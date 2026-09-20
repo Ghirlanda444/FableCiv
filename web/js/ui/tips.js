@@ -4,6 +4,7 @@
   var G = AU.G, U = AU.U;
   var T = AU.Tips = {};
   T.LIST = [
+    { id: 'command', title: _('Command'), text: _('The 🎖️ number on the top bar is your Command: how many units you can still order this turn. Every unit\'s first move or attack costs 1, more when it is far from your settlements. Settlements and command buildings raise it; a huge empire loses some to bureaucracy.'), when: function (g, p) { return G.commandLeft(g, p) <= 1 && G.civUnits(g, p.idx).some(function (u) { return u.moves > 0 && !u.fortify && !u.sleep && u.orderedTurn !== g.turn; }); } },
     { id: 'capital', title: _('Your capital'), text: _('This is your capital, a City: it builds units and buildings with Production ⚙️ and grows with Food 🌾. Tap it and press Manage to see its tiles and queue.'), when: function (g, p) { return !!p.capital; } },
     { id: 'growth', title: _('A settlement grew'), text: _('Every time a settlement grows you choose the tile the new citizen works. The citizen also builds the right improvement there (farm, mine, pasture…). Pick tiles with the yields you need.'), when: function (g, p) { return G.civSettlements(g, p.idx).some(function (s) { return s.pop >= 2 || s.pendingGrowth > 0; }); } },
     { id: 'v2spark', title: _('Your first Spark'), text: _('Under Divergence rules there is nothing to research: Sparks 💡 fire from what your empire does. Open the 🔬 box at the top to see every Spark of this age, what fires it, and the few you can study with Knowledge.'), when: function (g, p) { return !!g.v2 && Object.keys(p.v2 ? p.v2.unlocked : {}).length >= 1; } },

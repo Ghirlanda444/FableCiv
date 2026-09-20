@@ -1,7 +1,7 @@
 // Warbands (Divergence rules): stacking, one combined exchange, weakest dies first, Commander bonus, zone of control.
 require('./load.js'); const G = AU.G, U = AU.U, WB = AU.Warbands;
 function fresh(v2) { return G.newGame({ playerCiv: 'rome', playerLeader: 'caesar', mapSize: 'small', mapType: 'continents', numCivs: 3, numStates: 0, seed: 7, difficulty: 'prince', v2: v2 }); }
-function clear(g) { for (const id in Object.assign({}, g.units)) G.removeUnit(g, g.units[id]); g.camps = []; }
+function clear(g) { for (const id in Object.assign({}, g.units)) G.removeUnit(g, g.units[id]); g.camps = []; g.civs.forEach(c => { c.command = 999; }); }
 // three flat, unowned land tiles in a line: a touches b, b touches c, a and c are two apart
 function flatPair(g) {
   const flat = t => !G.isWater(t) && !t.hills && !t.feature && !AU.TERRAIN[t.terrain].impassable && t.settlement == null && t.owner < 0;

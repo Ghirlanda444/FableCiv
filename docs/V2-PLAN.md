@@ -70,6 +70,6 @@ Renamed: Commander → **Bandleader** (Civ7 has Army Commanders), Migrant → **
 
 ## After phase 7b: balance of power, Smoke, Climate (owner request)
 
-- Balance of power (shared AI, classic and Divergence): `G.dominance`/`G.isRunaway`, coalition and cooling in `AI.diplomacy`, satiation and runaway rules in `G.aiAcceptsPeace`, 25/40-turn truces in `G.makePeace`, unrest (`s.unrest`) and conquest fatigue in `U.captureSettlement`, mercy on a last settlement in `AI.warTarget`.
+- Balance of power (shared, classic and Divergence): **Command** (`G.commandMax`, `G.orderCost`, `G.spendOrder`, reset per empire turn; hooks in `U.moveTo`, `U.canAttackTile`, `U.attack`, `U.undoMove`, `U.reachableNow`, `U.needsOrders`; AI sorts units by priority and holds the rest), plus unrest and revolts (`s.unrest`, `G.revoltsTurn`), conquest fatigue, 25/40-turn truces, satiation and cooling towards a runaway. Coalitions, mercy and the runaway war ban were built and then removed at the owner's request (2026-09-20). tests/command.js.
 - Smoke: core/v2/smoke.js (sources, sinks, per-settlement net, happiness and heavy effects hooked in `G.settlementYields` and `G.tourism`), Spark effects `smokeSink`, `forestSinkMult`, `smokeGold` on Public Health, Underground Pipes, Garden Suburb, Green Belt, Coal Furnace; haze in both renderers; AI building scores. tests/smoke.js.
 - Climate: core/v2/climate.js (`target` by age then by world Smoke, `plan`/`apply` with a 5-turn warning, `g.mapVersion` repaints the 3D ground). tests/climate.js.

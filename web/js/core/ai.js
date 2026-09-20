@@ -40,9 +40,7 @@
       if (theyRun) rel.attitude -= 1; // nobody likes the empire that swallows the map
       if (g.turn < 25 || rel.peaceUntil > g.turn) return;
       var p = tr.aggression * tr.aggression * 0.03 + (nearby ? 0.01 : 0) + (rel.attitude < -15 ? 0.02 : 0);
-      var runAtWar = theyRun && g.civs.some(function (x) { return x.alive && !x.minor && x.idx !== civ.idx && x.idx !== o.idx && G.atWar(g, x.idx, o.idx); });
-      if (theyRun && rel.attitude < 0) { var coal = myS; g.civs.forEach(function (x) { if (x.alive && !x.minor && x.idx !== civ.idx && x.idx !== o.idx && G.atWar(g, x.idx, o.idx)) coal += G.militaryStrength(g, x.idx); }); if (coal >= theirS * 0.6) { p += runAtWar ? 0.08 : 0.04; theirS = Math.min(theirS, coal * 0.8); } } // coalition: join the war against the runaway once the allies together can match it
-      if (iRun) return; // a runaway starts no new wars; it fights only when attacked
+      // a runaway is feared, not ganged up on: its size only cools the room (above) and its Command budget limits its reach
       if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
       if (AU.Diplo && !AU.Diplo.canDeclareWar(g, civ.idx, o.idx)) return;
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
@@ -250,8 +248,8 @@
   AI.warTarget = function (g, civ) {
     if (civ._warTarget && civ._warTargetTurn === g.turn) return civ._warTarget;
     var enemies = g.civs.filter(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
-    var best = null, bd = 1e9, cap = civ.capital ? g.tiles[g.settlements[civ.capital].tile] : null, aggr = (civ.ai || {}).aggression || 0.5;
-    enemies.forEach(function (o) { var sets = G.civSettlements(g, o.idx); if (sets.length === 1 && !o.minor && aggr < 0.8 && civ.rel[o.idx].warBy !== o.idx) return; /* mercy: a last settlement is spared unless they started it or the leader is ruthless */ sets.forEach(function (s) { var d = cap ? G.dist(cap, g.tiles[s.tile]) : 0; d -= (s.hp < 50 ? 5 : 0); if (d < bd) { bd = d; best = s; } }); });
+    var best = null, bd = 1e9, cap = civ.capital ? g.tiles[g.settlements[civ.capital].tile] : null;
+    enemies.forEach(function (o) { var sets = G.civSettlements(g, o.idx); sets.forEach(function (s) { var d = cap ? G.dist(cap, g.tiles[s.tile]) : 0; d -= (s.hp < 50 ? 5 : 0); if (d < bd) { bd = d; best = s; } }); });
     civ._warTarget = best; civ._warTargetTurn = g.turn;
     return best;
   };
@@ -269,8 +267,11 @@
     var sets = G.civSettlements(g, civ.idx);
     var garrisoned = {};
     units.forEach(function (u) { var s = G.settlementAt(g, u.tile); if (s && G.isMilitary(u) && s.civ === civ.idx) garrisoned[s.id] = (garrisoned[s.id] || 0) + 1; });
+    var enemyNear = {}; units.forEach(function (u) { enemyNear[u.id] = G.isMilitary(u) ? AI.enemiesNear(g, civ, g.tiles[u.tile], 3).length : 0; });
+    units.sort(function (a, b) { var pa = (a.type === 'settler' ? 3 : 0) + (enemyNear[a.id] ? 2 : 0) + (a.path && a.path.length ? 1 : 0), pb = (b.type === 'settler' ? 3 : 0) + (enemyNear[b.id] ? 2 : 0) + (b.path && b.path.length ? 1 : 0); return pb - pa; }); // Command goes to what matters first
     units.forEach(function (u) {
       if (!g.units[u.id]) return;
+      if (!G.canOrder(g, u)) { if (G.isMilitary(u) && u.moves > 0) U.fortify(g, u); return; } // out of Command: hold
       if (u.type === 'settler') return AI.moveSettler(g, civ, u);
       if (AU.UNITS[u.type].caravan) return AI.moveCaravan(g, civ, u);
       if (AU.UNITS[u.type].religious) return AI.moveReligious(g, civ, u);
