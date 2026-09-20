@@ -30,6 +30,30 @@ Branch: `v2-divergence`. `main` keeps shipping v1 untouched until v2 is playable
 6. **Eras 2–7** — DONE on the branch: data/v2/era2.js…era7.js (Marble, Turret, Easel, Puffstack, Glowbit, Pixel), each 32 foundation + 18 branched nodes, 5 hubs, a Turning Point, joke names for the era's units; every classic unit, building, wonder and national wonder of the era is unlocked by exactly one Spark (33/35 units, 31/38 buildings, 15/20 wonders, 12/12 national; the rest open by era). Ages advance on 20 (first) or 24 foundation Sparks and last at least 35 turns; the last age opens whatever the classic tree still holds. Web panel gets an age selector. tests/v2.js runs 400 turns.
 7. **Content and polish** — pictures for new units/buildings (Migrant, Commander, Cookfire, Kiln, Playfield, Expansion buildings), Chibipedia rewrite, tutorial rewrite, tips, 8-language translation of everything new (roughly 1,500 strings), scenarios re-checked.
 
+## Phase 7a: what was reworked for Divergence (abilities, wonders, units, pedia, tips, translations)
+
+Abilities that spoke of technologies, civics or governments now carry a Divergence wording (`descV2`, shown by `G.abilityDesc` in every panel) and an equivalent effect:
+
+| Ability | Classic effect | Divergence equivalent |
+| --- | --- | --- |
+| Meiji, Pericles | Sparks/Insights add 20% of the cost to research/Heritage | every Spark adds Knowledge/Heritage (20% of a Spark's study cost) |
+| Franklin, Henry the Navigator, De Witt | +Gold whenever a technology is learned | +Gold whenever a Spark fires |
+| Sejong, Ashurbanipal, Peter | +Heritage whenever a technology is learned / +Knowledge per civic | per Spark / per Insight decision |
+| Harun, Hammurabi | first Library/Monument grants a free technology/civic | fires a free foundation Spark |
+| Frederick, Sejong, Babylon, China | technologies/civics cost less | studying Sparks costs less |
+| Frederick (despot combat), Louis (monarch happiness) | under a government type | always on, at half strength |
+| Greece | +1 Happiness per settlement under any government | always on |
+| Alexander, Ashurbanipal | capture adds Knowledge to research | capture adds Knowledge to studies |
+| Qin, Trung, Afonso | free Walls/Shrine once a technology is known | once the Spark/age allows the building |
+| Great Library, Oracle | a free technology/civic | a free foundation Spark |
+| Great Scientist | completes the current technology | fires the next foundation Spark of the age |
+
+Chibipedia: the Technologies, Civics, Governments and Policy Cards categories hide in Divergence games; concept entries for Sparks and Insights, Claims and Influence, Warbands, Resource richness, Kinfolk and Bonds, Moods and Migration Pull show only there (classic entries for research, governments, unions and happiness only in classic games). Tips: six Divergence tips (first claims, Warbands, rich resources, Bonds, Moods, a new age); the classic Spark, policy, era, unhappiness and free-city tips stay classic only.
+
+Translations: `web/js/i18n.js` walks the v2 data (Spark names, jokes, trigger texts, hub and branch names, age names, unit joke names, Society tier and persuasion names) and the `descV2` wording; 1,370 new strings translated into the 8 languages (parts `<lang>-v2-*.json`).
+
+Left for the owner: pictures for Migrant, Commander, Cookfire, Kiln, Playfield, Boundary Marker and Growth Hall (paid generation, needs approval); City Focus slots (spec item deferred); Great People from hub payoffs (`spawnNamed` hook).
+
 ## Decisions needed from the owner
 
 1. Keep the 40 empires and 95 leaders? Their abilities are written against v1 systems (techs, policies, governments, Great Person types, city-states). Default: keep them, rewrite the ~20 that reference removed systems.

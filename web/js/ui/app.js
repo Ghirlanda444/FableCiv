@@ -159,7 +159,7 @@
       var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
       var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: _('Easy to play'), medium: _('Medium'), hard: _('Specialised') }[c.difficulty] || _('Medium')) + '</span></h3>' +
         (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' ' + _('cultural group.') + '</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">' + _('Starts near') + ' ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
-        '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
+        '<div><b>' + c.ability.name + ':</b> ' + G.abilityDesc(c.ability) + '</div>' +
         (c.uu ? '<div><b>' + _('Unique unit') + ' – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
         (c.ub ? '<div><b>' + _('Unique building') + ' – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
         (c.ui ? '<div><b>' + _('Unique improvement') + ' – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + AU.whenLabel(c.ui.when) + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
@@ -167,7 +167,7 @@
         '<h3 style="margin-top:10px">' + _('Choose a leader') + '</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
         var portrait = AU.Assets.get('leaders', l.id);
-        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + G.abilityDesc(l.ability) + '</div></div>';
       });
       html += '</div>';
       $('civ-detail').innerHTML = html;

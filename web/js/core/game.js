@@ -172,7 +172,7 @@
     mergeFx(fx, G.civData(civ).ability.fx);
     mergeFx(fx, G.leaderData(civ).ability.fx);
     mergeFx(fx, AU.GOVERNMENTS[civ.government].fx);
-    if (fx.governmentHappiness && civ.government !== 'chiefdom') fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
+    if (fx.governmentHappiness && (g.v2 || civ.government !== 'chiefdom')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
     if (fx.monarchHappiness && (g.v2 ? true : (civ.government === 'monarchy' || civ.government === 'theocracy'))) fx.happinessBonus = (fx.happinessBonus || 0) + (g.v2 ? Math.ceil(fx.monarchHappiness / 2) : fx.monarchHappiness); // no governments under v2: half of it, always
     if (AU.Palace && !civ.minor) { var ph = AU.Palace.fx(civ).happiness; if (ph) fx.happinessBonus = (fx.happinessBonus || 0) + ph; }
     if (fx.despotCombat && (g.v2 ? true : (civ.government === 'oligarchy' || civ.government === 'autocracy'))) fx.combatBonus = (fx.combatBonus || 0) + (g.v2 ? Math.ceil(fx.despotCombat / 2) : fx.despotCombat);
@@ -797,8 +797,9 @@
     for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ ' + _('New government available') + ': ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
     G.quote(g, civ, 'civic', id, c.name, _('Civic adopted'));
   };
-  G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
-  G.grantFreeCivic = function (g, civ) { var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
+  G.abilityDesc = function (ab) { var g = AU.App && AU.App.g; return ab && g && g.v2 && ab.descV2 ? ab.descV2 : (ab ? ab.desc : ''); }; // the Divergence wording of an ability, when it has one
+  G.grantFreeTech = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
+  G.grantFreeCivic = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
   G.availableGovernments = function (civ) { var out = []; for (var id in AU.GOVERNMENTS) { var gv = AU.GOVERNMENTS[id]; if (!gv.civic || civ.civics[gv.civic]) out.push(id); } return out; };
   G.setGovernment = function (g, civ, id) { if (G.availableGovernments(civ).indexOf(id) < 0) return false; civ.government = id; civ._fx = null; G.setPolicies(g, civ, civ.policies || []); return true; };
   G.policySlots = function (civ) { return AU.GOVERNMENTS[civ.government].slots; };
