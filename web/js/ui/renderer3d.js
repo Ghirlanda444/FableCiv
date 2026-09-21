@@ -173,7 +173,7 @@
     for (var uid in this.unitNodes) this.scene.remove(this.unitNodes[uid].group); this.unitNodes = {};
     this.noise = makeNoise(g.seed || 7);
     var group = new T.Group(); this.scene.add(group);
-    this.world = { g: g, group: group, fogSig: '', borderSig: '', riverSig: -1, borders: null, camps: null, campSig: -1, featSig: '', feats: [] };
+    this.world = { g: g, mapVersion: g.mapVersion || 0, group: group, fogSig: '', borderSig: '', riverSig: -1, borders: null, camps: null, campSig: -1, featSig: '', feats: [] };
     // --- height field (low relief: hills are soft bumps, mountains the only tall shapes)
     var width = R * SQ3 * (g.W + 1), depth = R * 1.5 * (g.H + 1), nx = Math.ceil(width / SAMPLE) + 1, nz = Math.ceil(depth / SAMPLE) + 1;
     var geo = new T.PlaneGeometry(width, depth, nx - 1, nz - 1); geo.rotateX(-Math.PI / 2); geo.translate(width / 2 - R * SQ3 * 0.5, 0, depth / 2 - R * 0.75);
@@ -218,6 +218,7 @@
       var t5 = g.tiles[i5]; if (!t5.resource) continue; var Rs5 = AU.RESOURCES[t5.resource]; if (!Rs5) continue;
       var p5 = tileXZ(t5), rx5 = p5[0] + R * 0.38, rz5 = p5[1] + R * 0.28, tex5 = AU.Assets.texture('resources', t5.resource);
       var spr = new T.Sprite(new T.SpriteMaterial({ map: tex5 || null, transparent: true, alphaTest: 0.1, depthTest: true })); spr.scale.set(R * 0.6, R * 0.6, 1); spr.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.32, rz5); spr.userData.tile = i5; spr.userData.res = t5.resource; spr.visible = false; group.add(spr); resList.push(spr);
+      if (t5.rich != null) { var pip = new T.Sprite(new T.SpriteMaterial({ map: this.pipTexture(t5.rich + 1), transparent: true, alphaTest: 0.1, depthTest: true })); pip.scale.set(R * 0.42, R * 0.14, 1); pip.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.06, rz5 + R * 0.22); pip.userData.tile = i5; pip.userData.res = t5.resource; pip.visible = false; group.add(pip); resList.push(pip); } // richness pips
     }
     this.world.resSprites = resList;
     // natural wonder labels (the picture itself is a feature billboard)
@@ -400,12 +401,13 @@
     }
     return grp;
   };
-  P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
+  P.settlementSig = function (s, g) { var artN = 0; s.buildings.forEach(function (b) { if (AU.Assets.usable3D(AU.WONDERS[b] ? 'wonders' : AU.NATIONAL[b] ? 'national' : 'buildings', b)) artN++; }); return (g.v2 && AU.Smoke ? Math.floor(AU.Smoke.smoke(g, s) / 3) : 0) + '|' + artN + '|' + s.pop + '|' + (s.isCity ? 1 : 0) + '|' + (s.isCapital ? 1 : 0) + '|' + s.civ + '|' + s.buildings.join(',') + '|' + (s.hp < G.settlementMaxHp(g, s) ? Math.round(s.hp / 10) : 'f') + '|' + s.name; };
   P.buildSettlement = function (g, s) {
     var T = window.THREE, geo = this.geo, mat = this.mat, self = this;
     var t = g.tiles[s.tile], p = tileXZ(t), top = t.navigable ? Math.max(this.tileTop(t), 1.2) : this.tileTop(t), civ = g.civs[s.civ], color = G.civColor(civ);
     var grp = new T.Group(); grp.position.set(p[0], top, p[1]);
     var civMat = new T.MeshLambertMaterial({ color: color });
+    if (g.v2 && AU.Smoke) { var smk3 = AU.Smoke.smoke(g, s); if (smk3 >= 3) { for (var hi = 0; hi < Math.min(3, Math.floor(smk3 / 3)); hi++) { var haze = new T.Mesh(this.geo.disc, new T.MeshBasicMaterial({ color: 0x5a5a64, transparent: true, opacity: Math.min(0.5, 0.18 + smk3 * 0.03), depthWrite: false })); haze.scale.set(1.3 + hi * 0.4, 1, 1.3 + hi * 0.4); haze.position.set((hi % 2 ? 4 : -4) * hi, R * (0.7 + hi * 0.35), 0); grp.add(haze); } } } // smog over a smoky settlement
     // plaza
     var plaza = new T.Mesh(geo.disc, s.isCity ? mat.stone : mat.wood); plaza.scale.set(2.9, 1, 2.9); plaza.position.y = 0.6; plaza.receiveShadow = true; grp.add(plaza);
     // buildings in slots: ring 1 (6) then ring 2 (12)
@@ -460,6 +462,13 @@
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath(); }
 
   // ---------- units ----------
+  // 1–3 gold pips under a resource: its richness tier.
+  P.pipTexture = function (n) {
+    var T = window.THREE, key = 'pips|' + n; if (this.textures[key]) return this.textures[key];
+    var cv = document.createElement('canvas'); cv.width = 96; cv.height = 32; var ctx = cv.getContext('2d');
+    for (var i = 0; i < n; i++) { var x = 48 + (i - (n - 1) / 2) * 26; ctx.fillStyle = '#f5d76e'; ctx.strokeStyle = 'rgba(40,30,10,0.9)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, 16, 10, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; this.textures[key] = tex; return tex;
+  };
   P.unitBadge = function (icon, color, color2, hp, level) {
     var T = window.THREE, key = icon + '|' + color + '|' + Math.round(hp / 10) + '|' + level;
     if (this.textures[key]) return this.textures[key];
@@ -482,6 +491,7 @@
       var mil = G.isMilitary(u), p = tileXZ(t), top = this.tileTop(t);
       var ox = mil ? -R * 0.18 : R * 0.3, oz = mil ? R * 0.05 : R * 0.3;
       if (t.settlement != null) { ox = mil ? -R * 0.6 : R * 0.6; oz = -R * 0.45; }
+      if (mil && g.v2) { var band = G.unitsAt(g, u.tile).filter(function (o) { return o.civ === u.civ && G.isMilitary(o); }); if (band.length > 1) { var bi = band.indexOf(u); ox += (bi - (band.length - 1) / 2) * R * 0.26; oz += (bi % 2) * R * 0.14; } } // a Warband fans out across the tile
       var color = u.civ >= 0 ? G.civColor(g.civs[u.civ]) : '#2b2b2b', color2 = u.civ >= 0 ? G.civData(g.civs[u.civ]).color2 : '#e33';
       var sig = u.type + '|' + u.civ + '|' + Math.round(u.hp / 10) + '|' + U.level(u) + '|' + (u.fortify ? 1 : 0) + '|' + (app && app.sel.unit === u.id ? 1 : 0) + '|' + (AU.Assets.usable3D('units', u.type) ? 'a' : 'p') + (u.civ >= 0 && AU.Assets.usable3D('units', G.unitArtId(g, g.civs[u.civ], u.type)) ? 'u' : '');
       var node = this.unitNodes[id];
@@ -489,7 +499,7 @@
       if (!node) {
         var grp = new T.Group();
         var base = new T.Mesh(this.geo.disc, new T.MeshLambertMaterial({ color: color })); base.scale.set(0.75, 1, 0.75); base.position.y = 0.6; base.receiveShadow = true; grp.add(base);
-        var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.textureChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
+        var ucv = u.civ >= 0 ? g.civs[u.civ] : null, lookType = AU.UNITS[u.type].decoy && u.civ !== player.idx ? AU.UNITS[u.type].disguise : u.type, art = AU.Assets.textureChain(AU.Assets.unitChain(G.unitArtId(g, ucv, lookType), lookType, ucv ? AU.cultureOf(ucv) : null));
         if (art) { // painted unit as a billboard standing on its base
           var img = art.image, aspect = img.width / img.height, uh = R * (mil ? 0.82 : 0.68);
           var pic = new T.Sprite(new T.SpriteMaterial({ map: art, transparent: true, alphaTest: 0.1 })); pic.scale.set(uh * aspect, uh, 1); pic.position.y = uh / 2 + 1; pic.center.set(0.5, 0.5); grp.add(pic);
@@ -531,7 +541,7 @@
   };
 
   P.draw = function (g, app) {
-    if (!this.world || this.world.g !== g) this.buildWorld(g);
+    if (!this.world || this.world.g !== g || this.world.mapVersion !== (g.mapVersion || 0)) this.buildWorld(g); // a climate shift repaints the ground
     this.rebuildFeatures(g, false);
     this.applyFog(g, false);
     this.rebuildBorders(g);

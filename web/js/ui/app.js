@@ -137,6 +137,7 @@
       function fill(sel, obj, def) { sel.innerHTML = ''; for (var k in obj) { var o = document.createElement('option'); o.value = k; o.textContent = obj[k].name; if (k === def) o.selected = true; sel.appendChild(o); } }
       fill($('opt-size'), AU.MAP_SIZES, 'small'); fill($('opt-diff'), AU.DIFFICULTIES, 'prince');
       fill($('opt-type'), AU.MAP_TYPES, 'continents'); fill($('opt-speed'), AU.SPEEDS, 'standard');
+      var rs = $('opt-rules'); if (rs) { rs.innerHTML = '<option value="classic">' + _('Classic') + '</option><option value="v2">' + _('Divergence (beta)') + '</option>'; rs.value = this.settings.rules === 'v2' ? 'v2' : 'classic'; var selfR = this; rs.onchange = function () { selfR.settings.rules = this.value; selfR.saveSettings && selfR.saveSettings(); }; }
       var civSel = $('opt-civs'); civSel.innerHTML = '';
       for (var n = 1; n <= 19; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
       var stSel = $('opt-states'); stSel.innerHTML = '';
@@ -158,7 +159,7 @@
       var BIAS = { coast: 'the coast', river: 'rivers', hills: 'hills', mountain: 'mountains', desert: 'deserts', forest: 'forests', jungle: 'jungles', tundra: 'the tundra', snow: 'the snow', grassland: 'grasslands', plains: 'plains', marsh: 'marshes', lake: 'lakes' };
       var html = '<h3>' + c.name + ' <span class="dtag ' + (c.difficulty || 'medium') + '">' + ({ easy: _('Easy to play'), medium: _('Medium'), hard: _('Specialised') }[c.difficulty] || _('Medium')) + '</span></h3>' +
         (AU.CULTURES[c.culture] ? '<div class="stat">' + AU.CULTURES[c.culture].name + ' ' + _('cultural group.') + '</div>' : '') + (c.bias && c.bias.length ? '<div class="stat">' + _('Starts near') + ' ' + c.bias.map(function (b) { return BIAS[b] || b; }).join(' and ') + '.</div>' : '') +
-        '<div><b>' + c.ability.name + ':</b> ' + c.ability.desc + '</div>' +
+        '<div><b>' + c.ability.name + ':</b> ' + G.abilityDesc(c.ability) + '</div>' +
         (c.uu ? '<div><b>' + _('Unique unit') + ' – ' + c.uu.name + ':</b> replaces ' + AU.UNITS[c.uu.replaces].name + ' (' + c.uu.desc + ').</div>' : '') +
         (c.ub ? '<div><b>' + _('Unique building') + ' – ' + c.ub.name + ':</b> replaces ' + AU.BUILDINGS[c.ub.replaces].name + ' (' + c.ub.desc + ').</div>' : '') +
         (c.ui ? '<div><b>' + _('Unique improvement') + ' – ' + c.ui.icon + ' ' + c.ui.name + ':</b> instead of the ' + AU.IMPROVEMENTS[c.ui.replaces].name + (c.ui.when ? ' on ' + AU.whenLabel(c.ui.when) + ' tiles' : '') + ' (' + c.ui.desc + ').</div>' : '') +
@@ -166,7 +167,7 @@
         '<h3 style="margin-top:10px">' + _('Choose a leader') + '</h3><div class="leader-list">';
       c.leaders.forEach(function (l) {
         var portrait = AU.Assets.get('leaders', l.id);
-        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + l.ability.desc + '</div></div>';
+        html += '<div class="leader-card' + (l.id === self.setup.leader ? ' selected' : '') + '" data-leader="' + l.id + '">' + '<img class="portrait" src="' + AU.Assets.url('leaders', l.id) + '" alt="" onerror="this.remove()">' + '<b>' + l.name + '</b> <span class="pill">' + l.title + '</span> <span class="pill" title="Victory this leader leans towards">' + AU.leaningText(l) + '</span><div><b>' + l.ability.name + ':</b> ' + G.abilityDesc(l.ability) + '</div></div>';
       });
       html += '</div>';
       $('civ-detail').innerHTML = html;
@@ -176,7 +177,7 @@
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined, v2: $('opt-rules') && $('opt-rules').value === 'v2' };
       this.toast(_('Generating the world…'));
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);
@@ -215,6 +216,7 @@
       $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
     refreshHud: function () {
+      var tb = $('topbar'); if (tb && tb.offsetHeight) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px'); // the notification strip sits under the bar whatever its height
       if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
       if (AU.Tutorial) AU.Tutorial.update(this);
       if (AU.Tips) AU.Tips.update(this);
@@ -225,13 +227,16 @@
       function turnsLeft(prog, cost, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) : '∞'; }
       var techTxt = techT ? techT.name + ' (' + turnsLeft(p.techProgress[techT.id] || 0, G.techCost(g, p, techT), y.science) + ')' : 'choose';
       var civTxt = civT ? civT.name + ' (' + turnsLeft(p.civicProgress[civT.id] || 0, G.civicCost(g, p, civT), y.culture) + ')' : 'choose';
+      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮'); }
       var sets = G.civSettlements(g, p.idx), unhappy = sets.filter(function (s) { return G.settlementYields(g, s).happiness < 0; }).length;
       $('top-yields').innerHTML =
         '<span class="y" data-panel="empire">💰 <b>' + Math.floor(p.gold) + '</b><small>' + (y.gold >= 0 ? '+' : '') + y.gold.toFixed(1) + '</small></span>' +
         '<span class="y" data-panel="tech">🔬 <b>' + y.science.toFixed(1) + '</b><small>' + techTxt + '</small></span>' +
         '<span class="y" data-panel="civics">🎭 <b>' + y.culture.toFixed(1) + '</b><small>' + civTxt + '</small></span>' +
         '<span class="y" data-panel="religion">🕊️ <b>' + Math.floor(p.faith || 0) + '</b><small>+' + (y.faith || 0) + (p.religion && g.religions[p.religion] ? ' ' + g.religions[p.religion].icon : '') + '</small></span>' +
-        '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>';
+        '<span class="y" data-panel="empire" title="' + _('Command: unit orders left this turn') + '">🎖️ <b>' + G.commandLeft(g, p) + '</b><small>/' + G.commandMax(g, p) + '</small></span>' +
+        (g.v2 ? '<span class="y" data-panel="empire">🎯 <b>' + Math.floor(p.influence || 0) + '</b><small>+' + G.influenceIncome(g, p) + '</small></span>' : '') +
+        (g.v2 && AU.Society ? (function () { var md = AU.Society.mood(g, p); return '<span class="y" data-panel="empire">' + md.tier.icon + ' <small>' + _(md.tier.name) + (unhappy ? ' · ' + unhappy + ' 😠' : '') + '</small></span>'; })() : '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>');
       $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' ' + _('Era');
       this.refreshNotifs();
       this.refreshContext();
@@ -254,7 +259,7 @@
       g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
       G.civSettlements(g, p.idx).forEach(function (s) {
         if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: _('Production') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
-        if (s.pendingGrowth > 0) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
+        if (s.pendingGrowth > 0 && !G.claimBlocker(g, s)) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
       if (AU.Religion) {
         if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: _('Choose a pantheon'), go: function () { self.openPanel('religion'); } });
@@ -262,9 +267,10 @@
         if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: _('Enhance your religion'), go: function () { self.openPanel('religion'); } });
       }
       if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: _('Send the caravan to a free city'), go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
-      if (!p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: _('Choose research'), go: function () { self.openPanel('tech'); } });
-      if (!p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: _('Choose civic'), go: function () { self.openPanel('civics'); } });
-      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: _('Empty policy slot'), go: function () { self.openPanel('civics', { tab: 'policies' }); } });
+      if (g.v2 && AU.MasteryWeb) { var vst = AU.MasteryWeb.state(p); if (vst.pendingHubs.length) list.push({ icon: '🔮', text: _('An Insight awaits your decision'), go: function () { self.openPanel('hub'); } }); }
+      if (!g.v2 && !p.currentTech && G.availableTechs(p).length) list.push({ icon: '🔬', text: _('Choose research'), go: function () { self.openPanel('tech'); } });
+      if (!g.v2 && !p.currentCivic && G.availableCivics(p).length) list.push({ icon: '🎭', text: _('Choose civic'), go: function () { self.openPanel('civics'); } });
+      var fsl = G.freeSlots(p), fsn = 0; for (var fk in fsl) fsn += fsl[fk]; if (!g.v2 && fsn > 0 && G.availablePolicies(p).length > (p.policies || []).length) list.push({ icon: '🃏', text: _('Empty policy slot'), go: function () { self.openPanel('civics', { tab: 'policies' }); } });
       var promo = G.civUnits(g, p.idx).filter(function (u) { return U.promosAvailable(u) > 0; });
       if (promo.length) list.push({ icon: '⭐', text: _('Promote') + ' ' + promo[0].name + (promo.length > 1 ? ' (+' + (promo.length - 1) + ')' : ''), go: function () { self.selectUnit(promo[0]); self.renderer.centerOn(g, promo[0].tile); } });
       var need = this.unitsNeedingOrders();
@@ -325,7 +331,7 @@
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
       var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' ' + _('Hills') : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · ' + _('Navigable River') : t.river ? ' · ' + _('River') : '') + (t.shore ? ' · ' + ({ beach: _('Beach'), cliff: _('Cliffs'), rocks: _('Rocky shore'), mangrove: _('Mangroves'), reef: _('Reef') })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 ' + _('Move cost') + ' ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
-      if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b> <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
+      if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b>' + (AU.Society && AU.Society.richOf(t) ? ' <span class="pill">' + ['🟤', '🟡', '🟢'][t.rich] + ' ' + _(AU.Society.richOf(t).name) + (res.kind === 'strategic' ? ' · ' + _('supports') + ' ' + AU.Society.supplyOf(t) : '') + '</span>' : '') + ' <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
       else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
@@ -403,10 +409,15 @@
       if (this.sel.unit && g.units[this.sel.unit]) {
         var u = g.units[this.sel.unit], def = U.def(g, u), own = u.civ === p.idx;
         var t = g.tiles[u.tile];
+        if (!own && AU.UNITS[u.type].decoy) { var dz = G.unitType(g, g.civs[u.civ], AU.UNITS[u.type].disguise); html += '<div class="card"><h3>' + AU.UNITS[AU.UNITS[u.type].disguise].icon + ' ' + dz.name + ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span></h3><div class="hpbar"><i style="width:100%;background:#4caf50"></i></div><div class="meta">HP 100 · ' + _('Str') + ' ' + dz.strength + ' · 🛡️ ' + _('Warband') + ' (3/3)</div></div>'; box.innerHTML = html; return; }
         html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">' + _('Inchibils') + '</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
+        if (own) { var ocost = G.orderCost(g, u), ordered = u.orderedTurn === g.turn, canO = G.canOrder(g, u); html += '<div class="meta' + (canO ? '' : ' stat') + '">🎖️ ' + (ordered ? _('Ordered this turn') : canO ? _('Command') + ' ' + ocost + (ocost > 1 ? ' (' + _('far from your settlements') + ')' : '') : '<b style="color:#e05252">' + _('No Command left this turn') + '</b> (' + _('needs') + ' ' + ocost + ')') + '</div>'; }
         html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? _('Str') + ' ' + U.strength(g, u, { attacking: false }) : _('Civilian')) + (def.ranged ? ' · ' + _('Ranged') + ' ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · ' + _('Moves') + ' ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · ' + _('Fortified') : '') + (U.isEmbarked(g, u) ? ' · ' + _('Embarked') : '') + '</div>';
         if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
+        if (g.v2 && AU.Warbands && AU.Warbands.baited(g, u)) { var bt = AU.Warbands.baited(g, u); html += '<div class="meta stat">🎃 ' + _('Shaken by an ambush') + ': -' + bt.str + ' ' + _('Strength') + ', ' + (bt.until - g.turn) + ' ' + _('turns left') + '</div>'; }
+        if (g.v2 && AU.Warbands && AU.UNITS[u.type].decoy && own) { var bl = AU.Warbands.baitLevel(g, p); html += '<div class="meta stat">🎃 ' + _('Bait level') + ' ' + bl + ': ' + _('attackers lose their turn and') + ' -' + AU.Warbands.baitPenalty(bl) + ' ' + _('Strength for') + ' ' + AU.Warbands.baitTurns(bl) + ' ' + _('turns.') + ' ' + _('Others see a full Warband.') + '</div>'; }
+        if (g.v2 && AU.Warbands && G.isMilitary(u) && !AU.UNITS[u.type].decoy) { var wb = AU.Warbands.describe(g, u); if (wb) html += '<div class="meta stat">🛡️ ' + _('Warband') + ' (' + wb.fighters.length + '/' + AU.Warbands.MAX + (wb.commander ? ' + 🪶' : '') + '): ' + wb.members.map(function (m) { return AU.UNITS[m.type].icon + ' ' + m.name + (AU.UNITS[m.type].commander ? '' : ' ' + U.strength(g, m, { attacking: false })); }).join(' · ') + ' → ' + _('fights as') + ' <b>' + wb.strength + '</b>' + (own ? ' <button class="small ghost" data-action="warband">' + (this.warbandTogether !== false ? _('Moving together') : _('Moving alone')) + '</button>' : '') + '</div>'; else if (AU.UNITS[u.type].commander) html += '<div class="meta stat">' + _('Alone. Move it onto your fighters to lead them.') + '</div>'; }
         if (def.unique && def.uuDesc) html += '<div class="meta stat">' + def.uuDesc + '</div>';
         if (own && U.promosAvailable(u)) {
           html += '<div class="promo"><b>⭐ ' + _('Promotion available') + '</b> (' + _('heals 50 HP, ends the turn)') + '<div class="actions">' + U.promoChoices(g, u).map(function (pr) { return '<button class="small gold" data-action="dopromote" data-id="' + pr.id + '" title="' + AU.modsText(pr.mods) + '">' + pr.name + '<small>' + AU.modsText(pr.mods) + '</small></button>'; }).join('') + '</div></div>';
@@ -422,10 +433,11 @@
             Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">' + _('Debate') + ' ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
           }
           if (AU.UNITS[u.type].great && AU.Great) {
-            var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + gt.desc + '</div>';
+            var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + G.abilityDesc(gt) + '</div>';
             AU.Great.options(g, u).forEach(function (o) { html += '<button class="small primary" data-action="' + o.action + '" ' + (o.ok ? '' : 'disabled') + '>' + o.label + '</button>' + (!o.ok && o.why ? '<small class="stat">' + o.why + '</small>' : ''); });
           }
           if (AU.UNITS[u.type].caravan && AU.CityStates) { var CSm = AU.CityStates, tgt = CSm.routeTarget(g, u); if (u.route != null && g.civs[u.route]) html += '<small class="stat">' + _('Route with') + ' ' + G.civData(g.civs[u.route]).name + ': +' + CSm.routeIncome(g, u) + ' 💰 and +3 ' + _('Ties per turn. Move it to end the route.') + '</small>'; else html += '<button class="small primary" data-action="caravanroute" ' + (tgt ? '' : 'disabled') + '>🐪 ' + _('Open trade route') + (tgt ? ' with ' + G.civData(tgt).name : '') + '</button>' + (!tgt ? '<small class="stat">' + _('Walk into the land of a free city you are not at war with.') + '</small>' : ''); }
+          if (AU.UNITS[u.type].migrant && AU.Warbands) { var sJ = G.settlementAt(g, u.tile), canJ = AU.Warbands.canJoin(g, u); html += '<button class="small primary" data-action="join" ' + (canJ ? '' : 'disabled') + '>' + _('Join') + (sJ ? ' ' + sJ.name : '') + ' (+1 ' + _('Pop') + ')</button>' + (!canJ ? '<small class="stat">' + _('Walk it into one of your settlements.') + '</small>' : ''); }
           if (u.type === 'settler') { var can = G.canFoundAt(g, p.idx, u.tile); html += '<button class="small primary" data-action="found" ' + (can ? '' : 'disabled') + '>' + (p.capital ? _('Found Town') : _('Found Capital')) + '</button>' + (!can ? '<small class="stat">' + _('Too close to another settlement or invalid terrain.') + '</small>' : ''); }
           if (G.isMilitary(u)) html += '<button class="small" data-action="fortify">' + _('Fortify') + '</button>';
           if (AU.UNITS[u.type].cls === 'recon') html += '<button class="small" data-action="explore">' + (u.auto ? _('Stop exploring') : _('Auto-explore')) + '</button>';
@@ -462,6 +474,7 @@
     },
     previewAttack: function (u, tileIdx) {
       var g = this.g, target = U.targetAt(g, u, tileIdx); if (!target) return '';
+      if (g.v2 && AU.Warbands) { var pv = AU.Warbands.preview(g, u, tileIdx); if (!pv) return ''; return (pv.attackers > 1 ? pv.attackers + '× ' : '') + pv.a + ' vs ' + pv.d + (pv.defenders > 1 ? ' (' + pv.defenders + ')' : '') + ' → ~' + pv.est + ' dmg' + (pv.back ? ', take ~' + pv.back : ''); }
       var ranged = U.isRanged(u), a = U.strength(g, u, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
       var d = target.settlement && (!target.unit || ranged) ? G.settlementStrength(g, target.settlement) : U.strength(g, target.unit, { attacking: false, vs: u });
       var est = Math.round(30 * Math.exp(0.04 * (a - d)));
@@ -494,6 +507,8 @@
         case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast(_('Founded') + ' ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
+        case 'join': if (u && AU.Warbands) { var sJ2 = AU.Warbands.join(g, u); if (sJ2) { this.toast(sJ2.name + ' ' + _('grew to') + ' ' + sJ2.pop + '.'); this.deselect(); this.refreshHud(); this.invalidate(); } } break;
+        case 'warband': this.warbandTogether = this.warbandTogether === false; this.refreshContext(); break;
         case 'skip': if (u) { U.skip(g, u); this.afterUnitAction(u, true); } break;
         case 'sleep': if (u) { U.sleep(g, u); this.afterUnitAction(u, true); } break;
         case 'explore': if (u) { u.auto = !u.auto; if (u.auto) { AU.AI.explore(g, p, u); this.afterUnitAction(u, true); } else this.refreshContext(); } break;
@@ -523,7 +538,8 @@
       var msg = [];
       if (res.captured) msg.push(_('Captured') + ' ' + g.settlements[res.settlement].name + '!');
       else if (res.settlementDamage != null) msg.push(_('Hit') + ' ' + g.settlements[res.settlement].name + ' for ' + res.settlementDamage);
-      if (res.defenderDamage != null) msg.push((res.killed ? _('Destroyed the enemy') : _('Dealt') + ' ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
+      if (res.defenderDamage != null) msg.push((res.killed ? _('Destroyed the enemy') + (res.killedCount > 1 ? ' ×' + res.killedCount : '') : _('Dealt') + ' ' + res.defenderDamage) + (res.capturedUnit ? ' (captured!)' : ''));
+      if (res.attackersLost > 1 || (res.attackersLost && !res.attackerKilled)) msg.push(res.attackersLost + ' ' + _('of yours fell'));
       if (res.attackerDamage) msg.push('took ' + res.attackerDamage);
       if (res.attackerKilled) msg.push('your unit was lost');
       this.toast(msg.join(', ') + '.');
@@ -553,8 +569,8 @@
         if (ownUnitsThere.length) { this.selectUnit(ownUnitsThere[0]); return; }
         var sHere = G.settlementAt(g, tileIdx);
         if (sHere && sHere.civ === p.idx && !(h.reach && h.reach[tileIdx])) { var path0 = U.findPath(g, u, tileIdx); if (!path0) { this.selectSettlement(sHere); return; } }
-        var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0;
-        if (U.orderMove(g, u, tileIdx)) { if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' ' + _('turns. It keeps walking by itself each turn.'), 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
+        var estPath = U.findPath(g, u, tileIdx), estTurns = estPath ? U.pathTurns(g, u, estPath) : 0, origin = u.tile;
+        if (U.orderMove(g, u, tileIdx)) { if (g.v2 && AU.Warbands && this.warbandTogether !== false && G.isMilitary(u)) { var nT = AU.Warbands.moveTogether(g, u, origin, tileIdx); if (nT) this.toast(_('The Warband moves together') + ' (' + (nT + 1) + ').', 1500); } if (estTurns > 1) this.toast(u.name + ' is on the way: arrives in ' + estTurns + ' ' + _('turns. It keeps walking by itself each turn.'), 3000); if (u.moves > 0 && !(u.path && u.path.length)) this.selectUnit(u); else this.afterUnitAction(u, true); this.refreshHud(); return; }
         this.toast(_('No route there.'));
         return;
       }
@@ -600,7 +616,8 @@
 
     // ---------- Panels ----------
     openPanel: function (name, data) {
-      this.panel = name; this.panelData = data || {};
+      if (this.g && this.g.v2 && (name === 'tree' || name === 'tech')) { name = 'web'; data = data && data.tab ? data : { tab: 'foundation' }; }
+      this.panel = name; this.panelData = data || {}; var tipEl = $('tip'); if (tipEl) tipEl.hidden = true;
       $('panel').hidden = false; $('toast').hidden = true;
       AU.Panels.render(this, name, this.panelData);
       $('panel-body').scrollTop = 0;

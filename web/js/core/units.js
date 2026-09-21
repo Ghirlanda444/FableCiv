@@ -74,7 +74,7 @@
     for (var i = 0; i < us.length; i++) {
       var o = us[i];
       if (o.civ !== u.civ) return true;
-      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id && !AU.UNITS[o.type].great && !AU.UNITS[u.type].great) return true; // great people may share a tile with anyone of their side
+      if (asDestination && G.isMilitary(o) === G.isMilitary(u) && o.id !== u.id && !AU.UNITS[o.type].great && !AU.UNITS[u.type].great) { if (g.v2 && AU.Warbands && G.isMilitary(u)) { if (!AU.Warbands.roomFor(g, u, tileIdx)) return true; } else return true; } // great people may share a tile with anyone of their side; v2: up to three fighters and a Commander form a Warband
     }
     var s = G.settlementAt(g, tileIdx);
     if (s && s.civ !== u.civ) return true;
@@ -88,15 +88,18 @@
     var dist = {}, prev = {}, open = new Heap();
     open.push(0, u.tile); dist[u.tile] = 0;
     if (maxCost === undefined) maxCost = 40;
+    var zoc = g.v2 && AU.Warbands && AU.Warbands.zocApplies(g, u), zocCost = zoc ? Math.max(1, G.maxMoves(g, u.civ, u.type, u)) : 0;
     while (open.a.length) {
       var cur = open.pop(), d = cur[0], idx = cur[1];
       if (d > dist[idx]) continue;
       if (d >= maxCost) continue;
       var t = g.tiles[idx], nb = G.neighbors(g, t);
+      var held = zoc && idx !== u.tile && AU.Warbands.zocAt(g, u.civ, idx); // zone of control: a stop here ends the turn, the walk goes on next turn
       for (var k = 0; k < nb.length; k++) {
         var n = nb[k], nt = g.tiles[n];
         var c = U.enterCost(g, u, nt, t);
         if (c === Infinity) continue;
+        if (held) c += zocCost;
         if (U.tileBlocked(g, u, n, false)) continue;
         var nd = d + c;
         if (dist[n] === undefined || nd < dist[n]) { dist[n] = nd; prev[n] = idx; open.push(nd, n); }
@@ -123,7 +126,7 @@
   };
   // Tiles reachable this turn (moves > 0 rule: can always enter a tile if any movement left)
   U.reachableNow = function (g, u) {
-    var out = {}, res = U.dijkstra(g, u, u.moves);
+    var out = {}; if (!G.canOrder(g, u)) return out; var res = U.dijkstra(g, u, u.moves);
     for (var idx in res.dist) {
       var i = +idx; if (i === u.tile) continue;
       var p = res.prev[i];
@@ -136,7 +139,9 @@
     var from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var cost = U.enterCost(g, u, to, from);
     if (cost === Infinity || u.moves <= 0 || U.tileBlocked(g, u, tileIdx, true)) return false;
+    if (!G.spendOrder(g, u)) return false; // no Command left this turn
     G.setUnitTile(g, u, tileIdx); u.moves = Math.max(0, u.moves - cost); u.fortify = 0; u.sleep = false; u.movedTurn = g.turn;
+    if (g.v2 && AU.Warbands && u.moves > 0 && AU.Warbands.zocApplies(g, u) && AU.Warbands.zocAt(g, u.civ, tileIdx)) { u.moves = 0; u.zocStopped = g.turn; } // zone of control: stepping next to an enemy Warband ends the move
     var civ = U.civ(g, u);
     if (civ) {
       G.revealAround(g, civ, to.col, to.row, G.sight(g, u));
@@ -180,7 +185,7 @@
   U.canUndo = function (g, u) { var d = g.undo; return !!(d && d.unit === u.id && d.turn === g.turn && g.units[u.id] && u.tile !== d.tile && !U.tileBlocked(g, u, d.tile, true)); };
   U.undoMove = function (g, u) {
     if (!U.canUndo(g, u)) return false;
-    var d = g.undo; G.setUnitTile(g, u, d.tile); u.moves = d.moves; u.fortify = d.fortify; u.sleep = d.sleep; u.movedTurn = d.movedTurn; u.path = null; g.undo = null;
+    var d = g.undo; G.setUnitTile(g, u, d.tile); u.moves = d.moves; G.refundOrder(g, u); u.fortify = d.fortify; u.sleep = d.sleep; u.movedTurn = d.movedTurn; u.path = null; g.undo = null;
     var civ = U.civ(g, u); if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return true;
   };
@@ -202,13 +207,14 @@
     if (def.religious && civ) u.moves += G.civFx(g, civ).religiousMoves || 0;
     u.attacksLeft = def.extraAttack ? 2 : 1;
     if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
+    if (g.v2 && AU.Warbands && G.isMilitary(u) && !AU.Warbands.isCommander(u) && AU.Warbands.commanderAt(g, u.tile, u.civ)) u.moves += 1; // a Commander moves its Warband one tile farther
     if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
   };
   U.fortify = function (g, u) { if (!G.isMilitary(u)) return; u.fortify = Math.max(u.fortify, 1); u.path = null; u.moves = 0; };
   U.skip = function (g, u) { u.moves = 0; };
   U.sleep = function (g, u) { u.sleep = true; u.path = null; u.moves = 0; };
   U.disband = function (g, u) { G.removeUnit(g, u); };
-  U.needsOrders = function (g, u) { return u.moves > 0 && !u.sleep && !u.fortify && !(u.path && u.path.length); };
+  U.needsOrders = function (g, u) { return u.moves > 0 && !u.sleep && !u.fortify && !(u.path && u.path.length) && G.canOrder(g, u); };
 
   // ---------- Combat ----------
   U.strength = function (g, u, ctx) {
@@ -292,15 +298,17 @@
       if (ctx && ctx.vs && ctx.vs.type && cls === 'antcav' && AU.UNITS[ctx.vs.type].cls === 'cavalry') str += 10;
     }
     if (!def.noDamagePenalty && !fx.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
+    if (u.baited && u.baited.until > g.turn) str -= u.baited.str; // shaken by a Scarecrow Crew's ambush
     return Math.max(1, str);
   };
   U.damage = function (g, diff) {
     var r = 0.8 + G.rng(g) * 0.4;
     return Math.max(1, Math.round(30 * Math.exp(0.04 * diff) * r));
   };
-  U.canAttackTile = function (g, u, tileIdx) {
+  U.canAttackTile = function (g, u, tileIdx, ignoreOrder) {
     if (u.moves <= 0 || !G.isMilitary(u) || U.isEmbarked(g, u)) return false;
-    if (u.attacksLeft === 0) return false;
+    if (u.attacksLeft === 0 || AU.UNITS[u.type].noAttack) return false;
+    if (!ignoreOrder && !G.canOrder(g, u)) return false; // no Command left this turn
     var def = U.def(g, u), from = g.tiles[u.tile], to = g.tiles[tileIdx];
     var d = G.dist(from, to);
     var target = U.targetAt(g, u, tileIdx);
@@ -316,20 +324,23 @@
   U.targetAt = function (g, u, tileIdx) {
     var s = G.settlementAt(g, tileIdx);
     if (s && G.atWar(g, u.civ, s.civ)) {
-      var garrison = G.unitsAt(g, tileIdx).filter(function (o) { return G.isMilitary(o); })[0];
+      var garrison = G.unitsAt(g, tileIdx).filter(function (o) { return G.isMilitary(o) && !AU.UNITS[o.type].decoy; })[0];
       return { settlement: s, unit: garrison || null };
     }
     var us = G.unitsAt(g, tileIdx).filter(function (o) { return o.civ !== u.civ && G.atWar(g, u.civ, o.civ); });
     if (!us.length) return null;
-    var mil = us.filter(G.isMilitary)[0];
+    var mil = us.filter(function (o) { return G.isMilitary(o) && !AU.UNITS[o.type].decoy; })[0] || us.filter(G.isMilitary)[0]; // a Scarecrow Crew is the target only when it stands alone
     return { unit: mil || us[0], settlement: null };
   };
   U.attack = function (g, u, tileIdx) {
     g.undo = null;
     if (!U.canAttackTile(g, u, tileIdx)) return null;
+    if (!G.spendOrder(g, u)) return null;
+    if (g.v2 && AU.Warbands) return AU.Warbands.attack(g, u, tileIdx); // Divergence: the whole Warband fights as one
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };
     u.attackedTurn = g.turn; u.fortify = 0; u.sleep = false; u.path = null;
+    if (civ) civ.flags['ev:combat'] = g.turn; if (target.unit) { var tciv = U.civ(g, target.unit); if (tciv) tciv.flags['ev:combat'] = g.turn; } else if (target.settlement && g.civs[target.settlement.civ]) g.civs[target.settlement.civ].flags['ev:combat'] = g.turn;
     var attackStr = U.strength(g, u, { attacking: true, ranged: ranged, vs: target.unit || target.settlement });
     if (target.settlement && (!target.unit || ranged)) {
       // hit the settlement itself (garrison shares walls; ranged always hits the settlement first)
@@ -363,8 +374,9 @@
         result.killed = v.id; u.xp += 3 * (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
         U.killRewards(g, u, def, v);
         if (civ) { var kf = G.civFx(g, civ); if (kf.faithFromKills) civ.bonusFaith = (civ.bonusFaith || 0) + kf.faithFromKills; }
-        if (civ) { civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
+        if (civ) { civ.flags['ev:combat'] = g.turn; civ.stats.kills++; if (u.type === 'slinger') civ.flags['ev:killSlinger'] = g.turn; if (AU.UNITS[u.type].cls === 'antcav') civ.flags['ev:killSpear'] = g.turn; if (U.isNaval(u)) civ.flags['ev:killNaval'] = g.turn; if (U.isRanged(u)) civ.flags['ev:killRanged'] = g.turn; var kfx = G.civFx(g, civ); if (kfx.goldPerKill) civ.gold += kfx.goldPerKill; if (kfx.culturePerKill) civ.bonusCulture = (civ.bonusCulture || 0) + kfx.culturePerKill; if (kfx.sciencePerKill) civ.bonusScience = (civ.bonusScience || 0) + kfx.sciencePerKill; if (kfx.navalKillGold && U.isNaval(u)) civ.gold += kfx.navalKillGold; }
         var vciv = U.civ(g, v);
+        if (vciv) { vciv.flags['ev:combat'] = g.turn; vciv.flags['ev:unitLost'] = g.turn; if (U.isNaval(v)) vciv.flags['ev:boatLost'] = g.turn; }
         if (vciv) G.notify(g, vciv, { kind: 'loss', text: _('Your') + ' ' + v.name + ' was killed near ' + U.nearestName(g, v.tile) + '.', tile: v.tile });
         if (!G.isMilitary(v) && !ranged && U.canCapture(u) && !AU.UNITS[v.type].religious) { // capture civilian: convert
           v.civ = u.civ; v.hp = 100; v.moves = 0; result.capturedUnit = v.id; G.notify(g, civ, { kind: 'capture', text: _('Captured an enemy') + ' ' + v.name + '!', tile: v.tile });
@@ -406,6 +418,8 @@
     var wasCapital = s.isCapital; s.isCapital = false;
     oldCiv.lostSettlements = (oldCiv.lostSettlements || 0) + 1;
     newCiv.stats.captures++; newCiv.flags['ev:capture'] = g.turn;
+    if (newCiv.rel[oldIdx]) newCiv.rel[oldIdx].capturedThisWar = (newCiv.rel[oldIdx].capturedThisWar || 0) + 1; if (oldCiv.rel[newCivIdx]) oldCiv.rel[newCivIdx].lostThisWar = (oldCiv.rel[newCivIdx].lostThisWar || 0) + 1;
+    var nCap = (newCiv.rel[oldIdx] && newCiv.rel[oldIdx].capturedThisWar) || 1; s.unrest = g.turn + 10 + 3 * (nCap - 1); if (s.origCiv === undefined || s.origCiv === newCivIdx) s.origCiv = oldIdx; if (s.origCiv === newCivIdx) s.origCiv = undefined; newCiv.warWeariness = (newCiv.warWeariness || 0) + 6; // conquest fatigue: unrest grows with every capture of the war, weariness at home
     if (fx.captureGold) newCiv.gold += fx.captureGold;
     if (fx.captureCapitalGold && wasCapital) newCiv.gold += fx.captureCapitalGold;
     if (fx.captureCulture) newCiv.bonusCulture = (newCiv.bonusCulture || 0) + fx.captureCulture;

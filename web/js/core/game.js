@@ -44,13 +44,13 @@
     var seed = opts.seed || (Date.now() & 0x7fffffff);
     var rng = new AU.RNG(seed ^ 0x5bd1e995);
     var speed = AU.SPEEDS[opts.speed] ? opts.speed : (sc && sc.speed) || 'standard';
-    var map = AU.generateMap({ seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)), template: tpl });
+    var map = AU.generateMap({ v2: !!opts.v2, seed: seed, width: size.w, height: size.h, numCivs: numCivs, numCamps: size.camps, mapType: opts.mapType || 'continents', extraStarts: 3 + (opts.numStates !== undefined ? opts.numStates : Math.round(numCivs * 0.6)), template: tpl });
     numCivs = Math.min(numCivs, map.starts.length);
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
       wonders: {}, religions: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
-      playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null
+      playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null, v2: !!opts.v2
     };
     // pick civs: player's chosen one first, then random others (a scenario fixes the cast and their leaders)
     var ids, scStart = {};
@@ -172,14 +172,15 @@
     mergeFx(fx, G.civData(civ).ability.fx);
     mergeFx(fx, G.leaderData(civ).ability.fx);
     mergeFx(fx, AU.GOVERNMENTS[civ.government].fx);
-    if (fx.governmentHappiness && civ.government !== 'chiefdom') fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
-    if (fx.monarchHappiness && (civ.government === 'monarchy' || civ.government === 'theocracy')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.monarchHappiness;
+    if (fx.governmentHappiness && (g.v2 || civ.government !== 'chiefdom')) fx.happinessBonus = (fx.happinessBonus || 0) + fx.governmentHappiness;
+    if (fx.monarchHappiness && (g.v2 ? true : (civ.government === 'monarchy' || civ.government === 'theocracy'))) fx.happinessBonus = (fx.happinessBonus || 0) + (g.v2 ? Math.ceil(fx.monarchHappiness / 2) : fx.monarchHappiness); // no governments under v2: half of it, always
     if (AU.Palace && !civ.minor) { var ph = AU.Palace.fx(civ).happiness; if (ph) fx.happinessBonus = (fx.happinessBonus || 0) + ph; }
-    if (fx.despotCombat && (civ.government === 'oligarchy' || civ.government === 'autocracy')) fx.combatBonus = (fx.combatBonus || 0) + fx.despotCombat;
+    if (fx.despotCombat && (g.v2 ? true : (civ.government === 'oligarchy' || civ.government === 'autocracy'))) fx.combatBonus = (fx.combatBonus || 0) + (g.v2 ? Math.ceil(fx.despotCombat / 2) : fx.despotCombat);
     for (var cid in civ.civics) { var c = AU.CIVIC_BY_ID[cid]; if (c && c.fx) mergeFx(fx, c.fx); }
     for (var tid in civ.techs) { var tt = AU.TECH_BY_ID[tid]; if (tt && tt.fx) mergeFx(fx, tt.fx); }
     if (AU.MASTERY) for (var mid in civ.mastery || {}) { var mm = mid.indexOf('c:') === 0 ? AU.MASTERY.civics[mid.slice(2)] : AU.MASTERY.techs[mid]; if (mm && mm.fx) mergeFx(fx, mm.fx); }
     (civ.policies || []).forEach(function (pid) { var pc = AU.POLICIES[pid]; if (pc) mergeFx(fx, pc.fx); });
+    if (g.v2 && AU.MasteryWeb) AU.MasteryWeb.fx(civ, mergeFx, fx);
     if (AU.Religion) AU.Religion.civFx(g, civ).forEach(function (rf) { mergeFx(fx, rf); });
     if (AU.CityStates) AU.CityStates.civFx(g, civ).forEach(function (cf) { mergeFx(fx, cf); });
     if (fx.peaceScienceMult && !g.civs.some(function (o) { return !o.minor && o.alive && o.idx !== civ.idx && G.atWar(g, civ.idx, o.idx); })) fx.yieldMult = mergeFx({}, { yieldMult: Object.assign({}, fx.yieldMult || {}, { science: (fx.yieldMult && fx.yieldMult.science || 1) * fx.peaceScienceMult }) }).yieldMult;
@@ -309,12 +310,12 @@
     t.settlement = s.id;
     g.settlements[s.id] = s;
     G.claimTile(g, s, tileIdx, true);
-    G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.owner < 0) { nt.owner = s.id; s.tiles.push(n); } });
+    if (!g.v2) G.neighbors(g, t).forEach(function (n) { var nt = g.tiles[n]; if (nt.owner < 0) { nt.owner = s.id; s.tiles.push(n); } }); // v2: the centre tile only, every tile after is earned by growth
     if (isCapital) { civ.capital = s.id; civ.originalCapital = s.id; G.addBuilding(g, s, 'palace'); }
     var fx = G.civFx(g, civ);
-    s.pendingGrowth += 1; G.autoExpand(g, s); // the first citizen works the best adjacent tile
+    s.pendingGrowth += 1; G.autoExpand(g, s); // the first citizen works the best adjacent tile (v2: this is the first of the three free claims)
     if (fx.freeBuilding) G.addBuilding(g, s, fx.freeBuilding);
-    if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
+    if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (g.v2 ? G.gateOk(g, civ, 'building', fb, AU.BUILDINGS[fb] || {}) : civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
     if (fx.freeExpansion) s.pendingGrowth += fx.freeExpansion;
     if (fx.foundGold) civ.gold += fx.foundGold;
     if (!isCapital && t.continent !== G.capitalContinent(g, civ)) {
@@ -419,7 +420,7 @@
     G.civSettlements(g, civ.idx).forEach(function (s) {
       s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || !t.resource) return; var R = AU.RESOURCES[t.resource];
         if (R.revealTech && !civ.techs[R.revealTech]) return;
-        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + 1; if (R.kind === 'bonus') bonus[t.resource] = true; });
+        if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + (g.v2 && AU.Society ? AU.Society.supplyOf(t) : 1); if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
     if (civ.imports) for (var ir in civ.imports) if (civ.imports[ir] > g.turn && AU.RESOURCES[ir]) { if (AU.RESOURCES[ir].kind === 'luxury') set[ir] = true; else if (AU.RESOURCES[ir].kind === 'strategic') strat[ir] = (strat[ir] || 0) + 1; }
     civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
@@ -500,10 +501,14 @@
       y.gold += (fx.goldPerWonder || 0) * wonders;
       if (fx.capitalYields) add(y, fx.capitalYields);
     }
+    if (g.v2 && s.isCapital && AU.Society) add(y, AU.Society.bondYields(g, civ)); // bonded free cities send half their yields
     // happiness
     var happy = 3 + bY.happiness + (y.happiness || 0) + Math.min(lux, 4) + lux * (fx.luxuryHappinessBonus || 0) + (fx.happinessBonus || 0) + (fx.empireHappiness || 0) - Math.floor(s.pop / 2);
     if (s.captured && fx.capturedHappiness) happy += fx.capturedHappiness;
     if (civ.warWeariness) happy -= Math.floor(civ.warWeariness / 4);
+    if (g.v2 && civ.bondShame > g.turn) happy -= 2; // a broken bond
+    if (s.unrest > g.turn) happy -= 3; // a freshly conquered settlement
+    var smk = g.v2 && AU.Smoke ? AU.Smoke.smoke(g, s) : 0; if (smk) { happy += AU.Smoke.happiness(smk); if (AU.Smoke.heavy(smk)) y.food = Math.max(0, y.food - AU.Smoke.farmTiles(g, s)); if (fx.smokeGold) y.gold += smk * fx.smokeGold; } // Smoke
     y.happiness = happy;
     // percents & multipliers
     y.production *= 1 + pct.production / 100; y.science *= 1 + pct.science / 100;
@@ -516,7 +521,9 @@
     }
     var diff = AU.DIFFICULTIES[g.difficulty], dm = civ.isPlayer ? diff.playerYield : diff.aiYield;
     ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= dm; });
-    if (happy < 0 && !fx.noUnhappinessPenalty) { var pen = happy <= -5 ? 0.7 : 0.85; ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= pen; }); }
+    if (s.unrest > g.turn) ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= 0.5; }); // unrest: half yields until the people settle
+    if (g.v2 && AU.Society) { var tm = AU.Society.tierOf(happy).mult; if (tm < 1 && fx.noUnhappinessPenalty) tm = 1; if (tm !== 1) ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= tm; }); } // Divergence: five moods from Miserable ×0.6 to Joyful ×1.2
+    else if (happy < 0 && !fx.noUnhappinessPenalty) { var pen = happy <= -5 ? 0.7 : 0.85; ['production', 'gold', 'science', 'culture'].forEach(function (k) { y[k] *= pen; }); }
     y.unitProductionPct = pct.unitProduction;
     // towns turn production into gold
     y.rawProduction = y.production;
@@ -539,7 +546,9 @@
   };
   // Big settlements grow slower: from pop 8 each extra citizen adds 12% to the food needed, so mega-cities stop at a sane size.
   G.growthCost = function (pop, g) { return Math.floor((15 + 8 * (pop - 1) + Math.pow(pop - 1, 1.5)) * (1 + Math.max(0, pop - 8) * 0.12) * (g ? G.speed(g) : 1)); };
-  G.era = function (civ) { var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
+  G.era = function (civ) { if (civ.v2) return civ.v2.era || 0; var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
+  // v2 rules: the Mastery Web decides what can be built; v1 rules: the technology or civic does.
+  G.gateOk = function (g, civ, kind, id, d) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.allows(g, civ, kind, id, d); if (d.tech && !civ.techs[d.tech]) return false; if (d.civic && !civ.civics[d.civic]) return false; return true; };
 
   // ---------- Production / purchasing ----------
   G.itemCost = function (g, civ, kind, id, s) {
@@ -568,32 +577,31 @@
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
     if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.v2 && !g.v2) return false;
+    if (!G.gateOk(g, civ, 'unit', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.caravan && AU.CityStates && AU.CityStates.caravans(g, civ).length >= AU.CityStates.caravanLimit(g, civ)) return false; // one route per Market or Harbor, plus one
-    if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
+    if (d.resource && (g.v2 && AU.Society ? !AU.Society.canSupply(g, civ, d.resource) : !G.hasResource(g, civ, d.resource))) return false; // Divergence: a resource tile supports 1–3 units by richness
     if ((d.cls === 'naval' || d.cls === 'navalRanged') && !G.isCoastal(g, s)) return false;
     // obsolete? if the upgrade target is buildable, hide the old one (except settler/scout)
-    if (d.upgradesTo) { var up = G.unitType(g, civ, d.upgradesTo); if (up.tech && civ.techs[up.tech] && (!up.resource || G.hasResource(g, civ, up.resource))) return false; }
+    if (d.upgradesTo) { var up = G.unitType(g, civ, d.upgradesTo); if ((g.v2 ? G.gateOk(g, civ, 'unit', d.upgradesTo, up) : (up.tech && civ.techs[up.tech])) && (!up.resource || G.hasResource(g, civ, up.resource))) return false; }
     return true;
   };
   G.canBuildBuilding = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.BUILDINGS[id];
     if (!d || d.noBuild || G.hasBuilding(s, id)) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (d.v2 && !g.v2) return false;
+    if (!G.gateOk(g, civ, 'building', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.requires && !G.hasBuilding(s, d.requires)) return false;
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
-    if (d.resource && !G.hasResource(g, civ, d.resource)) return false;
+    if (d.resource && (g.v2 && AU.Society ? !AU.Society.canSupply(g, civ, d.resource) : !G.hasResource(g, civ, d.resource))) return false; // Divergence: a resource tile supports 1–3 units by richness
     return true;
   };
   G.canBuildWonder = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.WONDERS[id];
     if (!s.isCity || g.wonders[id] !== undefined) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'wonder', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
     return true;
@@ -601,7 +609,7 @@
   G.canBuildProject = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.PROJECTS[id];
     if (!s.isCity || !s.isCapital) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
+    if (!G.gateOk(g, civ, 'project', id, d)) return false;
     if (d.requiresBuilding && !G.hasBuilding(s, d.requiresBuilding)) return false;
     if (civ.projects && civ.projects[id]) return false;
     if (d.requiresProject && !(civ.projects && civ.projects[d.requiresProject])) return false;
@@ -610,8 +618,7 @@
   G.canBuildNational = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.NATIONAL[id];
     if (!s.isCity || G.hasBuilding(s, id)) return false;
-    if (d.tech && !civ.techs[d.tech]) return false;
-    if (d.civic && !civ.civics[d.civic]) return false;
+    if (!G.gateOk(g, civ, 'national', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     var sets = G.civSettlements(g, civ.idx);
     if (sets.some(function (o) { return G.hasBuilding(o, id); })) return false;
@@ -661,8 +668,8 @@
     } else if (kind === 'building') {
       G.addBuilding(g, s, id);
       var bfx = G.civFx(g, civ);
-      if (bfx.freeTechOnBuilding === id && !civ.flags['ft:' + id]) { civ.flags['ft:' + id] = 1; G.grantFreeTech(g, civ); }
-      if (bfx.freeCivicOnBuilding === id && !civ.flags['fc:' + id]) { civ.flags['fc:' + id] = 1; G.grantFreeCivic(g, civ); }
+      if (bfx.freeTechOnBuilding === id && !civ.flags['ft:' + id]) { civ.flags['ft:' + id] = 1; if (g.v2) AU.MasteryWeb.grantFreeSpark(g, civ); else G.grantFreeTech(g, civ); }
+      if (bfx.freeCivicOnBuilding === id && !civ.flags['fc:' + id]) { civ.flags['fc:' + id] = 1; if (g.v2) AU.MasteryWeb.grantFreeSpark(g, civ); else G.grantFreeCivic(g, civ); }
       G.notify(g, civ, { kind: 'build', text: s.name + ' completed ' + G.buildingDef(g, civ, id).name + '.', tile: s.tile, settlement: s.id });
     } else if (kind === 'wonder') {
       if (g.wonders[id] !== undefined) { G.notify(g, civ, { kind: 'build', text: AU.WONDERS[id].name + ' was completed elsewhere; production refunded as gold.', tile: s.tile }); civ.gold += Math.round((s.progress['wonder:' + id] || 0)); return false; }
@@ -793,8 +800,9 @@
     for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ ' + _('New government available') + ': ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
     G.quote(g, civ, 'civic', id, c.name, _('Civic adopted'));
   };
-  G.grantFreeTech = function (g, civ) { var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
-  G.grantFreeCivic = function (g, civ) { var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
+  G.abilityDesc = function (ab) { var g = AU.App && AU.App.g; return ab && g && g.v2 && ab.descV2 ? ab.descV2 : (ab ? ab.desc : ''); }; // the Divergence wording of an ability, when it has one
+  G.grantFreeTech = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
+  G.grantFreeCivic = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
   G.availableGovernments = function (civ) { var out = []; for (var id in AU.GOVERNMENTS) { var gv = AU.GOVERNMENTS[id]; if (!gv.civic || civ.civics[gv.civic]) out.push(id); } return out; };
   G.setGovernment = function (g, civ, id) { if (G.availableGovernments(civ).indexOf(id) < 0) return false; civ.government = id; civ._fx = null; G.setPolicies(g, civ, civ.policies || []); return true; };
   G.policySlots = function (civ) { return AU.GOVERNMENTS[civ.government].slots; };
@@ -855,6 +863,7 @@
     }
   };
   G.checkBoosts = function (g, civ) {
+    if (g.v2) { if (AU.MasteryWeb) AU.MasteryWeb.evaluate && AU.MasteryWeb.evaluate(g, civ); return; } // Divergence: the Mastery Web fires Sparks, the classic boosts never do
     civ.boosts = civ.boosts || {};
     AU.TECHS.forEach(function (t) {
       if (civ.techs[t.id] || civ.boosts[t.id] || !t.eureka) return;
@@ -877,9 +886,58 @@
   };
 
   // ---------- Diplomacy ----------
+  // Command: how many units an empire can order in a turn. Old World's orders, reshaped: a base plus settlements and
+  // command buildings, minus bureaucracy beyond eight settlements. A unit's first action of the turn spends 1 Command,
+  // 2 when it stands more than 5 tiles from any of the empire's settlements, 3 beyond 10: far campaigns are slow to direct.
+  G.COMMAND_BASE = 5; G.COMMAND_BUILDINGS = { palace: 3, barracks: 1, castle: 1, military_academy: 2, telegraph_office: 2, railway_station: 1, airport: 2, broadcast_tower: 1, computer_center: 1, grand_arsenal: 2 };
+  G.commandMax = function (g, civ) {
+    if (civ.minor || civ.idx < 0) return 999;
+    var sets = G.civSettlements(g, civ.idx), n = G.COMMAND_BASE + sets.length, fx = G.civFx(g, civ);
+    sets.forEach(function (s) { if (s.unrest > g.turn) { n -= 1; return; } s.buildings.forEach(function (b) { n += G.COMMAND_BUILDINGS[b] || 0; }); });
+    if (sets.length > 8) n -= Math.floor((sets.length - 8) / 3); // bureaucracy
+    n += fx.commandBonus || 0;
+    return Math.max(3, Math.round(n));
+  };
+  G.commandLeft = function (g, civ) { return civ.command === undefined ? G.commandMax(g, civ) : civ.command; };
+  G.resetCommand = function (g, civ) { civ.command = G.commandMax(g, civ); };
+  G.orderCost = function (g, u) {
+    if (u.civ < 0 || g.civs[u.civ].minor) return 0;
+    var t = g.tiles[u.tile], best = 99; G.civSettlements(g, u.civ).forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
+    return best <= 5 ? 1 : best <= 10 ? 2 : 3;
+  };
+  G.canOrder = function (g, u) { if (u.civ < 0 || g.civs[u.civ].minor) return true; if (u.orderedTurn === g.turn) return true; return G.commandLeft(g, g.civs[u.civ]) >= G.orderCost(g, u); };
+  // A unit's first action of the turn spends its order; later actions of the same turn are free.
+  G.spendOrder = function (g, u) {
+    if (u.civ < 0 || g.civs[u.civ].minor || u.orderedTurn === g.turn) return true;
+    var civ = g.civs[u.civ], cost = G.orderCost(g, u); if (civ.command === undefined) civ.command = G.commandMax(g, civ);
+    if (civ.command < cost) return false;
+    civ.command -= cost; u.orderedTurn = g.turn; u.orderCost = cost; return true;
+  };
+  G.refundOrder = function (g, u) { if (u.orderedTurn !== g.turn) return; var civ = g.civs[u.civ]; if (civ) civ.command = (civ.command || 0) + (u.orderCost || 1); u.orderedTurn = -1; };
+  // Balance of power: an empire holding 40% of the majors' settlements, or twice the next one, is a runaway the world turns against.
+  G.dominance = function (g, civIdx) { var majors = g.civs.filter(function (c) { return c.alive && !c.minor; }); if (majors.length < 3) return 0; var counts = majors.map(function (c) { return G.civSettlements(g, c.idx).length; }), total = counts.reduce(function (a, b) { return a + b; }, 0), mine = G.civSettlements(g, civIdx).length; if (!total || !mine) return 0; var second = Math.max.apply(null, majors.filter(function (c) { return c.idx !== civIdx; }).map(function (c) { return G.civSettlements(g, c.idx).length; })); return Math.max(mine / total, second ? mine / (2 * second) : 0); };
+  // Loyalty: while unrest lasts, an unhappy conquered settlement more than 8 tiles from its new capital may return to its old owner (if alive).
+  G.revoltsTurn = function (g) {
+    for (var id in g.settlements) {
+      var s = g.settlements[id]; if (!(s.unrest > g.turn) || s.origCiv === undefined) continue;
+      var owner = g.civs[s.civ], old = g.civs[s.origCiv]; if (!old || !old.alive || old.minor || old.idx === s.civ) continue;
+      var cap = owner.capital && g.settlements[owner.capital]; var far = !cap || G.dist(g.tiles[cap.tile], g.tiles[s.tile]) > (G.isRunaway(g, owner) ? 5 : 8); // a runaway holds its conquests less firmly
+      if (!far || G.settlementYields(g, s).happiness >= 0) continue;
+      var garrison = G.unitsAt(g, s.tile).some(function (u) { return u.civ === s.civ && G.isMilitary(u); });
+      if (G.rng(g) < (garrison ? 0.05 : 0.15)) {
+        var name = s.name; s.civ = old.idx; s.unrest = g.turn + 5; s.captured = false; s.origCiv = undefined; s.queue = []; s.progress = {}; s.hp = Math.round(G.settlementMaxHp(g, s) * 0.5);
+        G.unitsAt(g, s.tile).forEach(function (u) { if (u.civ === owner.idx) { var away = G.neighbors(g, g.tiles[s.tile]).filter(function (n) { return G.passable(g, g.tiles[n]) && !G.unitsAt(g, n).length && !G.isWater(g.tiles[n]); })[0]; if (away != null) G.setUnitTile(g, u, away); else G.removeUnit(g, u); } });
+        if (!old.capital || !g.settlements[old.capital] || g.settlements[old.capital].civ !== old.idx) { old.capital = s.id; s.isCapital = true; s.isCity = true; G.addBuilding(g, s, 'palace'); }
+        owner._fx = null; old._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+        G.log(g, name + ' rose up and returned to ' + G.civData(old).name + '.', old.idx);
+        g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === owner.idx || c.idx === old.idx)) G.notify(g, c, { kind: c.idx === old.idx ? 'capture' : 'loss', text: '✊ ' + name + ' ' + (c.idx === old.idx ? _('rose up and returned to you!') : _('rose up and returned to') + ' ' + G.civData(old).name + '.'), tile: s.tile, settlement: s.id }); });
+      }
+    }
+  };
+  G.isRunaway = function (g, civ) { return civ && civ.alive && !civ.minor && G.dominance(g, civ.idx) >= 0.4; };
   G.declareWar = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
-    ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn;
+    ca.rel[b].war = true; cb.rel[a].war = true; ca.rel[b].warSince = g.turn; cb.rel[a].warSince = g.turn; ca.rel[b].warBy = a; cb.rel[a].warBy = a; ca.rel[b].capturedThisWar = 0; cb.rel[a].capturedThisWar = 0;
     cb.flags['ev:warDeclaredOnUs'] = g.turn; ca.flags['ev:war'] = g.turn;
     if (AU.CityStates) AU.CityStates.onWarDeclared(g, a, b);
     cb.rel[a].attitude -= 30;
@@ -890,7 +948,8 @@
   };
   G.makePeace = function (g, a, b) {
     var ca = g.civs[a], cb = g.civs[b];
-    ca.rel[b].war = false; cb.rel[a].war = false; ca.rel[b].peaceUntil = g.turn + 10; cb.rel[a].peaceUntil = g.turn + 10;
+    var bled = (ca.rel[b].capturedThisWar || 0) + (cb.rel[a].capturedThisWar || 0), truce = 25 + (bled ? 15 : 0); // a peace holds 25 turns, 40 after a war that took settlements
+    ca.rel[b].war = false; cb.rel[a].war = false; ca.rel[b].peaceUntil = g.turn + truce; cb.rel[a].peaceUntil = g.turn + truce;
     ca.rel[b].attitude += 10; cb.rel[a].attitude += 10;
     G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' made peace.', a);
     g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === a || c.idx === b)) G.notify(g, c, { kind: 'peace', text: _('Peace with') + ' ' + G.civData(c.idx === a ? cb : ca).name + '.', panel: 'diplomacy' }); });
@@ -902,7 +961,8 @@
     if (ai.minor && g.turn - rel.warSince >= 5) return true;
     if (g.turn - rel.warSince < 8) return false;
     var mine = G.militaryStrength(g, ai.idx), theirs = G.militaryStrength(g, other);
-    var losing = theirs > mine * 1.2 || (ai.lostSettlements || 0) > 0;
+    var losing = theirs > mine * 1.2 || (rel.lostThisWar || 0) > 0;
+    if ((rel.capturedThisWar || 0) >= 2) return true; // satiated: two settlements taken is a war won
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
   };
 
@@ -911,6 +971,7 @@
   G.tourism = function (g, civ) {
     var fx = G.civFx(g, civ), t = 0, sets = G.civSettlements(g, civ.idx);
     sets.forEach(function (s) {
+      var t0 = t, heavy = g.v2 && AU.Smoke && AU.Smoke.heavy(AU.Smoke.smoke(g, s));
       if (s.greatWorks) t += s.greatWorks * 3;
       s.buildings.forEach(function (b) {
         if (AU.WONDERS[b]) t += 3;
@@ -918,6 +979,7 @@
         else if (AU.BUILDINGS[b]) { var bd = AU.BUILDINGS[b]; t += bd.tourism !== undefined ? bd.tourism : (bd.yields && bd.yields.culture ? bd.yields.culture * 0.5 : 0); }
       });
       s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
+      if (heavy) t = t0 + (t - t0) * 0.5; // nobody visits a smoky town
     });
     if (AU.Palace && !civ.minor) t += AU.Palace.fx(civ).tourism;
     t *= (1 + civ.era * 0.25) * (1 + (fx.tourismMult || 0));
@@ -967,7 +1029,8 @@
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
     if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1));
-    if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
+    if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
+    else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
     if (s.specialization && !s.isCity && surplus > 0) { sends = Math.min(surplus, 6) * (fx.townFoodMult || 1); } // a town feeds its City with at most 6 Food per turn
     else {
@@ -1016,20 +1079,37 @@
     s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || i === s.tile) return; var y = G.tileYields(g, t, s); var v = y.food * 2 + y.production + y.gold; if (v < wv) { wv = v; worst = t; } });
     if (worst) worst.worked = false;
   };
+  // v2 city growth: every population point may claim one tile. The centre and the first two are free; from the fourth
+  // a claim also costs Influence (15 per tile beyond the third, rising) and needs an Expansion building in the settlement.
+  G.claimedCount = function (g, s) { var n = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked) n++; }); return n; };
+  G.claimCost = function (g, s) { var n = G.claimedCount(g, s); return n < 3 ? 0 : 10 * (n - 2); };
+  // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus ability bonuses.
+  G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + (G.civFx(g, civ).influencePerTurn || 0); };
+  G.claimBlocker = function (g, s) { // null when the next claim may happen, else why not
+    if (!g.v2) return null;
+    var n = G.claimedCount(g, s); if (n < 3) return null;
+    if (!G.hasBuilding(s, 'boundary_marker') && !G.hasBuilding(s, 'growth_hall')) return 'building';
+    var civ = g.civs[s.civ]; if ((civ.influence || 0) < G.claimCost(g, s)) return 'influence';
+    return null;
+  };
+  G.payClaim = function (g, s) { if (!g.v2) return; var cost = G.claimCost(g, s); if (cost > 0) { var civ = g.civs[s.civ]; civ.influence = (civ.influence || 0) - cost; } };
   G.autoExpand = function (g, s) {
+    if (g.v2 && !G.hasBuilding(s, 'growth_hall') && s.pendingGrowth > 1) { s.specialists += s.pendingGrowth - 1; s.pendingGrowth = 1; } // without a Growth Hall only one claim waits; the rest become specialists
     while (s.pendingGrowth > 0) {
+      if (G.claimBlocker(g, s)) break;
       var cands = G.expansionCandidates(g, s);
       if (!cands.length) { s.specialists += s.pendingGrowth; s.pendingGrowth = 0; break; }
       if (s.specialists > 0 && cands.length && false) {}
       var best = null, bv = -1e9;
       cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); if (v > bv) { bv = v; best = i; } });
-      G.claimTile(g, s, best); s.pendingGrowth--;
+      G.payClaim(g, s); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
   G.expandTo = function (g, s, tileIdx) {
     if (s.pendingGrowth <= 0) return false;
     if (G.expansionCandidates(g, s).indexOf(tileIdx) < 0) return false;
-    G.claimTile(g, s, tileIdx); s.pendingGrowth--;
+    if (G.claimBlocker(g, s)) return false;
+    G.payClaim(g, s); G.claimTile(g, s, tileIdx); s.pendingGrowth--;
     return true;
   };
   // A settlement with Walls (or a Castle) bombards the strongest enemy military unit within 2 tiles once per turn.
@@ -1049,7 +1129,7 @@
   G.settlementStrength = function (g, s) {
     var civ = g.civs[s.civ], fx = G.civFx(g, civ);
     var best = 10;
-    for (var u in AU.UNITS) { var d = G.unitType(g, civ, u); if (d.cls === 'civilian' || d.cls === 'naval' || d.cls === 'navalRanged') continue; if (d.tech && !civ.techs[d.tech]) continue; best = Math.max(best, d.strength); }
+    for (var u in AU.UNITS) { var d = G.unitType(g, civ, u); if (d.cls === 'civilian' || d.cls === 'naval' || d.cls === 'navalRanged') continue; if (!G.gateOk(g, civ, 'unit', u, d)) continue; best = Math.max(best, d.strength); }
     var str = best + (s.isCity ? 3 : 0) + (fx.cityDefense || 0);
     var wallsMult = fx.wallsMult || 1;
     if (G.hasBuilding(s, 'walls')) str += 6 * wallsMult;
@@ -1090,16 +1170,17 @@
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
-    G.checkBoosts(g, civ);
-    if (!civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
-    if (civ.currentTech) {
+    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; civ.influence = (civ.influence || 0) + G.influenceIncome(g, civ); }
+    else G.checkBoosts(g, civ);
+    if (!g.v2 && !civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
+    if (!g.v2 && civ.currentTech) {
       civ.techProgress[civ.currentTech] = (civ.techProgress[civ.currentTech] || 0) + civ._turnScience;
       var t = AU.TECH_BY_ID[civ.currentTech];
       if (civ.techProgress[civ.currentTech] >= G.techCost(g, civ, t)) { var over = civ.techProgress[civ.currentTech] - G.techCost(g, civ, t); G.learnTech(g, civ, t.id); civ.techOverflow = over; }
     }
     if (civ.techOverflow && civ.currentTech === null) { var av2 = G.availableTechs(civ); if (av2.length) { av2.sort(function (a, b) { return a.cost - b.cost; }); civ.techProgress[av2[0].id] = (civ.techProgress[av2[0].id] || 0) + civ.techOverflow; } civ.techOverflow = 0; }
-    if (!civ.currentCivic) { var ac = G.availableCivics(civ); if (ac.length) { ac.sort(function (a, b) { return a.cost - b.cost; }); civ.currentCivic = ac[0].id; } }
-    if (civ.currentCivic) {
+    if (!g.v2 && !civ.currentCivic) { var ac = G.availableCivics(civ); if (ac.length) { ac.sort(function (a, b) { return a.cost - b.cost; }); civ.currentCivic = ac[0].id; } }
+    if (!g.v2 && civ.currentCivic) {
       civ.civicProgress[civ.currentCivic] = (civ.civicProgress[civ.currentCivic] || 0) + civ._turnCulture;
       var c2 = AU.CIVIC_BY_ID[civ.currentCivic];
       if (civ.civicProgress[civ.currentCivic] >= G.civicCost(g, civ, c2)) G.learnCivic(g, civ, c2.id);
@@ -1126,7 +1207,7 @@
       G.civSettlements(g, a.idx).forEach(function (s) { near(s.tile, 3); });
     });
     // AI turns
-    g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) AU.AI.takeTurn(g, civ); });
+    g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) { G.resetCommand(g, civ); AU.AI.takeTurn(g, civ); } });
     AU.AI.barbarianTurn(g);
     // city ranged attacks
     for (var sid in g.settlements) AU.U.settlementAttack(g, g.settlements[sid]);
@@ -1134,10 +1215,15 @@
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
+    if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); }
+    if (g.v2 && AU.Climate) AU.Climate.turn(g);
+    G.revoltsTurn(g);
+    g.civs.forEach(function (civ) { if (!civ.isPlayer || !civ.alive) return; var run = G.isRunaway(g, civ); if (run && !civ.flags['runawayWarned']) { civ.flags['runawayWarned'] = g.turn; G.notify(g, civ, { big: true, kind: 'war', text: '⚖️ ' + _('The world grows wary of your size: other leaders trust you less, and a wide realm is slow to command.'), panel: 'diplomacy' }); } else if (!run && civ.flags['runawayWarned']) delete civ.flags['runawayWarned']; });
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) G.civSettlements(g, civ.idx).forEach(function (s) { if (s.pendingGrowth > 0) G.autoExpand(g, s); }); });
     // units: heal and reset
     for (var id in g.units) AU.U.newTurn(g, g.units[id]);
     g.turn++;
+    G.resetCommand(g, player);
     // player start of turn: continue paths, visibility
     G.civUnits(g, player.idx).forEach(function (u) { if (u.path && u.path.length) AU.U.followPath(g, u); });
     G.refreshVisibility(g, player);

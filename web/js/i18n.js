@@ -17,7 +17,7 @@
   globalThis._ = I.t;
   I.setLang = function (lang) { try { localStorage.setItem('te_lang', lang); } catch (e) {} };
   // ---------- data ----------
-  var KEYS = { name: 1, desc: 1, adj: 1, title: 1, line: 1, unlocks: 1, hint: 1, label: 1, kicker: 1, text: 1, look: 0 };
+  var KEYS = { name: 1, desc: 1, descV2: 1, joke: 1, adj: 1, title: 1, line: 1, unlocks: 1, hint: 1, label: 1, kicker: 1, text: 1, look: 0 };
   var SKIP = { needs: 1, feature: 1, requiresCount: 1, requires: 1, unit: 1, cities: 1, id: 1, replaces: 1, cards: 1, pre: 1, fx: 1, ai: 1, bias: 1, color: 1, color2: 1, icon: 1, slots: 1, yields: 1, cond: 1, when: 1, terrain: 1, civ: 1, civId: 1, leaders: 0 };
   function walk(o, fn, depth) {
     if (!o || typeof o !== 'object' || depth > 5) return;
@@ -37,6 +37,15 @@
     if (AU.Diplo && AU.Diplo.AGENDAS) walk(AU.Diplo.AGENDAS, fn, 0);
     if (AU.QUOTES) for (var qc in AU.QUOTES) for (var qi in AU.QUOTES[qc]) { var q = AU.QUOTES[qc][qi]; if (q && q.text) { var rq = fn(q.text); if (rq !== undefined) q.text = rq; } }
     if (AU.WHEN_LABEL) for (var k in AU.WHEN_LABEL) { var r2 = fn(AU.WHEN_LABEL[k]); if (r2 !== undefined) AU.WHEN_LABEL[k] = r2; }
+    if (AU.V2) { // Divergence data: Sparks, hubs, ages, unit joke names
+      function tx(o, key) { if (o && typeof o[key] === 'string' && o[key]) { var r = fn(o[key]); if (r !== undefined) o[key] = r; } }
+      (AU.V2.NODES || []).forEach(function (n) { tx(n, 'name'); tx(n, 'joke'); if (n.trigger) tx(n.trigger, 'desc'); });
+      (AU.V2.HUBS || []).forEach(function (h) { tx(h, 'name'); (h.branches || []).forEach(function (b) { tx(b, 'name'); }); });
+      (AU.V2.ERAS || []).forEach(function (e) { tx(e, 'name'); tx(e, 'joke'); });
+      for (var uk in (AU.V2.UNITS || {})) tx(AU.V2.UNITS[uk], 'joke');
+    }
+    if (AU.Society) { (AU.Society.TIERS || []).forEach(function (t) { tx2(t, 'name'); }); (AU.Society.RICH || []).forEach(function (t) { tx2(t, 'name'); }); for (var pk in (AU.Society.PERSUASION || {})) { tx2(AU.Society.PERSUASION[pk], 'name'); tx2(AU.Society.PERSUASION[pk], 'desc'); } }
+    function tx2(o, key) { if (o && typeof o[key] === 'string' && o[key]) { var r = fn(o[key]); if (r !== undefined) o[key] = r; } }
   };
   I.applyData = function () { if (!I.dict) return; I.walkData(function (s) { var v = I.dict[s]; return v ? v : undefined; }); };
   // ---------- static DOM (index.html) ----------

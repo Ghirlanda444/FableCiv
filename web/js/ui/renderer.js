@@ -532,6 +532,7 @@
             if (rart && this.resourceBadge) { ctx.fillStyle = 'rgba(12,16,30,0.62)'; ctx.beginPath(); ctx.arc(rx0, ry0 + rzs * 0.12, rzs * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,240,200,0.55)'; ctx.lineWidth = Math.max(1, rzs * 0.05); ctx.stroke(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.12, rzs * 0.62, 0.92); }
             else if (rart) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(rx0, ry0 + rzs * 0.3, rzs * 0.36, rzs * 0.13, 0, 0, Math.PI * 2); ctx.fill(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.3, rzs * 0.86, 0.92); }
             else { ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.arc(cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.3, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, Rs.icon, cc[0] + rzs * 0.42, cc[1] + rzs * 0.38, rzs * 0.44); }
+            if (t.rich != null && rzs > 14) { var np = t.rich + 1, pr = Math.max(1.5, rzs * 0.07), px0 = rx0 - (np - 1) * pr * 1.4, py0 = ry0 + rzs * 0.58; for (var pi = 0; pi < np; pi++) { ctx.fillStyle = '#f5d76e'; ctx.strokeStyle = 'rgba(40,30,10,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(px0 + pi * pr * 2.8, py0, pr, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } } // richness pips
           }
         }
         if (t.worked && t.owner >= 0 && t.settlement == null && !midDetail) {
@@ -585,17 +586,29 @@
     if (hl.path && hl.path.length) { ctx.fillStyle = 'rgba(255,255,255,0.85)'; hl.path.forEach(function (pi) { var p3 = S(g.tiles[pi]); ctx.beginPath(); ctx.arc(p3[0], p3[1], Math.max(2, rzs * 0.12), 0, Math.PI * 2); ctx.fill(); });
       if (hl.pathLabel) { var lp = S(g.tiles[hl.path[hl.path.length - 1]]), fs = Math.max(11, rzs * 0.45); ctx.font = 'bold ' + fs + 'px system-ui, sans-serif'; var tw = ctx.measureText(hl.pathLabel).width + fs; ctx.fillStyle = 'rgba(20,24,40,0.9)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5, fs * 0.5) : ctx.rect(lp[0] - tw / 2, lp[1] - rzs * 0.95 - fs * 0.75, tw, fs * 1.5); ctx.fill(); ctx.fillStyle = '#ffe680'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(hl.pathLabel, lp[0], lp[1] - rzs * 0.95); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'; } }
     // pass 6: settlements
+    var hazeList = [];
     for (var sid in g.settlements) {
       var st = g.settlements[sid]; t = g.tiles[st.tile];
       if (!explored[t.i] || t.row < r0 || t.row > r1 || t.col < c0 || t.col > c1) continue;
       this.drawSettlement(ctx, g, st, S(t), rzs, player, lowDetail);
+      if (g.v2 && AU.Smoke && !lowDetail) { var smk = AU.Smoke.smoke(g, st); if (smk >= 3) hazeList.push([S(t), smk]); }
     }
-    // pass 7: units
+    // pass 7: units. Fighters of one side on a tile draw as one figure with a count badge (a Warband under the Divergence rules).
+    var stacks = {};
     for (var uid in g.units) {
       var u = g.units[uid]; t = g.tiles[u.tile];
       if (!visible[t.i] || t.row < r0 || t.row > r1 || t.col < c0 || t.col > c1) continue;
-      this.drawUnit(ctx, g, u, S(t), rzs, app);
+      var key = G.isMilitary(u) && !AU.UNITS[u.type].great ? u.tile + '|' + u.civ : uid;
+      (stacks[key] = stacks[key] || []).push(u);
     }
+    for (var sk in stacks) {
+      var members = stacks[sk], rep = members[0];
+      if (members.length > 1) { var selId = app && app.sel.unit; rep = null; members.forEach(function (m) { if (m.id === selId) rep = m; }); if (!rep) members.forEach(function (m) { if (!rep || (AU.UNITS[m.type].commander ? -1 : AU.U.def(g, m).strength) > (AU.UNITS[rep.type].commander ? -1 : AU.U.def(g, rep).strength)) rep = m; }); }
+      var fakeN = members.length === 1 && AU.UNITS[rep.type].decoy && rep.civ !== player.idx ? 3 : members.length; // a Scarecrow Crew fools everyone but its owner
+      this.drawUnit(ctx, g, rep, S(g.tiles[rep.tile]), rzs, app, fakeN);
+    }
+    // pass 7b: smoke over smoky settlements, above the figures so it reads as weather
+    for (var hz = 0; hz < hazeList.length; hz++) this.drawHaze(ctx, hazeList[hz][0], rzs, hazeList[hz][1]);
     // pass 8: fog for explored-but-not-visible
     ctx.fillStyle = 'rgba(8,14,26,0.42)';
     for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
@@ -606,6 +619,11 @@
     if (hl.selTile >= 0 && (!app || !app.sel.unit)) { var stt = g.tiles[hl.selTile]; var sp2 = S(stt); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; hexPath(ctx, sp2[0], sp2[1], rzs - 1); ctx.stroke(); }
   };
 
+  // Smoke: soft grey puffs drifting up from a smoky settlement.
+  Renderer.prototype.drawHaze = function (ctx, cc, rz, smk) {
+    var a = Math.min(0.78, 0.4 + smk * 0.04), n = Math.min(4, 1 + Math.floor(smk / 3));
+    for (var i = 0; i < n; i++) { var r = rz * (0.42 + i * 0.12), x = cc[0] + (i % 2 ? 1 : -1) * rz * 0.22 * (i + 1) * 0.5, y = cc[1] - rz * (0.85 + i * 0.38); var gr = ctx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(70,70,82,' + a + ')'); gr.addColorStop(0.55, 'rgba(70,70,82,' + (a * 0.8) + ')'); gr.addColorStop(1, 'rgba(70,70,82,0)'); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  };
   Renderer.prototype.drawSettlement = function (ctx, g, st, cc, rz, player, lowDetail) {
     var civ = g.civs[st.civ], data = G.civData(civ), col = hexToRgb(G.civColor(civ)), ccol = G.civColor(civ);
     var x = cc[0], y = cc[1];
@@ -647,8 +665,9 @@
   };
   function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r); ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath(); }
 
-  Renderer.prototype.drawUnit = function (ctx, g, u, cc, rz, app) {
+  Renderer.prototype.drawUnit = function (ctx, g, u, cc, rz, app, stackN) {
     var t = g.tiles[u.tile], isSel = app && app.sel.unit === u.id, mil = G.isMilitary(u);
+    if (stackN > 1 && app && app.sel.unit && !isSel) { var selU = g.units[app.sel.unit]; if (selU && selU.tile === u.tile && selU.civ === u.civ && G.isMilitary(selU)) isSel = true; }
     var ux = cc[0] + (mil ? 0 : rz * 0.3), uy = cc[1] + (mil ? rz * 0.05 : rz * 0.25), ur = rz * (mil ? 0.4 : 0.3);
     if (G.unitsAt(g, u.tile).length > 1 && mil) ux = cc[0] - rz * 0.2;
     if (t.settlement != null) { ur *= 0.75; ux = cc[0] + (mil ? -rz * 0.58 : rz * 0.58); uy = cc[1] - rz * 0.3; }
@@ -656,6 +675,7 @@
     // Owner plate: a thick coloured stand under the figure in the empire's colours (dark red with a skull for the Inchibils), so who owns a unit reads at a glance.
     ctx.fillStyle = 'rgba(0,0,0,0.35)'; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.95, ur * 1.05, ur * 0.42, 0, 0, Math.PI * 2); ctx.fill();
     var rc = hexToRgb(ucol);
+    if (stackN > 1) { for (var sk = Math.min(3, stackN) - 1; sk >= 1; sk--) { ctx.fillStyle = rgb(rc, 0.8); ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(1.5, ur * 0.12); ctx.beginPath(); ctx.ellipse(ux + sk * ur * 0.34, uy + ur * 0.72 - sk * ur * 0.16, ur * 0.95, ur * 0.38, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); } } // the others in the Warband stand behind
     ctx.fillStyle = rgb(rc, 1.0); ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(2, ur * 0.16);
     ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.0, ur * 0.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = 'rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.62, ur * 0.75, ur * 0.22, 0, 0, Math.PI * 2); ctx.fill();
@@ -663,9 +683,9 @@
       ctx.strokeStyle = '#ff5a3c'; ctx.lineWidth = Math.max(1, ur * 0.08); ctx.setLineDash([Math.max(2, ur * 0.18), Math.max(2, ur * 0.12)]); ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.2, ur * 0.52, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
     }
     if (isSel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(ux, uy + ur * 0.72, ur * 1.15, ur * 0.5, 0, 0, Math.PI * 2); ctx.stroke(); }
-    var ucv = u.civ >= 0 ? g.civs[u.civ] : null, art = AU.Assets.getChain(AU.Assets.unitChain(G.unitArtId(g, ucv, u.type), u.type, ucv ? AU.cultureOf(ucv) : null));
+    var ucv = u.civ >= 0 ? g.civs[u.civ] : null, lookType = AU.UNITS[u.type].decoy && (!app || u.civ !== G.player(g).idx) ? AU.UNITS[u.type].disguise : u.type, art = AU.Assets.getChain(AU.Assets.unitChain(G.unitArtId(g, ucv, lookType), lookType, ucv ? AU.cultureOf(ucv) : null));
     if (art) { var ah = ur * 2.6, aw = ah * art.width / art.height; ctx.drawImage(art, ux - aw / 2, uy - ah + ur * 0.6, aw, ah); }
-    else { ctx.fillStyle = rgb(rc, 1.1); ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, AU.UNITS[u.type].icon, ux, uy, ur * 1.1); }
+    else { ctx.fillStyle = rgb(rc, 1.1); ctx.beginPath(); ctx.arc(ux, uy, ur, 0, Math.PI * 2); ctx.fill(); this.drawGlyph(ctx, AU.UNITS[lookType].icon, ux, uy, ur * 1.1); }
     // Owner badge: the empire's emblem (or a skull) in a small coloured circle at the shoulder
     var bx = ux + ur * 0.85, by = uy - ur * 0.95, br = Math.max(4, ur * 0.42);
     ctx.fillStyle = ucol; ctx.strokeStyle = ucol2; ctx.lineWidth = Math.max(1.5, br * 0.22); ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
@@ -676,6 +696,11 @@
     if (u.hp < 100) { ctx.fillStyle = '#222'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2, 3); ctx.fillStyle = u.hp > 50 ? '#4caf50' : u.hp > 25 ? '#e6b422' : '#e05252'; ctx.fillRect(ux - ur, uy + ur + 1, ur * 2 * u.hp / 100, 3); }
     if (u.fortify && mil) { ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1; ctx.strokeRect(ux - ur - 2, uy - ur - 2, ur * 2 + 4, ur * 2 + 4); }
     if (U.level(u) > 0) { ctx.fillStyle = '#f5d76e'; for (var k = 0; k < U.level(u); k++) { ctx.beginPath(); ctx.arc(ux - ur * 0.6 + k * ur * 0.6, uy - ur - 3, Math.max(1.5, ur * 0.12), 0, Math.PI * 2); ctx.fill(); } }
+    if (stackN > 1) { // Warband count badge
+      var cx = ux - ur * 0.95, cy = uy - ur * 0.95, cr = Math.max(5, ur * 0.4);
+      ctx.fillStyle = '#1b1b2a'; ctx.strokeStyle = '#f5d76e'; ctx.lineWidth = Math.max(1.5, cr * 0.2); ctx.beginPath(); ctx.arc(cx, cy, cr, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold ' + Math.round(cr * 1.3) + 'px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(stackN), cx, cy + cr * 0.05); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
     if (isSel) { ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2; hexPath(ctx, cc[0], cc[1], rz - 1, this.isoY()); ctx.stroke(); }
   };
   AU.Renderer = Renderer;
