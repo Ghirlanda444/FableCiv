@@ -90,6 +90,7 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   const far = G.neighbors(g, near).map(i => g.tiles[i]).filter(t => !G.isWater(t) && !AU.TERRAIN[t.terrain].impassable && t.settlement == null && G.dist(t, g.tiles[s.tile]) === 2)[0];
   far.owner = -1; G.civUnits(g, other.idx).forEach(u => G.removeUnit(g, u));
   const so = G.foundSettlement(g, other.idx, far.i); so.pop = 22; so.tiles.forEach(i => { g.tiles[i].worked = true; });
+  if (!SO.sharesBorder(g, p.idx, other.idx) && near.owner < 0) G.claimTile(g, so, near.i); // the neighbour claims the tile between us, whatever the map's yields
   assert(SO.sharesBorder(g, p.idx, other.idx), 'the two empires share a border');
   p.imports = { silk: 999, gems: 999, wine: 999, furs: 999 }; p._lux = null; // four luxuries: a joyful capital
   const moodP = SO.mood(g, p).tier.id, moodO = SO.mood(g, other).tier.id;

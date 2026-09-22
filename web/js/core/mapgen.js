@@ -229,6 +229,20 @@
       t4.resource = rng.pick(weighted);
       if (opts.v2) { var rr = rng.next(); t4.rich = rr < 0.2 ? 0 : rr < 0.8 ? 1 : 2; } // poor / normal / rich
     }
+    // Every strategic resource must exist on the map in useful numbers (at least 2, or three quarters of the empires):
+    // a war over Rubber needs Rubber somewhere. Missing copies land on random matching land tiles.
+    (function () {
+      var need = Math.max(2, Math.ceil((opts.numCivs || 4) * 0.75)), have = {};
+      for (var q = 0; q < tiles.length; q++) if (tiles[q].resource) have[tiles[q].resource] = (have[tiles[q].resource] || 0) + 1;
+      resIds.forEach(function (id) {
+        var R = AU.RESOURCES[id]; if (R.kind !== 'strategic') return;
+        var missing = need - (have[id] || 0); if (missing <= 0) return;
+        var cands = [];
+        for (var q2 = 0; q2 < tiles.length; q2++) { var tq = tiles[q2]; if (tq.resource || tq.natural || tq.terrain === 'mountain' || R.terrain.indexOf(tq.terrain) < 0) continue; if (R.flat && tq.hills) continue; if (R.feature) { if (R.feature.indexOf(tq.feature) < 0) continue; } else if (tq.feature === 'jungle' || tq.feature === 'oasis' || tq.feature === 'marsh') continue; cands.push(tq); }
+        rng.shuffle(cands);
+        for (var c = 0; c < cands.length && missing > 0; c++) { var ct = cands[c]; if (R.hills && !ct.hills && rng.chance(0.5)) continue; ct.resource = id; if (opts.v2) { var r2 = rng.next(); ct.rich = r2 < 0.2 ? 0 : r2 < 0.8 ? 1 : 2; } missing--; }
+      });
+    })();
 
     // Natural wonders: a few per map, on matching terrain, apart from each other
     var naturals = [], wantNat = TPL ? 0 : Math.max(2, Math.round(landCount / 220));
@@ -340,7 +354,7 @@
     if (t.natural) add(y, AU.NATURAL_WONDERS[t.natural].yields);
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];
-      if (!R.revealTech || !civ || civ.techs[R.revealTech]) { add(y, R.yields); var ry = AU.Society && AU.Society.richYields(t, R); if (ry) add(y, ry); }
+      if (civ ? AU.G.resourceKnown(null, civ, R) : !R.revealTech) { add(y, R.yields); var ry = AU.Society && AU.Society.richYields(t, R); if (ry) add(y, ry); }
     }
     return y;
   };

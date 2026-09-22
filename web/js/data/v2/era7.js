@@ -53,8 +53,9 @@
   node({ id: 'x_hubble_node', pool: B, name: 'Bigger Telescope', joke: 'We Looked Further Than Anyone Asked Us To', trigger: { type: 'threshold', cond: ['explored', 1600], desc: 'Explore 1600 tiles' }, fx: { capitalYields: { science: 2 } }, unlocks: { wonder: 'hubble' } });
   node({ id: 'x_spaceagency_node', pool: B, name: 'National Space Program', joke: 'A Whole Agency Just For Up', trigger: { type: 'threshold', cond: ['building', 'spaceport', 1], desc: 'Build a Spaceport' }, fx: { sciencePerSettlement: 2 }, unlocks: { national: 'space_agency' } });
   node({ id: 'x_gamer', pool: B, name: 'Video Game Arcade', joke: 'Quarters In Exchange For Joy', trigger: { type: 'threshold', cond: ['building', 'stadium', 1], desc: 'Build a Stadium' }, fx: { culturePerSettlement: 1 } });
-  node({ id: 'x_callcenter', pool: B, name: 'Global Call Center', joke: 'Someone Somewhere Is Always Answering The Phone', trigger: { type: 'threshold', cond: ['met', 5], desc: 'Know 5 other empires' }, fx: { goldPerSettlement: 2 } });
-  node({ id: 'x_ecowarrior', pool: B, name: 'Solar Rooftop', joke: 'The Sun Pays Some Of The Bills Now', trigger: { type: 'state', cond: ['event', 'foodSurplus'], turns: 20, desc: 'Positive Food for 20 turns' }, fx: { yieldMult: { production: 1.1 } } });
+  // Lab or mine: the first to fire locks the other. Synthesise your first resource, or dig up enough of them.
+  pair({ id: 'x_labgrown', name: 'Lab-Grown Everything', joke: 'We Made The Stuff Instead Of Finding It', trigger: { type: 'discovery', cond: ['event', 'synthesis'], desc: 'Synthesise a resource' }, fx: { synthCostMult: 0.7 } },
+       { id: 'x_reserve', name: 'Strategic Reserve', joke: 'A Very Big Shed Full Of Important Rocks', trigger: { type: 'threshold', cond: ['resourcekind', 'strategic', 4], desc: 'Own 4 kinds of strategic resource' }, fx: { sciencePerStrategic: 2 } });
   node({ id: 'x_esports', pool: B, name: 'Esports League', joke: 'People Now Watch Other People Play Games', trigger: { type: 'threshold', cond: ['wonders', 1], desc: 'Own a Wonder' }, fx: { happinessBonus: 2, tourismMult: 1.05 } });
   N.forEach(function (n) { V2.NODES.push(n); V2.NODE_BY_ID[n.id] = n; });
   // ---- Narrative hubs (5) ----

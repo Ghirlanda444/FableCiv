@@ -354,7 +354,7 @@
     if (t.natural) return null;
     if (t.resource) {
       var R = AU.RESOURCES[t.resource];
-      if (!R.revealTech || (civ && civ.techs[R.revealTech])) return R.improvement;
+      if (civ ? G.resourceKnown(g, civ, R) : !R.revealTech) return R.improvement;
     }
     if (G.isWater(t)) return t.resource ? 'fishing' : null;
     if (t.terrain === 'mountain') return null;
@@ -419,14 +419,20 @@
     var set = {}, strat = {}, bonus = {};
     G.civSettlements(g, civ.idx).forEach(function (s) {
       s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked || !t.resource) return; var R = AU.RESOURCES[t.resource];
-        if (R.revealTech && !civ.techs[R.revealTech]) return;
+        if (!G.resourceKnown(g, civ, R)) return;
         if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + (g.v2 && AU.Society ? AU.Society.supplyOf(t) : 1); if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
     if (civ.imports) for (var ir in civ.imports) if (civ.imports[ir] > g.turn && AU.RESOURCES[ir]) { if (AU.RESOURCES[ir].kind === 'luxury') set[ir] = true; else if (AU.RESOURCES[ir].kind === 'strategic') strat[ir] = (strat[ir] || 0) + 1; }
+    if (g.v2 && civ.synth && AU.Synthesis) for (var sr in civ.synth) if (AU.RESOURCES[sr]) strat[sr] = (strat[sr] || 0) + civ.synth[sr] * AU.Synthesis.SUPPLY; // synthesised supply lasts
     civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
     return civ._lux;
   };
   G.hasResource = function (g, civ, res) { return !res || (G.luxuryCount(g, civ).strategic[res] || 0) > 0; };
+  // Is this resource visible and usable to the empire? Classic: its technology. Divergence: the age of that technology.
+  G.resourceRevealEra = function (R) { if (R.revealEra !== undefined) return R.revealEra; var t = R.revealTech && AU.TECH_BY_ID[R.revealTech]; return t ? t.era : 0; };
+  G.resourceKnown = function (g, civ, res) { var R = typeof res === 'string' ? AU.RESOURCES[res] : res; if (!R || !R.revealTech) return true; if (!civ) return false; if ((g && g.v2) || civ.v2) return (civ.era || 0) >= G.resourceRevealEra(R); return !!civ.techs[R.revealTech]; };
+  // What still hides the resource from this empire, for the tile tips.
+  G.resourceRevealName = function (g, R) { if (g && g.v2) { var e = AU.V2 && AU.V2.ERAS[G.resourceRevealEra(R)]; return e ? e.name : _('a later age'); } var t = AU.TECH_BY_ID[R.revealTech]; return t ? t.name : _('a technology'); };
   G.isCoastal = function (g, s) { var t = g.tiles[s.tile]; if (t.navigable) return true; return G.neighbors(g, t).some(function (n) { var nt = g.tiles[n]; return nt.terrain === 'coast' || nt.terrain === 'lake' || nt.navigable; }); };
   G.hasRiver = function (g, s) { var t = g.tiles[s.tile]; if (t.river) return true; return G.neighbors(g, t).some(function (n) { return g.tiles[n].river; }); };
   G.settlementHas = function (g, s, need) {
@@ -470,6 +476,7 @@
     if (s.specialization === 'trade') y.gold += 4;
     var utS = G.civData(civ).ut; if (utS && s.specialization === utS.id && utS.fx && utS.fx.flat) add(y, utS.fx.flat);
     y.gold += fx.goldPerSettlement || 0; y.culture += fx.culturePerSettlement || 0; y.science += fx.sciencePerSettlement || 0;
+    if (fx.sciencePerStrategic && s.id === civ.capital) y.science += fx.sciencePerStrategic * Object.keys(G.luxuryCount(g, civ).strategic).length;
     y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
     var rfx = AU.Religion ? AU.Religion.settlementFx(g, s) : null;
@@ -905,7 +912,8 @@
   G.resetCommand = function (g, civ) { civ.command = G.commandMax(g, civ); };
   G.orderCost = function (g, u) {
     if (u.civ < 0 || g.civs[u.civ].minor) return 0;
-    var t = g.tiles[u.tile], best = 99; G.civSettlements(g, u.civ).forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
+    var t = g.tiles[u.tile], best = 99, sets = G.civSettlements(g, u.civ); if (!sets.length) return 1; // a people still on the move: every order is near
+    sets.forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
     if (g.v2 && t.river && t.owner >= 0 && G.tileOwnerCiv(g, t) === u.civ) return 1; // Divergence: word travels fast along your own rivers
     return best <= 5 ? 1 : best <= 10 ? 2 : 3;
   };
@@ -1180,7 +1188,7 @@
     civ._turnScience += civ.bonusScience || 0; civ._turnCulture += civ.bonusCulture || 0; civ.bonusScience = 0; civ.bonusCulture = 0;
     civ.cultureTotal = (civ.cultureTotal || 0) + civ._turnCulture; civ.tourismTotal = (civ.tourismTotal || 0) + G.tourism(g, civ);
     if (AU.Religion) { civ._turnFaith = (civ._turnFaith || 0) + (civ.bonusFaith || 0); civ.bonusFaith = 0; AU.Religion.turn(g, civ); }
-    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; civ.influence = (civ.influence || 0) + G.influenceIncome(g, civ); }
+    if (g.v2 && AU.MasteryWeb) { AU.MasteryWeb.turn(g, civ); civ.currentTech = null; civ.currentCivic = null; civ.influence = (civ.influence || 0) + G.influenceIncome(g, civ); if (AU.Synthesis) AU.Synthesis.aiTurn(g, civ); }
     else G.checkBoosts(g, civ);
     if (!g.v2 && !civ.currentTech) { var av = G.availableTechs(civ); if (av.length) { av.sort(function (a, b) { return a.cost - b.cost; }); civ.currentTech = av[0].id; } }
     if (!g.v2 && civ.currentTech) {

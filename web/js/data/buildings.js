@@ -31,14 +31,14 @@
     power_plant:  { name: 'Power Plant',   cost: 520, yields: { production: 4 }, tech: 'electricity', requires: 'factory', pct: { production: 15 }, resource: 'coal' },
     broadcast_tower:{ name: 'Broadcast Tower', cost: 520, yields: { culture: 8 }, tourism: 6, tech: 'radio', requires: 'museum' },
     stadium:      { name: 'Stadium',       cost: 540, yields: { happiness: 4, culture: 2 }, tourism: 4, civic: 'professional_sports' },
-    airport:      { name: 'Airport',       cost: 600, yields: { gold: 4, production: 2 }, tech: 'flight' },
+    airport:      { name: 'Airport',       cost: 600, yields: { gold: 4, production: 2 }, tech: 'flight', resource: 'aluminum' },
     computer_center:{ name: 'Computer Center', cost: 700, yields: { science: 10, gold: 3 }, tech: 'computers', requires: 'research_lab', pct: { science: 15 } },
     sewer:        { name: 'Sewer',         cost: 300, yields: { food: 1, happiness: 2 }, tech: 'sanitation', requires: 'aqueduct' },
     shipyard:     { name: 'Shipyard',      cost: 260, yields: { production: 2, gold: 1 }, tech: 'mass_production', requires: 'harbor', needs: 'coast', pct: { unitProduction: 15 } },
     astronomical_observatory: { name: 'Observatory', cost: 280, yields: { science: 3 }, tech: 'astronomy', requires: 'library', needs: 'hills' },
     railway_station: { name: 'Railway Station', cost: 420, yields: { production: 3, gold: 2 }, tech: 'railroad', requires: 'workshop' },
     telegraph_office: { name: 'Telegraph Office', cost: 380, yields: { science: 2, gold: 2 }, tech: 'telegraph', requires: 'market' },
-    nuclear_plant: { name: 'Nuclear Plant',  cost: 800, yields: { production: 8 }, tech: 'nuclear_power', requires: 'power_plant', pct: { production: 20 } },
+    nuclear_plant: { name: 'Nuclear Plant',  cost: 800, yields: { production: 8 }, tech: 'nuclear_power', resource: 'uranium', requires: 'power_plant', pct: { production: 20 } },
     data_center:  { name: 'Data Center',   cost: 850, yields: { science: 12, gold: 4 }, tech: 'the_internet', requires: 'computer_center', pct: { science: 10 } },
     spaceport:    { name: 'Spaceport',     cost: 900, yields: { science: 4 }, tech: 'rocketry', requires: 'airport', desc: 'Required for space projects.' }
   };

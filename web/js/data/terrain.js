@@ -48,7 +48,12 @@
     iron:    { name: 'Iron',    kind: 'strategic', yields: { production: 1 }, icon: '⛏️', improvement: 'mine', terrain: ['grassland', 'plains', 'desert', 'tundra'], revealTech: 'bronze_working' },
     niter:   { name: 'Niter',   kind: 'strategic', yields: { production: 1 }, icon: '🧪', improvement: 'mine', terrain: ['grassland', 'plains', 'desert', 'tundra'], flat: true, revealTech: 'military_engineering' },
     coal:    { name: 'Coal',    kind: 'strategic', yields: { production: 2 }, icon: '🪨', improvement: 'mine', terrain: ['grassland', 'plains'], hills: true, revealTech: 'industrialization' },
-    oil:     { name: 'Oil',     kind: 'strategic', yields: { production: 3 }, icon: '🛢️', improvement: 'well', terrain: ['desert', 'tundra', 'snow', 'coast'], revealTech: 'combustion' }
+    oil:     { name: 'Oil',     kind: 'strategic', yields: { production: 3 }, icon: '🛢️', improvement: 'well', terrain: ['desert', 'tundra', 'snow', 'coast'], revealTech: 'combustion' },
+    // Divergence-era additions (both rule sets): the resources the classic games forgot. Revealed by a technology (classic) or an age (Divergence).
+    copper:  { name: 'Copper',  kind: 'strategic', yields: { production: 1, gold: 1 }, icon: '🪙', improvement: 'mine', terrain: ['grassland', 'plains', 'desert', 'tundra'], hills: true, revealTech: 'mining' },
+    rubber:  { name: 'Rubber',  kind: 'strategic', yields: { production: 1, gold: 1 }, icon: '🎈', improvement: 'plantation', terrain: ['grassland', 'plains'], feature: ['jungle', 'forest'], revealTech: 'refining' },
+    aluminum:{ name: 'Aluminum', kind: 'strategic', yields: { production: 2 }, icon: '🔩', improvement: 'mine', terrain: ['plains', 'desert', 'tundra'], hills: true, revealTech: 'electricity' },
+    uranium: { name: 'Uranium', kind: 'strategic', yields: { production: 2, science: 1 }, icon: '☢️', improvement: 'mine', terrain: ['desert', 'tundra', 'snow', 'plains'], hills: true, revealTech: 'nuclear_fission' }
   };
 
   AU.IMPROVEMENTS = {

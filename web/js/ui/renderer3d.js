@@ -217,6 +217,7 @@
     for (var i5 = 0; i5 < g.tiles.length; i5++) {
       var t5 = g.tiles[i5]; if (!t5.resource) continue; var Rs5 = AU.RESOURCES[t5.resource]; if (!Rs5) continue;
       var p5 = tileXZ(t5), rx5 = p5[0] + R * 0.38, rz5 = p5[1] + R * 0.28, tex5 = AU.Assets.texture('resources', t5.resource);
+      if (!tex5) { AU.Assets.get('resources', t5.resource); var st5 = AU.Assets._state('resources', t5.resource); if (st5 && st5.failed) tex5 = this.glyphTexture(Rs5.icon); }
       var spr = new T.Sprite(new T.SpriteMaterial({ map: tex5 || null, transparent: true, alphaTest: 0.1, depthTest: true })); spr.scale.set(R * 0.6, R * 0.6, 1); spr.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.32, rz5); spr.userData.tile = i5; spr.userData.res = t5.resource; spr.visible = false; group.add(spr); resList.push(spr);
       if (t5.rich != null) { var pip = new T.Sprite(new T.SpriteMaterial({ map: this.pipTexture(t5.rich + 1), transparent: true, alphaTest: 0.1, depthTest: true })); pip.scale.set(R * 0.42, R * 0.14, 1); pip.position.set(rx5, this.heightAt(rx5, rz5) + R * 0.06, rz5 + R * 0.22); pip.userData.tile = i5; pip.userData.res = t5.resource; pip.visible = false; group.add(pip); resList.push(pip); } // richness pips
     }
@@ -316,7 +317,7 @@
   // Rivers are painted into the ground atlas; this pass only keeps the resource icons in sync with exploration.
   P.rebuildRivers = function (g) {
     var w = this.world, explored = G.player(g).explored;
-    if (w.resSprites) { var plR = G.player(g); w.resSprites.forEach(function (sp) { var Rs = AU.RESOURCES[sp.userData.res]; sp.visible = !!explored[sp.userData.tile] && (!Rs.revealTech || !!plR.techs[Rs.revealTech]); if (!sp.material.map) { var tx = AU.Assets.texture('resources', sp.userData.res); if (tx) { sp.material.map = tx; sp.material.needsUpdate = true; } } }); }
+    if (w.resSprites) { var plR = G.player(g); w.resSprites.forEach(function (sp) { var Rs = AU.RESOURCES[sp.userData.res]; sp.visible = !!explored[sp.userData.tile] && G.resourceKnown(g, plR, Rs); if (!sp.material.map) { var tx = AU.Assets.texture('resources', sp.userData.res); if (tx) { sp.material.map = tx; sp.material.needsUpdate = true; } } }); }
     var cnt = 0; for (var i = 0; i < explored.length; i++) cnt += explored[i];
     w.riverSig = cnt;
   };
@@ -463,6 +464,14 @@
 
   // ---------- units ----------
   // 1–3 gold pips under a resource: its richness tier.
+  // A resource without a painted picture shows its glyph on a dark disc (same look as the 2D map's fallback).
+  P.glyphTexture = function (glyph) {
+    var T = window.THREE, key = 'glyph|' + glyph; if (this.textures[key]) return this.textures[key];
+    var cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; var ctx = cv.getContext('2d');
+    ctx.fillStyle = 'rgba(12,16,30,0.7)'; ctx.beginPath(); ctx.arc(32, 32, 30, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,240,200,0.6)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.font = '34px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(glyph, 32, 35);
+    var tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; this.textures[key] = tex; return tex;
+  };
   P.pipTexture = function (n) {
     var T = window.THREE, key = 'pips|' + n; if (this.textures[key]) return this.textures[key];
     var cv = document.createElement('canvas'); cv.width = 96; cv.height = 32; var ctx = cv.getContext('2d');

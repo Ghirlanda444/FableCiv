@@ -327,12 +327,12 @@
       if (!p.explored[tileIdx]) { tip.hidden = true; return; }
       var owner = t.owner >= 0 && g.settlements[t.owner] ? g.settlements[t.owner] : null;
       var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
-      var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
+      var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && G.resourceKnown(g, p, res);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
       var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' ' + _('Hills') : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · ' + _('Navigable River') : t.river ? ' · ' + _('River') : '') + (t.shore ? ' · ' + ({ beach: _('Beach'), cliff: _('Cliffs'), rocks: _('Rocky shore'), mangrove: _('Mangroves'), reef: _('Reef') })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 ' + _('Move cost') + ' ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b>' + (AU.Society && AU.Society.richOf(t) ? ' <span class="pill">' + ['🟤', '🟡', '🟢'][t.rich] + ' ' + _(AU.Society.richOf(t).name) + (res.kind === 'strategic' ? ' · ' + _('supports') + ' ' + AU.Society.supplyOf(t) : '') + '</span>' : '') + ' <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
-      else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
+      else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + G.resourceRevealName(g, res) + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
       if (t.camp) html += '<div class="stat">🏕️ ' + _('Inchibil camp: move a military unit onto it to disperse it for Gold.') + '</div>';
@@ -465,7 +465,7 @@
           var yy = AU.baseTileYields(tt, p), owner = tt.owner >= 0 && g.settlements[tt.owner] ? g.settlements[tt.owner] : null;
           var NWc = tt.natural ? AU.NATURAL_WONDERS[tt.natural] : null;
           html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">' + _('Natural Wonder') + '</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' ' + _('Hills') : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (' + _('River)') : '')) + (function () { var mc = U.terrainCost(tt); return ' <span class="pill" title="Movement points needed to enter">🥾 ' + (mc === Infinity ? 'impassable' : mc) + '</span>'; })() + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' ' + _('Adjacent worked tiles') + ': ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
-            (tt.resource && (!AU.RESOURCES[tt.resource].revealTech || p.techs[AU.RESOURCES[tt.resource].revealTech]) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
+            (tt.resource && G.resourceKnown(g, p, tt.resource) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
             '🌾' + yy.food + ' ⚙️' + yy.production + ' 💰' + yy.gold + (yy.culture ? ' 🎭' + yy.culture : '') +
             (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · ' + _('Independent camp') : '') + '</div></div>';
         }
