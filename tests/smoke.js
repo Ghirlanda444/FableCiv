@@ -7,7 +7,7 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   const h0 = G.settlementYields(g, s).happiness, f0 = G.settlementYields(g, s).food;
   assert(SM.smoke(g, s) === 0 || SM.smoke(g, s) < 3, 'a fresh capital makes little Smoke (' + SM.smoke(g, s) + ')');
   G.addBuilding(g, s, 'factory'); G.addBuilding(g, s, 'power_plant'); g.fxGen = (g.fxGen || 0) + 1;
-  const sm = SM.smoke(g, s); assert(sm >= 7, 'a Factory and a Power Plant make heavy Smoke (' + sm + ')');
+  const sm = SM.smoke(g, s); assert(sm >= 7 - (G.hasRiver(g, s) ? 1 : 0), 'a Factory and a Power Plant make heavy Smoke (' + sm + ')');
   const y = G.settlementYields(g, s);
   assert(y.happiness === h0 + SM.happiness(sm), 'Smoke costs Happiness (' + h0 + ' → ' + y.happiness + ')');
   assert(SM.heavy(sm), 'heavy Smoke flag');

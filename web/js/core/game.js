@@ -546,6 +546,9 @@
   };
   // Big settlements grow slower: from pop 8 each extra citizen adds 12% to the food needed, so mega-cities stop at a sane size.
   G.growthCost = function (pop, g) { return Math.floor((15 + 8 * (pop - 1) + Math.pow(pop - 1, 1.5)) * (1 + Math.max(0, pop - 8) * 0.12) * (g ? G.speed(g) : 1)); };
+  // Rivers (Divergence): a young river settlement grows 20% cheaper until it reaches 8 population.
+  G.RIVER_GROWTH_POP = 8;
+  G.growthCostFor = function (g, s) { var c = G.growthCost(s.pop, g); if (g.v2 && s.pop < G.RIVER_GROWTH_POP && G.hasRiver(g, s)) c = Math.floor(c * 0.8); return c; };
   G.era = function (civ) { if (civ.v2) return civ.v2.era || 0; var e = 0; for (var t in civ.techs) e = Math.max(e, AU.TECH_BY_ID[t].era); return e; };
   // v2 rules: the Mastery Web decides what can be built; v1 rules: the technology or civic does.
   G.gateOk = function (g, civ, kind, id, d) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.allows(g, civ, kind, id, d); if (d.tech && !civ.techs[d.tech]) return false; if (d.civic && !civ.civics[d.civic]) return false; return true; };
@@ -903,6 +906,7 @@
   G.orderCost = function (g, u) {
     if (u.civ < 0 || g.civs[u.civ].minor) return 0;
     var t = g.tiles[u.tile], best = 99; G.civSettlements(g, u.civ).forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
+    if (g.v2 && t.river && t.owner >= 0 && G.tileOwnerCiv(g, t) === u.civ) return 1; // Divergence: word travels fast along your own rivers
     return best <= 5 ? 1 : best <= 10 ? 2 : 3;
   };
   G.canOrder = function (g, u) { if (u.civ < 0 || g.civs[u.civ].minor) return true; if (u.orderedTurn === g.turn) return true; return G.commandLeft(g, g.civs[u.civ]) >= G.orderCost(g, u); };
@@ -1035,7 +1039,7 @@
     if (s.specialization && !s.isCity && surplus > 0) { sends = Math.min(surplus, 6) * (fx.townFoodMult || 1); } // a town feeds its City with at most 6 Food per turn
     else {
       s.food += surplus;
-      var cost = G.growthCost(s.pop, g);
+      var cost = G.growthCostFor(g, s);
       if (s.food >= cost) {
         s.food -= cost; s.pop += 1; s.pendingGrowth += 1;
         G.notify(g, civ, { kind: 'growth', text: s.name + ' has grown to ' + s.pop + '. ' + _('Choose a tile to expand.'), tile: s.tile, settlement: s.id });
@@ -1083,33 +1087,39 @@
   // a claim also costs Influence (15 per tile beyond the third, rising) and needs an Expansion building in the settlement.
   G.claimedCount = function (g, s) { var n = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked) n++; }); return n; };
   G.claimCost = function (g, s) { var n = G.claimedCount(g, s); return n < 3 ? 0 : 10 * (n - 2); };
-  // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus ability bonuses.
-  G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + (G.civFx(g, civ).influencePerTurn || 0); };
-  G.claimBlocker = function (g, s) { // null when the next claim may happen, else why not
+  // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus 1 per 8 Heritage a turn plus ability bonuses.
+  G.influenceFromHeritage = function (g, civ) { if (!g.v2) return 0; var y = G.civYields(g, civ); return Math.floor((y.culture || 0) / 8); };
+  G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + G.influenceFromHeritage(g, civ) + (G.civFx(g, civ).influencePerTurn || 0); };
+  // Rivers (Divergence): a river tile is claimed free of Influence and needs no Boundary Marker; the river is the border everyone agrees on.
+  G.freeClaimTile = function (g, tileIdx) { return !!(g.v2 && tileIdx != null && g.tiles[tileIdx] && g.tiles[tileIdx].river); };
+  G.claimBlocker = function (g, s, tileIdx) { // null when the next claim may happen, else why not
     if (!g.v2) return null;
     var n = G.claimedCount(g, s); if (n < 3) return null;
+    if (G.freeClaimTile(g, tileIdx)) return null;
     if (!G.hasBuilding(s, 'boundary_marker') && !G.hasBuilding(s, 'growth_hall')) return 'building';
     var civ = g.civs[s.civ]; if ((civ.influence || 0) < G.claimCost(g, s)) return 'influence';
     return null;
   };
-  G.payClaim = function (g, s) { if (!g.v2) return; var cost = G.claimCost(g, s); if (cost > 0) { var civ = g.civs[s.civ]; civ.influence = (civ.influence || 0) - cost; } };
+  // The tiles a settlement may claim right now: all candidates when nothing blocks, else only the free river tiles.
+  G.claimableTiles = function (g, s) { var c = G.expansionCandidates(g, s); if (!G.claimBlocker(g, s)) return c; return c.filter(function (i) { return G.freeClaimTile(g, i); }); };
+  G.payClaim = function (g, s, tileIdx) { if (!g.v2 || G.freeClaimTile(g, tileIdx)) return; var cost = G.claimCost(g, s); if (cost > 0) { var civ = g.civs[s.civ]; civ.influence = (civ.influence || 0) - cost; } };
   G.autoExpand = function (g, s) {
     if (g.v2 && !G.hasBuilding(s, 'growth_hall') && s.pendingGrowth > 1) { s.specialists += s.pendingGrowth - 1; s.pendingGrowth = 1; } // without a Growth Hall only one claim waits; the rest become specialists
     while (s.pendingGrowth > 0) {
-      if (G.claimBlocker(g, s)) break;
-      var cands = G.expansionCandidates(g, s);
-      if (!cands.length) { s.specialists += s.pendingGrowth; s.pendingGrowth = 0; break; }
-      if (s.specialists > 0 && cands.length && false) {}
+      var all = G.expansionCandidates(g, s);
+      if (!all.length) { s.specialists += s.pendingGrowth; s.pendingGrowth = 0; break; }
+      var cands = G.claimableTiles(g, s);
+      if (!cands.length) break;
       var best = null, bv = -1e9;
-      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); if (v > bv) { bv = v; best = i; } });
-      G.payClaim(g, s); G.claimTile(g, s, best); s.pendingGrowth--;
+      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0) + (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
+      G.payClaim(g, s, best); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
   G.expandTo = function (g, s, tileIdx) {
     if (s.pendingGrowth <= 0) return false;
     if (G.expansionCandidates(g, s).indexOf(tileIdx) < 0) return false;
-    if (G.claimBlocker(g, s)) return false;
-    G.payClaim(g, s); G.claimTile(g, s, tileIdx); s.pendingGrowth--;
+    if (G.claimBlocker(g, s, tileIdx)) return false;
+    G.payClaim(g, s, tileIdx); G.claimTile(g, s, tileIdx); s.pendingGrowth--;
     return true;
   };
   // A settlement with Walls (or a Castle) bombards the strongest enemy military unit within 2 tiles once per turn.

@@ -227,7 +227,7 @@
       function turnsLeft(prog, cost, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) : '∞'; }
       var techTxt = techT ? techT.name + ' (' + turnsLeft(p.techProgress[techT.id] || 0, G.techCost(g, p, techT), y.science) + ')' : 'choose';
       var civTxt = civT ? civT.name + ' (' + turnsLeft(p.civicProgress[civT.id] || 0, G.civicCost(g, p, civT), y.culture) + ')' : 'choose';
-      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮'); }
+      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡 ' + Math.floor(vs.study || 0) + ' 📚'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮 ' + Math.floor(vs.heritage || 0) + ' 🎭'); }
       var sets = G.civSettlements(g, p.idx), unhappy = sets.filter(function (s) { return G.settlementYields(g, s).happiness < 0; }).length;
       $('top-yields').innerHTML =
         '<span class="y" data-panel="empire">💰 <b>' + Math.floor(p.gold) + '</b><small>' + (y.gold >= 0 ? '+' : '') + y.gold.toFixed(1) + '</small></span>' +
@@ -259,7 +259,7 @@
       g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
       G.civSettlements(g, p.idx).forEach(function (s) {
         if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: _('Production') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
-        if (s.pendingGrowth > 0 && !G.claimBlocker(g, s)) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
+        if (s.pendingGrowth > 0 && G.claimableTiles(g, s).length) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
       if (AU.Religion) {
         if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: _('Choose a pantheon'), go: function () { self.openPanel('religion'); } });
@@ -398,9 +398,9 @@
     startExpand: function (s) {
       if (s.pendingGrowth <= 0) { this.toast(s.name + ' has no pending expansion.'); return; }
       this.sel.settlement = s.id; this.sel.unit = null; this.mode = 'expand';
-      var set = {}; G.expansionCandidates(this.g, s).forEach(function (i) { set[i] = true; });
+      var set = {}, blocked = G.claimBlocker(this.g, s); G.claimableTiles(this.g, s).forEach(function (i) { set[i] = true; });
       this.renderer.highlights = { reach: null, attack: null, expand: set, path: null, selTile: s.tile };
-      this.toast(_('Choose a tile for') + ' ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).');
+      this.toast(_('Choose a tile for') + ' ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).' + (blocked ? ' ' + _('Only river tiles can be claimed for free right now.') : ''));
       this.refreshContext(); this.invalidate();
     },
     refreshContext: function () {
@@ -553,7 +553,7 @@
       var h = this.renderer.highlights;
       if (this.mode === 'expand' && this.sel.settlement) {
         var s = g.settlements[this.sel.settlement];
-        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' ' + _('claimed a new tile.')); } this.refreshHud(); return; }
+        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0 && G.claimableTiles(g, s).length) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' ' + _('claimed a new tile.')); } this.refreshHud(); return; }
         this.mode = 'normal';
       }
       if (u && u.civ === p.idx) {

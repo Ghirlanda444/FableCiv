@@ -17,6 +17,7 @@
     var era = civ.era || 0; if (era >= SM.POP_ERA && s.pop >= 6) { var crowd = Math.floor(s.pop / 6); sources += crowd; src.push(['crowds', crowd]); }
     if (woods) { var w = woods * 0.5 * (fx.forestSinkMult || 1); sinks += w; sink.push(['woods', w]); }
     if (fx.smokeSink) { sinks += fx.smokeSink; sink.push(['sparks', fx.smokeSink]); }
+    if (G.hasRiver(g, s)) { sinks += 1; sink.push(['river', 1]); }
     var net = Math.max(0, Math.round((sources - sinks) * 10) / 10);
     return { sources: Math.round(sources * 10) / 10, sinks: Math.round(sinks * 10) / 10, net: net, src: src, sink: sink };
   };
@@ -31,7 +32,7 @@
   SM.farmTiles = function (g, s) { var civ = g.civs[s.civ], n = 0; s.tiles.forEach(function (i) { var t = g.tiles[i]; if (i === s.tile || !t.worked) return; var imp = G.improvementFor(g, t, civ); if (imp === 'farm' || imp === 'pasture') n++; }); return n; };
   SM.total = function (g, civ) { var n = 0; G.civSettlements(g, civ.idx).forEach(function (s) { n += SM.smoke(g, s); }); return Math.round(n * 10) / 10; };
   SM.world = function (g) { var n = 0; for (var id in g.settlements) n += SM.smoke(g, g.settlements[id]); return Math.round(n * 10) / 10; };
-  SM.NAMES = { mines: 'worked mines and quarries', crowds: 'crowds', woods: 'woods you own', sparks: 'Sparks' };
+  SM.NAMES = { mines: 'worked mines and quarries', crowds: 'crowds', woods: 'woods you own', sparks: 'Sparks', river: 'the river' };
   SM.describe = function (g, s) {
     var d = SM.detail(g, s), nm = function (k) { return AU.BUILDINGS[k] ? AU.BUILDINGS[k].name : AU.NATIONAL[k] ? AU.NATIONAL[k].name : _(SM.NAMES[k] || k); };
     return { net: d.net, from: d.src.map(function (x) { return nm(x[0]) + ' +' + x[1]; }).join(', '), soaked: d.sink.map(function (x) { return nm(x[0]) + ' -' + x[1]; }).join(', '), happiness: SM.happiness(d.net), heavy: SM.heavy(d.net) };
