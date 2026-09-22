@@ -87,6 +87,8 @@ jobs:
           done
           echo "pictures now: $(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l)"
           git pull --rebase -q origin main || true
+          # the game only requests pictures listed in web/js/assetlist.js: rebuild the index so the new ones show
+          node tools/asset-manifest.js && git add web/js/assetlist.js web/assets/manifest.json web/assets/PROMPTS.md
           git commit --allow-empty -q -m "Artwork: rebuild apps with $(find web/assets -type f \( -name '*.png' -o -name '*.jpg' \) | wc -l) pictures" && git push -q origin HEAD:main || true
       - name: Rebuild the apps with the new artwork
         # pushes made with the workflow token do not start other workflows, so dispatch them explicitly
