@@ -6,8 +6,8 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   const g = fresh(false); const p = G.player(g);
   const s = U.foundCity(g, G.civUnits(g, p.idx).filter(u => u.type === 'settler')[0]);
   G.resetCommand(g, p);
-  assert(G.commandMax(g, p) === 5 + 1 + 3, 'one settlement with a Palace gives 9 Command (' + G.commandMax(g, p) + ')');
-  G.addBuilding(g, s, 'barracks'); assert(G.commandMax(g, p) === 10, 'a Barracks adds 1');
+  const ab = G.civFx(g, p).commandBonus || 0; assert(G.commandMax(g, p) === 5 + 1 + 3 + ab, 'one settlement with a Palace gives 9 Command (plus the ability bonus) (' + G.commandMax(g, p) + ')');
+  G.addBuilding(g, s, 'barracks'); assert(G.commandMax(g, p) === 10 + ab, 'a Barracks adds 1');
   const scout = G.civUnits(g, p.idx).filter(u => u.type === 'scout')[0]; const near = G.neighbors(g, g.tiles[scout.tile]).filter(i => !G.isWater(g.tiles[i]) && !AU.TERRAIN[g.tiles[i].terrain].impassable && !G.unitsAt(g, i).length)[0];
   assert(G.orderCost(g, scout) === 1, 'a unit near home costs 1');
   const before = G.commandLeft(g, p); assert(U.moveTo(g, scout, near), 'the move goes through');

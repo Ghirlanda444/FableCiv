@@ -26,6 +26,7 @@
     g.tiles.forEach(function (t) {
       if (!land(t) || t.settlement != null || t.natural) return;
       if (G.unitsAt(g, t.i).length) return;
+      var oc = G.tileOwnerCiv(g, t); if (oc >= 0 && G.civFx(g, g.civs[oc]).climateImmune) return; // a people of the cold: their land holds
       var to = null;
       if (dir > 0 || target === 2) {
         if (t.terrain === 'tundra' && nearTerrain(g, t, ['grassland', 'plains'])) to = nearTerrain(g, t, ['grassland']) ? 'grassland' : 'plains';

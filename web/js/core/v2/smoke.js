@@ -10,7 +10,8 @@
   // Where a settlement's Smoke comes from and goes.
   SM.detail = function (g, s) {
     var civ = g.civs[s.civ], fx = G.civFx(g, civ), src = [], sink = [], sources = 0, sinks = 0;
-    s.buildings.forEach(function (b) { if (SM.SOURCES[b]) { sources += SM.SOURCES[b]; src.push([b, SM.SOURCES[b]]); } if (SM.SINKS[b]) { sinks += SM.SINKS[b]; sink.push([b, SM.SINKS[b]]); } });
+    var bm = fx.smokeSourceMult || 1;
+    s.buildings.forEach(function (b) { if (SM.SOURCES[b]) { sources += SM.SOURCES[b] * bm; src.push([b, SM.SOURCES[b] * bm]); } if (SM.SINKS[b]) { sinks += SM.SINKS[b]; sink.push([b, SM.SINKS[b]]); } });
     var mines = 0, woods = 0;
     s.tiles.forEach(function (i) { var t = g.tiles[i]; if (i === s.tile) return; if (t.worked) { var imp = G.improvementFor(g, t, civ); if (imp === 'mine' || imp === 'quarry') mines++; } if (t.feature === 'forest' || t.feature === 'jungle') woods++; });
     if (mines) { sources += mines * 0.5; src.push(['mines', mines * 0.5]); }
