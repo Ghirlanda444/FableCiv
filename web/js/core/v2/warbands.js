@@ -47,7 +47,7 @@
     var parts = units.map(function (o) { return { u: o, str: U.strength(g, o, ctx) }; }).sort(function (a, b) { return b.str - a.str; });
     var W = WB.weightsFor(g, units.length ? units[0].civ : -1), total = 0; parts.forEach(function (p, i) { total += p.str * (W[i] || 0); });
     var cmd = units.length && G.isMilitary(units[0]) ? WB.commanderAt(g, units[0].tile, units[0].civ) : null;
-    if (cmd) total *= WB.COMMANDER_MULT;
+    if (cmd) { var cfx = G.civFx(g, g.civs[cmd.civ]); total *= WB.COMMANDER_MULT + (cfx.commanderMult || 0); }
     return { total: Math.max(1, Math.round(total)), parts: parts, commander: cmd };
   };
   // Damage lands on the weakest member first and spills over to the next when one dies. Returns the units killed.

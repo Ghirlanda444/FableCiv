@@ -161,7 +161,7 @@
           else if (AI.wantsMilitary(g, civ)) { var wantRanged = G.civUnits(g, civ.idx).filter(function (u) { return U.isRanged(u); }).length < G.civUnits(g, civ.idx).filter(G.isMilitary).length / 3; var bu = AI.bestUnitToBuild(g, s, wantRanged); if (bu) pick = { kind: 'unit', id: bu }; }
           if (!pick && !s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 3) pick = { kind: 'unit', id: 'settler' };
           if (!pick && opts.national.length && s.pop >= 4 && G.rng(g) < 0.5) pick = { kind: 'national', id: opts.national[0] };
-          if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 + (AU.leaningOf(G.leaderData(civ)) === 'culture' ? 0.2 : 0) && s.pop >= 4) { var w = opts.wonders.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; pick = { kind: 'wonder', id: w }; }
+          if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 + (AU.leaningOf(G.leaderData(civ)) === 'culture' ? 0.2 : 0) && s.pop >= 4) { var wl = opts.wonders.filter(function (id) { var wd = AU.WONDERS[id]; return wd.tier !== 'great' || !sets.some(function (o) { return !o.isCity && o.specialization === wd.home && o.pop >= 4; }); }); var w = wl.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; if (w) pick = { kind: 'wonder', id: w }; } // the capital leaves a Great Wonder to a Town of its trade when it has one
           if (!pick && opts.buildings.length) { var bs = opts.buildings.slice().sort(function (a, b) { return AI.buildingScore(g, civ, s, b) - AI.buildingScore(g, civ, s, a); }); pick = { kind: 'building', id: bs[0] }; }
           if (!pick) { var bu2 = AI.bestUnitToBuild(g, s, false); if (bu2 && G.civUnits(g, civ.idx).length < sets.length * 4) pick = { kind: 'unit', id: bu2 }; }
           if (pick) G.enqueue(g, s, pick.kind, pick.id);
@@ -182,6 +182,7 @@
           s.tiles.forEach(function (i) { var t = g.tiles[i]; if (!t.worked) return; var imp = G.improvementFor(g, t, civ); if (imp === 'farm' || imp === 'pasture' || imp === 'fishing') farms++; if (imp === 'mine' || imp === 'quarry' || imp === 'woodcutter') mines++; if (t.resource) res++; });
           var spec = farms >= mines && farms >= res ? 'farming' : mines >= res ? 'mining' : 'trade';
           if (AI.threatened(g, civ) && G.rng(g) < 0.3) spec = 'fort';
+          if (G.hasBuilding(s, 'library') && !sets.some(function (x) { return x.specialization === 'urban'; }) && G.rng(g) < 0.6) spec = 'urban'; // one seat of learning per empire raises the Great Wonders of knowledge
           var utA = G.civData(civ).ut; if (utA && s.pop >= utA.minPop && G.rng(g) < 0.5) spec = utA.id;
           if (G.nearestCity(g, s) || spec !== 'farming') G.specialize(g, s, spec);
         }
@@ -189,6 +190,11 @@
           var bs2 = opts.buildings.slice().sort(function (a, b) { return AI.buildingScore(g, civ, s, b) - AI.buildingScore(g, civ, s, a); });
           var cost = G.purchaseCost(g, civ, 'building', bs2[0], s);
           if (civ.gold >= cost + reserve) G.purchase(g, s, 'building', bs2[0]);
+        }
+        // a specialized Town raises a Great Wonder or a National Wonder of its trade when it has the hands for it
+        if (!s.queue.length && s.specialization && s.pop >= 4 && (opts.wonders.length || opts.national.length) && G.rng(g) < 0.35 + tr.culture * 0.3) {
+          var gw = opts.wonders.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0];
+          if (gw) G.enqueue(g, s, 'wonder', gw); else G.enqueue(g, s, 'national', opts.national[0]);
         }
         if (AI.wantsMilitary(g, civ) && AI.threatened(g, civ)) { var bu3 = AI.bestUnitToBuild(g, s, false); if (bu3) { var c3 = G.purchaseCost(g, civ, 'unit', bu3, s); if (civ.gold >= c3 + reserve) G.purchase(g, s, 'unit', bu3); } }
       }

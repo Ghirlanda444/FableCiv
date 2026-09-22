@@ -200,6 +200,7 @@
       else if (civ && ownerCiv >= 0 && ownerCiv !== u.civ) heal = 5;
       if (u.fortify > 0) heal += 5;
       heal += (cfx.healBonusAll || 0) + (def.healBonus || 0);
+      if (g.v2 && civ && cfx.warbandHeal && AU.Warbands && AU.Warbands.fighters(g, u.tile, u.civ).length >= 2) heal += cfx.warbandHeal; // a Warband tends its own
       u.hp = Math.min(100, u.hp + heal);
     }
     if (u.fortify > 0 && u.fortify < 2 && !moved) u.fortify++;
@@ -208,6 +209,7 @@
     u.attacksLeft = def.extraAttack ? 2 : 1;
     if (civ) { var hfx = G.civFx(g, civ); if (hfx.homeMoves && G.tileOwnerCiv(g, g.tiles[u.tile]) === u.civ) u.moves += hfx.homeMoves; }
     if (g.v2 && AU.Warbands && G.isMilitary(u) && !AU.Warbands.isCommander(u) && AU.Warbands.commanderAt(g, u.tile, u.civ)) u.moves += 1; // a Commander moves its Warband one tile farther
+    if (g.v2 && civ && AU.Warbands && G.isMilitary(u)) { var wm = G.civFx(g, civ).warbandMoves; if (wm && AU.Warbands.fighters(g, u.tile, u.civ).length >= 2) u.moves += wm; } // riders who move as one
     if (U.isEmbarked(g, u)) u.moves = Math.max(u.moves, 2 + (civ ? (G.civFx(g, civ).embarkMoves || 0) : 0));
   };
   U.fortify = function (g, u) { if (!G.isMilitary(u)) return; u.fortify = Math.max(u.fortify, 1); u.path = null; u.moves = 0; };
