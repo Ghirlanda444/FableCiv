@@ -84,8 +84,8 @@
     return 1;
   };
   SO.BOND_TIER = 3; // Patron
-  SO.bondUpkeep = function (g, civ) { var n = (civ.bonds || []).length; return n ? 2 + n : 0; };
-  SO.bondUpkeepNext = function (g, civ) { return 2 + (civ.bonds || []).length + 1; };
+  SO.bondUpkeep = function (g, civ) { var n = (civ.bonds || []).length; return n ? Math.round((2 + n) * (G.civFx(g, civ).bondUpkeepMult !== undefined ? G.civFx(g, civ).bondUpkeepMult : 1)) : 0; };
+  SO.bondUpkeepNext = function (g, civ) { return Math.round((2 + (civ.bonds || []).length + 1) * (G.civFx(g, civ).bondUpkeepMult !== undefined ? G.civFx(g, civ).bondUpkeepMult : 1)); };
   SO.hasBond = function (civ, minor) { return (civ.bonds || []).indexOf(minor.civId) >= 0; };
   SO.bondsOf = function (g, civ) { return (civ.bonds || []).map(function (id) { return g.civs.filter(function (c) { return c.civId === id; })[0]; }).filter(function (m) { return m && m.alive; }); };
   SO.bondState = function (g, civ, minor) {

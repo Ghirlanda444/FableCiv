@@ -85,6 +85,7 @@
     var br = hub.branches.filter(function (b) { return b.id === branchId; })[0]; if (!br) return false;
     s.traits[hubId] = branchId; s.pendingHubs = s.pendingHubs.filter(function (h) { return h !== hubId; }); civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     var cfx = G.civFx(g, civ); if (cfx.civicScience) civ.bonusScience = (civ.bonusScience || 0) + cfx.civicScience; // "whenever you learn a civic" = whenever an Insight is decided
+    if (cfx.insightInfluence) civ.influence = (civ.influence || 0) + cfx.insightInfluence;
     s.log.push({ turn: g.turn, hub: hubId, branch: branchId });
     if (br.greatPerson && AU.GreatPeople && AU.GreatPeople.spawnNamed) AU.GreatPeople.spawnNamed(g, civ, br.greatPerson, hub.name);
     if (hub.turning !== undefined && s.era === hub.turning) MW.advanceEra(g, civ);
@@ -124,7 +125,7 @@
   MW.studiedThisAge = function (civ) { var s = st(civ); return (s.studied && s.studied[s.era]) || 0; };
   MW.studyCost = function (g, civ, node) { var fx = G.civFx(g, civ), base = node.cheap ? MW.STUDY_BASE.cheap : (MW.STUDY_BASE[node.pool] || MW.STUDY_BASE.branched); return Math.round(base * (1 + (st(civ).era || 0) * 0.5) * (1 + MW.STUDY_STEP * MW.studiedThisAge(civ)) * G.speed(g) * (fx.techCostMult || 1) * (fx.civicCostMult || 1)); };
   MW.canStudy = function (g, civ, id) { var s = st(civ), n = AU.V2.NODE_BY_ID[id]; return !!n && n.era <= s.era && !s.unlocked[id] && !s.locked[id] && s.study >= MW.studyCost(g, civ, n); };
-  MW.study = function (g, civ, id) { if (!MW.canStudy(g, civ, id)) return false; var s = st(civ), n = AU.V2.NODE_BY_ID[id]; s.study -= MW.studyCost(g, civ, n); s.studied = s.studied || {}; s.studied[s.era] = (s.studied[s.era] || 0) + 1; return MW.unlock(g, civ, id, 'study'); };
+  MW.study = function (g, civ, id) { if (!MW.canStudy(g, civ, id)) return false; var s = st(civ), n = AU.V2.NODE_BY_ID[id], cost = MW.studyCost(g, civ, n), fx = G.civFx(g, civ); s.study -= cost; if (fx.studyRefund && n.pool === 'foundation') s.study += Math.round(cost * fx.studyRefund); s.studied = s.studied || {}; s.studied[s.era] = (s.studied[s.era] || 0) + 1; return MW.unlock(g, civ, id, 'study'); };
   // The AI studies the cheapest Spark of its own age that still counts toward the Turning Point (foundation first), then anything else.
   MW.aiStudyPick = function (g, civ) {
     var s = st(civ), best = null, bv = -1;
@@ -133,11 +134,13 @@
   };
   // Heritage: Culture piles up too. Once per age an empire may Reform: take back an Insight already decided and choose its other branch.
   MW.reformCost = function (g, civ) { var fx = G.civFx(g, civ); return Math.round(120 * (1 + (st(civ).era || 0) * 0.75) * G.speed(g) * (fx.civicCostMult || 1)); };
-  MW.canReform = function (g, civ, hubId) { var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || !s.traits[hubId] || hub.turning !== undefined || hub.branches.length < 2) return false; s.reformUsed = s.reformUsed || {}; return !s.reformUsed[s.era] && (s.heritage || 0) >= MW.reformCost(g, civ); };
+  MW.reformsPerAge = function (g, civ) { return 1 + (G.civFx(g, civ).reformsPerAge || 0); };
+  MW.reformsLeft = function (g, civ) { var s = st(civ); s.reformUsed = s.reformUsed || {}; return MW.reformsPerAge(g, civ) - (s.reformUsed[s.era] || 0); };
+  MW.canReform = function (g, civ, hubId) { var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || !s.traits[hubId] || hub.turning !== undefined || hub.branches.length < 2) return false; return MW.reformsLeft(g, civ) > 0 && (s.heritage || 0) >= MW.reformCost(g, civ); };
   MW.reform = function (g, civ, hubId, branchId) {
     if (!MW.canReform(g, civ, hubId)) return false;
     var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId], br = hub.branches.filter(function (b) { return b.id === branchId; })[0]; if (!br || s.traits[hubId] === branchId) return false;
-    s.heritage -= MW.reformCost(g, civ); s.reformUsed[s.era] = g.turn; s.traits[hubId] = branchId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    s.heritage -= MW.reformCost(g, civ); s.reformUsed[s.era] = (s.reformUsed[s.era] || 0) + 1; s.traits[hubId] = branchId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
     s.log.push({ turn: g.turn, hub: hubId, branch: branchId, how: 'reform' });
     G.notify(g, civ, { kind: 'civic', text: '🎭 ' + _('Reform') + ': ' + hub.name + ' → ' + br.name, panel: 'hub' });
     return true;

@@ -26,7 +26,7 @@ assert(!SY.canRun(g, pl), 'no Synthesis without a Research Lab');
 s0.isCity = true; G.addBuilding(g, s0, 'research_lab'); assert(SY.canRun(g, pl) && SY.canRun(g, pl, s0), 'Synthesis opens with a lab in the Glowbit Age');
 const c0 = SY.cost(g, pl); assert(c0 === Math.round(300 * G.speed(g)), 'first synthesis costs 300 (' + c0 + ')');
 st.study = c0 - 1; assert(!SY.run(g, pl, 'rubber'), 'short of Knowledge');
-st.study = c0; assert(SY.run(g, pl, 'rubber'), 'Rubber synthesised'); assert(st.study === 0 && pl.synth.rubber === 1, 'cost taken');
+st.study = c0; assert(SY.run(g, pl, 'rubber'), 'Rubber synthesised'); assert(st.study === 0 && pl.synth.rubber === SY.SUPPLY && pl.synthN === 1, 'cost taken');
 assert(G.luxuryCount(g, pl).strategic.rubber === SY.SUPPLY, 'synthesised supply counts (' + JSON.stringify(G.luxuryCount(g, pl).strategic) + ')');
 assert(AU.Society.canSupply(g, pl, 'rubber'), 'a Tank could now be supplied');
 const c1 = SY.cost(g, pl); assert(c1 === Math.round(300 * 1.6 * G.speed(g)), 'second synthesis 60% dearer (' + c1 + ')');

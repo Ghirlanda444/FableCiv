@@ -7,6 +7,9 @@
   var WB = AU.Warbands = {};
   WB.MAX = 3;
   WB.WEIGHTS = [1, 0.6, 0.4];
+  // Abilities: a bigger Warband (warbandSize) or heavier strikes from the second and third fighter (warbandWeights).
+  WB.maxFor = function (g, civIdx) { if (civIdx < 0 || !g.civs[civIdx]) return WB.MAX; return WB.MAX + (G.civFx(g, g.civs[civIdx]).warbandSize || 0); };
+  WB.weightsFor = function (g, civIdx) { if (civIdx < 0 || !g.civs[civIdx]) return WB.WEIGHTS; var w = G.civFx(g, g.civs[civIdx]).warbandWeights; return w || WB.WEIGHTS; };
   WB.COMMANDER_MULT = 1.15;
   WB.on = function (g) { return !!(g && g.v2); };
   WB.isCommander = function (u) { return !!AU.UNITS[u.type].commander; };
@@ -37,12 +40,12 @@
     if (!G.isMilitary(u) || AU.UNITS[u.type].great) return true;
     if (WB.isCommander(u)) { var c = WB.commanderAt(g, tileIdx, u.civ); return !c || c.id === u.id; }
     if (WB.isDecoy(u)) return !G.unitsAt(g, tileIdx).some(function (o) { return o.civ === u.civ && o.id !== u.id && WB.isDecoy(o); }); // one Scarecrow Crew per tile
-    return WB.fighters(g, tileIdx, u.civ).filter(function (o) { return o.id !== u.id; }).length < WB.MAX;
+    return WB.fighters(g, tileIdx, u.civ).filter(function (o) { return o.id !== u.id; }).length < WB.maxFor(g, u.civ);
   };
   // Combined strength of a group in one exchange. parts are sorted strongest first.
   WB.groupStrength = function (g, units, ctx) {
     var parts = units.map(function (o) { return { u: o, str: U.strength(g, o, ctx) }; }).sort(function (a, b) { return b.str - a.str; });
-    var total = 0; parts.forEach(function (p, i) { total += p.str * (WB.WEIGHTS[i] || 0); });
+    var W = WB.weightsFor(g, units.length ? units[0].civ : -1), total = 0; parts.forEach(function (p, i) { total += p.str * (W[i] || 0); });
     var cmd = units.length && G.isMilitary(units[0]) ? WB.commanderAt(g, units[0].tile, units[0].civ) : null;
     if (cmd) total *= WB.COMMANDER_MULT;
     return { total: Math.max(1, Math.round(total)), parts: parts, commander: cmd };
@@ -177,6 +180,6 @@
   WB.describe = function (g, u) {
     var m = WB.members(g, u.tile, u.civ); if (m.length < 2) return null;
     var f = WB.fighters(g, u.tile, u.civ), gs = WB.groupStrength(g, f, { attacking: false });
-    return { members: m, fighters: f, strength: gs.total, commander: gs.commander, full: f.length >= WB.MAX };
+    return { members: m, fighters: f, strength: gs.total, commander: gs.commander, full: f.length >= WB.maxFor(g, u.civ) };
   };
 })(globalThis.AU = globalThis.AU || {});

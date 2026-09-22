@@ -7,7 +7,8 @@
   SY.MIN_ERA = 5; // the Glowbit Age
   SY.BASE = 300; SY.STEP = 0.6; SY.SUPPLY = 2; // Knowledge; each synthesis raises the next by 60%; supply granted per synthesis
   SY.LABS = ['research_lab', 'computer_center'];
-  SY.count = function (civ) { var n = 0; for (var r in civ.synth || {}) n += civ.synth[r]; return n; };
+  SY.count = function (civ) { return civ.synthN || 0; };
+  SY.supplyFor = function (g, civ) { return SY.SUPPLY + (G.civFx(g, civ).synthSupplyBonus || 0); };
   SY.cost = function (g, civ) { var fx = G.civFx(g, civ); return Math.round(SY.BASE * (1 + SY.STEP * SY.count(civ)) * G.speed(g) * (fx.synthCostMult || 1)); };
   SY.hasLab = function (s) { return SY.LABS.some(function (b) { return G.hasBuilding(s, b); }); };
   SY.lab = function (g, civ) { return G.civSettlements(g, civ.idx).filter(function (s) { return s.isCity && SY.hasLab(s); })[0] || null; };
@@ -22,9 +23,9 @@
   SY.canAfford = function (g, civ) { return !!civ.v2 && (civ.v2.study || 0) >= SY.cost(g, civ); };
   SY.run = function (g, civ, res) {
     var R = AU.RESOURCES[res]; if (!R || R.kind !== 'strategic' || !SY.canRun(g, civ) || !G.resourceKnown(g, civ, res) || !SY.canAfford(g, civ)) return false;
-    var cost = SY.cost(g, civ); civ.v2.study -= cost;
-    civ.synth = civ.synth || {}; civ.synth[res] = (civ.synth[res] || 0) + 1; civ._lux = null; civ.flags['ev:synthesis'] = g.turn;
-    G.notify(g, civ, { kind: 'project', text: '🧪 ' + _('Synthesis') + ': ' + R.icon + ' ' + R.name + ' ' + _('supply') + ' +' + SY.SUPPLY + ' (' + cost + ' 📚)', panel: 'empire' });
+    var cost = SY.cost(g, civ), sup = SY.supplyFor(g, civ); civ.v2.study -= cost;
+    civ.synth = civ.synth || {}; civ.synth[res] = (civ.synth[res] || 0) + sup; civ.synthN = (civ.synthN || 0) + 1; civ._lux = null; civ.flags['ev:synthesis'] = g.turn;
+    G.notify(g, civ, { kind: 'project', text: '🧪 ' + _('Synthesis') + ': ' + R.icon + ' ' + R.name + ' ' + _('supply') + ' +' + sup + ' (' + cost + ' 📚)', panel: 'empire' });
     if (AU.MasteryWeb && AU.MasteryWeb.evaluate) AU.MasteryWeb.evaluate(g, civ);
     return true;
   };

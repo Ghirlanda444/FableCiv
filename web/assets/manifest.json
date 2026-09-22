@@ -19,6 +19,33 @@
  },
  {
   "kind": "units",
+  "id": "commander",
+  "file": "units/commander.png",
+  "name": "Bandleader",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "migrant",
+  "file": "units/migrant.png",
+  "name": "Uprooters",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
+  "id": "scarecrow",
+  "file": "units/scarecrow.png",
+  "name": "Scarecrow Crew",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units",
   "id": "warrior",
   "file": "units/warrior.png",
   "name": "Militia",
@@ -715,6 +742,24 @@
   "id": "granary",
   "file": "buildings/granary.png",
   "name": "Granary",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings",
+  "id": "boundary_marker",
+  "file": "buildings/boundary_marker.png",
+  "name": "Boundary Marker",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings",
+  "id": "growth_hall",
+  "file": "buildings/growth_hall.png",
+  "name": "Growth Hall",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -2556,6 +2601,42 @@
   "hires": false
  },
  {
+  "kind": "resources",
+  "id": "copper",
+  "file": "resources/copper.png",
+  "name": "Copper",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "resources",
+  "id": "rubber",
+  "file": "resources/rubber.png",
+  "name": "Rubber",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "resources",
+  "id": "aluminum",
+  "file": "resources/aluminum.png",
+  "name": "Aluminum",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "resources",
+  "id": "uranium",
+  "file": "resources/uranium.png",
+  "name": "Uranium",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
   "kind": "civs",
   "id": "rome",
   "file": "civs/rome.png",
@@ -4339,6 +4420,33 @@
  },
  {
   "kind": "units/mediterranean",
+  "id": "commander",
+  "file": "units/mediterranean/commander.png",
+  "name": "Bandleader (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "migrant",
+  "file": "units/mediterranean/migrant.png",
+  "name": "Uprooters (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mediterranean",
+  "id": "scarecrow",
+  "file": "units/mediterranean/scarecrow.png",
+  "name": "Scarecrow Crew (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mediterranean",
   "id": "warrior",
   "file": "units/mediterranean/warrior.png",
   "name": "Militia (Mediterranean)",
@@ -4531,6 +4639,24 @@
   "id": "granary",
   "file": "buildings/mediterranean/granary.png",
   "name": "Granary (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "boundary_marker",
+  "file": "buildings/mediterranean/boundary_marker.png",
+  "name": "Boundary Marker (Mediterranean)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/mediterranean",
+  "id": "growth_hall",
+  "file": "buildings/mediterranean/growth_hall.png",
+  "name": "Growth Hall (Mediterranean)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -4870,6 +4996,33 @@
  },
  {
   "kind": "units/european",
+  "id": "commander",
+  "file": "units/european/commander.png",
+  "name": "Bandleader (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/european",
+  "id": "migrant",
+  "file": "units/european/migrant.png",
+  "name": "Uprooters (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/european",
+  "id": "scarecrow",
+  "file": "units/european/scarecrow.png",
+  "name": "Scarecrow Crew (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/european",
   "id": "warrior",
   "file": "units/european/warrior.png",
   "name": "Militia (European)",
@@ -5062,6 +5215,24 @@
   "id": "granary",
   "file": "buildings/european/granary.png",
   "name": "Granary (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "boundary_marker",
+  "file": "buildings/european/boundary_marker.png",
+  "name": "Boundary Marker (European)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/european",
+  "id": "growth_hall",
+  "file": "buildings/european/growth_hall.png",
+  "name": "Growth Hall (European)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -5401,6 +5572,33 @@
  },
  {
   "kind": "units/middle_eastern",
+  "id": "commander",
+  "file": "units/middle_eastern/commander.png",
+  "name": "Bandleader (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "migrant",
+  "file": "units/middle_eastern/migrant.png",
+  "name": "Uprooters (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/middle_eastern",
+  "id": "scarecrow",
+  "file": "units/middle_eastern/scarecrow.png",
+  "name": "Scarecrow Crew (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/middle_eastern",
   "id": "warrior",
   "file": "units/middle_eastern/warrior.png",
   "name": "Militia (Middle Eastern)",
@@ -5593,6 +5791,24 @@
   "id": "granary",
   "file": "buildings/middle_eastern/granary.png",
   "name": "Granary (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "boundary_marker",
+  "file": "buildings/middle_eastern/boundary_marker.png",
+  "name": "Boundary Marker (Middle Eastern)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/middle_eastern",
+  "id": "growth_hall",
+  "file": "buildings/middle_eastern/growth_hall.png",
+  "name": "Growth Hall (Middle Eastern)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -5932,6 +6148,33 @@
  },
  {
   "kind": "units/east_asian",
+  "id": "commander",
+  "file": "units/east_asian/commander.png",
+  "name": "Bandleader (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "migrant",
+  "file": "units/east_asian/migrant.png",
+  "name": "Uprooters (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/east_asian",
+  "id": "scarecrow",
+  "file": "units/east_asian/scarecrow.png",
+  "name": "Scarecrow Crew (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/east_asian",
   "id": "warrior",
   "file": "units/east_asian/warrior.png",
   "name": "Militia (East Asian)",
@@ -6124,6 +6367,24 @@
   "id": "granary",
   "file": "buildings/east_asian/granary.png",
   "name": "Granary (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "boundary_marker",
+  "file": "buildings/east_asian/boundary_marker.png",
+  "name": "Boundary Marker (East Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/east_asian",
+  "id": "growth_hall",
+  "file": "buildings/east_asian/growth_hall.png",
+  "name": "Growth Hall (East Asian)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -6463,6 +6724,33 @@
  },
  {
   "kind": "units/south_asian",
+  "id": "commander",
+  "file": "units/south_asian/commander.png",
+  "name": "Bandleader (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "migrant",
+  "file": "units/south_asian/migrant.png",
+  "name": "Uprooters (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/south_asian",
+  "id": "scarecrow",
+  "file": "units/south_asian/scarecrow.png",
+  "name": "Scarecrow Crew (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/south_asian",
   "id": "warrior",
   "file": "units/south_asian/warrior.png",
   "name": "Militia (South and Southeast Asian)",
@@ -6655,6 +6943,24 @@
   "id": "granary",
   "file": "buildings/south_asian/granary.png",
   "name": "Granary (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "boundary_marker",
+  "file": "buildings/south_asian/boundary_marker.png",
+  "name": "Boundary Marker (South and Southeast Asian)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/south_asian",
+  "id": "growth_hall",
+  "file": "buildings/south_asian/growth_hall.png",
+  "name": "Growth Hall (South and Southeast Asian)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -6994,6 +7300,33 @@
  },
  {
   "kind": "units/african",
+  "id": "commander",
+  "file": "units/african/commander.png",
+  "name": "Bandleader (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/african",
+  "id": "migrant",
+  "file": "units/african/migrant.png",
+  "name": "Uprooters (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/african",
+  "id": "scarecrow",
+  "file": "units/african/scarecrow.png",
+  "name": "Scarecrow Crew (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/african",
   "id": "warrior",
   "file": "units/african/warrior.png",
   "name": "Militia (African)",
@@ -7186,6 +7519,24 @@
   "id": "granary",
   "file": "buildings/african/granary.png",
   "name": "Granary (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "boundary_marker",
+  "file": "buildings/african/boundary_marker.png",
+  "name": "Boundary Marker (African)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/african",
+  "id": "growth_hall",
+  "file": "buildings/african/growth_hall.png",
+  "name": "Growth Hall (African)",
   "size": "512x512",
   "nobg": false,
   "hires": false
@@ -7525,6 +7876,33 @@
  },
  {
   "kind": "units/mesoamerican",
+  "id": "commander",
+  "file": "units/mesoamerican/commander.png",
+  "name": "Bandleader (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "migrant",
+  "file": "units/mesoamerican/migrant.png",
+  "name": "Uprooters (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mesoamerican",
+  "id": "scarecrow",
+  "file": "units/mesoamerican/scarecrow.png",
+  "name": "Scarecrow Crew (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "units/mesoamerican",
   "id": "warrior",
   "file": "units/mesoamerican/warrior.png",
   "name": "Militia (Indigenous American)",
@@ -7717,6 +8095,24 @@
   "id": "granary",
   "file": "buildings/mesoamerican/granary.png",
   "name": "Granary (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "boundary_marker",
+  "file": "buildings/mesoamerican/boundary_marker.png",
+  "name": "Boundary Marker (Indigenous American)",
+  "size": "512x512",
+  "nobg": false,
+  "hires": false
+ },
+ {
+  "kind": "buildings/mesoamerican",
+  "id": "growth_hall",
+  "file": "buildings/mesoamerican/growth_hall.png",
+  "name": "Growth Hall (Indigenous American)",
   "size": "512x512",
   "nobg": false,
   "hires": false

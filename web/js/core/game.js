@@ -423,7 +423,7 @@
         if (R.kind === 'luxury') set[t.resource] = true; if (R.kind === 'strategic') strat[t.resource] = (strat[t.resource] || 0) + (g.v2 && AU.Society ? AU.Society.supplyOf(t) : 1); if (R.kind === 'bonus') bonus[t.resource] = true; });
     });
     if (civ.imports) for (var ir in civ.imports) if (civ.imports[ir] > g.turn && AU.RESOURCES[ir]) { if (AU.RESOURCES[ir].kind === 'luxury') set[ir] = true; else if (AU.RESOURCES[ir].kind === 'strategic') strat[ir] = (strat[ir] || 0) + 1; }
-    if (g.v2 && civ.synth && AU.Synthesis) for (var sr in civ.synth) if (AU.RESOURCES[sr]) strat[sr] = (strat[sr] || 0) + civ.synth[sr] * AU.Synthesis.SUPPLY; // synthesised supply lasts
+    if (g.v2 && civ.synth) for (var sr in civ.synth) if (AU.RESOURCES[sr]) strat[sr] = (strat[sr] || 0) + civ.synth[sr]; // synthesised supply lasts
     civ._lux = { luxuries: Object.keys(set), strategic: strat, bonus: Object.keys(bonus) }; civ._luxTurn = g.turn;
     return civ._lux;
   };
@@ -914,8 +914,11 @@
     if (u.civ < 0 || g.civs[u.civ].minor) return 0;
     var t = g.tiles[u.tile], best = 99, sets = G.civSettlements(g, u.civ); if (!sets.length) return 1; // a people still on the move: every order is near
     sets.forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]); if (d < best) best = d; });
-    if (g.v2 && t.river && t.owner >= 0 && G.tileOwnerCiv(g, t) === u.civ) return 1; // Divergence: word travels fast along your own rivers
-    return best <= 5 ? 1 : best <= 10 ? 2 : 3;
+    var ofx = G.civFx(g, g.civs[u.civ]), own = t.owner >= 0 && G.tileOwnerCiv(g, t) === u.civ;
+    if (g.v2 && t.river && own) return 1; // Divergence: word travels fast along your own rivers
+    if (ofx.roadOrders && t.road && own) return 1; // an empire of roads: every order reaches its own roads at once
+    var cost = best <= 5 ? 1 : best <= 10 ? 2 : 3; if (ofx.farOrderDiscount) cost = Math.max(1, cost - ofx.farOrderDiscount);
+    return cost;
   };
   G.canOrder = function (g, u) { if (u.civ < 0 || g.civs[u.civ].minor) return true; if (u.orderedTurn === g.turn) return true; return G.commandLeft(g, g.civs[u.civ]) >= G.orderCost(g, u); };
   // A unit's first action of the turn spends its order; later actions of the same turn are free.
@@ -1094,7 +1097,8 @@
   // v2 city growth: every population point may claim one tile. The centre and the first two are free; from the fourth
   // a claim also costs Influence (15 per tile beyond the third, rising) and needs an Expansion building in the settlement.
   G.claimedCount = function (g, s) { var n = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked) n++; }); return n; };
-  G.claimCost = function (g, s) { var n = G.claimedCount(g, s); return n < 3 ? 0 : 10 * (n - 2); };
+  G.freeClaims = function (g, s) { return 3 + (G.civFx(g, g.civs[s.civ]).freeClaims || 0); };
+  G.claimCost = function (g, s) { var n = G.claimedCount(g, s), free = G.freeClaims(g, s); return n < free ? 0 : Math.round(10 * (n - free + 1) * (G.civFx(g, g.civs[s.civ]).claimCostMult || 1)); };
   // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus 1 per 8 Heritage a turn plus ability bonuses.
   G.influenceFromHeritage = function (g, civ) { if (!g.v2) return 0; var y = G.civYields(g, civ); return Math.floor((y.culture || 0) / 8); };
   G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + G.influenceFromHeritage(g, civ) + (G.civFx(g, civ).influencePerTurn || 0); };
@@ -1102,7 +1106,7 @@
   G.freeClaimTile = function (g, tileIdx) { return !!(g.v2 && tileIdx != null && g.tiles[tileIdx] && g.tiles[tileIdx].river); };
   G.claimBlocker = function (g, s, tileIdx) { // null when the next claim may happen, else why not
     if (!g.v2) return null;
-    var n = G.claimedCount(g, s); if (n < 3) return null;
+    var n = G.claimedCount(g, s); if (n < G.freeClaims(g, s)) return null;
     if (G.freeClaimTile(g, tileIdx)) return null;
     if (!G.hasBuilding(s, 'boundary_marker') && !G.hasBuilding(s, 'growth_hall')) return 'building';
     var civ = g.civs[s.civ]; if ((civ.influence || 0) < G.claimCost(g, s)) return 'influence';
@@ -1110,7 +1114,7 @@
   };
   // The tiles a settlement may claim right now: all candidates when nothing blocks, else only the free river tiles.
   G.claimableTiles = function (g, s) { var c = G.expansionCandidates(g, s); if (!G.claimBlocker(g, s)) return c; return c.filter(function (i) { return G.freeClaimTile(g, i); }); };
-  G.payClaim = function (g, s, tileIdx) { if (!g.v2 || G.freeClaimTile(g, tileIdx)) return; var cost = G.claimCost(g, s); if (cost > 0) { var civ = g.civs[s.civ]; civ.influence = (civ.influence || 0) - cost; } };
+  G.payClaim = function (g, s, tileIdx) { if (!g.v2) return; var civ = g.civs[s.civ]; if (G.freeClaimTile(g, tileIdx)) { var rfx = G.civFx(g, civ); if (rfx.riverClaimInfluence) civ.influence = (civ.influence || 0) + rfx.riverClaimInfluence; return; } var cost = G.claimCost(g, s); if (cost > 0) civ.influence = (civ.influence || 0) - cost; };
   G.autoExpand = function (g, s) {
     if (g.v2 && !G.hasBuilding(s, 'growth_hall') && s.pendingGrowth > 1) { s.specialists += s.pendingGrowth - 1; s.pendingGrowth = 1; } // without a Growth Hall only one claim waits; the rest become specialists
     while (s.pendingGrowth > 0) {
