@@ -9,7 +9,7 @@
   // Plain-language explanation of how a tile gets improved (no Empire knowledge assumed).
   CM.improvementWhy = function (g, t, civ) {
     if (t.natural) return _('A natural wonder: it cannot be improved, but it already gives great yields.');
-    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (R.revealTech && !civ.techs[R.revealTech]) return R.name + ' ' + _('is here but your people cannot use it until you research') + ' ' + AU.TECH_BY_ID[R.revealTech].name + '.'; return _('A citizen here builds a') + ' ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
+    if (t.resource) { var R = AU.RESOURCES[t.resource]; if (!G.resourceKnown(g, civ, R)) return R.name + ' ' + (g.v2 ? _('is here but your people cannot use it before the') : _('is here but your people cannot use it until you research')) + ' ' + G.resourceRevealName(g, R) + '.'; return _('A citizen here builds a') + ' ' + G.improvementName(g, t, civ, R.improvement) + ' to harvest the ' + R.name + '.'; }
     if (G.isWater(t)) return _('Open water: nothing to build, but fish and other sea resources can be worked with Fishing Boats.');
     if (t.terrain === 'mountain') return _('Mountains cannot be worked.');
     if (t.hills) return _('Hills: a citizen here builds a') + ' ' + G.improvementName(g, t, civ, 'mine') + (G.uniqueImprovement(g, t, civ, 'mine') ? ' (your unique improvement)' : ' (+1 ' + _('Production)')) + '.';
@@ -81,7 +81,7 @@
       ctx.stroke();
       if (known) {
         ctx.font = Math.round(r * 0.62) + 'px system-ui, "' + _('Apple Color Emoji') + '", "' + _('Segoe UI Emoji') + '", "' + _('Noto Color Emoji') + '", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#ffffff'; ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 3;
-        var icon = i === s.tile ? (s.isCity ? '🏛️' : '🏘️') : t.natural ? '✨' : t.resource && (!AU.RESOURCES[t.resource].revealTech || civ.techs[AU.RESOURCES[t.resource].revealTech]) ? AU.RESOURCES[t.resource].icon : t.feature ? AU.FEATURES[t.feature].icon : t.terrain === 'mountain' ? '🏔️' : t.hills ? '⛰️' : '';
+        var icon = i === s.tile ? (s.isCity ? '🏛️' : '🏘️') : t.natural ? '✨' : t.resource && G.resourceKnown(g, civ, t.resource) ? AU.RESOURCES[t.resource].icon : t.feature ? AU.FEATURES[t.feature].icon : t.terrain === 'mountain' ? '🏔️' : t.hills ? '⛰️' : '';
         if (icon) ctx.fillText(icon, cx, cy - (mine && t.worked && i !== s.tile ? r * 0.12 : 0));
         if (mine && t.worked && i !== s.tile) { var imp = G.improvementFor(g, t, civ); ctx.font = Math.round(r * 0.42) + 'px system-ui, sans-serif'; ctx.fillText('👤' + (imp ? AU.IMPROVEMENTS[imp].icon : ''), cx, cy + r * 0.45); }
         ctx.shadowBlur = 0;

@@ -227,7 +227,7 @@
       function turnsLeft(prog, cost, rate) { return rate > 0 ? Math.max(1, Math.ceil((cost - prog) / rate)) : '∞'; }
       var techTxt = techT ? techT.name + ' (' + turnsLeft(p.techProgress[techT.id] || 0, G.techCost(g, p, techT), y.science) + ')' : 'choose';
       var civTxt = civT ? civT.name + ' (' + turnsLeft(p.civicProgress[civT.id] || 0, G.civicCost(g, p, civT), y.culture) + ')' : 'choose';
-      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮'); }
+      if (g.v2 && AU.MasteryWeb) { var vs = AU.MasteryWeb.state(p), ve = AU.V2.ERAS[vs.era] || {}; techTxt = AU.MasteryWeb.foundationCount(p, vs.era) + '/' + (ve.foundationSize || 32) + ' 💡 ' + Math.floor(vs.study || 0) + ' 📚'; civTxt = vs.pendingHubs.length ? '🔮 ' + _('decide') : (Object.keys(vs.traits).length + ' 🔮 ' + Math.floor(vs.heritage || 0) + ' 🎭'); }
       var sets = G.civSettlements(g, p.idx), unhappy = sets.filter(function (s) { return G.settlementYields(g, s).happiness < 0; }).length;
       $('top-yields').innerHTML =
         '<span class="y" data-panel="empire">💰 <b>' + Math.floor(p.gold) + '</b><small>' + (y.gold >= 0 ? '+' : '') + y.gold.toFixed(1) + '</small></span>' +
@@ -259,7 +259,7 @@
       g.civs.forEach(function (o) { if (o.peaceOffer && g.turn - o.peaceOffer < 5 && G.atWar(g, p.idx, o.idx)) list.push({ icon: '🕊️', text: G.leaderName(o) + ' offers peace', go: function () { self.openPanel('diplomacy'); } }); });
       G.civSettlements(g, p.idx).forEach(function (s) {
         if (s.isCity && !s.queue.length) list.push({ icon: '⚙️', text: _('Production') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.openPanel('city', { id: s.id }); } });
-        if (s.pendingGrowth > 0 && !G.claimBlocker(g, s)) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
+        if (s.pendingGrowth > 0 && G.claimableTiles(g, s).length) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
       if (AU.Religion) {
         if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: _('Choose a pantheon'), go: function () { self.openPanel('religion'); } });
@@ -327,12 +327,12 @@
       if (!p.explored[tileIdx]) { tip.hidden = true; return; }
       var owner = t.owner >= 0 && g.settlements[t.owner] ? g.settlements[t.owner] : null;
       var yy = owner ? G.tileYields(g, t, owner) : AU.baseTileYields(t, p);
-      var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && (!res.revealTech || p.techs[res.revealTech]);
+      var res = t.resource ? AU.RESOURCES[t.resource] : null, resKnown = res && G.resourceKnown(g, p, res);
       var imp = owner && t.worked && t.settlement == null ? G.improvementFor(g, t, g.civs[owner.civ]) : null;
       var html = '<b>' + AU.TERRAIN[t.terrain].name + (t.hills ? ' ' + _('Hills') : '') + (t.feature ? ' · ' + AU.FEATURES[t.feature].name : '') + (t.navigable ? ' · ' + _('Navigable River') : t.river ? ' · ' + _('River') : '') + (t.shore ? ' · ' + ({ beach: _('Beach'), cliff: _('Cliffs'), rocks: _('Rocky shore'), mangrove: _('Mangroves'), reef: _('Reef') })[t.shore] : '') + '</b>' + (function () { var mc = U.terrainCost(t); return '<div class="stat">🥾 ' + _('Move cost') + ' ' + (mc === Infinity ? 'impassable' : mc + (mc === 1 ? ' point' : ' points')) + '</div>'; })();
       if (t.natural) { var NWt = AU.NATURAL_WONDERS[t.natural]; html += '<div class="tip-nat">' + NWt.icon + ' ' + NWt.name + '</div><div class="stat">' + NWt.desc + '</div>'; }
       if (resKnown) html += '<div class="tip-res">' + res.icon + ' <b>' + res.name + '</b>' + (AU.Society && AU.Society.richOf(t) ? ' <span class="pill">' + ['🟤', '🟡', '🟢'][t.rich] + ' ' + _(AU.Society.richOf(t).name) + (res.kind === 'strategic' ? ' · ' + _('supports') + ' ' + AU.Society.supplyOf(t) : '') + '</span>' : '') + ' <small>(' + res.kind + (res.improvement ? ', ' + AU.IMPROVEMENTS[res.improvement].name : '') + ')</small></div>';
-      else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + (AU.TECH_BY_ID[res.revealTech] ? AU.TECH_BY_ID[res.revealTech].name : 'a technology') + ')</div>';
+      else if (res) html += '<div class="tip-res stat">' + _('Something may be hidden here (needs') + ' ' + G.resourceRevealName(g, res) + ')</div>';
       html += '<div>' + ['food', 'production', 'gold', 'science', 'culture', 'faith'].filter(function (k) { return yy[k]; }).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️' })[k] + Math.round(yy[k] * 10) / 10; }).join(' ') + '</div>';
       if (owner) html += '<div class="stat">' + owner.name + (t.worked ? ' · worked' + (imp ? ' (' + AU.IMPROVEMENTS[imp].name + ')' : '') : ' · unworked') + '</div>';
       if (t.camp) html += '<div class="stat">🏕️ ' + _('Inchibil camp: move a military unit onto it to disperse it for Gold.') + '</div>';
@@ -398,9 +398,9 @@
     startExpand: function (s) {
       if (s.pendingGrowth <= 0) { this.toast(s.name + ' has no pending expansion.'); return; }
       this.sel.settlement = s.id; this.sel.unit = null; this.mode = 'expand';
-      var set = {}; G.expansionCandidates(this.g, s).forEach(function (i) { set[i] = true; });
+      var set = {}, blocked = G.claimBlocker(this.g, s); G.claimableTiles(this.g, s).forEach(function (i) { set[i] = true; });
       this.renderer.highlights = { reach: null, attack: null, expand: set, path: null, selTile: s.tile };
-      this.toast(_('Choose a tile for') + ' ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).');
+      this.toast(_('Choose a tile for') + ' ' + s.name + ' to grow into (' + s.pendingGrowth + ' left).' + (blocked ? ' ' + _('Only river tiles can be claimed for free right now.') : ''));
       this.refreshContext(); this.invalidate();
     },
     refreshContext: function () {
@@ -465,7 +465,7 @@
           var yy = AU.baseTileYields(tt, p), owner = tt.owner >= 0 && g.settlements[tt.owner] ? g.settlements[tt.owner] : null;
           var NWc = tt.natural ? AU.NATURAL_WONDERS[tt.natural] : null;
           html += '<div class="card"><h3>' + (NWc ? NWc.icon + ' ' + NWc.name + ' <span class="pill">' + _('Natural Wonder') + '</span>' : AU.TERRAIN[tt.terrain].name + (tt.hills ? ' ' + _('Hills') : '') + (tt.feature ? ', ' + AU.FEATURES[tt.feature].name : '') + (tt.river ? ' (' + _('River)') : '')) + (function () { var mc = U.terrainCost(tt); return ' <span class="pill" title="Movement points needed to enter">🥾 ' + (mc === Infinity ? 'impassable' : mc) + '</span>'; })() + '</h3>' + (NWc ? '<div class="meta">' + NWc.desc + (NWc.adjacent ? ' ' + _('Adjacent worked tiles') + ': ' + Object.keys(NWc.adjacent).map(function (k) { return ({ food: '🌾', production: '⚙️', gold: '💰', science: '🔬', culture: '🎭', faith: '🕊️', happiness: '😊' })[k] + '+' + NWc.adjacent[k]; }).join(' ') : '') + '</div>' : '') + '<div class="meta">' +
-            (tt.resource && (!AU.RESOURCES[tt.resource].revealTech || p.techs[AU.RESOURCES[tt.resource].revealTech]) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
+            (tt.resource && G.resourceKnown(g, p, tt.resource) ? AU.RESOURCES[tt.resource].icon + ' ' + AU.RESOURCES[tt.resource].name + ' · ' : '') +
             '🌾' + yy.food + ' ⚙️' + yy.production + ' 💰' + yy.gold + (yy.culture ? ' 🎭' + yy.culture : '') +
             (owner ? ' · ' + owner.name + (tt.worked ? ' (worked' + (G.improvementFor(g, tt, g.civs[owner.civ]) ? ', ' + AU.IMPROVEMENTS[G.improvementFor(g, tt, g.civs[owner.civ])].name : '') + ')' : ' (unworked)') : '') + (tt.camp ? ' · ' + _('Independent camp') : '') + '</div></div>';
         }
@@ -553,7 +553,7 @@
       var h = this.renderer.highlights;
       if (this.mode === 'expand' && this.sel.settlement) {
         var s = g.settlements[this.sel.settlement];
-        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' ' + _('claimed a new tile.')); } this.refreshHud(); return; }
+        if (h.expand && h.expand[tileIdx]) { G.expandTo(g, s, tileIdx); if (s.pendingGrowth > 0 && G.claimableTiles(g, s).length) this.startExpand(s); else { this.mode = 'normal'; this.selectSettlement(s); this.toast(s.name + ' ' + _('claimed a new tile.')); } this.refreshHud(); return; }
         this.mode = 'normal';
       }
       if (u && u.civ === p.idx) {

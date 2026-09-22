@@ -11,6 +11,8 @@
     get: function (kind, id) {
       var k = A.key(kind, id), e = cache[k];
       if (e === undefined) {
+        // the build's asset index knows every picture that exists: skip the request (and the 404) for one that does not
+        if (AU.ASSET_LIST && !(AU.ASSET_DATA && AU.ASSET_DATA[k])) { if (!A._index) { A._index = {}; AU.ASSET_LIST.forEach(function (p) { A._index[p] = true; }); } if (!A._index[A.base + k + '.' + A.ext(kind)]) { e = cache[k] = { img: null, ok: false, failed: true }; return null; } }
         var img = new Image(); e = cache[k] = { img: img, ok: false, failed: false };
         img.onload = function () {
           e.ok = true;

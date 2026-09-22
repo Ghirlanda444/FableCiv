@@ -117,9 +117,31 @@
     MW.grantFreeBuildings(g, civ);
     G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].name : '') + ' — “' + (AU.V2.ERAS[s.era] ? AU.V2.ERAS[s.era].joke : '') + '”', panel: 'web' });
   };
-  // Study: Knowledge piles up slowly and can only buy nodes flagged cheap (a safety valve, never a research race).
-  MW.studyCost = function (g, civ, node) { var fx = G.civFx(g, civ); return Math.round(40 * (1 + (st(civ).era || 0) * 0.5) * G.speed(g) * (fx.techCostMult || 1) * (fx.civicCostMult || 1)); };
-  MW.study = function (g, civ, id) { var s = st(civ), n = AU.V2.NODE_BY_ID[id]; if (!n || !n.cheap || s.unlocked[id] || s.locked[id] || s.study < MW.studyCost(g, civ, n)) return false; s.study -= MW.studyCost(g, civ, n); return MW.unlock(g, civ, id, 'study'); };
+  // Study: Knowledge piles up and can buy any open Spark, so a scholarly empire steers instead of waiting.
+  // Cheap Sparks cost 30, foundation Sparks 60, branch Sparks 90 (times 1 + half the age, game speed and ability discounts).
+  MW.STUDY_BASE = { cheap: 30, foundation: 60, branched: 90 };
+  MW.STUDY_STEP = 0.15; // every Spark already studied this age makes the next one 15% dearer
+  MW.studiedThisAge = function (civ) { var s = st(civ); return (s.studied && s.studied[s.era]) || 0; };
+  MW.studyCost = function (g, civ, node) { var fx = G.civFx(g, civ), base = node.cheap ? MW.STUDY_BASE.cheap : (MW.STUDY_BASE[node.pool] || MW.STUDY_BASE.branched); return Math.round(base * (1 + (st(civ).era || 0) * 0.5) * (1 + MW.STUDY_STEP * MW.studiedThisAge(civ)) * G.speed(g) * (fx.techCostMult || 1) * (fx.civicCostMult || 1)); };
+  MW.canStudy = function (g, civ, id) { var s = st(civ), n = AU.V2.NODE_BY_ID[id]; return !!n && n.era <= s.era && !s.unlocked[id] && !s.locked[id] && s.study >= MW.studyCost(g, civ, n); };
+  MW.study = function (g, civ, id) { if (!MW.canStudy(g, civ, id)) return false; var s = st(civ), n = AU.V2.NODE_BY_ID[id]; s.study -= MW.studyCost(g, civ, n); s.studied = s.studied || {}; s.studied[s.era] = (s.studied[s.era] || 0) + 1; return MW.unlock(g, civ, id, 'study'); };
+  // The AI studies the cheapest Spark of its own age that still counts toward the Turning Point (foundation first), then anything else.
+  MW.aiStudyPick = function (g, civ) {
+    var s = st(civ), best = null, bv = -1;
+    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; var c = MW.studyCost(g, civ, n); if (s.study < c) return; var v = (n.pool === 'foundation' && n.era === s.era ? 3 : n.pool === 'foundation' ? 2 : 1) * 1000 - c + (n.unlocks ? 50 : 0); if (v > bv) { bv = v; best = n; } });
+    return best;
+  };
+  // Heritage: Culture piles up too. Once per age an empire may Reform: take back an Insight already decided and choose its other branch.
+  MW.reformCost = function (g, civ) { var fx = G.civFx(g, civ); return Math.round(120 * (1 + (st(civ).era || 0) * 0.75) * G.speed(g) * (fx.civicCostMult || 1)); };
+  MW.canReform = function (g, civ, hubId) { var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || !s.traits[hubId] || hub.turning !== undefined || hub.branches.length < 2) return false; s.reformUsed = s.reformUsed || {}; return !s.reformUsed[s.era] && (s.heritage || 0) >= MW.reformCost(g, civ); };
+  MW.reform = function (g, civ, hubId, branchId) {
+    if (!MW.canReform(g, civ, hubId)) return false;
+    var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId], br = hub.branches.filter(function (b) { return b.id === branchId; })[0]; if (!br || s.traits[hubId] === branchId) return false;
+    s.heritage -= MW.reformCost(g, civ); s.reformUsed[s.era] = g.turn; s.traits[hubId] = branchId; civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    s.log.push({ turn: g.turn, hub: hubId, branch: branchId, how: 'reform' });
+    G.notify(g, civ, { kind: 'civic', text: '🎭 ' + _('Reform') + ': ' + hub.name + ' → ' + br.name, panel: 'hub' });
+    return true;
+  };
   // Eras without authored nodes yet (2–7 come in phase 6): Knowledge study advances them so the game stays playable to the end. Temporary.
   MW.provisionalEraCost = function (g, civ) { return Math.round(300 * Math.pow(1.6, st(civ).era) * G.speed(g)); };
   // Fire the Sparks whose condition is already met (called after player actions, so a Spark lands the moment it is earned).
@@ -130,11 +152,11 @@
   };
   MW.turn = function (g, civ) {
     if (!AU.V2 || civ.minor) return;
-    var s = st(civ), y = G.civYields(g, civ); s.study += Math.round((y.science || 0) * 10) / 10;
+    var s = st(civ), y = G.civYields(g, civ); s.study += Math.round((y.science || 0) * 10) / 10; s.heritage = (s.heritage || 0) + Math.round((y.culture || 0) * 10) / 10;
     var nodes = MW.openNodes(s.era), eraNodes = MW.nodesOfEra(s.era);
     nodes.forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; if (MW.triggerMet(g, civ, n)) MW.unlock(g, civ, n.id); });
     AU.V2.HUBS.forEach(function (h) { if (!h.when || s.hubsFired[h.id] || h.when[0] === 'node') return; if (MW.cond(g, civ, h.when)) MW.fireHub(g, civ, h.id); });
-    if (!civ.isPlayer) { var aiCheap = nodes.filter(function (n) { return n.cheap && !s.unlocked[n.id] && !s.locked[n.id]; })[0]; if (aiCheap && s.study >= MW.studyCost(g, civ, aiCheap)) MW.study(g, civ, aiCheap.id); }
+    if (!civ.isPlayer) { var aiPick = MW.aiStudyPick(g, civ); if (aiPick) MW.study(g, civ, aiPick.id); }
     if (!eraNodes.length && s.era < AU.V2.ERAS.length - 1 && s.study >= MW.provisionalEraCost(g, civ)) { s.study -= MW.provisionalEraCost(g, civ); s.hubsFired['turning:' + s.era] = g.turn; s.era += 1; civ._fx = null; G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + AU.V2.ERAS[s.era].name + ' — “' + AU.V2.ERAS[s.era].joke + '”', panel: 'web' }); }
     MW.checkEraAdvance(g, civ); // the age may have lasted long enough now
     if (s.aiTurning && g.turn >= s.aiTurning.at) { var tp = AU.V2.HUB_BY_ID[s.aiTurning.hub]; s.aiTurning = null; if (tp) MW.choose(g, civ, tp.id, MW.aiPick(g, civ, tp).id); }

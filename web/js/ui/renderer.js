@@ -527,7 +527,7 @@
         cc = S(t);
         if (t.resource) {
           var Rs = AU.RESOURCES[t.resource];
-          if (!Rs.revealTech || player.techs[Rs.revealTech]) {
+          if (G.resourceKnown(g, player, Rs)) {
             var rart = AU.Assets.get('resources', t.resource), rx0 = cc[0] + rzs * 0.34, ry0 = cc[1] + rzs * 0.05 * isoY;
             if (rart && this.resourceBadge) { ctx.fillStyle = 'rgba(12,16,30,0.62)'; ctx.beginPath(); ctx.arc(rx0, ry0 + rzs * 0.12, rzs * 0.4, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = 'rgba(255,240,200,0.55)'; ctx.lineWidth = Math.max(1, rzs * 0.05); ctx.stroke(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.12, rzs * 0.62, 0.92); }
             else if (rart) { ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.ellipse(rx0, ry0 + rzs * 0.3, rzs * 0.36, rzs * 0.13, 0, 0, Math.PI * 2); ctx.fill(); this.drawArt(ctx, rart, rx0, ry0 + rzs * 0.3, rzs * 0.86, 0.92); }

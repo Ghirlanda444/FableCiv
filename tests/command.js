@@ -49,4 +49,5 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   const ai = g.civs.filter(c => !c.isPlayer && !c.minor && c.alive)[0];
   assert(ai && G.commandLeft(g, ai) >= 0 && G.civUnits(g, ai.idx).length > 0, 'AI empires play 40 turns under Command (' + ai.civId + ' has ' + G.commandLeft(g, ai) + ' left, ' + G.civUnits(g, ai.idx).length + ' units)');
 }
+{ const g0 = G.newGame({ playerCiv: 'rome', playerLeader: 'caesar', mapSize: 'small', mapType: 'continents', numCivs: 3, numStates: 1, seed: 4, difficulty: 'prince' }); const p0 = G.player(g0); G.civUnits(g0, p0.idx).forEach(u => { if (G.orderCost(g0, u) !== 1) throw new Error('before the capital every unit should cost 1 order, got ' + G.orderCost(g0, u)); }); }
 console.log('command tests OK');
