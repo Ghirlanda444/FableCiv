@@ -56,8 +56,8 @@ jobs:
         run: |
           cat logs/ladder-1-*/ladder-1-*.log > divergence.log
           cat logs/ladder-0-*/ladder-0-*.log > classic.log
-          node tools/civ-ladder.js --summary divergence.log --md --min 3 >> "$GITHUB_STEP_SUMMARY"
-          node tools/civ-ladder.js --summary classic.log --md --min 3 >> "$GITHUB_STEP_SUMMARY"
+          node tools/civ-ladder.js --summary divergence.log --md --min 3 | tee -a "$GITHUB_STEP_SUMMARY"
+          node tools/civ-ladder.js --summary classic.log --md --min 3 | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: ladder-summary
