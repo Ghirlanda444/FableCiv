@@ -185,7 +185,7 @@
     if (AU.CityStates) AU.CityStates.civFx(g, civ).forEach(function (cf) { mergeFx(fx, cf); });
     if (fx.peaceScienceMult && !g.civs.some(function (o) { return !o.minor && o.alive && o.idx !== civ.idx && G.atWar(g, civ.idx, o.idx); })) fx.yieldMult = mergeFx({}, { yieldMult: Object.assign({}, fx.yieldMult || {}, { science: (fx.yieldMult && fx.yieldMult.science || 1) * fx.peaceScienceMult }) }).yieldMult;
     G.civSettlements(g, civ.idx).forEach(function (st) { st.buildings.forEach(function (b) { var nw = AU.NATIONAL[b]; if (!nw || !nw.fx) return; var nf = {}; for (var k in nw.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'freeUpkeep' || k === 'culturePerWonder' || k === 'purchaseMult' || k === 'projectCostMult') nf[k] = nw.fx[k]; if (nw.fx.empireLandBonus) nf.landBonus = nw.fx.empireLandBonus; mergeFx(fx, nf); }); });
-    for (var wid in g.wonders) { var s = g.settlements[g.wonders[wid]]; if (s && s.civ === civ.idx) { var w = AU.WONDERS[wid]; var wf = {}; for (var k in w.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'empireCulture' || k === 'empireGold' || k === 'growthMult' || k === 'navalMoves' || k === 'landBonus' || k === 'freeExpansion') wf[k] = w.fx[k]; mergeFx(fx, wf); } }
+    for (var wid in g.wonders) { var s = g.settlements[g.wonders[wid]]; if (s && s.civ === civ.idx) { var w = AU.WONDERS[wid]; var wf = {}; for (var k in w.fx) if (k === 'yieldMult' || k === 'empireHappiness' || k === 'empireCulture' || k === 'empireGold' || k === 'growthMult' || k === 'navalMoves' || k === 'landBonus' || k === 'freeExpansion' || k === 'commandBonus' || k === 'unrestMult') wf[k] = w.fx[k]; mergeFx(fx, wf); if (g.v2 && w.fxV2) mergeFx(fx, w.fxV2); } }
     civ._fx = fx; civ._fxTurn = g.turn; civ._fxKey = G.fxKey(g, civ);
     return fx;
   };
@@ -534,7 +534,7 @@
     y.unitProductionPct = pct.unitProduction;
     // towns turn production into gold
     y.rawProduction = y.production;
-    if (!s.isCity) { y.gold += y.production * (fx.townGoldMult || 1); y.production = 0; }
+    if (!s.isCity) { y.townProduction = y.production; if (!s.queue.length) { y.gold += y.production * (fx.townGoldMult || 1); y.production = 0; } } // a Town's Production turns to Gold unless it is raising a Great work
     for (var rk in y) y[rk] = Math.round(y[rk] * 10) / 10;
     return y;
   };
@@ -571,7 +571,7 @@
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && fx.navalCostMult) cost *= fx.navalCostMult;
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && s && G.hasBuilding(s, 'colossus')) cost *= 0.8;
     } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1) * (fx.buildingDiscount && fx.buildingDiscount[id] || 1); }
-    else if (kind === 'wonder') { cost = AU.WONDERS[id].cost * (fx.wonderCostMult || 1); }
+    else if (kind === 'wonder') { cost = AU.WONDERS[id].cost * (fx.wonderCostMult || 1); if (AU.WONDERS[id].tier === 'great' && s && s.isCity) cost *= G.GREAT_CAPITAL_MULT; } // the capital can raise a Great Wonder, but a Town of the trade does it for less
     else if (kind === 'national') { cost = AU.NATIONAL[id].cost * (fx.buildingCostMult || 1); }
     else if (kind === 'project') { cost = AU.PROJECTS[id].cost * (fx.projectCostMult || 1); }
     return Math.round(cost * G.speed(g));
@@ -608,9 +608,18 @@
     if (d.resource && (g.v2 && AU.Society ? !AU.Society.canSupply(g, civ, d.resource) : !G.hasResource(g, civ, d.resource))) return false; // Divergence: a resource tile supports 1–3 units by richness
     return true;
   };
+  // Three kinds of wonder. Generic Wonders: one in the world, any City. Great Wonders: one in the world, only in a Town of
+  // the matching specialization or in the capital. National Wonders: one per empire, some only in a Town of a given kind.
+  G.wonderTier = function (w) { return w && w.tier === 'great' ? 'great' : 'generic'; };
+  G.GREAT_CAPITAL_MULT = 1.5;
+  G.wonderHomeOk = function (g, s, d) {
+    if (d.home) { if (d.tier === 'great' && s.isCapital) return true; return !s.isCity && s.specialization === d.home; }
+    return !!s.isCity;
+  };
+  G.homeName = function (home) { var sp = AU.SPECIALIZATIONS[home]; return sp ? sp.name : home; };
   G.canBuildWonder = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.WONDERS[id];
-    if (!s.isCity || g.wonders[id] !== undefined) return false;
+    if (g.wonders[id] !== undefined || !G.wonderHomeOk(g, s, d)) return false;
     if (!G.gateOk(g, civ, 'wonder', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     if (d.needs && !G.settlementHas(g, s, d.needs)) return false;
@@ -627,7 +636,7 @@
   };
   G.canBuildNational = function (g, s, id) {
     var civ = g.civs[s.civ], d = AU.NATIONAL[id];
-    if (!s.isCity || G.hasBuilding(s, id)) return false;
+    if (G.hasBuilding(s, id) || !G.wonderHomeOk(g, s, d)) return false;
     if (!G.gateOk(g, civ, 'national', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
     var sets = G.civSettlements(g, civ.idx);
@@ -646,12 +655,17 @@
   };
   G.inQueue = function (s, kind, id) { return s.queue.some(function (q) { return q.kind === kind && q.id === id; }); };
   G.enqueue = function (g, s, kind, id) {
-    if (!s.isCity) return false;
+    if (!s.isCity) { if ((kind !== 'wonder' && kind !== 'national') || s.queue.length) return false; if (kind === 'wonder' ? !G.canBuildWonder(g, s, id) : !G.canBuildNational(g, s, id)) return false; } // a Town raises one Great work at a time
     if (kind !== 'unit' && G.inQueue(s, kind, id)) return false;
     s.queue.push({ kind: kind, id: id });
     return true;
   };
   G.dequeue = function (g, s, index) { s.queue.splice(index, 1); };
+  // Drop queued wonders the settlement may no longer raise (its trade changed, or it became a City); half the work comes back as Gold.
+  G.pruneQueue = function (g, s) {
+    var civ = g.civs[s.civ];
+    s.queue = s.queue.filter(function (q) { var ok = q.kind === 'wonder' ? G.canBuildWonder(g, s, q.id) : q.kind === 'national' ? G.canBuildNational(g, s, q.id) : true; if (!ok) { var key = q.kind + ':' + q.id; civ.gold += Math.round((s.progress[key] || 0) * 0.5); delete s.progress[key]; } return ok; });
+  };
   G.purchase = function (g, s, kind, id) {
     var civ = g.civs[s.civ];
     var cost = G.purchaseCost(g, civ, kind, id, s);
@@ -683,6 +697,7 @@
       G.notify(g, civ, { kind: 'build', text: s.name + ' completed ' + G.buildingDef(g, civ, id).name + '.', tile: s.tile, settlement: s.id });
     } else if (kind === 'wonder') {
       if (g.wonders[id] !== undefined) { G.notify(g, civ, { kind: 'build', text: AU.WONDERS[id].name + ' was completed elsewhere; production refunded as gold.', tile: s.tile }); civ.gold += Math.round((s.progress['wonder:' + id] || 0)); return false; }
+      if (!G.canBuildWonder(g, s, id)) { G.notify(g, civ, { kind: 'build', text: AU.WONDERS[id].name + ': ' + s.name + ' ' + _('can no longer raise it; production refunded as gold.'), tile: s.tile }); civ.gold += Math.round((s.progress['wonder:' + id] || 0)); return false; }
       G.addBuilding(g, s, id); g.wonders[id] = s.id;
       var w = AU.WONDERS[id];
       if (AU.Palace) AU.Palace.onWonder(g, civ);
@@ -734,7 +749,7 @@
   G.upgradeToCity = function (g, s) {
     var civ = g.civs[s.civ], cost = G.cityUpgradeCost(g, civ);
     if (s.isCity || civ.gold < cost) return false;
-    civ.gold -= cost; s.isCity = true; s.specialization = null;
+    civ.gold -= cost; s.isCity = true; s.specialization = null; G.pruneQueue(g, s);
     G.log(g, s.name + ' ' + _('has become a City.'), civ.idx);
     return true;
   };
@@ -758,7 +773,7 @@
     if (!G.canSpecialize(g, s, spec)) return false;
     var civ = g.civs[s.civ];
     if (s.specialization) { if (civ.gold < 60) return false; civ.gold -= 60; }
-    s.specialization = spec;
+    s.specialization = spec; G.pruneQueue(g, s);
     if (spec === 'fort') G.addBuilding(g, s, 'walls'); var utW = G.civData(g.civs[s.civ]).ut; if (utW && spec === utW.id && utW.fx && utW.fx.freeWalls) G.addBuilding(g, s, 'walls');
     return true;
   };
@@ -1059,8 +1074,8 @@
         s.food = 0;
       }
     }
-    // production
-    if (s.isCity) {
+    // production (a Town only while it raises a Great work)
+    if (s.isCity || s.queue.length) {
       var prod = y.production + (s.bonusProduction || 0); if (s.bonusProduction) { if (!s.isCity) civ.gold += s.bonusProduction; s.bonusProduction = 0; }
       if (s.queue.length) {
         var item = s.queue[0], key = item.kind + ':' + item.id;
@@ -1077,7 +1092,7 @@
           else if (s.queue.length) { var k2 = s.queue[0].kind + ':' + s.queue[0].id; s.progress[k2] = (s.progress[k2] || 0) + overflow; }
           else civ.gold += overflow * 0.5;
         }
-      } else {
+      } else if (s.isCity) {
         civ.gold += prod * 0.5;
         G.notify(g, civ, { kind: 'idle', text: s.name + ' has nothing to produce.', tile: s.tile, settlement: s.id });
       }
