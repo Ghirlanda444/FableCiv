@@ -1,0 +1,66 @@
+name: Civ ladder (balance)
+
+# AI-only games with a random civilization in the player seat, ranked by score. The job summary shows which civs and
+# leaders win or get eliminated too often. Free to run: no art, no secrets.
+on:
+  workflow_dispatch:
+    inputs:
+      games:
+        description: "Games per shard (8 shards per rule set)"
+        required: false
+        default: "12"
+      turns:
+        description: "Turns per game"
+        required: false
+        default: "250"
+  schedule:
+    - cron: "0 4 * * 1" # Mondays
+
+permissions:
+  contents: read
+
+jobs:
+  play:
+    name: ${{ matrix.rules == '1' && 'Divergence' || 'Classic' }} shard ${{ matrix.shard }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        rules: ["0", "1"]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Play
+        run: node tools/civ-ladder.js "${{ github.event.inputs.games || '12' }}" "${{ github.event.inputs.turns || '250' }}" "${{ matrix.rules }}" $((1000 + ${{ matrix.rules }} * 500 + ${{ matrix.shard }} * 50 + ${{ github.run_number }} % 50)) > ladder-${{ matrix.rules }}-${{ matrix.shard }}.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ladder-${{ matrix.rules }}-${{ matrix.shard }}
+          path: ladder-*.log
+  summary:
+    name: Summary
+    needs: play
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          path: logs
+      - name: Summarise
+        run: |
+          cat logs/ladder-1-*/ladder-1-*.log > divergence.log
+          cat logs/ladder-0-*/ladder-0-*.log > classic.log
+          node tools/civ-ladder.js --summary divergence.log --md --min 3 >> "$GITHUB_STEP_SUMMARY"
+          node tools/civ-ladder.js --summary classic.log --md --min 3 >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ladder-summary
+          path: |
+            divergence.log
+            classic.log
