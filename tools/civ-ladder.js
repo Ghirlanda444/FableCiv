@@ -14,9 +14,9 @@ if (process.argv[2] === '--summary') {
 }
 const games = +process.argv[2] || 4, turns = +process.argv[3] || 250, v2 = process.argv[4] === '1', seed0 = +(process.argv[5] || 100);
 for (let k = 0; k < games; k++) {
-  const seed = seed0 + k; const civIds = Object.keys(AU.CIV_BY_ID); const rng = (i) => { let x = (seed * 9301 + i * 49297 + 233) % 233280; return x / 233280; };
-  const pick = civIds.slice().sort((a, b) => rng(civIds.indexOf(a)) - rng(civIds.indexOf(b)))[0];
-  const leaders = AU.CIV_BY_ID[pick].leaders || []; const leader = leaders[Math.floor(rng(99) * leaders.length)] || leaders[0];
+  // Every leader gets a seat in turn (round robin over all leaders, offset by the seed), so no leader is under-sampled.
+  const seed = seed0 + k; const all = []; Object.keys(AU.CIV_BY_ID).forEach(c => (AU.CIV_BY_ID[c].leaders || []).forEach(l => all.push([c, l])));
+  const [pick, leader] = all[(seed * 7 + k) % all.length];
   const g = G.newGame({ playerCiv: pick, playerLeader: leader ? leader.id : undefined, mapSize: 'small', mapType: 'continents', numCivs: 5, numStates: 3, seed, difficulty: 'prince', v2 });
   const pl = G.player(g); pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER_BY_ID[pl.leaderId].ai);
   for (let t = 0; t < turns; t++) G.endTurn(g);
