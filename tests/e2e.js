@@ -33,25 +33,25 @@ require('fs').mkdirSync(out, { recursive: true });
   await page.click('[data-action="city"]');
   await page.waitForTimeout(100);
   await page.screenshot({ path: out + '/05-city.png' });
-  await page.click('[data-action="enqueue"][data-item="warrior"]');
+  await page.evaluate(() => { const b = document.querySelector('#panel-body [data-action="enqueue"][data-kind="unit"]'); if (b) b.click(); }); // Divergence: the first unit on offer
   await page.click('[data-action="citytab"][data-tab="buildings"]');
-  await page.click('[data-action="enqueue"][data-item="monument"]');
+  await page.evaluate(() => { const b = document.querySelector('#panel-body [data-action="enqueue"][data-kind="building"]'); if (b) b.click(); });
   await page.screenshot({ path: out + '/06-city-queue.png' });
   await page.click('#panel-close');
   // move the warrior by tapping a reachable tile
   const moved = await page.evaluate(() => {
     const app = AU.App, g = app.g, p = AU.G.player(g);
-    const w = AU.G.civUnits(g, p.idx).find(u => u.type === 'warrior');
-    app.selectUnit(w);
+    const w = AU.G.civUnits(g, p.idx).find(u => AU.G.isMilitary(u) && u.type !== 'scout') || AU.G.civUnits(g, p.idx).find(u => AU.G.isMilitary(u));
+    app.selectUnit(w); window.__e2eUnit = w.id;
     const reach = Object.keys(app.renderer.highlights.reach || {});
     if (!reach.length) return 'no reachable tiles';
     const t = g.tiles[+reach[0]]; const c = app.renderer.worldToScreen(...app.renderer.tileCenter(t));
     return { x: c[0], y: c[1], from: w.tile, to: +reach[0] };
   });
   console.log('warrior move target:', JSON.stringify(moved));
-  if (moved.x) { await page.mouse.click(moved.x, moved.y); await page.waitForTimeout(100); }
-  const afterMove = await page.evaluate(() => { const g = AU.App.g; const w = AU.G.civUnits(g, 0).find(u => u.type === 'warrior'); return w.tile; });
-  console.log('warrior tile after tap:', afterMove, moved.to === afterMove ? 'MOVED OK' : 'DID NOT MOVE');
+  if (moved.x) { await page.mouse.click(moved.x, moved.y, { button: 'right' }); await page.waitForTimeout(300); } // a mouse moves units with the right button
+  const afterMove = await page.evaluate(() => { const g = AU.App.g; return g.units[window.__e2eUnit].tile; });
+  console.log('unit tile after right-click:', afterMove, moved.to === afterMove ? 'MOVED OK' : 'DID NOT MOVE'); if (moved.to !== afterMove) errors.push('right-click move failed');
   await page.screenshot({ path: out + '/07-unit.png' });
   // run 30 turns through the End Turn button
   for (let i = 0; i < 30; i++) {

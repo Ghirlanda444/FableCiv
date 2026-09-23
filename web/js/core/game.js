@@ -831,7 +831,7 @@
     for (var gid in AU.GOVERNMENTS) if (AU.GOVERNMENTS[gid].civic === id) G.notify(g, civ, { big: true, kind: 'civic', text: '🏛️ ' + _('New government available') + ': ' + AU.GOVERNMENTS[gid].name + '.', panel: 'civics', tab: 'policies' });
     G.quote(g, civ, 'civic', id, c.name, _('Civic adopted'));
   };
-  G.abilityDesc = function (ab) { var g = AU.App && AU.App.g; return ab && g && g.v2 && ab.descV2 ? ab.descV2 : (ab ? ab.desc : ''); }; // the Divergence wording of an ability, when it has one
+  G.abilityDesc = function (ab) { return ab ? (ab.descV2 || ab.desc) : ''; }; // Divergence is the game: its wording everywhere
   G.grantFreeTech = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableTechs(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnTech(g, civ, av[0].id); };
   G.grantFreeCivic = function (g, civ) { if (g.v2 && AU.MasteryWeb) return AU.MasteryWeb.grantFreeSpark(g, civ); var av = G.availableCivics(civ); if (!av.length) return; av.sort(function (a, b) { return a.cost - b.cost; }); G.learnCivic(g, civ, av[0].id); };
   G.availableGovernments = function (civ) { var out = []; for (var id in AU.GOVERNMENTS) { var gv = AU.GOVERNMENTS[id]; if (!gv.civic || civ.civics[gv.civic]) out.push(id); } return out; };
