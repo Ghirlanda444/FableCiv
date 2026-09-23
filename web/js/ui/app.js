@@ -137,7 +137,6 @@
       function fill(sel, obj, def) { sel.innerHTML = ''; for (var k in obj) { var o = document.createElement('option'); o.value = k; o.textContent = obj[k].name; if (k === def) o.selected = true; sel.appendChild(o); } }
       fill($('opt-size'), AU.MAP_SIZES, 'small'); fill($('opt-diff'), AU.DIFFICULTIES, 'prince');
       fill($('opt-type'), AU.MAP_TYPES, 'continents'); fill($('opt-speed'), AU.SPEEDS, 'standard');
-      var rs = $('opt-rules'); if (rs) { rs.innerHTML = '<option value="classic">' + _('Classic') + '</option><option value="v2">' + _('Divergence (beta)') + '</option>'; rs.value = this.settings.rules === 'v2' ? 'v2' : 'classic'; var selfR = this; rs.onchange = function () { selfR.settings.rules = this.value; selfR.saveSettings && selfR.saveSettings(); }; }
       var civSel = $('opt-civs'); civSel.innerHTML = '';
       for (var n = 1; n <= 19; n++) { var o = document.createElement('option'); o.value = n; o.textContent = n; if (n === 5) o.selected = true; civSel.appendChild(o); }
       var stSel = $('opt-states'); stSel.innerHTML = '';
@@ -177,7 +176,7 @@
     },
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
-      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined, v2: $('opt-rules') && $('opt-rules').value === 'v2' };
+      var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined, v2: true };
       this.toast(_('Generating the world…'));
       var self = this;
       setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);
@@ -412,6 +411,7 @@
         if (!own && AU.UNITS[u.type].decoy) { var dz = G.unitType(g, g.civs[u.civ], AU.UNITS[u.type].disguise); html += '<div class="card"><h3>' + AU.UNITS[AU.UNITS[u.type].disguise].icon + ' ' + dz.name + ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span></h3><div class="hpbar"><i style="width:100%;background:#4caf50"></i></div><div class="meta">HP 100 · ' + _('Str') + ' ' + dz.strength + ' · 🛡️ ' + _('Warband') + ' (3/3)</div></div>'; box.innerHTML = html; return; }
         html += '<div class="card"><h3>' + AU.UNITS[u.type].icon + ' ' + u.name + (u.civ >= 0 && !own ? ' <span class="pill">' + G.civData(g.civs[u.civ]).name + '</span>' : u.civ < 0 ? ' <span class="pill war">' + _('Inchibils') + '</span>' : '') + (U.level(u) ? ' <span class="pill">Lv ' + U.level(u) + '</span>' : '') + '</h3>';
         html += '<div class="hpbar"><i style="width:' + u.hp + '%;background:' + (u.hp > 50 ? '#4caf50' : '#e05252') + '"></i></div>';
+        if (own && !this.isTouch()) html += '<div class="meta stat">🖱️ ' + _('Right-click a tile to move or attack. Left-click only selects and reads.') + '</div>';
         if (own) { var ocost = G.orderCost(g, u), ordered = u.orderedTurn === g.turn, canO = G.canOrder(g, u); html += '<div class="meta' + (canO ? '' : ' stat') + '">🎖️ ' + (ordered ? _('Ordered this turn') : canO ? _('Command') + ' ' + ocost + (ocost > 1 ? ' (' + _('far from your settlements') + ')' : '') : '<b style="color:#e05252">' + _('No Command left this turn') + '</b> (' + _('needs') + ' ' + ocost + ')') + '</div>'; }
         html += '<div class="meta">HP ' + u.hp + ' · ' + (def.strength ? _('Str') + ' ' + U.strength(g, u, { attacking: false }) : _('Civilian')) + (def.ranged ? ' · ' + _('Ranged') + ' ' + U.strength(g, u, { attacking: true, ranged: true }) + ' (range ' + def.range + ')' : '') + ' · ' + _('Moves') + ' ' + u.moves + '/' + G.maxMoves(g, u.civ, u.type) + (u.fortify ? ' · ' + _('Fortified') : '') + (U.isEmbarked(g, u) ? ' · ' + _('Embarked') : '') + '</div>';
         if (u.promos && u.promos.length) html += '<div class="meta">⭐ ' + u.promos.map(function (pid) { return AU.PROMO_BY_ID[pid] ? AU.PROMO_BY_ID[pid].name : pid; }).join(', ') + '</div>';
@@ -546,10 +546,13 @@
       if (g.units[u.id]) this.selectUnit(u); else this.deselect();
       this.refreshHud(); this.invalidate();
     },
-    onTap: function (tileIdx) {
+    isTouch: function () { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); },
+    // inspectOnly: a mouse's left button selects and reads, it never moves a unit (that is the right button's job)
+    onTap: function (tileIdx, inspectOnly) {
       var g = this.g, p = G.player(g);
       if (tileIdx < 0) { this.deselect(); return; }
       var u = this.sel.unit ? g.units[this.sel.unit] : null;
+      if (inspectOnly && u && u.civ === p.idx && tileIdx !== u.tile && this.mode !== 'expand') { this.pendingAttack = null; this.cycleAtTile(tileIdx); return; }
       var h = this.renderer.highlights;
       if (this.mode === 'expand' && this.sel.settlement) {
         var s = g.settlements[this.sel.settlement];
@@ -628,15 +631,22 @@
     // ---------- Input ----------
     bindInput: function () {
       var cv = $('map'), r = this.renderer, self = this;
-      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0, dragUnit = null, dragTarget = -1, pressTimer = null, longPressed = false;
+      var pointers = {}, dragging = false, moved = false, lastDist = 0, startX = 0, startY = 0, lastX = 0, lastY = 0, dragUnit = null, dragTarget = -1, pressTimer = null, longPressed = false, mouseBtn = -1;
+      cv.addEventListener('contextmenu', function (e) { e.preventDefault(); }); // the right button gives orders
       cv.addEventListener('pointerdown', function (e) {
         cv.setPointerCapture(e.pointerId);
         pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
         var keys = Object.keys(pointers);
+        mouseBtn = e.pointerType === 'mouse' ? e.button : -1;
+        if (keys.length === 1 && mouseBtn === 2) { // right button: order the selected unit (hold to see the route, release on the target)
+          dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; longPressed = false; dragUnit = null;
+          if (self.g) { var cur2 = self.sel.unit && self.g.units[self.sel.unit]; if (cur2 && cur2.civ === G.player(self.g).idx) dragUnit = cur2; }
+          return;
+        }
         if (keys.length === 1) {
           dragging = true; moved = false; startX = lastX = e.clientX; startY = lastY = e.clientY; dragUnit = null; longPressed = false;
           clearTimeout(pressTimer); pressTimer = setTimeout(function () { if (!moved && Object.keys(pointers).length === 1 && self.g) { var rc = cv.getBoundingClientRect(); var ti = r.tileAtScreen(self.g, e.clientX - rc.left, e.clientY - rc.top); if (ti >= 0) { longPressed = true; dragUnit = null; self.showTileTip(ti, e.clientX, e.clientY); } } }, 420);
-          if (self.g && self.mode !== 'expand') { var rect0 = cv.getBoundingClientRect(); var idx0 = r.tileAtScreen(self.g, e.clientX - rect0.left, e.clientY - rect0.top); var pl = G.player(self.g); if (idx0 >= 0) { var own = G.unitsAt(self.g, idx0).filter(function (o) { return o.civ === pl.idx && o.moves > 0; }); var cur = self.sel.unit && self.g.units[self.sel.unit]; if (cur && cur.tile === idx0 && cur.moves > 0) dragUnit = cur; else if (own.length) dragUnit = own[0]; } }
+          if (self.g && self.mode !== 'expand' && mouseBtn !== 0) { var rect0 = cv.getBoundingClientRect(); var idx0 = r.tileAtScreen(self.g, e.clientX - rect0.left, e.clientY - rect0.top); var pl = G.player(self.g); if (idx0 >= 0) { var own = G.unitsAt(self.g, idx0).filter(function (o) { return o.civ === pl.idx && o.moves > 0; }); var cur = self.sel.unit && self.g.units[self.sel.unit]; if (cur && cur.tile === idx0 && cur.moves > 0) dragUnit = cur; else if (own.length) dragUnit = own[0]; } } // touch: dragging a unit moves it; a mouse's left button only pans
         }
         else if (keys.length === 2) { var a = pointers[keys[0]], b = pointers[keys[1]]; lastDist = Math.hypot(a.x - b.x, a.y - b.y); }
       });
@@ -663,9 +673,15 @@
         if (!was) return;
         if (longPressed) { longPressed = false; dragging = false; dragUnit = null; return; }
         if (Object.keys(pointers).length === 0) {
-          if (dragging && !moved && self.g) { var rect = cv.getBoundingClientRect(); var idx = r.tileAtScreen(self.g, e.clientX - rect.left, e.clientY - rect.top); self.onTap(idx); self.refreshHud(); self.invalidate(); }
+          if (mouseBtn === 2 && dragging && self.g) { // right button released: move or attack with the selected unit
+            r.highlights.dragTile = -1; var rectR = cv.getBoundingClientRect(); var idxR = r.tileAtScreen(self.g, e.clientX - rectR.left, e.clientY - rectR.top);
+            var uR = self.sel.unit && self.g.units[self.sel.unit];
+            if (uR && uR.civ === G.player(self.g).idx && idxR >= 0 && idxR !== uR.tile) self.onTap(idxR, false); else if (!uR) self.toast(_('Select a unit first, then right-click where it should go.'));
+            self.refreshHud(); self.invalidate();
+          }
+          else if (dragging && !moved && self.g) { var rect = cv.getBoundingClientRect(); var idx = r.tileAtScreen(self.g, e.clientX - rect.left, e.clientY - rect.top); self.onTap(idx, mouseBtn === 0); self.refreshHud(); self.invalidate(); }
           else if (dragging && moved && dragUnit && self.g && self.g.units[dragUnit.id]) { r.highlights.dragTile = -1; if (dragTarget >= 0 && dragTarget !== dragUnit.tile) { self.sel.unit = dragUnit.id; self.onTap(dragTarget); } else self.selectUnit(dragUnit); self.refreshHud(); self.invalidate(); }
-          dragging = false; lastDist = 0; dragUnit = null; dragTarget = -1;
+          dragging = false; lastDist = 0; dragUnit = null; dragTarget = -1; mouseBtn = -1;
         } else lastDist = 0;
       }
       cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
