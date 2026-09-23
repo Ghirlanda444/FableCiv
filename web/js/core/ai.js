@@ -38,7 +38,7 @@
       if (nearby) rel.attitude -= 0.4;
       var theyRun = !o.minor && G.isRunaway(g, o), iRun = G.isRunaway(g, civ);
       if (theyRun) rel.attitude -= 1; // nobody likes the empire that swallows the map
-      if (g.turn < 25 || rel.peaceUntil > g.turn) return;
+      if (g.turn < (g.v2 ? 45 : 25) || rel.peaceUntil > g.turn) return; // Divergence: the age of hearths, everyone is still settling; an attacked empire may still answer
       var p = tr.aggression * tr.aggression * 0.03 + (nearby ? 0.01 : 0) + (rel.attitude < -15 ? 0.02 : 0);
       // a runaway is feared, not ganged up on: its size only cools the room (above) and its Command budget limits its reach
       if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
@@ -120,6 +120,9 @@
     var mil = G.civUnits(g, civ.idx).filter(G.isMilitary).length;
     var atWar = g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
     var want = sets.length * (1 + tr.aggression) + (atWar ? sets.length * 1.5 + 2 : 0) + g.turn / 50;
+    // the neighbours' armies set a floor: a scholar who ignores the warlord next door is a scholar who dies at turn 50
+    var rival = 0; g.civs.forEach(function (o) { if (!o.alive || o.minor || o.idx === civ.idx || !civ.met[o.idx]) return; var m = G.civUnits(g, o.idx).filter(G.isMilitary).length; if (m > rival) rival = m; });
+    want = Math.max(want, Math.min(rival * 0.6, sets.length * 3 + 3), sets.length + 2);
     return mil < want;
   };
   AI.bestUnitToBuild = function (g, s, wantRanged) {
@@ -153,7 +156,10 @@
       if (s.isCity) {
         if (!s.queue.length) {
           var pick = null;
-          if (g.v2 && G.claimedCount(g, s) >= 3 && !G.hasBuilding(s, 'boundary_marker') && opts.buildings.indexOf('boundary_marker') >= 0) pick = { kind: 'building', id: 'boundary_marker' };
+          // no garrison, or a stronger neighbour and too few soldiers: the walls come before the markers and the wagons
+          var milNow = G.civUnits(g, civ.idx).filter(G.isMilitary).length, unsafe = milNow < sets.length + 1 || (s.hp < 90) || (AI.threatened(g, civ) && AI.wantsMilitary(g, civ));
+          if (unsafe && AI.wantsMilitary(g, civ)) { var bu0 = AI.bestUnitToBuild(g, s, milNow % 3 === 2); if (bu0) pick = { kind: 'unit', id: bu0 }; }
+          if (!pick && g.v2 && G.claimedCount(g, s) >= 3 && !G.hasBuilding(s, 'boundary_marker') && opts.buildings.indexOf('boundary_marker') >= 0) pick = { kind: 'building', id: 'boundary_marker' };
           else if (g.v2 && opts.units.indexOf('commander') >= 0 && G.civUnits(g, civ.idx).filter(G.isMilitary).length >= 4 && !G.civUnits(g, civ.idx).some(function (u) { return AU.UNITS[u.type].commander; })) pick = { kind: 'unit', id: 'commander' };
           else if (opts.projects.length) pick = { kind: 'project', id: opts.projects[0] };
           else if (s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 2) pick = { kind: 'unit', id: 'settler' };
@@ -166,6 +172,10 @@
           if (!pick) { var bu2 = AI.bestUnitToBuild(g, s, false); if (bu2 && G.civUnits(g, civ.idx).length < sets.length * 4) pick = { kind: 'unit', id: bu2 }; }
           if (pick) G.enqueue(g, s, pick.kind, pick.id);
         }
+        // a settlement under attack with no soldier buys one on the spot
+        if (s.hp < 80 && !G.unitsAt(g, s.tile).some(function (u) { return u.civ === civ.idx && G.isMilitary(u); })) { var buE = AI.bestUnitToBuild(g, s, false); if (buE) { var cE = G.purchaseCost(g, civ, 'unit', buE, s); if (civ.gold >= cE) G.purchase(g, s, 'unit', buE); } }
+        // Divergence: a blocked claim is lost growth; buy the Boundary Marker outright when the treasury allows
+        if (g.v2 && G.claimBlocker(g, s) === 'building' && opts.buildings.indexOf('boundary_marker') >= 0 && !G.hasBuilding(s, 'boundary_marker')) { var cbm = G.purchaseCost(g, civ, 'building', 'boundary_marker', s); if (civ.gold >= cbm + 20) G.purchase(g, s, 'building', 'boundary_marker'); }
         if (civ.gold > 350 + reserve && opts.buildings.length) {
           var bsC = opts.buildings.slice().sort(function (a, b) { return AI.buildingScore(g, civ, s, b) - AI.buildingScore(g, civ, s, a); });
           var costC = G.purchaseCost(g, civ, 'building', bsC[0], s);

@@ -60,14 +60,20 @@
       germany: { fx: { smokeSourceMult: 0.7 }, v2: 'Your buildings make 30% less Smoke.' },
       russia: { fx: { climateImmune: true }, v2: 'Your tiles never change with the climate.' },
       mongolia: { fx: { warbandMoves: 1 }, v2: 'Fighters in a Warband move one tile farther.' },
-      zulu: { fx: { warbandWeights: [1, 0.7, 0.5] }, v2: 'Every Warband member strikes harder: 100/70/50% instead of 100/60/40%.' },
+      zulu: { fx: { warbandWeights: [1, 0.65, 0.45] }, v2: 'Every Warband member strikes harder: 100/65/45% instead of 100/60/40%.' },
       japan: { fx: { warbandWeights: [1, 0.7, 0.5] }, v2: 'Every Warband member strikes harder: 100/70/50% instead of 100/60/40%.' },
       maya: { fx: { reformsPerAge: 1 }, v2: 'Two Reforms per age.' },
       greece: { fx: { insightInfluence: 8 }, v2: '+8 Influence whenever you decide an Insight.' },
       babylon: { fx: { synthCostMult: 0.85 }, v2: 'Synthesis costs 15% less.' },
       korea: { fx: { studyRefund: 0.2 }, v2: 'Studying a foundation Spark refunds a fifth of its cost.' },
-      carthage: { fx: { bondUpkeepMult: 0.5 }, v2: 'Bonds with free cities cost half the Influence upkeep.' },
-      arabia: { fx: { bondUpkeepMult: 0.5 }, v2: 'Bonds with free cities cost half the Influence upkeep.' }
+      carthage: { fx: { bondUpkeepMult: 0.5, unitPurchaseMult: 0.75 }, both: 'Units bought with Gold cost 25% less: mercenaries.', v2: 'Bonds with free cities cost half the Influence upkeep.' },
+      arabia: { fx: { bondUpkeepMult: 0.5 }, v2: 'Bonds with free cities cost half the Influence upkeep.' },
+      // the sea peoples, each with a different sea
+      portugal: { fx: { tileBonus: [{ when: 'water', yields: { gold: 1 } }] }, both: 'Worked Coast and Ocean tiles yield +1 Gold.' },
+      polynesia: { fx: { coastalFoundPop: 1, coastalFoundWater: 2 }, v2: 'Coastal settlements are founded with 2 population and two coast tiles already claimed.' },
+      indonesia: { fx: { navalCostMult: 0.7 }, both: 'Naval units cost 30% less.' },
+      norway: { fx: { seaOrders: true, navalRaidBonus: 5 }, both: 'Orders to ships and embarked units cost 1 Command wherever they are. Ships striking the shore +5 Strength.' },
+      england: { fx: { navalVsSettlements: 6, abroadFreeClaims: 1 }, both: 'Ships +6 Strength against settlements.', v2: 'Settlements on another continent get one more free claim.' }
     }
   };
   function applySyn(ab, r) {

@@ -93,12 +93,13 @@
     var xpMult = (civ ? (G.civFx(g, civ).xpMult || 1) : 1) * (1 + (def.xpMult || 0));
     function retaliation(back) { if (def.noRetaliation) return 0; if (def.halfRetaliation) return Math.round(back / 2); return back; }
     if (target.settlement && (!target.unit || ranged)) {
-      var s = target.settlement, sStr = G.settlementStrength(g, s);
+      var s = target.settlement, sStr = G.settlementStrength(g, s, u.civ);
       var dmg = U.damage(g, atk.total - sStr);
       if (ranged && def.cls !== 'siege' && def.cls !== 'navalRanged') dmg = Math.round(dmg * 0.5);
       s.hp = Math.max(0, s.hp - dmg); s.attackedTurn = g.turn;
       result.settlementDamage = dmg; result.settlement = s.id; result.defenceStrength = sStr;
       if (!ranged) { var back = Math.round(retaliation(U.damage(g, sStr - atk.total)) * 0.7); result.attackerDamage = back; WB.spread(atk.parts, back); }
+      if (s.hp <= 0 && !ranged && U.isNaval(u)) { s.hp = 1; result.bombarded = true; } // a ship can level the walls, only soldiers can walk in
       if (s.hp <= 0 && !ranged && U.canCapture(u) && u.hp > 0) {
         if (target.unit) G.unitsAt(g, tileIdx).forEach(function (o) { if (o.civ !== u.civ) G.removeUnit(g, o); });
         U.captureSettlement(g, s, u.civ, def);
