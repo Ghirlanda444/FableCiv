@@ -66,7 +66,7 @@
       ui: { id: 'spice_garden', name: 'Spice Garden', icon: '🌶️', replaces: 'plantation', yields: { gold: 1, faith: 1 }, desc: 'plantations also give +1 Gold and +1 Devotion' },
       cities: ['Majapahit', 'Surabaya', 'Jakarta', 'Palembang', 'Makassar', 'Yogyakarta', 'Banda Aceh', 'Malang', 'Bali', 'Medan', 'Semarang', 'Ambon', 'Trowulan', 'Demak', 'Tuban', 'Gresik', 'Banten', 'Cirebon', 'Kediri', 'Singhasari', 'Mataram', 'Surakarta', 'Bandung', 'Kutai', 'Banjarmasin', 'Pontianak', 'Samarinda', 'Ternate', 'Tidore', 'Kupang', 'Manado', 'Padang', 'Jambi', 'Bengkulu', 'Pekanbaru', 'Denpasar', 'Kendari', 'Banda Neira', 'Gorontalo', 'Jayapura'],
       leaders: [
-        L('gitarja', 'Gitarja', 'Queen', 'Sea of Temples', 'Naval units cost 30% less. Coastal settlements +2 Heritage.', { navalCostMult: 0.7, coastalSettlementYields: { culture: 2 } }, { aggression: 0.4, expansion: 0.6, science: 0.5, culture: 0.6 }),
+        L('gitarja', 'Gitarja', 'Queen', 'Sea of Temples', 'Coastal settlements +2 Heritage and +1 Happiness.', { coastalSettlementYields: { culture: 2, happiness: 1 } }, { aggression: 0.4, expansion: 0.6, science: 0.5, culture: 0.6 }),
         L('gajah', 'Gajah Mada', 'Mahapatih', 'Palapa Oath', 'Naval units +5 Strength. Capturing a settlement grants +100 Gold. Embarked units +1 Movement.', { navalBonus: 5, captureGold: 100, embarkMoves: 1 }, { aggression: 0.8, expansion: 0.6, science: 0.4, culture: 0.4 })
       ] },
 

@@ -310,6 +310,26 @@
       }
       if (starts.length < nStarts) minDist--;
     }
+    // A fair start: every empire's first ring holds at least three tiles worth 2 Food, and a food resource lies within two tiles.
+    // Poor plains, tundra or desert beside the start turn to grassland; a wheat, cattle or fish appears when no food resource is near.
+    (function () {
+      var FOOD_RES = ['wheat', 'rice', 'cattle', 'sheep', 'deer', 'bananas', 'fish', 'crabs'];
+      starts.forEach(function (st) {
+        var ring = Hex.neighborsOf(st.col, st.row, W, H).map(function (n) { return tiles[n]; });
+        var rich = function (t) { return !AU.TERRAIN[t.terrain].water && t.terrain !== 'mountain' && AU.baseTileYields(t).food >= 2; };
+        var n = ring.filter(rich).length;
+        ring.filter(function (t) { return !rich(t) && !AU.TERRAIN[t.terrain].water && t.terrain !== 'mountain' && !t.resource && !t.natural && (t.terrain === 'plains' || t.terrain === 'tundra' || t.terrain === 'desert'); })
+          .forEach(function (t) { if (n >= 3) return; t.terrain = 'grassland'; if (t.feature === 'oasis') t.feature = null; n++; });
+        var area = Hex.spiral(st.col, st.row, 2, W, H).map(function (i2) { return tiles[i2]; });
+        if (area.some(function (t) { return t.resource && FOOD_RES.indexOf(t.resource) >= 0; })) return;
+        var placed = false;
+        area.forEach(function (t) {
+          if (placed || t === st || t.resource || t.natural || t.terrain === 'mountain') return;
+          var okRes = FOOD_RES.filter(function (id) { var R = AU.RESOURCES[id]; if (R.terrain.indexOf(t.terrain) < 0) return false; if (R.flat && t.hills) return false; if (R.feature) return R.feature.indexOf(t.feature) >= 0; return t.feature !== 'jungle' && t.feature !== 'oasis' && t.feature !== 'marsh'; });
+          if (!okRes.length) return; t.resource = okRes[0]; if (opts.v2) t.rich = 1; placed = true;
+        });
+      });
+    })();
     if (starts.length < nStarts && landTilesAll.length > landTiles.length) {
       // not enough room in the old world: fall back to the whole map
       landTilesAll.forEach(function (t) { if (t._score === undefined) t._score = siteScore(t); });

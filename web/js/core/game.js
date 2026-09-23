@@ -318,6 +318,11 @@
     if (fx.freeBuildingWithTech) for (var fb in fx.freeBuildingWithTech) if (g.v2 ? G.gateOk(g, civ, 'building', fb, AU.BUILDINGS[fb] || {}) : civ.techs[fx.freeBuildingWithTech[fb]]) G.addBuilding(g, s, fb);
     if (fx.freeExpansion) s.pendingGrowth += fx.freeExpansion;
     if (fx.foundGold) civ.gold += fx.foundGold;
+    if (g.v2 && (fx.coastalFoundPop || fx.coastalFoundWater) && G.isCoastal(g, s)) { // a people of the sea: a coastal settlement is born bigger and already holds its waters
+      var water = G.neighbors(g, t).filter(function (n) { var nt = g.tiles[n]; return G.isWater(nt) && nt.owner < 0; }).slice(0, fx.coastalFoundWater || 0);
+      water.forEach(function (n) { G.claimTile(g, s, n); });
+      if (fx.coastalFoundPop) { s.pop += fx.coastalFoundPop; s.specialists += Math.max(0, fx.coastalFoundPop - water.length); }
+    }
     if (!isCapital && t.continent !== G.capitalContinent(g, civ)) {
       if (fx.abroadFoundPop) { s.pop += fx.abroadFoundPop; s.pendingGrowth += fx.abroadFoundPop; G.autoExpand(g, s); }
       if (fx.abroadFreeBuilding) G.addBuilding(g, s, fx.abroadFreeBuilding);
@@ -581,6 +586,7 @@
     var prog = s ? (s.progress[kind + ':' + id] || 0) : 0;
     var m = (fx.purchaseMult || 1) * (s && !s.isCity && fx.townPurchaseMult ? fx.townPurchaseMult : 1);
     var utP = G.civData(civ).ut; if (utP && s && s.specialization === utP.id && utP.fx && utP.fx.unitPurchaseMult && kind === 'unit') m *= utP.fx.unitPurchaseMult;
+    if (kind === 'unit' && fx.unitPurchaseMult) m *= fx.unitPurchaseMult; // mercenaries
     if (kind === 'unit') { var ud = G.unitType(g, civ, id); if (ud.purchaseMult) m *= ud.purchaseMult; }
     return Math.max(10, Math.round((G.itemCost(g, civ, kind, id, s) - prog) * 2 * m));
   };
@@ -932,6 +938,7 @@
     var ofx = G.civFx(g, g.civs[u.civ]), own = t.owner >= 0 && G.tileOwnerCiv(g, t) === u.civ;
     if (g.v2 && t.river && own) return 1; // Divergence: word travels fast along your own rivers
     if (ofx.roadOrders && t.road && own) return 1; // an empire of roads: every order reaches its own roads at once
+    if (ofx.seaOrders && (AU.U.isNaval(u) || AU.U.isEmbarked(g, u))) return 1; // the sea is their road
     var cost = best <= 5 ? 1 : best <= 10 ? 2 : 3; if (ofx.farOrderDiscount) cost = Math.max(1, cost - ofx.farOrderDiscount);
     return cost;
   };
@@ -1112,7 +1119,7 @@
   // v2 city growth: every population point may claim one tile. The centre and the first two are free; from the fourth
   // a claim also costs Influence (15 per tile beyond the third, rising) and needs an Expansion building in the settlement.
   G.claimedCount = function (g, s) { var n = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked) n++; }); return n; };
-  G.freeClaims = function (g, s) { return 3 + (G.civFx(g, g.civs[s.civ]).freeClaims || 0); };
+  G.freeClaims = function (g, s) { var fx = G.civFx(g, g.civs[s.civ]), n = 3 + (fx.freeClaims || 0); if (fx.abroadFreeClaims && g.tiles[s.tile].continent !== G.capitalContinent(g, g.civs[s.civ])) n += fx.abroadFreeClaims; return n; };
   G.claimCost = function (g, s) { var n = G.claimedCount(g, s), free = G.freeClaims(g, s); return n < free ? 0 : Math.round(10 * (n - free + 1) * (G.civFx(g, g.civs[s.civ]).claimCostMult || 1)); };
   // Influence: 2 a turn plus 1 per settlement (a wider empire claims faster) plus 1 per 8 Heritage a turn plus ability bonuses.
   G.influenceFromHeritage = function (g, civ) { if (!g.v2) return 0; var y = G.civYields(g, civ); return Math.floor((y.culture || 0) / 8); };
@@ -1138,7 +1145,8 @@
       var cands = G.claimableTiles(g, s);
       if (!cands.length) break;
       var best = null, bv = -1e9;
-      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0) + (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
+      var hungry = s.pop <= 4 && (G.settlementYields(g, s).food - s.pop * 2) <= 1; // a small settlement claims food first, or it never grows
+      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * (hungry ? 2.6 : 1.5) + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0) + (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
       G.payClaim(g, s, best); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
@@ -1163,11 +1171,13 @@
     return dmg;
   };
   G.settlementMaxHp = function (g, s) { var hp = 100; if (G.hasBuilding(s, 'walls')) hp += 100; if (G.hasBuilding(s, 'castle')) hp += 100; return hp; };
-  G.settlementStrength = function (g, s) {
+  // Divergence: the hearth guard for walls too. +2 per settlement the attacking empire holds beyond the defender's, at most +8.
+  G.hearthGuard = function (g, s, attackerCiv) { if (!g.v2 || attackerCiv === undefined || attackerCiv < 0 || attackerCiv === s.civ || g.civs[attackerCiv].minor) return 0; var gap = G.civSettlements(g, attackerCiv).length - G.civSettlements(g, s.civ).length; return gap > 0 ? Math.min(8, 2 * gap) : 0; };
+  G.settlementStrength = function (g, s, attackerCiv) {
     var civ = g.civs[s.civ], fx = G.civFx(g, civ);
     var best = 10;
     for (var u in AU.UNITS) { var d = G.unitType(g, civ, u); if (d.cls === 'civilian' || d.cls === 'naval' || d.cls === 'navalRanged') continue; if (!G.gateOk(g, civ, 'unit', u, d)) continue; best = Math.max(best, d.strength); }
-    var str = best + (s.isCity ? 3 : 0) + (fx.cityDefense || 0);
+    var str = best + (s.isCity ? 3 : 0) + (fx.cityDefense || 0) + G.hearthGuard(g, s, attackerCiv);
     var wallsMult = fx.wallsMult || 1;
     if (G.hasBuilding(s, 'walls')) str += 6 * wallsMult;
     if (G.hasBuilding(s, 'castle')) str += 8 * wallsMult;

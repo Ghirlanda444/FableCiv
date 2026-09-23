@@ -17,7 +17,7 @@ for (let k = 0; k < games; k++) {
   // Every leader gets a seat in turn (round robin over all leaders, offset by the seed), so no leader is under-sampled.
   const seed = seed0 + k; const all = []; Object.keys(AU.CIV_BY_ID).forEach(c => (AU.CIV_BY_ID[c].leaders || []).forEach(l => all.push([c, l])));
   const [pick, leader] = all[(seed * 7 + k) % all.length];
-  const g = G.newGame({ playerCiv: pick, playerLeader: leader ? leader.id : undefined, mapSize: 'small', mapType: 'continents', numCivs: 5, numStates: 3, seed, difficulty: 'prince', v2 });
+  const g = G.newGame({ playerCiv: pick, playerLeader: leader ? leader.id : undefined, mapSize: 'standard', mapType: 'continents', numCivs: 6, numStates: 3, seed, difficulty: 'prince', v2 }); // a standard map: room to settle, so abilities decide more than who spawned next to a warlord
   const pl = G.player(g); pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER_BY_ID[pl.leaderId].ai);
   for (let t = 0; t < turns; t++) G.endTurn(g);
   const majors = g.civs.filter(c => !c.minor).map(c => ({ civ: c.civId, leader: c.leaderId, alive: !!c.alive, score: c.alive ? G.score(g, c) : 0, sets: G.civSettlements(g, c.idx).length })).sort((a, b) => b.score - a.score);

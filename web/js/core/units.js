@@ -278,6 +278,9 @@
     if (fx.combatBonusCoast && t.terrain === 'coast') str += fx.combatBonusCoast;
     if (fx.combatBonusForest && (t.feature === 'forest' || t.feature === 'jungle')) str += fx.combatBonusForest;
     if (ctx && ctx.attacking) {
+      if (!land && vsSet && fx.navalVsSettlements) str += fx.navalVsSettlements;
+      if (!land && fx.navalRaidBonus && ctx.vs && ctx.vs.tile !== undefined && !G.isWater(g.tiles[ctx.vs.tile])) str += fx.navalRaidBonus;
+      if (!land && fx.navalRaidBonus && vsSet) str += fx.navalRaidBonus;
       if (vsSet && fx.vsSettlements) str += fx.vsSettlements;
       if (vsSet && def.vsSettlements) str += def.vsSettlements;
       if (def.attack) str += def.attack;
@@ -290,6 +293,8 @@
     } else {
       if (fx.defenseBonus) str += fx.defenseBonus;
       if (fx.homeDefenseBonus && ownerCiv === u.civ) str += fx.homeDefenseBonus;
+      // Divergence: the hearth guard. A small people defending its own land fights harder against a wider empire: +2 per settlement the attacker holds beyond yours, at most +8.
+      if (g.v2 && civ && ownerCiv === u.civ && ctx && ctx.vs && ctx.vs.civ >= 0 && ctx.vs.civ !== u.civ && !g.civs[ctx.vs.civ].minor) { var gap = G.civSettlements(g, ctx.vs.civ).length - G.civSettlements(g, u.civ).length; if (gap > 0) str += Math.min(8, 2 * gap); }
       if (t.hills) str += 3 + (fx.hillsDefenseBonus || 0);
       if (!land && fx.navalDefenseBonus) str += fx.navalDefenseBonus;
       if (t.feature && AU.FEATURES[t.feature].defense) str += AU.FEATURES[t.feature].defense;
@@ -317,8 +322,7 @@
     if (!target) return false;
     if (U.isRanged(u)) return d <= (def.range || 1);
     if (d !== 1) return false;
-    // melee: must be able to enter target terrain
-    if (U.isNaval(u) && !G.isWater(to) && !to.navigable) return false;
+    // melee: must be able to enter target terrain; a ship may strike the shore beside it (units and settlements on the coast or a navigable river) but never lands
     if (!U.isNaval(u) && !U.isAir(u) && G.isWater(to)) return false;
     if (AU.TERRAIN[to.terrain].impassable) return false;
     return true;
@@ -356,6 +360,7 @@
         u.hp -= Math.round(back * 0.7); result.attackerDamage = Math.round(back * 0.7);
       }
       if (target.unit && ranged) { /* garrison untouched by ranged */ }
+      if (s.hp <= 0 && !ranged && U.isNaval(u)) { s.hp = 1; result.bombarded = true; } // a ship can level the walls, only soldiers can walk in
       if (s.hp <= 0 && !ranged && U.canCapture(u) && u.hp > 0) {
         if (target.unit) { G.removeUnit(g, target.unit); G.unitsAt(g, tileIdx).forEach(function (o) { if (o.civ !== u.civ) G.removeUnit(g, o); }); }
         U.captureSettlement(g, s, u.civ, def);
@@ -425,7 +430,7 @@
     if (fx.captureGold) newCiv.gold += fx.captureGold;
     if (fx.captureCapitalGold && wasCapital) newCiv.gold += fx.captureCapitalGold;
     if (fx.captureCulture) newCiv.bonusCulture = (newCiv.bonusCulture || 0) + fx.captureCulture;
-    if (fx.captureScience) newCiv.bonusScience = (newCiv.bonusScience || 0) + fx.captureScience;
+    if (fx.captureScience) newCiv.bonusScience = (newCiv.bonusScience || 0) + (g.v2 ? Math.round(fx.captureScience / 2) : fx.captureScience); // Divergence: Knowledge buys Sparks, so a conquest pays half
     if (fx.captureHeal) { var ct = g.tiles[s.tile]; G.civUnits(g, newCivIdx).forEach(function (cu) { if (G.dist(g.tiles[cu.tile], ct) <= 3) cu.hp = Math.min(100, cu.hp + 50); }); }
     s.buildings = s.buildings.filter(function (b) { return b !== 'palace'; });
     if (!newCiv.capital || !g.settlements[newCiv.capital] || g.settlements[newCiv.capital].civ !== newCivIdx) { newCiv.capital = s.id; s.isCapital = true; s.isCity = true; G.addBuilding(g, s, 'palace'); }
