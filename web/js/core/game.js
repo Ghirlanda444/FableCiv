@@ -404,7 +404,7 @@
     if (s.specialization === 'mining' && (imp === 'mine' || imp === 'quarry' || imp === 'woodcutter')) y.production += 1;
     if (s.specialization === 'trade' && t.resource) y.gold += 1;
     var utT = G.civData(civ).ut; if (utT && s.specialization === utT.id && utT.fx && utT.fx.tileYields) { if (G.tileMatches(g, t, utT.fx.tileYields.when, imp)) add(y, utT.fx.tileYields.yields); }
-    if (water && G.hasBuilding(s, 'lighthouse')) y.food += 1;
+    if (water) s.buildings.forEach(function (b) { var bd = AU.BUILDINGS[b]; if (bd && bd.waterYields) add(y, bd.waterYields); }); // Lighthouse feeds the waters, Harbor works them: a coastal claim is worth having
     return y;
   };
   G.hasBuilding = function (s, id) { return s.buildings.indexOf(id) >= 0; };
@@ -1145,8 +1145,9 @@
       var cands = G.claimableTiles(g, s);
       if (!cands.length) break;
       var best = null, bv = -1e9;
-      var hungry = s.pop <= 4 && (G.settlementYields(g, s).food - s.pop * 2) <= 1; // a small settlement claims food first, or it never grows
-      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = y.food * (hungry ? 2.6 : 1.5) + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0) + (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
+      // a small or starving settlement claims food first, or it never grows: a 1-Food luxury must not beat a 3-Food grassland while the surplus is one
+      var surplus = G.settlementYields(g, s).food - s.pop * 2, hungry = (s.pop <= 6 && surplus <= 2) || surplus <= 0;
+      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = hungry ? y.food * 4 + y.production * 1.2 + y.gold * 0.3 + y.science * 0.5 + y.culture * 0.5 + (t.resource ? (y.food >= 2 ? 1.5 : 0.5) : 0) : y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); v += (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
       G.payClaim(g, s, best); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
