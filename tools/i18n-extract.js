@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path');
 const web = path.join(__dirname, '..', 'web');
 const keys = new Set();
 // code
-function scan(dir) { fs.readdirSync(dir).forEach(f => { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) return scan(p); if (!/\.js$/.test(f)) return; const src = fs.readFileSync(p, 'utf8'); const re = /_\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\)/g; let m; while ((m = re.exec(src))) keys.add((m[1] !== undefined ? m[1] : m[2]).replace(/\\(['"\\])/g, '$1')); }); }
+function scan(dir) { fs.readdirSync(dir).forEach(f => { const p = path.join(dir, f); if (fs.statSync(p).isDirectory()) return scan(p); if (!/\.js$/.test(f)) return; const src = fs.readFileSync(p, 'utf8'); const re = /\bN?_\((?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)")\)/g; let m; while ((m = re.exec(src))) keys.add((m[1] !== undefined ? m[1] : m[2]).replace(/\\(['"\\])/g, '$1')); }); }
 scan(path.join(web, 'js'));
 const nCode = keys.size;
 // data
