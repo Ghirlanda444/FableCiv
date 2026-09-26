@@ -42,6 +42,7 @@
       (AU.V2.NODES || []).forEach(function (n) { tx(n, 'name'); tx(n, 'joke'); if (n.trigger) tx(n.trigger, 'desc'); });
       (AU.V2.HUBS || []).forEach(function (h) { tx(h, 'name'); (h.branches || []).forEach(function (b) { tx(b, 'name'); }); });
       (AU.V2.ERAS || []).forEach(function (e) { tx(e, 'name'); tx(e, 'joke'); });
+      if (AU.V2.LANES) for (var lk in AU.V2.LANES.rewards) AU.V2.LANES.rewards[lk].forEach(function (r) { tx(r, 'name'); tx(r, 'joke'); });
       for (var uk in (AU.V2.UNITS || {})) tx(AU.V2.UNITS[uk], 'joke');
     }
     if (AU.Society) { (AU.Society.TIERS || []).forEach(function (t) { tx2(t, 'name'); }); (AU.Society.RICH || []).forEach(function (t) { tx2(t, 'name'); }); for (var pk in (AU.Society.PERSUASION || {})) { tx2(AU.Society.PERSUASION[pk], 'name'); tx2(AU.Society.PERSUASION[pk], 'desc'); } }

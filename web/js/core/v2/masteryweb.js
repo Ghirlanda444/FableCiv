@@ -101,6 +101,7 @@
     if (node.fx && node.fx.influenceOnce) civ.influence = (civ.influence || 0) + node.fx.influenceOnce;
     MW.grantFreeBuildings(g, civ);
     (node.locks || []).forEach(function (other) { MW.lockPermanent(g, civ, other); });
+    if (node.pool === 'foundation' && node.cat) MW.checkLane(g, civ, node.era, node.cat);
     G.notify(g, civ, { big: true, kind: 'tech', focus: id, text: '💡 ' + _('Spark!') + ' ' + node.name + ' — “' + node.joke + '”' + (MW.describeNode ? ' · ' + MW.describeNode(node) : ''), panel: 'web' });
     if (civ.isPlayer) { g.sparksLit = g.sparksLit || []; g.sparksLit.push(id); }
     if (node.hub && AU.V2.HUB_BY_ID[node.hub]) MW.fireHub(g, civ, node.hub);
@@ -168,7 +169,7 @@
   // The AI studies the cheapest Spark of its own age that still counts toward the Turning Point (foundation first), then anything else.
   MW.aiStudyPick = function (g, civ) {
     var s = st(civ), best = null, bv = -1;
-    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; var c = MW.studyCost(g, civ, n); if (s.study < c) return; var v = (n.pool === 'foundation' && n.era === s.era ? 3 : n.pool === 'foundation' ? 2 : 1) * 1000 - c + (n.unlocks ? 50 : 0); if (v > bv) { bv = v; best = n; } });
+    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; var c = MW.studyCost(g, civ, n); if (s.study < c) return; var v = (n.pool === 'foundation' && n.era === s.era ? 3 : n.pool === 'foundation' ? 2 : 1) * 1000 - c + (n.unlocks ? 50 : 0); if (n.pool === 'foundation' && n.cat) { var lc = MW.laneCount(civ, n.era, n.cat); if (lc.total - lc.lit <= 2) v += 400; } if (v > bv) { bv = v; best = n; } });
     return best;
   };
   // Heritage: Culture piles up too. Once per age an empire may Reform: take back an Insight already decided and choose its other branch.
@@ -204,8 +205,37 @@
     if (s.aiTurning && g.turn >= s.aiTurning.at) { var tp = AU.V2.HUB_BY_ID[s.aiTurning.hub]; s.aiTurning = null; if (tp) MW.choose(g, civ, tp.id, MW.aiPick(g, civ, tp).id); }
     civ.era = s.era;
   };
-  // Effects of unlocked nodes and chosen traits, merged into the empire's effect set.
-  MW.fx = function (civ, merge, fx) { var s = civ.v2; if (!s) return; for (var id in s.unlocked) { var n = AU.V2.NODE_BY_ID[id]; if (n && n.fx) merge(fx, n.fx); } for (var h in s.traits) { var hub = AU.V2.HUB_BY_ID[h]; if (!hub) continue; var br = hub.branches.filter(function (b) { return b.id === s.traits[h]; })[0]; if (br && br.fx) merge(fx, br.fx); } };
+  // ---------- Lane Mastery: every foundation Spark of a lane lit in its age is a permanent reward ----------
+  MW.laneNodes = function (era, cat) { return MW.nodesOfEra(era).filter(function (n) { return n.pool === 'foundation' && n.cat === cat; }); };
+  MW.laneCount = function (civ, era, cat) { var s = st(civ), nodes = MW.laneNodes(era, cat), lit = 0; nodes.forEach(function (n) { if (s.unlocked[n.id]) lit++; }); return { lit: lit, total: nodes.length }; };
+  MW.laneMastered = function (civ, era, cat) { var s = st(civ); return !!(s.lanes && s.lanes[era + ':' + cat]); };
+  MW.laneReward = function (era, cat) { return AU.V2.LANES ? AU.V2.LANES.reward(era, cat) : null; };
+  MW.lanesMastered = function (civ) { var s = st(civ), n = 0; for (var k in (s.lanes || {})) n++; return n; };
+  MW.checkLane = function (g, civ, era, cat) {
+    var s = st(civ), key = era + ':' + cat; s.lanes = s.lanes || {}; if (s.lanes[key]) return false;
+    var c = MW.laneCount(civ, era, cat); if (!c.total || c.lit < c.total) return false;
+    s.lanes[key] = g.turn; s.log.push({ turn: g.turn, lane: key }); civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
+    var reward = MW.laneReward(era, cat), fx = G.civFx(g, civ), gifts = [];
+    // a people whose abilities speak of learning gets more from a mastered lane
+    if (fx.laneMasteryKnowledge) { s.study += fx.laneMasteryKnowledge; gifts.push('+' + fx.laneMasteryKnowledge + ' 📚'); }
+    if (fx.laneMasteryHeritage) { s.heritage = (s.heritage || 0) + fx.laneMasteryHeritage; gifts.push('+' + fx.laneMasteryHeritage + ' 🎭'); }
+    if (fx.laneMasteryInfluence) { civ.influence = (civ.influence || 0) + fx.laneMasteryInfluence; gifts.push('+' + fx.laneMasteryInfluence + ' 🎯'); }
+    if (fx.laneMasteryGold) { civ.gold += fx.laneMasteryGold; gifts.push('+' + fx.laneMasteryGold + ' 💰'); }
+    if (fx.laneMasterySpark) { var before = Object.keys(s.unlocked).length; MW.grantFreeSpark(g, civ); if (Object.keys(s.unlocked).length > before) gifts.push(_('a free Spark')); }
+    G.notify(g, civ, { big: true, kind: 'lane', text: '🏅 ' + _('Lane mastered!') + ' ' + _(cat) + ' — ' + (reward ? reward.name + ': ' + (MW.describeFx ? MW.describeFx(reward.fx) : '') : '') + (gifts.length ? ' · ' + gifts.join(' ') : ''), panel: 'web', tab: 'foundation', era: era });
+    if (civ.isPlayer) { g.sparksLit = g.sparksLit || []; g.sparksLit.push('lane:' + key); }
+    return true;
+  };
+  // Effects of unlocked nodes, chosen traits and mastered lanes, merged into the empire's effect set.
+  MW.fx = function (civ, merge, fx) {
+    var s = civ.v2; if (!s) return;
+    for (var id in s.unlocked) { var n = AU.V2.NODE_BY_ID[id]; if (n && n.fx) merge(fx, n.fx); }
+    for (var h in s.traits) { var hub = AU.V2.HUB_BY_ID[h]; if (!hub) continue; var br = hub.branches.filter(function (b) { return b.id === s.traits[h]; })[0]; if (br && br.fx) merge(fx, br.fx); }
+    var lanes = 0; for (var k in (s.lanes || {})) { lanes++; var parts = k.split(':'), r = MW.laneReward(+parts[0], parts[1]); if (r && r.fx) merge(fx, r.fx); }
+    // per-lane synergies from abilities: a yield in the capital for every lane mastered, or cheaper study for every lane mastered
+    if (lanes && fx.laneMasteryYield) { var cy = {}; for (var yk in fx.laneMasteryYield) cy[yk] = fx.laneMasteryYield[yk] * lanes; merge(fx, { capitalYields: cy }); }
+    if (lanes && fx.laneMasteryStudyMult) merge(fx, { techCostMult: Math.pow(fx.laneMasteryStudyMult, lanes) });
+  };
   MW.nodeFor = function (kind, id) { if (!MW._idx) { MW._idx = {}; AU.V2.NODES.forEach(function (n) { if (n.unlocks) for (var k in n.unlocks) MW._idx[k + ':' + n.unlocks[k]] = n.id; }); } return MW._idx[kind + ':' + id] || null; };
   MW.v1Era = function (def) { if (def.era !== undefined) return def.era; var t = def.tech && AU.TECH_BY_ID[def.tech], c = def.civic && AU.CIVIC_BY_ID[def.civic]; return Math.max(t ? t.era : 0, c ? c.era : 0); };
   // Is this unit/building/wonder available under v2 rules? Named by a node → that node; else its v1 era must be reached.

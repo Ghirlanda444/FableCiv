@@ -46,7 +46,15 @@
       catherine: { fx: { reformsPerAge: 1 }, v2: 'Two Reforms per age.' },
       ashoka: { fx: { insightInfluence: 6 }, v2: '+6 Influence whenever you decide an Insight.' },
       hatshepsut: { fx: { riverClaimInfluence: 1 }, v2: 'Claiming a river tile grants +1 Influence.' },
-      lincoln: { fx: { unrestMult: 0.5 }, both: 'Unrest in captured settlements lasts half as long.' }
+      lincoln: { fx: { unrestMult: 0.5 }, both: 'Unrest in captured settlements lasts half as long.' },
+      // Lane Mastery: leaders of learning get more from a mastered lane (every foundation Spark of one lane lit in its age)
+      sejong: { fx: { laneMasteryKnowledge: 60 }, v2: 'Mastering a lane grants +60 Knowledge.' },
+      pericles: { fx: { laneMasteryHeritage: 60 }, v2: 'Mastering a lane grants +60 Heritage.' },
+      franklin: { fx: { laneMasteryGold: 120 }, v2: 'Mastering a lane grants +120 Gold.' },
+      meiji: { fx: { laneMasteryYield: { production: 2 } }, v2: 'Capital +2 Production for every lane mastered.' },
+      frederick: { fx: { laneMasteryInfluence: 20 }, v2: 'Mastering a lane grants +20 Influence.' },
+      taizong: { fx: { laneMasteryStudyMult: 0.96 }, v2: 'Every lane mastered makes studying Sparks 4% cheaper.' },
+      hammurabi: { fx: { laneMasterySpark: true }, v2: 'Mastering a lane also lights the next foundation Spark of the age.' }
     },
     civ: {
       rome: { fx: { roadOrders: true }, both: 'Orders to units on your roads cost 1 Command wherever they are.' },
@@ -65,7 +73,7 @@
       maya: { fx: { reformsPerAge: 1 }, v2: 'Two Reforms per age.' },
       greece: { fx: { insightInfluence: 8 }, v2: '+8 Influence whenever you decide an Insight.' },
       babylon: { fx: { synthCostMult: 0.85 }, v2: 'Synthesis costs 15% less.' },
-      korea: { fx: { studyRefund: 0.2 }, v2: 'Studying a foundation Spark refunds a fifth of its cost.' },
+      korea: { fx: { studyRefund: 0.2, laneMasteryYield: { science: 3 } }, v2: 'Studying a foundation Spark refunds a fifth of its cost. Capital +3 Knowledge for every lane mastered.' },
       carthage: { fx: { bondUpkeepMult: 0.5, unitPurchaseMult: 0.75 }, both: 'Units bought with Gold cost 25% less: mercenaries.', v2: 'Bonds with free cities cost half the Influence upkeep.' },
       arabia: { fx: { bondUpkeepMult: 0.5 }, v2: 'Bonds with free cities cost half the Influence upkeep.' },
       // the sea peoples, each with a different sea
