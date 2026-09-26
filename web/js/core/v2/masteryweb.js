@@ -99,6 +99,7 @@
     if (fx.eurekaDiscount) civ.bonusScience = (civ.bonusScience || 0) + Math.round(40 * fx.eurekaDiscount);
     if (fx.inspirationDiscount) civ.bonusCulture = (civ.bonusCulture || 0) + Math.round(40 * fx.inspirationDiscount);
     if (node.fx && node.fx.influenceOnce) civ.influence = (civ.influence || 0) + node.fx.influenceOnce;
+    MW.onGain(g, civ, node.fx);
     MW.grantFreeBuildings(g, civ);
     (node.locks || []).forEach(function (other) { MW.lockPermanent(g, civ, other); });
     if (node.pool === 'foundation' && node.cat) MW.checkLane(g, civ, node.era, node.cat);
@@ -115,7 +116,7 @@
   MW.fireHub = function (g, civ, hubId) {
     var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || s.hubsFired[hubId]) return;
     s.hubsFired[hubId] = g.turn;
-    if (hub.turning !== undefined && !civ.isPlayer) { s.aiTurning = { hub: hubId, at: g.turn + 16 }; return; } // the AI lingers sixteen turns before crossing into the next age
+    if (hub.turning !== undefined && !civ.isPlayer) { var lg = MW.AI_LINGER[g.difficulty]; s.aiTurning = { hub: hubId, at: g.turn + Math.round((lg === undefined ? 6 : lg) * G.speed(g)) }; return; } // the AI dwells a few turns on its Turning Point
     if (civ.isPlayer) { s.pendingHubs.push(hubId); G.notify(g, civ, { big: true, kind: 'civic', text: '🔮 ' + _('Insight!') + ' ' + hub.name + ': ' + _('a decision awaits'), panel: 'hub' }); }
     else MW.choose(g, civ, hubId, MW.aiPick(g, civ, hub).id);
   };
@@ -127,16 +128,37 @@
     var cfx = G.civFx(g, civ); if (cfx.civicScience) civ.bonusScience = (civ.bonusScience || 0) + cfx.civicScience; // "whenever you learn a civic" = whenever an Insight is decided
     if (cfx.insightInfluence) civ.influence = (civ.influence || 0) + cfx.insightInfluence;
     s.log.push({ turn: g.turn, hub: hubId, branch: branchId });
-    if (br.greatPerson && AU.GreatPeople && AU.GreatPeople.spawnNamed) AU.GreatPeople.spawnNamed(g, civ, br.greatPerson, hub.name);
+    MW.onGain(g, civ, br.fx);
+    if (br.greatPerson && AU.Great && AU.Great.recruit && AU.GREAT_TYPES) { var gt = MW.GREAT_SLOT[br.greatPerson] || br.greatPerson; if (AU.GREAT_TYPES[gt]) AU.Great.recruit(g, civ, gt, 'insight'); }
     if (hub.turning !== undefined && s.era === hub.turning) MW.advanceEra(g, civ);
     G.notify(g, civ, { kind: 'civic', text: '🔮 ' + hub.name + ' → ' + br.name, panel: 'hub' });
     return true;
   };
+  // Effects that happen the moment they are gained. attitudeBonus: every leader who knows you warms up at once (and keeps that
+  // warmth as the level its opinion drifts back to, see AI.diplomacy); revealContinent: the whole home continent is charted.
+  MW.onGain = function (g, civ, fx) {
+    if (!fx) return;
+    if (fx.attitudeBonus) g.civs.forEach(function (o) { if (o !== civ && o.rel && o.rel[civ.idx] && !o.rel[civ.idx].war) o.rel[civ.idx].attitude = Math.min(80, (o.rel[civ.idx].attitude || 0) + fx.attitudeBonus); });
+    if (fx.revealContinent) { var cc = G.capitalContinent(g, civ); if (cc >= 0) for (var i = 0; i < g.tiles.length; i++) if (g.tiles[i].continent === cc) { civ.explored[i] = 1; if (g.tiles[i].natural) G.discoverNatural(g, civ, g.tiles[i]); } }
+  };
+  // Great Person slots from Sparks: +2 points a turn toward that Great Person (the Elder is a Great Scientist: the old lady knows things)
+  MW.GREAT_SLOT = { elder: 'scientist' };
+  MW.greatSlots = function (civ) { var s = civ.v2, out = []; if (!s) return out; for (var id in s.unlocked) { var n = AU.V2.NODE_BY_ID[id]; if (n && n.fx && n.fx.greatSlot) out.push(MW.GREAT_SLOT[n.fx.greatSlot] || n.fx.greatSlot); } return out; };
   MW.foundationCount = function (civ, era) { var s = st(civ), c = 0; AU.V2.NODES.forEach(function (n) { if (n.era === era && n.pool === 'foundation' && s.unlocked[n.id]) c++; }); return c; };
-  MW.MIN_ERA_TURNS = 35; // an age lasts at least this long (scaled by game speed), however fast the Sparks come
+  // The age clock: an age lasts at least 36 turns (scaled by speed), and every foundation Spark lit beyond the Turning Point threshold
+  // shaves 2 turns off, every lane mastered in the age 3 more, down to 22. Lighting Sparks is how you move through history faster.
+  MW.MIN_ERA_TURNS = 36; MW.FLOOR_ERA_TURNS = 22; MW.SPARK_SHAVE = 2; MW.LANE_SHAVE = 3;
+  MW.ageTurnsNeeded = function (g, civ) {
+    var s = st(civ), era = AU.V2.ERAS[s.era] || {}, extra = Math.max(0, MW.foundationCount(civ, s.era) - (era.advance || 99)), lanes = 0;
+    for (var k in (s.lanes || {})) if (+k.split(':')[0] === s.era) lanes++;
+    return Math.round(Math.max(MW.FLOOR_ERA_TURNS, MW.MIN_ERA_TURNS - MW.SPARK_SHAVE * extra - MW.LANE_SHAVE * lanes) * G.speed(g));
+  };
+  MW.ageTurnsLeft = function (g, civ) { var s = st(civ); return Math.max(0, MW.ageTurnsNeeded(g, civ) - (g.turn - (s.eraSince || 0))); };
+  // how long an AI leader dwells on its Turning Point before crossing (a human decides at once): kinder levels give the player a head start
+  MW.AI_LINGER = { settler: 12, chieftain: 9, prince: 6, king: 4, emperor: 2, deity: 0 };
   MW.checkEraAdvance = function (g, civ) {
     var s = st(civ), era = AU.V2.ERAS[s.era]; if (!era || !era.advance) return;
-    if (g.turn - (s.eraSince || 0) < Math.round(MW.MIN_ERA_TURNS * G.speed(g))) return;
+    if (g.turn - (s.eraSince || 0) < MW.ageTurnsNeeded(g, civ)) return;
     if (MW.foundationCount(civ, s.era) >= era.advance && !s.hubsFired['turning:' + s.era]) {
       var th = AU.V2.HUB_BY_ID['turning:' + s.era];
       if (th) { s.turningReady = g.turn; MW.fireHub(g, civ, th.id); }
@@ -215,7 +237,7 @@
     var s = st(civ), key = era + ':' + cat; s.lanes = s.lanes || {}; if (s.lanes[key]) return false;
     var c = MW.laneCount(civ, era, cat); if (!c.total || c.lit < c.total) return false;
     s.lanes[key] = g.turn; s.log.push({ turn: g.turn, lane: key }); civ._fx = null; g.fxGen = (g.fxGen || 0) + 1;
-    var reward = MW.laneReward(era, cat), fx = G.civFx(g, civ), gifts = [];
+    var reward = MW.laneReward(era, cat), fx = G.civFx(g, civ), gifts = []; if (reward) MW.onGain(g, civ, reward.fx);
     // a people whose abilities speak of learning gets more from a mastered lane
     if (fx.laneMasteryKnowledge) { s.study += fx.laneMasteryKnowledge; gifts.push('+' + fx.laneMasteryKnowledge + ' 📚'); }
     if (fx.laneMasteryHeritage) { s.heritage = (s.heritage || 0) + fx.laneMasteryHeritage; gifts.push('+' + fx.laneMasteryHeritage + ' 🎭'); }

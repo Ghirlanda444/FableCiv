@@ -102,6 +102,7 @@
         for (var k = 0; k < diff.aiUnits && k < nb.length; k++) G.spawnUnit(g, civ.idx, 'warrior', nb[k]);
         for (var s = 0; s < diff.aiSettlers; s++) G.spawnUnit(g, civ.idx, 'settler', start);
       } else civ.gold += diff.playerBonusGold;
+      civ.unitsBuilt = 0; // the units a people starts with were not trained: "Train 3 units" counts from here
       G.revealAround(g, civ, t.col, t.row, 3);
     });
     g.camps.forEach(function (c) { G.spawnUnit(g, -1, 'warrior', c.tile); });
@@ -243,6 +244,7 @@
     if ((def.cls === 'naval' || def.cls === 'navalRanged') && fx.navalMoves) m += fx.navalMoves;
     if ((def.cls === 'naval' || def.cls === 'navalRanged') && unit && AU.Great && AU.Great.hasAdmiralNear(g, unit)) m += 1;
     if (def.cls === 'civilian' && fx.civilianMoves) m += fx.civilianMoves;
+    if (def.cls === 'recon' && fx.reconMoves) m += fx.reconMoves;
     if (fx.classMoves && fx.classMoves[def.cls]) m += fx.classMoves[def.cls];
     return m;
   };
@@ -481,6 +483,7 @@
     if (s.specialization === 'trade') y.gold += 4;
     var utS = G.civData(civ).ut; if (utS && s.specialization === utS.id && utS.fx && utS.fx.flat) add(y, utS.fx.flat);
     y.gold += fx.goldPerSettlement || 0; y.culture += fx.culturePerSettlement || 0; y.science += fx.sciencePerSettlement || 0;
+    if (fx.distantProduction && !s.isCapital && civ.capital && g.settlements[civ.capital] && G.dist(g.tiles[s.tile], g.tiles[g.settlements[civ.capital].tile]) >= 6) y.production += fx.distantProduction; // far settlements build for themselves
     if (fx.sciencePerStrategic && s.id === civ.capital) y.science += fx.sciencePerStrategic * Object.keys(G.luxuryCount(g, civ).strategic).length;
     y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
