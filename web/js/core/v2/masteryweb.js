@@ -45,9 +45,47 @@
       default: return G.condMet(g, civ, cond);
     }
   };
+  // How far along a Spark is: { have, need, ratio } for countable triggers, streak turns for sustained ones, null when it is a plain yes/no.
+  MW.progress = function (g, civ, node) {
+    var s = st(civ), tr = node.trigger, c = tr.cond, type = c[0], a = c[1], n = c[2] || 1, sets = G.civSettlements(g, civ.idx), units = G.civUnits(g, civ.idx);
+    if (s.unlocked[node.id]) return { have: 1, need: 1, ratio: 1, done: true };
+    if (tr.turns) { var have = s.streak[node.id] || 0; return { have: have, need: tr.turns, ratio: Math.min(1, have / tr.turns), turns: true }; }
+    function anyOf(v) { return String(a).split('|').indexOf(v) >= 0; }
+    var have2 = null, need2 = null;
+    switch (type) {
+      case 'pop': have2 = sets.reduce(function (m, x) { return Math.max(m, x.pop); }, 0); need2 = a; break;
+      case 'totalPop': have2 = sets.reduce(function (t, x) { return t + x.pop; }, 0); need2 = a; break;
+      case 'improvement': { var ci = 0; sets.forEach(function (x) { x.tiles.forEach(function (i) { var t = g.tiles[i]; if (t.worked && i !== x.tile && anyOf(G.improvementFor(g, t, civ) || '')) ci++; }); }); have2 = ci; need2 = n; break; }
+      case 'improvedTiles': { var c2 = 0; sets.forEach(function (x) { x.tiles.forEach(function (i) { if (g.tiles[i].worked && i !== x.tile) c2++; }); }); have2 = c2; need2 = a; break; }
+      case 'coastal': have2 = sets.filter(function (x) { return G.isCoastal(g, x); }).length; need2 = a; break;
+      case 'building': { var cb = 0; sets.forEach(function (x) { if (G.hasBuilding(x, a)) cb++; }); have2 = cb; need2 = n; break; }
+      case 'met': have2 = Object.keys(civ.met).length; need2 = a; break;
+      case 'tiles': { var c3 = 0; sets.forEach(function (x) { x.tiles.forEach(function (i) { var t = g.tiles[i]; if ((a === 'hills' && t.hills) || t.terrain === a) c3++; }); }); have2 = c3; need2 = n; break; }
+      case 'feature': { var c4 = 0; sets.forEach(function (x) { x.tiles.forEach(function (i) { if (anyOf(g.tiles[i].feature || '')) c4++; }); }); have2 = c4; need2 = n; break; }
+      case 'kills': have2 = civ.stats.kills || 0; need2 = a; break;
+      case 'captures': have2 = civ.stats.captures || 0; need2 = a; break;
+      case 'resourcekind': { var lc = G.luxuryCount(g, civ); have2 = a === 'luxury' ? lc.luxuries.length : Object.keys(lc.strategic).length; need2 = n; break; }
+      case 'gold': have2 = Math.floor(civ.gold); need2 = a; break;
+      case 'unit': have2 = units.filter(function (u) { return u.type === a; }).length; need2 = n; break;
+      case 'unitcls': have2 = units.filter(function (u) { return anyOf(AU.UNITS[u.type].cls); }).length; need2 = n; break;
+      case 'military': have2 = units.filter(G.isMilitary).length; need2 = a; break;
+      case 'settlements': have2 = sets.length; need2 = a; break;
+      case 'cities': have2 = sets.filter(function (x) { return x.isCity; }).length; need2 = a; break;
+      case 'explored': { var ce = 0; for (var i2 = 0; i2 < civ.explored.length; i2++) ce += civ.explored[i2]; have2 = ce; need2 = a; break; }
+      case 'exploredContinent': { var cc = G.capitalContinent(g, civ); if (cc >= 0) { var tot = 0, seen = 0; for (var k = 0; k < g.tiles.length; k++) if (g.tiles[k].continent === cc) { tot++; if (civ.explored[k]) seen++; } have2 = tot ? Math.round(seen / tot * 100) : 0; need2 = a; } break; }
+      case 'riverTiles': { var rv = 0; sets.forEach(function (x) { x.tiles.forEach(function (ti) { if (g.tiles[ti].worked && g.tiles[ti].river) rv++; }); }); have2 = rv; need2 = a; break; }
+      case 'unitsBuilt': have2 = civ.unitsBuilt || 0; need2 = a; break;
+      case 'farSettlement': { var cap = civ.capital && g.settlements[civ.capital], far = 0; if (cap) sets.forEach(function (x) { if (x.id !== cap.id) far = Math.max(far, G.dist(g.tiles[x.tile], g.tiles[cap.tile])); }); have2 = far; need2 = a; break; }
+      case 'level': have2 = units.reduce(function (m, u) { return Math.max(m, u.level || 0); }, 0); need2 = a; break;
+      case 'wonders': { var w = 0; for (var wid in g.wonders) { var ws = g.settlements[g.wonders[wid]]; if (ws && ws.civ === civ.idx) w++; } have2 = w; need2 = a; break; }
+      default: return null;
+    }
+    if (have2 === null) return null;
+    return { have: Math.min(have2, need2), need: need2, ratio: need2 ? Math.min(1, have2 / need2) : 0 };
+  };
   MW.triggerMet = function (g, civ, node) {
     var s = st(civ), tr = node.trigger, ok = MW.cond(g, civ, tr.cond);
-    if (tr.type !== 'state' || !tr.turns) return ok;
+    if (!tr.turns) return ok; // "for N turns" cards count turns in a row, whatever their kind; a break resets the count
     s.streak[node.id] = ok ? (s.streak[node.id] || 0) + 1 : 0;
     return s.streak[node.id] >= tr.turns;
   };
@@ -63,7 +101,8 @@
     if (node.fx && node.fx.influenceOnce) civ.influence = (civ.influence || 0) + node.fx.influenceOnce;
     MW.grantFreeBuildings(g, civ);
     (node.locks || []).forEach(function (other) { MW.lockPermanent(g, civ, other); });
-    G.notify(g, civ, { big: true, kind: 'tech', text: '💡 ' + _('Spark!') + ' ' + node.name + ' — “' + node.joke + '”' + (node.unlocks && node.unlocks.unit ? ' · ' + _('unlocks') + ' ' + (AU.UNITS[node.unlocks.unit] ? AU.UNITS[node.unlocks.unit].name : node.unlocks.unit) : '') + (node.unlocks && node.unlocks.building ? ' · ' + _('unlocks') + ' ' + (AU.BUILDINGS[node.unlocks.building] ? AU.BUILDINGS[node.unlocks.building].name : node.unlocks.building) : ''), panel: 'web' });
+    G.notify(g, civ, { big: true, kind: 'tech', focus: id, text: '💡 ' + _('Spark!') + ' ' + node.name + ' — “' + node.joke + '”' + (MW.describeNode ? ' · ' + MW.describeNode(node) : ''), panel: 'web' });
+    if (civ.isPlayer) { g.sparksLit = g.sparksLit || []; g.sparksLit.push(id); }
     if (node.hub && AU.V2.HUB_BY_ID[node.hub]) MW.fireHub(g, civ, node.hub);
     MW.checkEraAdvance(g, civ);
     return true;
@@ -151,7 +190,7 @@
   MW.evaluate = function (g, civ) {
     if (!AU.V2 || civ.minor || !civ.v2) return;
     var s = st(civ);
-    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; if (n.trigger.type !== 'state' && MW.triggerMet(g, civ, n)) MW.unlock(g, civ, n.id); });
+    MW.openNodes(s.era).forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; if (n.trigger.type !== 'state' && !n.trigger.turns && MW.triggerMet(g, civ, n)) MW.unlock(g, civ, n.id); });
   };
   MW.turn = function (g, civ) {
     if (!AU.V2 || civ.minor) return;

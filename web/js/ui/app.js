@@ -214,7 +214,8 @@
       $('panel-body').addEventListener('click', function (e) { var b = e.target.closest('[data-action]'); if (b) App.action(b.dataset.action, b.dataset); });
       $('panel-body').addEventListener('input', function (e) { if (e.target.id === 'pedia-search') { App.pediaState.q = e.target.value; AU.Panels.renderPediaList(App); } });
     },
-    refreshHud: function () {
+    refreshHud: function (quiet) {
+      if (!quiet) this.showSparks(); // closing a panel never pops the Spark card; the next action or turn does
       var tb = $('topbar'); if (tb && tb.offsetHeight) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px'); // the notification strip sits under the bar whatever its height
       if (this.g) G.checkBoosts(this.g, G.player(this.g)); // sparks fire the moment their condition is met, not at the end of the turn
       if (AU.Tutorial) AU.Tutorial.update(this);
@@ -280,7 +281,8 @@
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
       var ICON = { camp: '🏕️', faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰', great: '🌟' };
-      var list = g.notifications.slice(-14).reverse(), self = this, fresh = g.notifications.filter(function (n) { return n.big && !n.seen; });
+      var list = g.notifications.slice(-14).reverse(), self = this, fresh = g.notifications.filter(function (n) { return n.big && !n.seen && !(n.focus && g.v2); }); // lit Sparks get their own card instead of a toast
+      g.notifications.forEach(function (n) { if (n.focus && n.big) n.seen = 1; });
       fresh.forEach(function (n) { n.seen = 1; }); if (fresh.length) this.toast(fresh.map(function (n) { return n.text; }).join('  ·  '), 3200 + 800 * fresh.length);
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
@@ -292,7 +294,7 @@
     onNotif: function (i) {
       var n = this.g.notifications[i]; if (!n) return;
       this.g.notifications.splice(i, 1);
-      if (n.panel) this.openPanel(n.panel, n.tab ? { tab: n.tab } : undefined);
+      if (n.panel) this.openPanel(n.panel, (n.tab || n.focus) ? { tab: n.tab, focus: n.focus } : undefined);
       else if (n.settlement && this.g.settlements[n.settlement]) { this.selectSettlement(this.g.settlements[n.settlement]); this.renderer.centerOn(this.g, n.tile); if (n.kind === 'growth') this.startExpand(this.g.settlements[n.settlement]); else if (n.kind === 'idle' || n.kind === 'build') this.openPanel('city', { id: n.settlement }); }
       else if (n.unit && this.g.units[n.unit]) { this.selectUnit(this.g.units[n.unit]); this.renderer.centerOn(this.g, n.tile); }
       else if (n.tile != null) { this.renderer.centerOn(this.g, n.tile); this.sel.tile = n.tile; }
@@ -368,6 +370,12 @@
     },
     // A short explanation card (reuses the quote card without a quote).
     info: function (kicker, title, text) { var box = $('quote'); $('quote-kicker').textContent = kicker || ''; $('quote-title').textContent = title; $('quote-text').textContent = text; $('quote-by').textContent = ''; var art = $('quote-art'); art.hidden = true; art.removeAttribute('src'); var bx = box.querySelector('.quote-box'); bx.classList.remove('reveal', 'natural'); void bx.offsetWidth; bx.classList.add('reveal'); box.hidden = false; var self = this; $('quote-ok').onclick = function () { box.hidden = true; setTimeout(function () { self.showQuotes(); }, 120); }; },
+    // Sparks that lit since the last look: one card that says what each one does. Shown when nothing else is open.
+    showSparks: function () {
+      var g = this.g; if (!g || !g.sparksLit || !g.sparksLit.length || this.panel || this.busy || g.victory) return;
+      var ids = g.sparksLit.slice(); g.sparksLit = [];
+      this.openPanel('sparks', { ids: ids });
+    },
     toast: function (msg, ms) { var t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(this._toastT); this._toastT = setTimeout(function () { t.hidden = true; }, ms || 2200); },
 
     // ---------- Selection & context ----------
@@ -625,7 +633,7 @@
       AU.Panels.render(this, name, this.panelData);
       $('panel-body').scrollTop = 0;
     },
-    closePanel: function () { if (AU.CityView) AU.CityView.close(); this.panel = null; $('panel').hidden = true; if (this.g) { this.refreshHud(); this.invalidate(); } else this.showTitle(); },
+    closePanel: function () { if (AU.CityView) AU.CityView.close(); this.panel = null; $('panel').hidden = true; if (this.g) { this.refreshHud(true); this.invalidate(); } else this.showTitle(); },
     refreshPanel: function () { if (this.panel) AU.Panels.render(this, this.panel, this.panelData); },
 
     // ---------- Input ----------

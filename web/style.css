@@ -323,3 +323,8 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
   #top-yields { order: 5; flex-basis: 100%; gap: 5px; }
   #top-yields .y { padding: 3px 6px; font-size: 12px; }
 }
+
+.progress.spark { height: 7px; margin-top: 4px; }
+.row.focus { outline: 3px solid var(--gold2); box-shadow: 0 0 0 6px rgba(240,200,80,.35); }
+.row.spark-card .hint { font-weight: 600; opacity: .85; }
+.row.spark-card.done { background: linear-gradient(180deg, #eef9e6, #dcefd0); }

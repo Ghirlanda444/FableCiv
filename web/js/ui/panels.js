@@ -83,6 +83,7 @@
     if (!fn) { title.textContent = name; body.innerHTML = ''; return; }
     var r = fn(app, g, data);
     title.textContent = r.title; body.innerHTML = r.html;
+    var focus = body.querySelector('.row.focus'); if (focus && focus.scrollIntoView) setTimeout(function () { focus.scrollIntoView({ block: 'center' }); }, 30);
   };
 
   // ---------- City / Town ----------
@@ -191,24 +192,90 @@
   // ---------- Research ----------
   // ---------- v2: the Mastery Web ----------
   var CAT_NAMES = [_('Sustenance'), _('Shelter'), _('Kinship'), _('Craft'), _('Wayfinding')]; // the five Spark pools, listed so the translation tools find them
+  // What a Spark means, in words: the trigger card explains itself, the hint says what the game actually counts
+  var N_ = function (s) { return s; }; // marks a string for translation without translating it yet
+  var TRIGGER_HINT = {
+    improvedTiles: N_('counts worked tiles that carry an improvement; the settlement centre does not count'),
+    improvement: N_('counts worked tiles carrying that improvement; the settlement centre does not count'),
+    riverTiles: N_('counts worked tiles with a river on them'),
+    tiles: N_('counts every tile inside your borders, worked or not'),
+    feature: N_('counts every tile inside your borders, worked or not'),
+    pop: N_('your biggest settlement counts'),
+    totalPop: N_('all settlements added together'),
+    coastal: N_('a settlement whose centre touches the sea or a navigable river'),
+    adjacent: N_('a settlement whose centre touches that terrain'),
+    met: N_('empires and Free cities you have met, friend or foe'),
+    peaceWith: N_('empires you have met and are not at war with'),
+    military: N_('fighting units alive right now, ships included'),
+    unitsBuilt: N_('units trained or bought since the start, alive or not'),
+    kills: N_('enemy units your units destroyed'),
+    explored: N_('tiles you have seen at least once'),
+    exploredContinent: N_('share of your home continent you have seen'),
+    farSettlement: N_('distance in tiles from your capital'),
+    gold: N_('Gold in the treasury at the end of a turn'),
+    level: N_('unit levels come from experience in combat'),
+    wonders: N_('wonders standing in your settlements'),
+    resource: N_('the resource must be inside your borders; it need not be worked'),
+    resourcekind: N_('different kinds of resource inside your borders'),
+    building: N_('settlements that have that building'),
+    'event:foodSurplus': N_('total Food of the empire above zero at the end of the turn'),
+    'event:cultureSurplus': N_('total Heritage of the empire above zero at the end of the turn'),
+    'event:scienceSurplus': N_('total Knowledge of the empire above zero at the end of the turn'),
+    'event:content': N_('every settlement at Happiness zero or better'),
+    'event:undamaged': N_('no settlement of yours hit by an enemy'),
+    'event:peace': N_('not at war with anyone'),
+    'event:combat': N_('any fight your units were in, won or lost'),
+    'event:caravan': N_('a trade route of yours running'),
+    'event:noTrade': N_('no trade route of yours running'),
+    'event:natural': N_('a natural wonder you have seen'),
+    'event:meetCS': N_('a Free city you have met'),
+    'event:kinfolkFriend': N_('a Free city you have met, not at war, with ties of 10 or more'),
+    'event:settlementAttacked': N_('one of your settlements was attacked and still stands'),
+    'event:roadLink': N_('two settlements with a road next to their centre')
+  };
+  function triggerHint(n) { var c = n.trigger.cond, k = c[0] === 'event' ? 'event:' + c[1] : c[0]; return TRIGGER_HINT[k] ? _(TRIGGER_HINT[k]) : ''; }
+  function unlockNames(n) { var unl = []; if (n.unlocks) { if (n.unlocks.unit) unl.push(AU.UNITS[n.unlocks.unit] ? AU.UNITS[n.unlocks.unit].name : n.unlocks.unit); if (n.unlocks.building) unl.push(AU.BUILDINGS[n.unlocks.building] ? AU.BUILDINGS[n.unlocks.building].name : n.unlocks.building); if (n.unlocks.wonder) unl.push(AU.WONDERS[n.unlocks.wonder] ? AU.WONDERS[n.unlocks.wonder].name : n.unlocks.wonder); if (n.unlocks.national) unl.push(AU.NATIONAL[n.unlocks.national] ? AU.NATIONAL[n.unlocks.national].name : n.unlocks.national); if (n.unlocks.improvement && AU.IMPROVEMENTS && AU.IMPROVEMENTS[n.unlocks.improvement]) unl.push(AU.IMPROVEMENTS[n.unlocks.improvement].name); } return unl; }
+  // One Spark card: badge, name, joke, what it gives, what it unlocks, how it lights, progress, Study button
+  function sparkCard(g, p, n, opts) {
+    var MW = AU.MasteryWeb, st = MW.state(p), status = MW.status(p, n.id), can = status === 'locked_unmet' && MW.canStudy(g, p, n.id), cls = status === 'unlocked' ? 'done' : status === 'locked_permanent' ? 'locked' : (can ? 'active' : ''), badge = status === 'unlocked' ? '✅' : status === 'locked_permanent' ? '🔒' : can ? '📚' : '💡';
+    var unl = unlockNames(n), pr = status === 'locked_unmet' ? MW.progress(g, p, n) : null, gives = (n.fx && Object.keys(n.fx).length ? describeFx(n.fx) : '') || '', hint = triggerHint(n);
+    var how = status === 'locked_permanent' ? '🔒 ' + _('Locked for good: you chose') + ' ' + (AU.V2.NODE_BY_ID[n.pair] ? AU.V2.NODE_BY_ID[n.pair].name : '')
+      : status === 'unlocked' ? '✅ ' + _('Lit on turn') + ' ' + st.unlocked[n.id] + (opts && opts.lit ? ' · ' + n.trigger.desc + (n.pair && AU.V2.NODE_BY_ID[n.pair] ? ' · 🔒 ' + _('its twin is now locked') + ': ' + AU.V2.NODE_BY_ID[n.pair].name : '') : '')
+      : '<b>' + _('How') + ':</b> ' + n.trigger.desc + (n.trigger.turns ? ' ⏳' : '') + (hint ? ' <span class="hint">(' + hint + ')</span>' : '');
+    var bar = pr && !pr.done ? '<div class="progress spark"><i style="width:' + Math.round(pr.ratio * 100) + '%"></i></div><small class="stat">' + pr.have + '/' + pr.need + (pr.turns ? ' ' + _('turns in a row') : '') + '</small>' : '';
+    var study = status === 'locked_unmet' ? '<button class="small ' + (can ? 'primary' : '') + '" data-action="study" data-id="' + n.id + '" ' + (can ? '' : 'disabled') + '>📚 ' + _('Study') + ' ' + MW.studyCost(g, p, n) + '</button>' : '';
+    return '<div class="row spark-card ' + cls + (opts && opts.focus === n.id ? ' focus' : '') + '"><span class="hall-medal">' + badge + '</span><div class="grow"><b>' + n.name + (n.pair ? ' <span class="kind-pill wildcard">' + _('paired') + '</span>' : '') + (opts && opts.cat && n.cat ? ' <span class="kind-pill">' + (CAT_ICON[n.cat] || '') + ' ' + _(n.cat) + '</span>' : '') + '</b><small><i>“' + n.joke + '”</i></small>' + (gives ? '<small><b>' + _('Gives') + ':</b> ' + gives + '</small>' : '') + (unl.length ? '<small><b>' + _('Unlocks') + ':</b> ' + unl.join(', ') + '</small>' : '') + (!gives && !unl.length ? '<small><b>' + _('Gives') + ':</b> ' + _('nothing by itself; it counts toward the next age') + '</small>' : '') + '<small>' + how + '</small>' + bar + '</div>' + study + '</div>';
+  }
+  // The card shown when your Sparks light: what each one does, and a way into the Mastery Web
+  P.render_sparks = function (app, g, data) {
+    var p = G.player(g), ids = (data && data.ids) || [], html = '';
+    html += '<p class="stat">' + _('Your empire did something new, and a Spark lit up by itself. Here is what it gives you.') + '</p>';
+    ids.forEach(function (id) { var n = AU.V2.NODE_BY_ID[id]; if (n) html += sparkCard(g, p, n, { lit: true, cat: n.pool === 'foundation' }); });
+    var st = AU.MasteryWeb.state(p), era = AU.V2.ERAS[st.era] || AU.V2.ERAS[0];
+    html += '<p class="stat">💡 ' + AU.MasteryWeb.foundationCount(p, st.era) + '/' + (era.foundationSize || 32) + ' ' + _('foundation Sparks') + (era.advance ? ' · ' + era.advance + ' ' + _('to reach the next age') : '') + '</p>';
+    html += '<div class="tabs"><button class="small primary" data-action="webfocus" data-id="' + (ids[0] || '') + '">💡 ' + _('Open the Mastery Web') + '</button><button class="small" data-action="close">' + _('Back to the map') + '</button></div>';
+    return { title: '💡 ' + (ids.length > 1 ? ids.length + ' ' + _('Sparks lit!') : _('Spark lit!')), html: html };
+  };
   var CAT_ICON = { Sustenance: '🌾', Shelter: '🏠', Kinship: '🤝', Craft: '🔨', Wayfinding: '🧭' };
   P.render_web = function (app, g, data) {
     var MW = AU.MasteryWeb, p = G.player(g), st = MW.state(p), era = AU.V2.ERAS[st.era] || AU.V2.ERAS[0], y = G.civYields(g, p), html = '';
     var viewEra = data && data.era !== undefined ? Math.min(st.era, +data.era) : st.era, eraV = AU.V2.ERAS[viewEra] || era;
     var nodes = MW.nodesOfEra(viewEra), found = MW.foundationCount(p, viewEra);
-    var tab = (data && data.tab) || 'foundation';
+    var tab = (data && data.tab) || 'foundation', focusId = data && data.focus, focusNode = focusId && AU.V2.NODE_BY_ID[focusId];
+    if (focusNode) { tab = focusNode.pool === 'foundation' ? 'foundation' : 'branched'; if (focusNode.era <= st.era) { viewEra = focusNode.era; eraV = AU.V2.ERAS[viewEra] || era; nodes = MW.nodesOfEra(viewEra); found = MW.foundationCount(p, viewEra); } }
     if (st.era > 0) { html += '<div class="tabs">'; for (var ei = 0; ei <= st.era; ei++) html += '<button class="small ' + (ei === viewEra ? 'on' : '') + '" data-action="webera" data-era="' + ei + '" data-tab="' + tab + '">' + AU.V2.ERAS[ei].name + '</button>'; html += '</div>'; }
     era = eraV;
     html += '<p class="stat"><b>' + era.name + '</b> — “' + era.joke + '” · 💡 ' + found + '/' + (era.foundationSize || 32) + ' ' + _('foundation Sparks') + (era.advance ? ' (' + era.advance + ' ' + _('to reach the next age') + ')' : '') + ' · 📚 ' + Math.floor(st.study) + ' ' + _('Knowledge to study') + ' (+' + y.science.toFixed(1) + ')</p>';
-    html += '<p class="stat">' + _('Sparks come from what you do: work tiles, explore, fight, meet people. Any Spark you cannot wait for can be studied with Knowledge (cheap ones for less, branch ones for more). Paired choices lock their twin for the whole game.') + '</p>';
+    html += '<p class="stat">' + _('There is nothing to research. Every Spark lights up by itself when your empire does what its card says. Light') + ' ' + (era.advance || 20) + ' ' + _('of the') + ' ' + (era.foundationSize || 32) + ' ' + _('foundation Sparks to reach the next age. Cannot wait for one? Study it with Knowledge 📚.') + '</p>';
+    html += '<p class="stat">💡 ' + _('not lit yet') + ' · 📚 ' + _('you can study it now') + ' · ✅ ' + _('lit') + ' · 🔒 ' + _('locked by its twin') + ' · ⏳ ' + _('must hold for turns in a row; a break resets it') + '</p>';
     if (!MW.nodesOfEra(st.era).length) html += '<p>' + _('This age has no Sparks of its own yet: Knowledge studies carry you to the next one.') + ' (' + Math.floor(st.study) + '/' + MW.provisionalEraCost(g, p) + ')</p>';
     if (st.pendingHubs.length) html += '<button class="big primary" data-action="hub">🔮 ' + _('A decision awaits') + '</button><br><br>';
     html += '<div class="tabs"><button class="small ' + (tab === 'foundation' ? 'on' : '') + '" data-action="webtab" data-tab="foundation" data-era="' + viewEra + '">🧱 ' + _('Foundation') + '</button><button class="small ' + (tab === 'branched' ? 'on' : '') + '" data-action="webtab" data-tab="branched">🌿 ' + _('Branches') + '</button><button class="small ' + (tab === 'traits' ? 'on' : '') + '" data-action="webtab" data-tab="traits">🔮 ' + _('Insights') + '</button></div>';
-    function nodeRow(n) {
-      var status = MW.status(p, n.id), can = status === 'locked_unmet' && MW.canStudy(g, p, n.id), cls = status === 'unlocked' ? 'done' : status === 'locked_permanent' ? 'locked' : (can ? 'active clickable' : ''), badge = status === 'unlocked' ? '✅' : status === 'locked_permanent' ? '🔒' : can ? '📚' : '💡';
-      var unl = []; if (n.unlocks) { if (n.unlocks.unit) unl.push(AU.UNITS[n.unlocks.unit] ? AU.UNITS[n.unlocks.unit].name : n.unlocks.unit); if (n.unlocks.building) unl.push(AU.BUILDINGS[n.unlocks.building] ? AU.BUILDINGS[n.unlocks.building].name : n.unlocks.building); if (n.unlocks.improvement) unl.push(n.unlocks.improvement); }
-      var streak = n.trigger.type === 'state' && n.trigger.turns && status === 'locked_unmet' ? ' (' + (st.streak[n.id] || 0) + '/' + n.trigger.turns + ')' : '';
-      return '<div class="row ' + cls + '" data-action="study" data-id="' + n.id + '"><span class="hall-medal">' + badge + '</span><div class="grow"><b>' + n.name + (n.pair ? ' <span class="kind-pill wildcard">' + _('paired') + '</span>' : '') + '</b><small><i>“' + n.joke + '”</i></small><small>' + (status === 'locked_permanent' ? _('Locked for good: you chose') + ' ' + (AU.V2.NODE_BY_ID[n.pair] ? AU.V2.NODE_BY_ID[n.pair].name : '') : (status === 'unlocked' ? _('Sparked on turn') + ' ' + st.unlocked[n.id] : n.trigger.desc + streak + ' · ' + _('or study for') + ' ' + MW.studyCost(g, p, n) + ' 📚')) + '</small>' + (unl.length ? '<small>' + _('Unlocks') + ': ' + unl.join(', ') + '</small>' : '') + (n.fx ? '<small>' + describeFx(n.fx) + '</small>' : '') + '</div></div>';
+    function nodeRow(n, opts) { return sparkCard(g, p, n, Object.assign({ focus: focusId }, opts || {})); }
+    // closest to lighting: the unlit Sparks of this age with the most progress
+    if (tab === 'foundation' && viewEra === st.era && !focusNode) {
+      var close = nodes.filter(function (n) { return MW.status(p, n.id) === 'locked_unmet'; }).map(function (n) { return { n: n, pr: MW.progress(g, p, n) }; }).filter(function (x) { return x.pr && x.pr.ratio >= 0.3 && x.pr.ratio < 1; }).sort(function (a, b) { return b.pr.ratio - a.pr.ratio; }).slice(0, 5);
+      if (close.length) { html += '<div class="section"><h3>🔥 ' + _('Closest to lighting') + '</h3>'; close.forEach(function (x) { html += nodeRow(x.n, { cat: true }); }); html += '</div>'; }
     }
     if (tab === 'foundation') {
       var cats = []; nodes.forEach(function (n) { if (n.pool === 'foundation' && cats.indexOf(n.cat) < 0) cats.push(n.cat); });
@@ -246,6 +313,7 @@
       else out.push(k + (v === true ? '' : ' ' + JSON.stringify(v))); }
     return out.join(' · ');
   }
+  AU.MasteryWeb.describeNode = function (node) { var parts = []; if (node.fx && Object.keys(node.fx).length) parts.push(_('gives') + ' ' + describeFx(node.fx)); var unl = []; if (node.unlocks) { if (node.unlocks.unit) unl.push(AU.UNITS[node.unlocks.unit] ? AU.UNITS[node.unlocks.unit].name : node.unlocks.unit); if (node.unlocks.building) unl.push(AU.BUILDINGS[node.unlocks.building] ? AU.BUILDINGS[node.unlocks.building].name : node.unlocks.building); if (node.unlocks.wonder) unl.push(AU.WONDERS[node.unlocks.wonder] ? AU.WONDERS[node.unlocks.wonder].name : node.unlocks.wonder); if (node.unlocks.national) unl.push(AU.NATIONAL[node.unlocks.national] ? AU.NATIONAL[node.unlocks.national].name : node.unlocks.national); if (node.unlocks.improvement && AU.IMPROVEMENTS && AU.IMPROVEMENTS[node.unlocks.improvement]) unl.push(AU.IMPROVEMENTS[node.unlocks.improvement].name); } if (unl.length) parts.push(_('unlocks') + ' ' + unl.join(', ')); return parts.join(' · '); };
   function yieldName(y) { return { food: _('Food'), production: _('Production'), gold: _('Gold'), science: _('Knowledge'), culture: _('Heritage'), faith: _('Devotion'), happiness: _('Happiness') }[y] || y; }
   function yieldList(o) { var a = []; for (var k in o) a.push('+' + o[k] + ' ' + yieldName(k)); return a.join(', '); }
   P.render_hub = function (app, g) {
@@ -605,7 +673,9 @@
       case 'webtab': app.panelData.tab = d.tab; app.refreshPanel(); break;
       case 'webera': app.panelData.era = +d.era; app.panelData.tab = d.tab || app.panelData.tab; app.refreshPanel(); break;
       case 'web': app.openPanel('web'); break;
-      case 'study': { var sn = AU.V2.NODE_BY_ID[d.id]; if (!sn || !AU.MasteryWeb.canStudy(g, p, d.id)) break; var doStudy = function () { if (AU.MasteryWeb.study(g, p, d.id)) { app.toast('💡 ' + _('Spark!') + ' ' + sn.name); app.refreshPanel(); app.refreshHud(); } }; if (sn.pair && AU.V2.NODE_BY_ID[sn.pair]) app.confirm(_('Study') + ' ' + sn.name + ' ' + _('for') + ' ' + AU.MasteryWeb.studyCost(g, p, sn) + ' 📚? ' + _('This locks') + ' ' + AU.V2.NODE_BY_ID[sn.pair].name + ' ' + _('for the whole game.'), doStudy); else doStudy(); break; }
+      case 'webfocus': app.openPanel('web', d.id ? { focus: d.id } : { tab: 'foundation' }); break;
+      case 'close': app.closePanel(); break;
+      case 'study': { var sn = AU.V2.NODE_BY_ID[d.id]; if (!sn || !AU.MasteryWeb.canStudy(g, p, d.id)) { if (sn && !AU.MasteryWeb.state(p).unlocked[d.id]) app.toast(_('Not enough Knowledge yet') + ' (' + Math.floor(AU.MasteryWeb.state(p).study) + '/' + AU.MasteryWeb.studyCost(g, p, sn) + ' 📚)'); break; } var doStudy = function () { if (AU.MasteryWeb.study(g, p, d.id)) { app.toast('💡 ' + _('Spark!') + ' ' + sn.name); app.refreshPanel(); app.refreshHud(); } }; if (sn.pair && AU.V2.NODE_BY_ID[sn.pair]) app.confirm(_('Study') + ' ' + sn.name + ' ' + _('for') + ' ' + AU.MasteryWeb.studyCost(g, p, sn) + ' 📚? ' + _('This locks') + ' ' + AU.V2.NODE_BY_ID[sn.pair].name + ' ' + _('for the whole game.'), doStudy); else doStudy(); break; }
       case 'reform': { var rh = AU.V2.HUB_BY_ID[d.hub]; if (!rh) break; var rb = rh.branches.filter(function (x) { return x.id === d.branch; })[0], rbn = rb ? rb.name : d.branch; app.confirm(_('Reform') + ' ' + rh.name + ' → ' + rbn + ' ' + _('for') + ' ' + AU.MasteryWeb.reformCost(g, p) + ' 🎭? ' + _('Only one Reform is allowed each age.'), function () { if (AU.MasteryWeb.reform(g, p, d.hub, d.branch)) { app.toast('🎭 ' + _('Reform') + ': ' + rh.name + ' → ' + rbn); app.refreshPanel(); app.refreshHud(); } }); break; }
       case 'hub': app.openPanel('hub'); break;
       case 'hubpick': if (AU.MasteryWeb.choose(g, p, d.hub, d.branch)) { app.toast('🔮 ' + AU.V2.HUB_BY_ID[d.hub].name + ' → ' + d.branch); if (AU.MasteryWeb.state(p).pendingHubs.length) app.refreshPanel(); else app.openPanel('web', { tab: 'traits' }); app.refreshHud(); } break;
