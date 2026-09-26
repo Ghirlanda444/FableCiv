@@ -162,7 +162,7 @@
   CS.caravanLimit = function (g, civ) { var n = 1; G.civSettlements(g, civ.idx).forEach(function (s) { if (G.hasBuilding(s, 'market')) n++; if (G.hasBuilding(s, 'harbor')) n++; }); return n + (G.civFx(g, civ).extraCaravans || 0); };
   CS.caravans = function (g, civ) { return G.civUnits(g, civ.idx).filter(function (u) { return AU.UNITS[u.type].caravan; }); };
   CS.routeTarget = function (g, u) { var o = G.tileOwnerCiv(g, g.tiles[u.tile]); if (o < 0 || !g.civs[o] || !g.civs[o].minor || !g.civs[o].alive || G.atWar(g, u.civ, o)) return null; return g.civs[o]; };
-  CS.routeIncome = function (g, u) { var civ = g.civs[u.civ], cap = civ.capital && g.settlements[civ.capital], extra = G.civFx(g, civ).caravanGold || 0; if (!cap) return 3 + extra; return Math.min(8, 3 + Math.floor(G.dist(g.tiles[cap.tile], g.tiles[u.tile]) / 3)) + extra; };
+  CS.routeIncome = function (g, u) { var civ = g.civs[u.civ], cfx = G.civFx(g, civ), cap = civ.capital && g.settlements[civ.capital], extra = cfx.caravanGold || 0, range = cfx.caravanRange || 0; if (!cap) return 3 + extra; return Math.min(8 + Math.floor(range / 3), 3 + Math.floor((G.dist(g.tiles[cap.tile], g.tiles[u.tile]) + range) / 3)) + extra; }; // caravanRange: a route pays as if that many tiles longer
   CS.openRoute = function (g, u) {
     var m = CS.routeTarget(g, u); if (!m || u.route === m.idx) return false;
     if (CS.caravans(g, g.civs[u.civ]).some(function (o) { return o.id !== u.id && o.route === m.idx; })) return false; // one route per free city

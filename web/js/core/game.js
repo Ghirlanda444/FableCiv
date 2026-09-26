@@ -1065,7 +1065,7 @@
     var civ = g.civs[s.civ], fx = G.civFx(g, civ), y = G.settlementYields(g, s);
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
-    if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1));
+    if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)); // Housing: every point makes growth 5% faster
     if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
     else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
@@ -1254,6 +1254,8 @@
       G.civUnits(g, a.idx).forEach(function (u) { near(u.tile, 2); });
       G.civSettlements(g, a.idx).forEach(function (s) { near(s.tile, 3); });
     });
+    // settlements with lookouts see farther than their walls
+    g.civs.forEach(function (civ) { if (!civ.alive || civ.minor) return; var ss = G.civFx(g, civ).settlementSight || 0; if (ss > 0) G.civSettlements(g, civ.idx).forEach(function (s) { var t0 = g.tiles[s.tile]; G.revealAround(g, civ, t0.col, t0.row, 3 + ss); }); });
     // AI turns
     g.civs.forEach(function (civ) { if (!civ.isPlayer && civ.alive) { G.resetCommand(g, civ); AU.AI.takeTurn(g, civ); } });
     AU.AI.barbarianTurn(g);

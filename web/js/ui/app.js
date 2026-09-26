@@ -281,8 +281,8 @@
     refreshNotifs: function () {
       var g = this.g, box = $('notifs'); box.innerHTML = '';
       var ICON = { camp: '🏕️', faith: '🕊️', growth: '🌱', war: '⚔️', attack: '🔥', loss: '💀', capture: '🏴', tech: '🔬', civic: '🎭', build: '🏛️', idle: '⚙️', wonder: '✨', disband: '💸', diplomacy: '🤝', peace: '🕊️', meet: '👋', promote: '⭐', palace: '🏰', great: '🌟' };
-      var list = g.notifications.slice(-14).reverse(), self = this, fresh = g.notifications.filter(function (n) { return n.big && !n.seen && !(n.focus && g.v2); }); // lit Sparks get their own card instead of a toast
-      g.notifications.forEach(function (n) { if (n.focus && n.big) n.seen = 1; });
+      var list = g.notifications.slice(-14).reverse(), self = this, fresh = g.notifications.filter(function (n) { return n.big && !n.seen && !((n.focus || n.kind === 'lane') && g.v2); }); // lit Sparks and mastered lanes get their own card instead of a toast
+      g.notifications.forEach(function (n) { if ((n.focus || n.kind === 'lane') && n.big) n.seen = 1; });
       fresh.forEach(function (n) { n.seen = 1; }); if (fresh.length) this.toast(fresh.map(function (n) { return n.text; }).join('  ·  '), 3200 + 800 * fresh.length);
       list.forEach(function (n) {
         var d = document.createElement('div'); d.className = 'notif ' + n.kind; d.dataset.i = g.notifications.indexOf(n);
