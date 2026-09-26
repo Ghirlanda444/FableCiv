@@ -31,7 +31,8 @@
         return;
       }
       // attitude drift
-      if (rel.attitude < 0) rel.attitude += 0.5; else if (rel.attitude > 0) rel.attitude -= 0.2;
+      var rest = G.civFx(g, o).attitudeBonus || 0; // a reputation for peace (Insights, Sparks) is the level their opinion drifts back to
+      if (rel.attitude < rest) rel.attitude = Math.min(rest, rel.attitude + 0.5); else if (rel.attitude > rest) rel.attitude = Math.max(rest, rel.attitude - 0.2);
       var drift = G.civFx(g, o).attitudeDrift || 0; if (drift && rel.attitude < 30) rel.attitude += drift * 0.3;
       var myS = G.militaryStrength(g, civ.idx), theirS = G.militaryStrength(g, o.idx);
       var nearby = AI.borderTension(g, civ, o);
@@ -43,6 +44,8 @@
       // a runaway is feared, not ganged up on: its size only cools the room (above) and its Command budget limits its reach
       if (o.minor) { if (AU.CityStates.suzerain(g, o) === civ.idx) return; p *= 0.25; }
       if (AU.Diplo && !AU.Diplo.canDeclareWar(g, civ.idx, o.idx)) return;
+      // opinion weighs on war: a leader who likes you rarely strikes, one who loathes you strikes more readily
+      p *= rel.attitude >= 30 ? 0.2 : rel.attitude >= 15 ? 0.45 : rel.attitude >= 5 ? 0.75 : rel.attitude <= -30 ? 1.5 : 1;
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
     });
   };
