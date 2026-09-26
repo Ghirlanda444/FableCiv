@@ -121,9 +121,27 @@
     var atWar = g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
     var want = sets.length * (1 + tr.aggression) + (atWar ? sets.length * 1.5 + 2 : 0) + g.turn / 50;
     // the neighbours' armies set a floor: a scholar who ignores the warlord next door is a scholar who dies at turn 50
-    var rival = 0; g.civs.forEach(function (o) { if (!o.alive || o.minor || o.idx === civ.idx || !civ.met[o.idx]) return; var m = G.civUnits(g, o.idx).filter(G.isMilitary).length; if (m > rival) rival = m; });
-    want = Math.max(want, Math.min(rival * 0.6, sets.length * 3 + 3), sets.length + 2);
+    var rival = 0, foe = 0; g.civs.forEach(function (o) { if (!o.alive || o.minor || o.idx === civ.idx || !civ.met[o.idx]) return; var m = G.civUnits(g, o.idx).filter(G.isMilitary).length; if (m > rival) rival = m; if (civ.rel[o.idx].war && m > foe) foe = m; });
+    want = Math.max(want, Math.min(rival * 0.6, sets.length * 3 + 6), sets.length + 2);
+    // at war the enemy's army is the measure, not the size of the empire: a five-town people facing forty riders needs more than twenty spears
+    if (foe) want = Math.max(want, Math.min(foe * 0.8, sets.length * 4 + 8));
     return mil < want;
+  };
+  // Ships: a coastal empire keeps a small fleet (more for a people of the sea, more at war with a coastal foe), so shore raids and naval abilities are not the player's alone
+  AI.wantsShips = function (g, civ) {
+    var sets = G.civSettlements(g, civ.idx), coastal = sets.filter(function (s) { return G.isCoastal(g, s); }).length; if (!coastal || g.turn < 30) return false;
+    var fx = G.civFx(g, civ), sea = !!(fx.navalCostMult || fx.navalBonus || fx.navalRaidBonus || fx.navalVsSettlements || fx.navalMoves || fx.seaOrders || fx.coastalFoundWater);
+    var ships = G.civUnits(g, civ.idx).filter(U.isNaval).length, mil = G.civUnits(g, civ.idx).filter(G.isMilitary).length;
+    if (mil - ships < sets.length + 1) return false; // soldiers first
+    var foeCoast = g.civs.some(function (o) { return o.alive && !o.minor && o.idx !== civ.idx && civ.rel[o.idx].war && G.civSettlements(g, o.idx).some(function (s) { return G.isCoastal(g, s); }); });
+    var want = Math.ceil(coastal / 2) + (sea ? 2 : 0) + (foeCoast ? 2 : 0) + Math.floor(g.turn / 100);
+    return ships < Math.min(want, sets.length + 2);
+  };
+  AI.bestShipToBuild = function (g, s) {
+    var civ = g.civs[s.civ], opts = G.buildOptions(g, s).units.filter(function (u) { var d = AU.UNITS[u]; return (d.cls === 'naval' || d.cls === 'navalRanged') && !d.noAttack; });
+    if (!opts.length) return null;
+    opts.sort(function (a, b) { var da = G.unitType(g, civ, a), db = G.unitType(g, civ, b); return Math.max(db.strength, db.ranged || 0) - Math.max(da.strength, da.ranged || 0); });
+    return opts[0];
   };
   AI.bestUnitToBuild = function (g, s, wantRanged) {
     var civ = g.civs[s.civ], opts = G.buildOptions(g, s).units.filter(function (u) { var d = AU.UNITS[u]; return d.cls !== 'civilian' && d.cls !== 'recon' && d.cls !== 'naval' && d.cls !== 'navalRanged' && !d.noAttack; });
@@ -139,6 +157,7 @@
     if (d.defense) sc += 2 + tr.aggression * 2 + (AI.threatened(g, civ) ? 4 : 0);
     if (g.v2 && AU.Smoke) { var smk = AU.Smoke.smoke(g, s); if (AU.Smoke.SINKS[id] && smk >= 3) sc += 4 + smk; if (AU.Smoke.SOURCES[id] && smk >= 5) sc -= 3; }
     if (d.perPop) sc += s.pop * 0.3;
+    if (d.waterYields) { var wt = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked && G.isWater(g.tiles[i])) wt++; }); sc += wt * ((d.waterYields.food || 0) * 1.4 + (d.waterYields.production || 0) * 1.5 + (d.waterYields.gold || 0) * 0.8); }
     if (d.pct) sc += 3;
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
     var lean = AU.leaningOf ? AU.leaningOf(G.leaderData(civ)) : 'score';
@@ -158,13 +177,17 @@
           var pick = null;
           // no garrison, or a stronger neighbour and too few soldiers: the walls come before the markers and the wagons
           var milNow = G.civUnits(g, civ.idx).filter(G.isMilitary).length, unsafe = milNow < sets.length + 1 || (s.hp < 90) || (AI.threatened(g, civ) && AI.wantsMilitary(g, civ));
-          if (unsafe && AI.wantsMilitary(g, civ)) { var bu0 = AI.bestUnitToBuild(g, s, milNow % 3 === 2); if (bu0) pick = { kind: 'unit', id: bu0 }; }
+          // a blocked claim with nobody at the gates: the Boundary Marker comes before the spear (a settlement that cannot grow cannot arm either)
+          var markerFirst = g.v2 && G.claimBlocker(g, s) === 'building' && !G.hasBuilding(s, 'boundary_marker') && opts.buildings.indexOf('boundary_marker') >= 0 && !AI.threatened(g, civ) && !AI.enemiesNear(g, civ, g.tiles[s.tile], 4).length;
+          if (markerFirst) pick = { kind: 'building', id: 'boundary_marker' };
+          if (!pick && unsafe && AI.wantsMilitary(g, civ)) { var bu0 = AI.bestUnitToBuild(g, s, milNow % 3 === 2); if (bu0) pick = { kind: 'unit', id: bu0 }; }
           if (!pick && g.v2 && G.claimedCount(g, s) >= 3 && !G.hasBuilding(s, 'boundary_marker') && opts.buildings.indexOf('boundary_marker') >= 0) pick = { kind: 'building', id: 'boundary_marker' };
           else if (g.v2 && opts.units.indexOf('commander') >= 0 && G.civUnits(g, civ.idx).filter(G.isMilitary).length >= 4 && !G.civUnits(g, civ.idx).some(function (u) { return AU.UNITS[u.type].commander; })) pick = { kind: 'unit', id: 'commander' };
           else if (opts.projects.length) pick = { kind: 'project', id: opts.projects[0] };
           else if (s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 2) pick = { kind: 'unit', id: 'settler' };
           else if (AU.CityStates && (g.v2 ? G.gateOk(g, civ, 'unit', 'caravan', AU.UNITS.caravan) : civ.civics.foreign_trade) && AU.CityStates.caravans(g, civ).length < Math.min(2, AU.CityStates.caravanLimit(g, civ)) && AU.CityStates.minors(g).some(function (m) { return m.alive && civ.met[m.idx] && !G.atWar(g, civ.idx, m.idx) && G.dist(g.tiles[G.civSettlements(g, m.idx)[0].tile], g.tiles[s.tile]) <= 14; }) && G.rng(g) < 0.5) pick = { kind: 'unit', id: 'caravan' };
           else if (AI.wantsMilitary(g, civ)) { var wantRanged = G.civUnits(g, civ.idx).filter(function (u) { return U.isRanged(u); }).length < G.civUnits(g, civ.idx).filter(G.isMilitary).length / 3; var bu = AI.bestUnitToBuild(g, s, wantRanged); if (bu) pick = { kind: 'unit', id: bu }; }
+          if (!pick && G.isCoastal(g, s) && AI.wantsShips(g, civ)) { var sh = AI.bestShipToBuild(g, s); if (sh) pick = { kind: 'unit', id: sh }; }
           if (!pick && !s.isCapital && AI.wantsSettler(g, civ) && s.pop >= 3) pick = { kind: 'unit', id: 'settler' };
           if (!pick && opts.national.length && s.pop >= 4 && G.rng(g) < 0.5) pick = { kind: 'national', id: opts.national[0] };
           if (!pick && opts.wonders.length && G.rng(g) < 0.25 + tr.culture * 0.3 + (AU.leaningOf(G.leaderData(civ)) === 'culture' ? 0.2 : 0) && s.pop >= 4) { var wl = opts.wonders.filter(function (id) { var wd = AU.WONDERS[id]; return wd.tier !== 'great' || !sets.some(function (o) { return !o.isCity && o.specialization === wd.home && o.pop >= 4; }); }); var w = wl.slice().sort(function (a, b) { return AU.WONDERS[a].cost - AU.WONDERS[b].cost; })[0]; if (w) pick = { kind: 'wonder', id: w }; } // the capital leaves a Great Wonder to a Town of its trade when it has one
@@ -172,6 +195,8 @@
           if (!pick) { var bu2 = AI.bestUnitToBuild(g, s, false); if (bu2 && G.civUnits(g, civ.idx).length < sets.length * 4) pick = { kind: 'unit', id: bu2 }; }
           if (pick) G.enqueue(g, s, pick.kind, pick.id);
         }
+        // early Gold is a second settlement, not a nest egg: the capital buys its first Pioneer instead of waiting on 4 Production a turn
+        if (s.isCapital && g.turn < 80 && s.pop >= 3 && sets.length < 3 && AI.wantsSettler(g, civ) && opts.units.indexOf('settler') >= 0) { var cSt = G.purchaseCost(g, civ, 'unit', 'settler', s); if (civ.gold >= cSt + 30) { G.purchase(g, s, 'unit', 'settler'); s.queue = s.queue.filter(function (q) { return q.id !== 'settler'; }); } }
         // a settlement under attack with no soldier buys one on the spot
         if (s.hp < 80 && !G.unitsAt(g, s.tile).some(function (u) { return u.civ === civ.idx && G.isMilitary(u); })) { var buE = AI.bestUnitToBuild(g, s, false); if (buE) { var cE = G.purchaseCost(g, civ, 'unit', buE, s); if (civ.gold >= cE) G.purchase(g, s, 'unit', buE); } }
         // Divergence: a blocked claim is lost growth; buy the Boundary Marker outright when the treasury allows
@@ -182,6 +207,9 @@
           if (civ.gold >= costC + reserve && !G.inQueue(s, 'building', bsC[0])) G.purchase(g, s, 'building', bsC[0]);
         }
         if (civ.gold > 300 + reserve && AI.wantsMilitary(g, civ)) { var buC = AI.bestUnitToBuild(g, s, false); if (buC) { var cC = G.purchaseCost(g, civ, 'unit', buC, s); if (civ.gold >= cC + reserve) G.purchase(g, s, 'unit', buC); } }
+        // a fat treasury is a wasted army: past 800 Gold the empire buys soldiers up to a sane garrison, and ships when it wants them
+        if (civ.gold > 800 + reserve && G.civUnits(g, civ.idx).filter(G.isMilitary).length < sets.length * 3 + 6 + Math.floor(civ.gold / 1000) * 3) { var buH = AI.bestUnitToBuild(g, s, false); if (buH) { var cH = G.purchaseCost(g, civ, 'unit', buH, s); if (civ.gold >= cH + reserve) G.purchase(g, s, 'unit', buH); } }
+        if (civ.gold > 400 + reserve && G.isCoastal(g, s) && AI.wantsShips(g, civ)) { var shC = AI.bestShipToBuild(g, s); if (shC) { var cS = G.purchaseCost(g, civ, 'unit', shC, s); if (civ.gold >= cS + reserve) G.purchase(g, s, 'unit', shC); } }
       } else {
         // Towns: specialize, buy buildings, upgrade to city
         var citiesNow = sets.filter(function (x) { return x.isCity; }).length, upCostNow = G.cityUpgradeCost(g, civ);
@@ -496,7 +524,12 @@
     var t = g.tiles[u.tile];
     var near = AI.enemiesNear(g, civ, t, 5).filter(function (e) { return G.isWater(g.tiles[e.tile]) || e.settlement; });
     if (near.length) { near.sort(function (a, b) { return a.d - b.d; }); var ap = AI.approachTile(g, u, near[0].tile); if (ap != null && U.orderMove(g, u, ap)) { AI.tryAttack(g, civ, u); return; } }
-    // patrol: random reachable water tile
+    // at war: sail for the nearest enemy settlement on a shore and strike it (ships level walls; soldiers do the taking)
+    var target = null, td = 1e9; g.civs.forEach(function (o) { if (!o.alive || o.idx === civ.idx || !civ.rel[o.idx] || !civ.rel[o.idx].war) return; G.civSettlements(g, o.idx).forEach(function (s) { if (!G.isCoastal(g, s)) return; var d = G.dist(t, g.tiles[s.tile]); if (d < td) { td = d; target = s; } }); });
+    if (target && u.hp >= 50) { var ap2 = AI.approachTile(g, u, target.tile); if (ap2 != null && ap2 !== u.tile && U.orderMove(g, u, ap2)) { AI.tryAttack(g, civ, u); return; } }
+    if (u.hp < 50) { U.fortify(g, u); return; }
+    // peace: chart the seas, then patrol
+    if (G.rng(g) < 0.7) { var before = u.tile; AI.explore(g, civ, u); if (u.tile !== before || u.moves <= 0) return; }
     var reach = Object.keys(U.reachableNow(g, u)); if (reach.length && G.rng(g) < 0.5) U.orderMove(g, u, +reach[G.rngInt(g, reach.length)]);
     else U.fortify(g, u);
   };
