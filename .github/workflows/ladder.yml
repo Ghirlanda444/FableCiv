@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       games:
-        description: "Games per shard (8 shards per rule set)"
+        description: "Games per shard (16 Divergence shards)"
         required: false
         default: "12"
       turns:
@@ -21,14 +21,14 @@ permissions:
 
 jobs:
   play:
-    name: ${{ matrix.rules == '1' && 'Divergence' || 'Classic' }} shard ${{ matrix.shard }}
+    name: Divergence shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
-        rules: ["0", "1"]
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        rules: ["1"] # Divergence is the game; the classic rules are no longer measured
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -55,12 +55,9 @@ jobs:
       - name: Summarise
         run: |
           cat logs/ladder-1-*/ladder-1-*.log > divergence.log
-          cat logs/ladder-0-*/ladder-0-*.log > classic.log
           node tools/civ-ladder.js --summary divergence.log --md --min 3 | tee -a "$GITHUB_STEP_SUMMARY"
-          node tools/civ-ladder.js --summary classic.log --md --min 3 | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: ladder-summary
           path: |
             divergence.log
-            classic.log

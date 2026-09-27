@@ -237,7 +237,7 @@
         '<span class="y" data-panel="empire" title="' + _('Command: unit orders left this turn') + '">🎖️ <b>' + G.commandLeft(g, p) + '</b><small>/' + G.commandMax(g, p) + '</small></span>' +
         (g.v2 ? '<span class="y" data-panel="empire">🎯 <b>' + Math.floor(p.influence || 0) + '</b><small>+' + G.influenceIncome(g, p) + '</small></span>' : '') +
         (g.v2 && AU.Society ? (function () { var md = AU.Society.mood(g, p); return '<span class="y" data-panel="empire">' + md.tier.icon + ' <small>' + _(md.tier.name) + (unhappy ? ' · ' + unhappy + ' 😠' : '') + '</small></span>'; })() : '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>');
-      $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' ' + _('Era');
+      $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + (g.v2 && AU.MasteryWeb && AU.V2.ERAS[AU.MasteryWeb.state(p).era] ? AU.V2.ERAS[AU.MasteryWeb.state(p).era].name : AU.ERAS[p.era] + ' ' + _('Era')); // Divergence: the age, not a classic era
       this.refreshNotifs();
       this.refreshContext();
       var need = this.unitsNeedingOrders().length;
@@ -262,9 +262,9 @@
         if (s.pendingGrowth > 0 && G.claimableTiles(g, s).length) list.push({ icon: '🌱', text: _('Choose tile') + ': ' + s.name, go: function () { self.selectSettlement(s); self.renderer.centerOn(g, s.tile); self.startExpand(s); } });
       });
       if (AU.Religion) {
-        if (AU.Religion.canChoosePantheon(g, p)) list.push({ icon: '🕊️', text: _('Choose a pantheon'), go: function () { self.openPanel('religion'); } });
-        if (AU.Religion.canFound(g, p)) list.push({ icon: '🕊️', text: _('Found a religion'), go: function () { self.openPanel('religion'); } });
-        if (AU.Religion.canEnhance(g, p)) list.push({ icon: '🕊️', text: _('Enhance your religion'), go: function () { self.openPanel('religion'); } });
+        var tenT = AU.Religion.pendingTenet(g, p); if (tenT) list.push({ icon: '🕊️', text: _('Choose a tenet') + ': ' + tenT.name, go: function () { self.openPanel('religion'); } });
+        var angry = G.civSettlements(g, p.idx).filter(function (s) { return s.spirit && s.spirit.mood === -1; });
+        if (angry.length && AU.Religion.canOffer(g, p, angry[0])) list.push({ icon: AU.SPIRITS[angry[0].spirit.id].icon, text: _('Angry spirit in') + ' ' + angry[0].name + ': ' + _('make an Offering'), go: function () { self.openPanel('religion'); } });
       }
       if (AU.CityStates) G.civUnits(g, p.idx).forEach(function (u) { if (AU.UNITS[u.type].caravan && u.route == null && U.needsOrders(g, u)) list.push({ icon: '🐪', text: _('Send the caravan to a free city'), go: function () { self.selectUnit(u); self.renderer.centerOn(g, u.tile); } }); });
       if (g.v2 && AU.MasteryWeb) { var vst = AU.MasteryWeb.state(p); if (vst.pendingHubs.length) list.push({ icon: '🔮', text: _('An Insight awaits your decision'), go: function () { self.openPanel('hub'); } }); }
@@ -435,10 +435,9 @@
           if (this.pendingAttack != null) { var pa = this.previewAttack(u, this.pendingAttack); html += '<button class="small danger" data-action="attack" data-tile="' + this.pendingAttack + '">⚔️ ' + _('Attack') + ': ' + pa + '</button>'; }
           if (AU.UNITS[u.type].religious) {
             var Rl = AU.Religion, sHere = G.settlementAt(g, u.tile);
-            html += '<small class="stat">' + AU.UNITS[u.type].icon + ' ' + u.charges + ' charge' + (u.charges === 1 ? '' : 's') + (u.religion ? ' · ' + Rl.icon(g, u.religion) + ' ' + Rl.name(g, u.religion) : '') + '</small>';
-            if (u.type !== 'inquisitor') html += '<button class="small primary" data-action="spread" ' + (Rl.canSpread(g, u) ? '' : 'disabled') + '>' + _('Spread religion') + (sHere ? ' in ' + sHere.name : '') + '</button>';
-            else html += '<button class="small primary" data-action="inquisition" ' + (Rl.canInquisition(g, u) ? '' : 'disabled') + '>' + _('Remove heresy') + (sHere ? ' in ' + sHere.name : '') + '</button>';
-            Rl.debateTargets(g, u).forEach(function (tg) { html += '<button class="small danger" data-action="debate" data-id="' + tg.id + '">' + _('Debate') + ' ' + tg.name + ' (' + Math.round(Rl.debateStrength(g, u) / (Rl.debateStrength(g, u) + Rl.debateStrength(g, tg)) * 100) + '%)</button>'; });
+            html += '<small class="stat">' + AU.UNITS[u.type].icon + ' ' + u.charges + ' ' + (u.charges === 1 ? _('story left') : _('stories left')) + (u.religion ? ' · ' + Rl.icon(g, u.religion) + ' ' + Rl.name(g, u.religion) : '') + '</small>';
+            var hostC = sHere && g.civs[sHere.civ], warn = hostC && hostC.idx !== u.civ && !hostC.minor && hostC.religion !== u.religion ? ' ⚠️' : '';
+            html += '<button class="small primary" data-action="spread" ' + (Rl.canSpread(g, u) ? '' : 'disabled') + ' title="' + (warn ? _('Their leader will resent it for 20 turns.') : '') + '">' + _('Tell the story') + (sHere ? ' · ' + sHere.name : '') + warn + '</button>';
           }
           if (AU.UNITS[u.type].great && AU.Great) {
             var gt = AU.GREAT_TYPES[AU.Great.typeOf(u)]; html += '<div class="meta stat">' + G.abilityDesc(gt) + '</div>';
@@ -503,16 +502,14 @@
       if (!g) { if (name === 'pedia' || name === 'help' || name === 'togglegraphics' || name === 'toggleyields') AU.Panels.action(this, name, d); return; }
       var p = G.player(g), u = this.sel.unit ? g.units[this.sel.unit] : null, s;
       switch (name) {
-        case 'spread': if (u && AU.Religion.spread(g, u)) { this.toast(_('Religion spread.')); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
-        case 'inquisition': if (u && AU.Religion.inquisition(g, u)) { this.toast(_('Heresy removed.')); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
-        case 'debate': if (u) { var tgt = g.units[+d.id]; var res = tgt && AU.Religion.debate(g, u, tgt); if (res) { this.toast(res.win ? _('Debate won!') : _('Debate lost…')); if (g.units[u.id]) this.selectUnit(u); else this.deselect(); this.refreshHud(); this.invalidate(); } } break;
+        case 'spread': if (u && AU.Religion.spread(g, u)) { this.toast(_('The story is told.')); if (g.units[u.id]) this.afterUnitAction(u, true); else this.deselect(); this.refreshHud(); this.invalidate(); } break;
         case 'dopromote': if (u && U.promote(g, u, d.id)) { this.toast(u.name + ' promoted: ' + AU.PROMO_BY_ID[d.id].name + '.'); this.afterUnitAction(u, true); } break;
         case 'todo': this.doTodo(+d.i); break;
         case 'dismiss': this.g.notifications.splice(+d.i, 1); this.refreshHud(); break;
         case 'clearnotifs': this.g.notifications.length = 0; this.refreshHud(); break;
         case 'caravanroute': if (u && AU.CityStates.openRoute(g, u)) { this.afterUnitAction(u, true); this.refreshHud(); this.invalidate(); } break;
         case 'greatuse': if (u && AU.Great.use(g, u)) { this.deselect(); this.refreshHud(); this.invalidate(); this.showQuotes(); } break;
-        case 'greatfound': if (u) { this.openPanel('religion', { found: true }); } break;
+        case 'greatconvert': if (u && AU.Great.use(g, u, 'convert')) { this.deselect(); this.refreshHud(); this.invalidate(); } break;
         case 'found': if (u) { var st = U.foundCity(g, u); if (st) { this.selectSettlement(st); this.toast(_('Founded') + ' ' + st.name + '.'); } } break;
         case 'fortify': if (u) { U.fortify(g, u); this.afterUnitAction(u); } break;
         case 'join': if (u && AU.Warbands) { var sJ2 = AU.Warbands.join(g, u); if (sJ2) { this.toast(sJ2.name + ' ' + _('grew to') + ' ' + sJ2.pop + '.'); this.deselect(); this.refreshHud(); this.invalidate(); } } break;

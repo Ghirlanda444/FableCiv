@@ -49,17 +49,22 @@
     var mine = G.civSettlements(g, civ.idx), theirs = G.civSettlements(g, other.idx);
     var near = AU.AI && AU.AI.borderTension ? AU.AI.borderTension(g, civ, other) : false;
     switch (ag.id) {
-      case 'warlord': if (theirS >= myS * 0.9) out.push(['Respects your army', 3]); else if (theirS < myS * 0.5) out.push(['Despises your weak army', -4]); break;
-      case 'landgrab': if (near) out.push(['You settle too close to their lands', -5]); else out.push(['You keep your distance', 2]); break;
-      case 'scholar': { var ts = g.v2 && other.v2 ? Object.keys(other.v2.unlocked).length : Object.keys(other.techs).length, ms = g.v2 && civ.v2 ? Object.keys(civ.v2.unlocked).length : Object.keys(civ.techs).length; /* Divergence: Sparks lit */ if (ts >= ms + 2) out.push(['Admires your science', 4]); else if (ts + 3 < ms) out.push(['Thinks you are backward', -3]); break; }
-      case 'patron': { var wc = 0; for (var w in g.wonders) if (g.settlements[g.wonders[w]] && g.settlements[g.wonders[w]].civ === other.idx) wc++; if (wc >= 2) out.push(['Admires your wonders', 4]); else if (wc === 0 && g.turn > 60) out.push(['Finds your culture dull', -2]); break; }
-      case 'devout': if (civ.religion && other.religion === civ.religion) out.push(['You share their faith', 4]); else if (other.religion && civ.religion && mine.some(function (s) { return s.religion === other.religion; })) out.push(['Your religion spreads in their cities', -5]); break;
-      default: { var wars = 0; g.civs.forEach(function (c) { if (c.alive && c.idx !== other.idx && other.rel[c.idx] && other.rel[c.idx].war && !c.minor) wars++; }); if (wars >= 2) out.push(['Sees you as a warmonger', -4]); else if (!wars) out.push(['Appreciates a peaceful neighbour', 2]); }
+      case 'warlord': if (theirS >= myS * 0.9) out.push([_('Respects your army'), 3]); else if (theirS < myS * 0.5) out.push([_('Despises your weak army'), -4]); break;
+      case 'landgrab': if (near) out.push([_('You settle too close to their lands'), -5]); else out.push([_('You keep your distance'), 2]); break;
+      case 'scholar': { var ts = g.v2 && other.v2 ? Object.keys(other.v2.unlocked).length : Object.keys(other.techs).length, ms = g.v2 && civ.v2 ? Object.keys(civ.v2.unlocked).length : Object.keys(civ.techs).length; /* Divergence: Sparks lit */ if (ts >= ms + 2) out.push([_('Admires your science'), 4]); else if (ts + 3 < ms) out.push([_('Thinks you are backward'), -3]); break; }
+      case 'patron': { var wc = 0; for (var w in g.wonders) if (g.settlements[g.wonders[w]] && g.settlements[g.wonders[w]].civ === other.idx) wc++; if (wc >= 2) out.push([_('Admires your wonders'), 4]); else if (wc === 0 && g.turn > 60) out.push([_('Finds your culture dull'), -2]); break; }
+      case 'devout': if (civ.religion && other.religion && other.religion !== civ.religion && mine.some(function (s) { return s.religion === other.religion; })) out.push([_('Your faith spreads in their settlements'), -4]); break;
+      default: { var wars = 0; g.civs.forEach(function (c) { if (c.alive && c.idx !== other.idx && other.rel[c.idx] && other.rel[c.idx].war && !c.minor) wars++; }); if (wars >= 2) out.push([_('Sees you as a warmonger'), -4]); else if (!wars) out.push([_('Appreciates a peaceful neighbour'), 2]); }
     }
-    if (near && ag.id !== 'landgrab') out.push(['Shared border tension', -1]);
-    if (D.isFriend(g, civ.idx, other.idx)) out.push(['Declared friendship', 3]);
-    if (D.isAlly(g, civ.idx, other.idx)) out.push(['Allied', 4]);
-    if (D.isDenounced(g, civ.idx, other.idx) || D.isDenounced(g, other.idx, civ.idx)) out.push(['Recent denouncement', -3]);
+    if (near && ag.id !== 'landgrab') out.push([_('Shared border tension'), -1]);
+    if (AU.Religion && civ.religion && other.religion === civ.religion) { // a shared state faith; twice with Open Doors, twice for a devout leader
+      var sf = 3 * (AU.Religion.hasTenet(g, civ.religion, 'open') ? 2 : 1) * (ag.id === 'devout' ? 2 : 1); out.push([_('You share their faith'), sf]);
+    }
+    if (G.civFx(g, other).enemyOfEnemy && g.civs.some(function (c) { return c !== civ && c !== other && c.alive && !c.minor && G.atWar(g, civ.idx, c.idx) && G.atWar(g, other.idx, c.idx); })) out.push([_('Fights the same enemy'), G.civFx(g, other).enemyOfEnemy]); // Nzinga
+    if (AU.Religion && AU.Religion.preachedRecently(g, civ, other.idx)) out.push([_('Your pilgrims preach in their settlements'), ag.id === 'devout' ? -6 : -3]);
+    if (D.isFriend(g, civ.idx, other.idx)) out.push([_('Declared friendship'), 3]);
+    if (D.isAlly(g, civ.idx, other.idx)) out.push([_('Allied'), 4]);
+    if (D.isDenounced(g, civ.idx, other.idx) || D.isDenounced(g, other.idx, civ.idx)) out.push([_('Recent denouncement'), -3]);
     return out;
   };
 

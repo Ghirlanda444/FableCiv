@@ -1,73 +1,45 @@
-// Religion: pantheons, beliefs (follower / founder / enhancer / worship), religion names and religious units.
+// Religion: the spirits of the land, faith tenets and faith names.
+// Every settlement is watched over by the spirit of its site. A spirit is pleased when the settlement lives the way the land likes
+// (a river spirit wants its water worked, a wood spirit wants its trees standing) and angry when it is choked with Smoke or wronged.
+// Devotion comes from pleased spirits, Shrines and Temples; enough of it brings a Revelation that founds the empire's own faith.
 (function (AU) {
-  function B(id, name, type, desc, fx, extra) { return Object.assign({ id: id, name: name, type: type, desc: desc, fx: fx || {} }, extra || {}); }
-  // Pantheons: cheap early belief chosen with the first 25 Devotion. Effects use the ordinary civ effect vocabulary.
-  AU.PANTHEONS = [
-    B('god_sea', 'God of the Sea', 'pantheon', '+1 Production from Fishing Boats.', { tileBonus: [{ when: 'fishing', yields: { production: 1 } }] }),
-    B('goddess_hunt', 'Goddess of the Hunt', 'pantheon', '+1 Food and +1 Production from Camps.', { tileBonus: [{ when: 'camp', yields: { food: 1, production: 1 } }] }),
-    B('desert_folklore', 'Desert Folklore', 'pantheon', '+1 Devotion from worked Desert tiles.', { tileBonus: [{ when: 'desert', yields: { faith: 1 } }] }),
-    B('dance_aurora', 'Dance of the Aurora', 'pantheon', '+1 Devotion from worked Tundra and Snow tiles.', { tileBonus: [{ when: 'cold', yields: { faith: 1 } }] }),
-    B('sacred_path', 'Sacred Path', 'pantheon', '+1 Devotion from worked Jungle and Marsh tiles.', { tileBonus: [{ when: 'jungle', yields: { faith: 1 } }] }),
-    B('river_goddess', 'River Goddess', 'pantheon', '+1 Happiness and +1 Devotion in settlements on a river.', { settlementSiteBonus: [{ when: 'river', yields: { happiness: 1, faith: 1 } }] }),
-    B('fertility_rites', 'Fertility Rites', 'pantheon', '+10% growth in all settlements.', { growthMult: 1.1 }),
-    B('god_craftsmen', 'God of Craftsmen', 'pantheon', '+1 Production from Mines and Quarries.', { tileBonus: [{ when: 'mine', yields: { production: 1 } }, { when: 'quarry', yields: { production: 1 } }] }),
-    B('stone_circles', 'Stone Circles', 'pantheon', '+2 Devotion from Quarries.', { tileBonus: [{ when: 'quarry', yields: { faith: 2 } }] }),
-    B('earth_goddess', 'Earth Goddess', 'pantheon', '+1 Devotion from tiles next to a Natural Wonder or a Mountain.', { tileBonus: [{ when: 'sacred', yields: { faith: 1 } }] }),
-    B('oral_tradition', 'Oral Tradition', 'pantheon', '+1 Heritage from Plantations.', { tileBonus: [{ when: 'plantation', yields: { culture: 1 } }] }),
-    B('lady_reeds', 'Lady of the Reeds and Marshes', 'pantheon', '+2 Production from Marsh and Oasis tiles.', { tileBonus: [{ when: 'wet', yields: { production: 2 } }] }),
-    B('god_forge', 'God of the Forge', 'pantheon', '+25% Production toward Ancient and Classical military units.', { pctUnitProductionEarly: 25 }),
-    B('monument_gods', 'Monument to the Gods', 'pantheon', '+15% Production toward Wonders.', { wonderCostMult: 0.87 }),
-    B('religious_settlements', 'Devout Settlements', 'pantheon', 'New settlements claim one extra tile and +1 Heritage in every settlement.', { freeExpansion: 1, culturePerSettlement: 1 }),
-    B('god_war', 'God of War', 'pantheon', '+10 Devotion whenever a unit dies within 8 tiles of your settlements... simplified: +5 Devotion per kill.', { faithFromKills: 5 }),
-    B('initiation_rites', 'Initiation Rites', 'pantheon', '+50 Devotion when you disperse an Inchibil camp.', { campFaith: 50 })
-  ];
-  // Follower beliefs: every settlement following the religion gets them.
-  AU.FOLLOWER_BELIEFS = [
-    B('feed_world', 'Feed the World', 'follower', 'Shrines and Temples give +2 Food.', { buildingBonus: { shrine: { food: 2 }, temple: { food: 2 } } }),
-    B('work_ethic', 'Work Ethic', 'follower', '+1 Production per 4 population.', { productionPerPop: 0.25 }),
-    B('choral_music', 'Choral Music', 'follower', 'Shrines and Temples give +2 Heritage.', { buildingBonus: { shrine: { culture: 2 }, temple: { culture: 2 } } }),
-    B('jesuit_education', 'Jesuit Education', 'follower', 'Libraries and Universities give +2 Knowledge.', { buildingBonus: { library: { science: 2 }, university: { science: 2 } } }),
-    B('religious_community', 'Devout Community', 'follower', '+1 Happiness, +1 more with a Temple.', { happinessBonus: 1, buildingBonus: { temple: { happiness: 1 } } }),
-    B('divine_inspiration', 'Divine Insight', 'follower', 'Each Wonder gives +4 Devotion.', { faithPerWonder: 4 }),
-    B('zealotry', 'Zealotry', 'follower', 'Land military units can be purchased with Devotion.', { faithPurchaseUnits: true }),
-    B('warrior_monks', 'Militia Monks', 'follower', 'Units +4 Strength when fighting in or next to settlements of this religion.', { combatBonusOwnReligion: 4 }),
-    B('reliquaries', 'Reliquaries', 'follower', 'Settlements of this religion generate +2 Fame and +1 Gold.', { tourismPerFollower: 2, goldPerSettlement: 1 }),
-    B('tithe', 'Tithe', 'follower', '+2 Gold per settlement following this religion.', { goldPerSettlement: 2 })
-  ];
-  // Founder beliefs: benefit the empire that founded the religion, scaling with settlements following it anywhere.
-  AU.FOUNDER_BELIEFS = [
-    B('church_property', 'Church Property', 'founder', '+2 Gold per settlement in the world following this religion.', { goldPerFollowerSettlement: 2 }),
-    B('world_church', 'World Church', 'founder', '+1 Heritage per settlement in the world following this religion.', { culturePerFollowerSettlement: 1 }),
-    B('cross_cultural', 'Cross-Artistic Dialogue', 'founder', '+1 Knowledge per settlement in the world following this religion.', { sciencePerFollowerSettlement: 1 }),
-    B('lay_ministry', 'Lay Ministry', 'founder', '+1 Devotion per settlement in the world following this religion.', { faithPerFollowerSettlement: 1 }),
-    B('papal_primacy', 'Papal Primacy', 'founder', 'Free cities following this religion gain +2 extra Ties with you every turn.', { tiesFollowerCity: 2 }),
-    B('pilgrimage', 'Pilgrimage', 'founder', '+2 Devotion and +1 Fame per foreign settlement following this religion.', { faithPerForeignFollower: 2, tourismPerForeignFollower: 1 })
-  ];
-  // Enhancer beliefs: chosen when the religion is enhanced (second Devotion milestone).
-  AU.ENHANCER_BELIEFS = [
-    B('missionary_zeal', 'Preacher Zeal', 'enhancer', 'Devout units +1 charge and +1 Movement.', { missionaryCharges: 1, religiousMoves: 1 }),
-    B('holy_order', 'Holy Order', 'enhancer', 'Devout units cost 30% less Devotion.', { religiousUnitCostMult: 0.7 }),
-    B('defender_faith', 'Defender of the Devotion', 'enhancer', 'Units +5 Strength when fighting near settlements of this religion; +20 in theological combat.', { combatBonusOwnReligion: 5, religiousStrength: 20 }),
-    B('crusade', 'Crusade', 'enhancer', 'Units +8 Strength when attacking settlements that follow this religion but belong to someone else.', { combatBonusVsFollowerSettlements: 8 }),
-    B('itinerant_preachers', 'Itinerant Preachers', 'enhancer', 'Devout pressure spreads 50% farther and stronger.', { pressureMult: 0.5 }),
-    B('burial_grounds', 'Burial Grounds', 'enhancer', 'Settlements of this religion +1 Heritage, +1 Happiness.', { culturePerSettlement: 1, happinessBonus: 1 }),
-    B('scripture', 'Scripture', 'enhancer', 'Temples give +2 Devotion; Devotion +15%.', { buildingBonus: { temple: { faith: 2 } }, yieldMult: { faith: 1.15 } })
-  ];
-  AU.BELIEF_BY_ID = {};
-  [AU.PANTHEONS, AU.FOLLOWER_BELIEFS, AU.FOUNDER_BELIEFS, AU.ENHANCER_BELIEFS].forEach(function (list) { list.forEach(function (b) { AU.BELIEF_BY_ID[b.id] = b; }); });
-  AU.RELIGION_NAMES = [
-    { id: 'buddhism', name: 'Buddhism', icon: '☸️' }, { id: 'catholicism', name: 'Catholicism', icon: '✝️' }, { id: 'confucianism', name: 'Confucianism', icon: '☯️' },
-    { id: 'hinduism', name: 'Hinduism', icon: '🕉️' }, { id: 'islam', name: 'Islam', icon: '☪️' }, { id: 'judaism', name: 'Judaism', icon: '✡️' },
-    { id: 'orthodoxy', name: 'Eastern Orthodoxy', icon: '☦️' }, { id: 'protestantism', name: 'Protestantism', icon: '✝️' }, { id: 'shinto', name: 'Shinto', icon: '⛩️' },
-    { id: 'sikhism', name: 'Sikhism', icon: '🪯' }, { id: 'taoism', name: 'Taoism', icon: '☯️' }, { id: 'zoroastrianism', name: 'Zoroastrianism', icon: '🔥' },
-    { id: 'tengriism', name: 'Tengriism', icon: '🌤️' }, { id: 'norse', name: 'Old Norse Devotion', icon: '🔨' }, { id: 'ancestor_worship', name: 'Ancestor Worship', icon: '🏺' }
-  ];
-  // Preferred religion names per empire (first free one is used by the AI).
-  AU.RELIGION_PREF = { india: 'hinduism', china: 'confucianism', japan: 'shinto', arabia: 'islam', ottoman: 'islam', persia: 'zoroastrianism', mongolia: 'tengriism', norway: 'norse', russia: 'orthodoxy', byzantium: 'orthodoxy', rome: 'catholicism', spain: 'catholicism', france: 'catholicism', poland: 'catholicism', portugal: 'catholicism', germany: 'protestantism', england: 'protestantism', netherlands: 'protestantism', korea: 'buddhism', khmer: 'buddhism', vietnam: 'buddhism', babylon: 'ancestor_worship', mali: 'islam', ethiopia: 'orthodoxy', nubia: 'ancestor_worship', egypt: 'ancestor_worship' };
-  // Devout units: bought with Devotion only (no combat; captured units are lost).
-  AU.RELIGIOUS_UNITS = {
-    missionary: { name: 'Preacher', cls: 'civilian', religious: true, faithCost: 100, charges: 3, moves: 3, strength: 0, icon: '🕊️', requires: 'shrine', desc: 'Spreads your religion: 3 charges, each adds strong pressure to the settlement it stands in.' },
-    apostle: { name: 'Evangelist', cls: 'civilian', religious: true, faithCost: 220, charges: 3, moves: 3, strength: 0, icon: '📿', requires: 'temple', needsReligion: true, desc: 'A stronger Preacher (3 charges) that can also debate enemy religious units next to it: theological combat removes the loser.' },
-    inquisitor: { name: 'Faith Warden', cls: 'civilian', religious: true, faithCost: 120, charges: 3, moves: 3, strength: 0, icon: '📜', requires: 'temple', needsReligion: true, desc: 'Removes foreign religions from your own settlements (3 charges) and defends against enemy Evangelists.' }
+  // likes / hates: the conditions the rules check (core/religion.js R.spiritLikes, R.spiritHates); gift: yields while pleased.
+  // Every spirit also hates Smoke of 4 or more, and a settlement of 8 or more needs a Shrine or Temple to keep its spirit pleased.
+  AU.SPIRITS = {
+    river: { name: 'River Spirit', icon: '🌊', site: 'a settlement on a river', likes: 'three worked river tiles', hates: 'any Smoke over 1', gift: { food: 2 } },
+    sea: { name: 'Sea Spirit', icon: '🐚', site: 'a settlement on the coast', likes: 'two worked water tiles', hates: 'a hot world', gift: { food: 1, gold: 2 } },
+    peak: { name: 'Mountain Spirit', icon: '🏔️', site: 'a settlement beside a mountain', likes: 'a worked Mine or Quarry', hates: 'enemy soldiers in its land', gift: { production: 2 } },
+    wood: { name: 'Wood Spirit', icon: '🌲', site: 'a settlement among woods', likes: 'four woods in its land', hates: 'woods cut down', gift: { culture: 1, production: 1 } },
+    sun: { name: 'Sun Spirit', icon: '☀️', site: 'a settlement in the desert', likes: 'a Shrine, Temple or Wonder', hates: 'a cold world', gift: { culture: 2 } },
+    frost: { name: 'Frost Spirit', icon: '❄️', site: 'a settlement in the cold north', likes: 'a worked Camp or Pasture', hates: 'a warm world', gift: { production: 1, happiness: 1 } },
+    field: { name: 'Field Spirit', icon: '🌾', site: 'any other settlement', likes: 'three worked Farms', hates: 'hunger', gift: { food: 1, happiness: 1 } }
   };
+  AU.SPIRIT_ORDER = ['river', 'sea', 'peak', 'wood', 'sun', 'frost', 'field'];
+  // Tenets: every faith makes three choices over its life (at the Revelation, then at 250 and 600 Devotion earned, times the game speed).
+  AU.TENETS = [
+    { id: 'reach', name: 'How the faith meets strangers', options: [
+      { id: 'open', name: 'Open Doors', desc: 'The faith spreads 50% stronger, and empires that share it like each other twice as much.' },
+      { id: 'zeal', name: 'Zeal', desc: 'Other faiths push only half as hard in settlements of the faith, and your units fight +4 against empires of another state faith.' }
+    ] },
+    { id: 'land', name: 'How the faith treats the land', options: [
+      { id: 'stewards', name: 'Stewards', desc: 'In settlements of the faith, pleased spirits give their gift twice and an angry spirit costs only 1 Happiness.' },
+      { id: 'builders', name: 'Builders', desc: 'In settlements of the faith, Shrines and Temples also give +2 Production and every Wonder +2 Devotion.' }
+    ] },
+    { id: 'wealth', name: 'What the faith does with wealth', options: [
+      { id: 'tithe', name: 'Tithe', desc: 'The Holy City collects a double tithe.' },
+      { id: 'humility', name: 'Humility', desc: 'Settlements of the faith get +2 Happiness and +1 Heritage.' }
+    ] }
+  ];
+  AU.TENET_BY_ID = {}; AU.TENETS.forEach(function (t) { t.options.forEach(function (o) { AU.TENET_BY_ID[o.id] = o; }); });
+  // A faith is named after the spirit of its Holy City.
+  AU.FAITH_NAMES = {
+    river: [{ id: 'river_way', name: 'The River Way', icon: '🌊' }, { id: 'flood_children', name: 'Children of the Flood', icon: '💧' }, { id: 'long_water', name: 'The Long Water', icon: '🛶' }],
+    sea: [{ id: 'salt_star', name: 'Salt and Star', icon: '⭐' }, { id: 'tide_covenant', name: 'The Tide Covenant', icon: '🐚' }, { id: 'deep_lantern', name: 'Lantern of the Deep', icon: '🏮' }],
+    peak: [{ id: 'high_fire', name: 'The High Fire', icon: '🔥' }, { id: 'stone_fathers', name: 'The Stone Fathers', icon: '🪨' }, { id: 'summit_word', name: 'The Summit Word', icon: '⛰️' }],
+    wood: [{ id: 'green_word', name: 'The Green Word', icon: '🌿' }, { id: 'oak_council', name: 'The Oak Council', icon: '🌳' }, { id: 'leaf_road', name: 'The Leaf Road', icon: '🍃' }],
+    sun: [{ id: 'sun_hearth', name: 'Sun Hearth', icon: '🌞' }, { id: 'noon_law', name: 'The Noon Law', icon: '🔆' }, { id: 'sand_light', name: 'Sand and Light', icon: '🏜️' }],
+    frost: [{ id: 'aurora_path', name: 'The Aurora Path', icon: '🌌' }, { id: 'white_silence', name: 'The White Silence', icon: '🤍' }, { id: 'snow_hearth', name: 'Hearth in the Snow', icon: '🕯️' }],
+    field: [{ id: 'open_hand', name: 'The Open Hand', icon: '🤲' }, { id: 'harvest_mothers', name: 'The Harvest Mothers', icon: '🌻' }, { id: 'seed_season', name: 'Seed and Season', icon: '🌱' }]
+  };
+  AU.FAITH_NAME_LIST = []; AU.SPIRIT_ORDER.forEach(function (k) { AU.FAITH_NAMES[k].forEach(function (n) { n.spirit = k; AU.FAITH_NAME_LIST.push(n); }); });
 })(globalThis.AU = globalThis.AU || {});

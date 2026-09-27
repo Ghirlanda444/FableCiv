@@ -61,7 +61,7 @@
     if (to.feature && AU.FEATURES[to.feature].move > cost) cost = fm && (to.feature === 'forest' || to.feature === 'jungle') ? Math.max(cost, fm) : AU.FEATURES[to.feature].move;
     if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle') && !fm) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
     if (AU.Roads) { var rc = AU.Roads.crossing(g, u, to, from); if (rc === 2) cost = 99; else if (rc === 1) cost += 1; } // wading a navigable river ends the move, a stream costs 1 more
-    if (to.road && from && from.road && cost < 99) cost = Math.min(cost, 0.5); // road to road: half a move (a road over a river is a bridge)
+    if (to.road && from && from.road && cost < 99) { var rciv = u.civ >= 0 ? g.civs[u.civ] : null; cost = Math.min(cost, rciv && G.civFx(g, rciv).royalRoad ? 0.34 : 0.5); } // Darius: the Royal Road // road to road: half a move (a road over a river is a bridge)
     if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
@@ -202,6 +202,7 @@
       else if (civ && ownerCiv >= 0 && ownerCiv !== u.civ) heal = 5;
       if (u.fortify > 0) heal += 5;
       heal += (cfx.healBonusAll || 0) + (def.healBonus || 0);
+      if (AU.Sig && civ) heal += AU.Sig.heal(g, u, civ, cfx);
       if (g.v2 && civ && cfx.warbandHeal && AU.Warbands && AU.Warbands.fighters(g, u.tile, u.civ).length >= 2) heal += cfx.warbandHeal; // a Warband tends its own
       u.hp = Math.min(100, u.hp + heal);
     }
@@ -309,6 +310,7 @@
     if (!def.noDamagePenalty && !fx.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
     if (u.baited && u.baited.until > g.turn) str -= u.baited.str; // shaken by a Scarecrow Crew's ambush
     if (fx.longWarBonus && ctx && ctx.vs && ctx.vs.civ !== undefined && ctx.vs.civ >= 0 && civ && civ.rel[ctx.vs.civ] && civ.rel[ctx.vs.civ].war) str += Math.min(fx.longWarBonus, Math.floor((g.turn - civ.rel[ctx.vs.civ].warSince) / 5)); // Bulgaroktonos
+    if (AU.Sig && civ) str += AU.Sig.strength(g, u, ctx, civ, fx);
     if (fx.shroudDefense && !(ctx && ctx.attacking)) { var ss = G.settlementAt(g, u.tile); if (ss && ss.civ === u.civ && (ss.hp < G.settlementMaxHp(g, ss) || ss.unrest > g.turn || (G.settlementYields(g, ss).happiness || 0) < 0)) str += fx.shroudDefense; } // Purple Shroud
     if (ctx && ctx.attacking && cls !== 'naval' && cls !== 'navalRanged' && AU.Roads && AU.Roads.wading(g, u)) str = Math.round(str * 0.75); // attacking out of a river with no bridge
     return Math.max(1, str);
@@ -347,6 +349,7 @@
     g.undo = null;
     if (!U.canAttackTile(g, u, tileIdx)) return null;
     if (!G.spendOrder(g, u)) return null;
+    if (AU.Sig) AU.Sig.onAttack(g, u, tileIdx);
     if (g.v2 && AU.Warbands) return AU.Warbands.attack(g, u, tileIdx); // Divergence: the whole Warband fights as one
     var target = U.targetAt(g, u, tileIdx), ranged = U.isRanged(u), def = U.def(g, u);
     var civ = U.civ(g, u), result = { attacker: u.id, ranged: ranged, tile: tileIdx };
@@ -403,6 +406,7 @@
     if (u.attacksLeft > 0 && u.moves > 0) u.moves = Math.max(1, u.moves - 1);
     else if (def.movesAfterAttack) u.moves = Math.max(0, u.moves - 1);
     else u.moves = 0;
+    if (AU.Sig) AU.Sig.afterAttack(g, u);
     if (u.hp <= 0) { result.attackerKilled = true; if (civ) G.notify(g, civ, { kind: 'loss', text: _('Your') + ' ' + u.name + ' ' + _('died attacking.'), tile: u.tile }); G.removeUnit(g, u); if (target.unit && target.unit.hp > 0) target.unit.xp += 3; }
     if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return result;
@@ -410,6 +414,7 @@
   U.killRewards = function (g, u, def, v) {
     var civ = U.civ(g, u); if (!civ) return;
     if (def.healOnKill) u.hp = Math.min(100, u.hp + def.healOnKill);
+    if (AU.Sig && v) AU.Sig.onKill(g, u, v);
     if (def.goldOnKill) civ.gold += def.goldOnKill;
     if (def.cultureOnKill) civ.bonusCulture = (civ.bonusCulture || 0) + def.cultureOnKill;
     if (def.scienceOnKill) civ.bonusScience = (civ.bonusScience || 0) + def.scienceOnKill;
@@ -445,6 +450,7 @@
     G.log(g, G.civData(newCiv).name + ' captured ' + s.name + ' from ' + G.civData(oldCiv).name + '!', newCivIdx);
     g.civs.forEach(function (c) { G.notify(g, c, { kind: 'capture', text: (c.idx === newCivIdx ? _('You') : G.civData(newCiv).name) + ' captured ' + s.name + (c.idx === oldIdx ? ' ' + _('from you!') : '.'), tile: s.tile, settlement: s.id }); });
     G.revealAround(g, newCiv, g.tiles[s.tile].col, g.tiles[s.tile].row, 3);
+    if (AU.Sig) AU.Sig.onCapture(g, s, newCiv, oldCiv);
     if (!rest.length) U.eliminate(g, oldCiv);
     newCiv.rel[oldIdx].attitude -= 20;
   };

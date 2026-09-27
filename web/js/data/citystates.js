@@ -23,7 +23,7 @@
     S('nan_madol', 'Nan Madol', 'culture', '#3498db', 'Stone City on the Reef', 'Patron: coastal settlements +2 Heritage.', { coastalSettlementYields: { culture: 2 } }),
     S('antananarivo', 'Antananarivo', 'culture', '#e67e22', 'Highland Kingdom', 'Patron: Monuments and Amphitheaters +1 Heritage.', { buildingBonus: { monument: { culture: 1 }, amphitheater: { culture: 1 } } }),
     S('mohenjo_daro', 'Mohenjo-Daro', 'culture', '#c39bd3', 'Great Bath', 'Patron: settlements on rivers +1 Heritage and +1 Happiness.', { settlementSiteBonus: [{ when: 'river', yields: { culture: 1, happiness: 1 } }] }),
-    S('jerusalem', 'Jerusalem', 'religious', '#ecf0f1', 'Holy Land', 'Patron: your religion spreads 50% farther and stronger.', { pressureMult: 0.5 }),
+    S('jerusalem', 'Jerusalem', 'religious', '#ecf0f1', 'Holy Land', 'Patron: your faith spreads 50% stronger.', { spreadMult: 1.5 }),
     S('yerevan', 'Yerevan', 'religious', '#a04000', 'Mount Ararat', 'Patron: religious units cost 25% less Devotion and have +10 debate strength.', { religiousUnitCostMult: 0.75, religiousStrength: 10 }),
     S('armagh', 'Armagh', 'religious', '#229954', 'Saint Patrick', 'Patron: Shrines +2 Devotion.', { buildingBonus: { shrine: { faith: 2 } } }),
     S('lhasa', 'Lhasa', 'religious', '#b03a2e', 'Roof of the World', 'Patron: +1 Devotion per settlement and Temples +1 Happiness.', { faithPerSettlement: 1, buildingBonus: { temple: { happiness: 1 } } }),

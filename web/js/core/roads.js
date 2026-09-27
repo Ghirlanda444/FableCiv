@@ -59,7 +59,7 @@
     if (g.turn - civ.roadPlan.turn >= RD.REPLAN || civ.roadPlan.n !== sets.length) {
       civ.roadPlan = { turn: g.turn, n: sets.length, paths: RD.links(g, civ).map(function (l) { return roadPath(g, civ, l[0].tile, l[1].tile); }).filter(Boolean) };
     }
-    var era = g.v2 && AU.MasteryWeb ? AU.MasteryWeb.state(civ).era : (civ.era || 0), rate = era >= 2 ? 2 : 1;
+    var era = g.v2 && AU.MasteryWeb ? AU.MasteryWeb.state(civ).era : (civ.era || 0), rate = (era >= 2 ? 2 : 1) + (G.civFx(g, civ).royalRoad ? 1 : 0); // Darius builds the Royal Road
     civ.roadPlan.paths.forEach(function (path) {
       var laid = 0;
       for (var k = 0; k < path.length && laid < rate; k++) { var t = g.tiles[path[k]]; if (t.road) continue; if (t.owner >= 0 && G.tileOwnerCiv(g, t) !== civ.idx) break; t.road = true; laid++; }

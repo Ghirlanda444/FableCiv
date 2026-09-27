@@ -3,17 +3,17 @@
   var G = AU.G;
   var GP = AU.Great = {};
   GP.state = function (civ) { if (!civ.great) civ.great = { pts: {}, count: {}, used: {} }; return civ.great; };
-  GP.available = function (g, civ, type) { // prophets stop being earned once you have a religion or none can be founded
+  GP.available = function (g, civ, type) { // prophets are earned once the empire has a state faith, one at a time
     if (type !== 'prophet') return true;
-    var R = AU.Religion; if (!R) return false;
-    if (!civ.pantheon || civ.religion || R.religionsFounded(g) >= R.maxReligions(g)) return false;
-    return !G.civUnits(g, civ.idx).some(function (u) { return AU.UNITS[u.type].great === 'prophet'; }); // one prophet at a time
+    var R = AU.Religion; if (!R || !R.rel(g, civ.religion)) return false;
+    return !G.civUnits(g, civ.idx).some(function (u) { return AU.UNITS[u.type].great === 'prophet'; });
   };
   GP.pointsPerTurn = function (g, civ) {
     var out = {}; AU.GREAT_ORDER.forEach(function (t) { out[t] = 0; });
     G.civSettlements(g, civ.idx).forEach(function (s) { s.buildings.forEach(function (b) { var p = AU.GREAT_POINTS[b]; if (p) for (var t in p) out[t] += p[t]; }); });
     var y = G.civYields(g, civ); out.prophet += Math.floor((y.faith || 0) / 3);
     var gfx0 = G.civFx(g, civ); if (gfx0.greatPointsPerTurn) for (var gk in gfx0.greatPointsPerTurn) if (out[gk] !== undefined) out[gk] += gfx0.greatPointsPerTurn[gk];
+    if (AU.Sig) AU.Sig.greatPoints(g, civ, gfx0, out);
     if (g.v2 && AU.MasteryWeb && AU.MasteryWeb.greatSlots) AU.MasteryWeb.greatSlots(civ).forEach(function (t) { if (out[t] !== undefined) out[t] += 2; }); // Sparks that open a Great Person slot
     var fx = G.civFx(g, civ); if (fx.greatPeopleMult) for (var k in out) out[k] = Math.round(out[k] * fx.greatPeopleMult);
     AU.GREAT_ORDER.forEach(function (t) { if (!GP.available(g, civ, t)) out[t] = 0; });
@@ -72,9 +72,10 @@
     var civ = g.civs[u.civ], s = G.settlementAt(g, u.tile), own = s && s.civ === u.civ, t = g.tiles[u.tile], inside = G.tileOwnerCiv(g, t) === u.civ, R = AU.Religion, out = [];
     switch (type) {
       case 'prophet':
-        if (R && !civ.religion && R.religionsFounded(g) < R.maxReligions(g)) out.push({ action: 'greatfound', label: '🕊️ ' + _('Found a religion here'), ok: !!own && !!civ.pantheon, why: !own ? _('Move into one of your settlements.') : !civ.pantheon ? _('Choose a pantheon first (Religion panel).') : '' });
-        else if (civ.religion) out.push({ action: 'greatuse', label: '🕊️ ' + _('Convert') + ' ' + (s ? s.name : 'this settlement') + ' to ' + R.name(g, civ.religion), ok: !!s, why: _('Move into a settlement.') });
-        else out.push({ action: 'greatuse', label: '🕊️ ' + _('Retire for') + ' ' + GP.burst(g, civ, 120) + ' ' + _('Devotion'), ok: true, why: '' });
+        if (R && R.rel(g, civ.religion)) {
+          out.push({ action: 'greatuse', label: '⛩️ ' + _('Make this a Sacred Site'), ok: !!own && !R.isSacred(g, s), why: !own ? _('Move into one of your settlements.') : _('Already a Sacred Site.') });
+          out.push({ action: 'greatconvert', label: '🕊️ ' + _('Convert') + ' ' + (s ? s.name : _('this settlement')) + ' → ' + R.name(g, civ.religion), ok: !!s && s.religion !== civ.religion, why: !s ? _('Move into a settlement.') : _('It already follows your faith.') });
+        } else out.push({ action: 'greatuse', label: '🕊️ ' + _('Retire for') + ' ' + GP.burst(g, civ, 120) + ' ' + _('Devotion'), ok: true, why: '' });
         break;
       case 'scientist': { if (g.v2 && AU.MasteryWeb) { var sv = AU.MasteryWeb.state(civ), left = AU.MasteryWeb.openNodes(sv.era).filter(function (n) { return n.pool === 'foundation' && !sv.unlocked[n.id] && !sv.locked[n.id]; }); out.push({ action: 'greatuse', label: '💡 ' + _('Fire a foundation Spark now') + (left.length ? ' (' + left[0].name + ')' : ''), ok: inside && !!left.length, why: !inside ? _('Move inside your borders.') : !left.length ? _('Every Spark of this age already fired.') : '' }); break; }
         var cur = civ.currentTech ? AU.TECH_BY_ID[civ.currentTech] : null, cheapest = G.availableTechs(civ).sort(function (a, b) { return a.cost - b.cost; })[0]; var tech = cur || cheapest;
@@ -86,14 +87,16 @@
     }
     return out;
   };
-  GP.use = function (g, u) {
+  GP.use = function (g, u, mode) {
     var type = GP.typeOf(u); if (!type) return false;
-    var civ = g.civs[u.civ], s = G.settlementAt(g, u.tile), opt = GP.options(g, u).filter(function (o) { return o.action === 'greatuse'; })[0];
+    var act = mode === 'convert' ? 'greatconvert' : 'greatuse';
+    var civ = g.civs[u.civ], s = G.settlementAt(g, u.tile), opt = GP.options(g, u).filter(function (o) { return o.action === act; })[0];
     if (!opt || !opt.ok) return false;
     var R = AU.Religion, msg = '';
     switch (type) {
       case 'prophet':
-        if (civ.religion && s) { s.pressure = s.pressure || {}; s.pressure[civ.religion] = (s.pressure[civ.religion] || 0) + 300; s.religion = civ.religion; msg = s.name + ' now follows ' + R.name(g, civ.religion) + '.'; }
+        if (act === 'greatconvert') { R.addPressure(g, s, civ.religion, 300); R.setMajority(g, s, civ.religion); msg = s.name + ' ' + _('now follows') + ' ' + R.name(g, civ.religion) + '.'; }
+        else if (R && R.rel(g, civ.religion)) { s.sacred = true; civ._fx = null; msg = s.name + ' ' + _('is now a Sacred Site.'); }
         else { civ.faith += GP.burst(g, civ, 120); msg = u.name + ' retires; +' + GP.burst(g, civ, 120) + ' Devotion.'; }
         break;
       case 'scientist': { if (g.v2 && AU.MasteryWeb) { if (!AU.MasteryWeb.grantFreeSpark(g, civ)) return false; msg = u.name + ' ' + _('fires a Spark!'); break; }

@@ -1,0 +1,68 @@
+// Every civ and leader ability has at least one effect nobody else has, every effect key is read by the rules,
+// and the signature effects do what their cards say.
+const fs = require('fs'), path = require('path');
+const AU = require('./load.js'); const G = AU.G, U = AU.U, R = AU.Religion, SG = AU.Sig;
+let fails = 0; function ok(c, m) { if (!c) { fails++; console.log('FAIL', m); } else console.log('ok', m); }
+
+// ---------- audit ----------
+const CONTAINERS = { tileBonus: v => v.map(b => b.when).join('+'), settlementSiteBonus: v => v.map(b => b.when).join('+'), buildingBonus: v => Object.keys(v).join('+'), yieldMult: v => Object.keys(v).join('+'), specializationYields: v => Object.keys(v).join('+'), capitalYields: v => Object.keys(v).join('+'), classMoves: v => Object.keys(v).join('+'), classBonus: v => Object.keys(v).join('+'), classCostMult: v => Object.keys(v).join('+'), classBonusVsSettlements: v => Object.keys(v).join('+'), coastalSettlementYields: v => Object.keys(v).join('+'), cityYieldMult: v => Object.keys(v).join('+'), greatPointsPerTurn: v => Object.keys(v).join('+') };
+const sig = (k, v) => CONTAINERS[k] ? k + ':' + CONTAINERS[k](v) : k;
+const all = [];
+Object.values(AU.CIV_BY_ID).forEach(c => { if (!c.leaders) return; all.push({ who: 'civ ' + c.id, ab: c.ability }); c.leaders.forEach(l => all.push({ who: l.id, ab: AU.LEADER_BY_ID[l.id].ability })); });
+const count = {}; all.forEach(a => Object.keys(a.ab.fx || {}).forEach(k => { const s = sig(k, a.ab.fx[k]); count[s] = (count[s] || 0) + 1; }));
+const lacking = all.filter(a => !Object.keys(a.ab.fx || {}).some(k => count[sig(k, a.ab.fx[k])] === 1));
+ok(!lacking.length, 'every one of ' + all.length + ' abilities has an effect of its own' + (lacking.length ? ': missing ' + lacking.map(a => a.who).join(', ') : ''));
+const src = []; (function scan(d) { fs.readdirSync(d).forEach(f => { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) { if (f !== 'data') scan(p); } else if (/\.js$/.test(f)) src.push(fs.readFileSync(p, 'utf8')); }); })(path.join(__dirname, '..', 'web', 'js'));
+const code = src.join('\n'), keys = new Set(); all.forEach(a => Object.keys(a.ab.fx || {}).forEach(k => keys.add(k)));
+const unread = [...keys].filter(k => !new RegExp('\\b' + k + '\\b').test(code));
+ok(!unread.length, 'every ability effect key is read by the rules' + (unread.length ? ': unread ' + unread.join(', ') : ''));
+ok(all.every(a => (a.ab.descV2 || a.ab.desc || '').length > 20), 'every ability has a card text');
+
+// ---------- behaviour ----------
+function fresh(civ, leader, seed) { const g = G.newGame({ playerCiv: civ, playerLeader: leader, mapSize: 'small', numCivs: 3, numStates: 1, seed: seed || 71, difficulty: 'prince', v2: true }); const p = G.player(g); U.foundCity(g, G.civUnits(g, p.idx).find(u => u.type === 'settler')); return { g, p, cap: g.settlements[p.capital] }; }
+function other(g, p) { const o = g.civs.find(c => c !== p && !c.minor); if (!G.civSettlements(g, o.idx).length) U.foundCity(g, G.civUnits(g, o.idx).find(u => u.type === 'settler')); return o; }
+function fxOf(g, p) { p._fx = null; p._fxKey = null; g.fxGen = (g.fxGen || 0) + 1; return G.civFx(g, p); }
+// value of f() with the key on, and with the key removed from the leader's (or civ's) ability
+function onOff(g, p, key, f) { const ab = [G.leaderData(p).ability, G.civData(p).ability].find(a => a.fx[key] !== undefined); const v = ab.fx[key]; fxOf(g, p); const on = f(); delete ab.fx[key]; fxOf(g, p); const off = f(); ab.fx[key] = v; fxOf(g, p); return [on, off]; }
+function y(g, s) { return G.settlementYields(g, s); }
+
+{ const { g, p, cap } = fresh('austria_hungary', 'franz_joseph'); ['granary', 'monument', 'library'].forEach(b => AU.BUILDINGS[b] && G.addBuilding(g, cap, b));
+  const [a, b] = onOff(g, p, 'capitalCulturePerBuilding', () => y(g, cap).culture); ok(a > b, 'Franz Joseph: the Ringstraße (' + b.toFixed(1) + ' -> ' + a.toFixed(1) + ' Heritage)');
+  const t = g.tiles[cap.tile]; const nav0 = t.navigable; t.navigable = true; const [d1, d0] = onOff(g, p, 'danube', () => y(g, cap).gold); t.navigable = nav0; ok(d1 > d0, 'Austria-Hungary: the Danube pays Gold'); }
+{ const { g, p, cap } = fresh('austria_hungary', 'maria_theresa'); cap.pop = 9; const [a, b] = onOff(g, p, 'schooling', () => y(g, cap).science); ok(a > b, 'Maria Theresa: compulsory schooling'); }
+{ const { g, p, cap } = fresh('egypt', 'cleopatra'); const t = g.tiles[cap.tile]; const tile = g.tiles[G.neighbors(g, t)[0]]; const keep = [tile.terrain, tile.river, tile.worked, tile.owner]; tile.terrain = 'desert'; tile.river = true; tile.feature = null; G.claimTile(g, cap, tile.i); tile.worked = true;
+  const [a, b] = onOff(g, p, 'desertRiver', () => y(g, cap).food); ok(a >= b + 2, 'Egypt: the Nile makes desert river tiles fertile (' + b.toFixed(1) + ' -> ' + a.toFixed(1) + ' Food)'); }
+{ const { g, p, cap } = fresh('babylon', 'nebuchadnezzar'); const t = g.tiles[cap.tile]; t.river = true; cap.pop = 8; const [a, b] = onOff(g, p, 'riverCity', () => [y(g, cap).production, G.settlementStrength(g, cap)]); ok(a[0] > b[0] && a[1] === b[1] + 5, 'Nebuchadnezzar: Babylon on the Euphrates (Production and +5 defense)'); }
+{ const { g, p, cap } = fresh('khmer', 'jayavarman'); g.tiles[cap.tile].river = true; ok(SG.growthMult(g, cap, fxOf(g, p)) === 1.25, 'Khmer: river settlements grow 25% faster');
+  AU.BUILDINGS.shrine && G.addBuilding(g, cap, 'shrine'); const [a, b] = onOff(g, p, 'hospitals', () => y(g, cap).happiness); ok(a > b, 'Jayavarman: hospitals'); }
+{ const { g, p, cap } = fresh('vietnam', 'trung'); const tile = g.tiles[G.neighbors(g, g.tiles[cap.tile])[1]]; tile.feature = 'marsh'; tile.terrain = 'grassland'; G.claimTile(g, cap, tile.i); tile.worked = true; const [a, b] = onOff(g, p, 'delta', () => y(g, cap).food); ok(a > b, 'Vietnam: the Mekong delta'); }
+{ const { g, p, cap } = fresh('inca', 'pachacuti'); const tile = g.tiles[G.neighbors(g, g.tiles[cap.tile])[2]]; tile.hills = true; tile.terrain = 'plains'; tile.feature = null; G.claimTile(g, cap, tile.i); tile.worked = true; const [a, b] = onOff(g, p, 'terraces', () => y(g, cap).food); ok(a > b, 'Inca: terraces on hills'); }
+{ const { g, p, cap } = fresh('mali', 'sundiata'); cap.pop = 7; const [a, b] = onOff(g, p, 'bigHappiness', () => y(g, cap).happiness); ok(a === b + 2, 'Sundiata: the Kouroukan Fouga'); }
+{ const { g, p, cap } = fresh('ethiopia', 'menelik'); g.tiles[cap.tile].hills = true; AU.BUILDINGS.shrine && G.addBuilding(g, cap, 'shrine'); const [a, b] = onOff(g, p, 'rockChurches', () => y(g, cap).faith); ok(a >= b + 3, 'Ethiopia: the rock churches of Lalibela'); }
+{ const { g, p, cap } = fresh('india', 'gandhi'); const s2 = G.foundSettlement(g, p.idx, g.tiles.find(t => !G.isWater(t) && t.owner < 0 && G.dist(t, g.tiles[cap.tile]) >= 5 && G.canFoundAt(g, p.idx, t.i)).i);
+  g.religions = { a: { id: 'a', nameId: 'river_way', name: 'A', icon: '', founder: p.idx, holyCity: cap.id, tenets: {} }, b: { id: 'b', nameId: 'green_word', name: 'B', icon: '', founder: 1, holyCity: s2.id, tenets: {} } }; cap.religion = 'a'; s2.religion = 'b';
+  const [a, b] = onOff(g, p, 'manyFaiths', () => y(g, cap).happiness); ok(a === b + 1, 'India: every faith of the empire adds Happiness'); }
+{ const { g, p, cap } = fresh('india', 'ashoka'); const o = other(g, p); const [a, b] = onOff(g, p, 'edictsPeace', () => y(g, cap).culture); p.met[o.idx] = o.met[p.idx] = true; G.declareWar(g, p.idx, o.idx); const [c] = onOff(g, p, 'edictsPeace', () => y(g, cap).culture); ok(a > b && c < a, 'Ashoka: the edicts pay only in peace'); }
+{ const { g, p, cap } = fresh('nubia', 'piye'); const tile = g.tiles[G.neighbors(g, g.tiles[cap.tile])[3]]; tile.hills = true; tile.feature = null; tile.terrain = 'plains'; G.claimTile(g, cap, tile.i); tile.worked = true; const imp = G.improvementFor(g, tile, p); const [a, b] = onOff(g, p, 'nubianGold', () => y(g, cap).gold); ok(imp !== 'mine' || a >= b + 2, 'Nubia: the land of gold (' + imp + ')'); }
+// combat
+{ const { g, p } = fresh('greece', 'leonidas'); const o = other(g, p); G.declareWar(g, p.idx, o.idx); const u = G.civUnits(g, p.idx).find(x => G.isMilitary(x)); const nb = G.neighbors(g, g.tiles[u.tile]).filter(i => !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain').slice(0, 3); nb.forEach(i => G.spawnUnit(g, o.idx, 'warrior', i));
+  const [a, b] = onOff(g, p, 'outnumbered', () => U.strength(g, u, { attacking: false })); ok(a === b + 3 * Math.min(3, nb.length - 1), 'Leonidas: the hot gates (+' + (a - b) + ')'); }
+{ const { g, p } = fresh('zulu', 'shaka'); const o = other(g, p); G.declareWar(g, p.idx, o.idx); const u = G.civUnits(g, p.idx).find(x => G.isMilitary(x)); const ti = G.neighbors(g, g.tiles[u.tile]).find(i => !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain'); const foe = G.spawnUnit(g, o.idx, 'warrior', ti); const side = G.neighbors(g, g.tiles[ti]).find(i => i !== u.tile && !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain' && !G.unitsAt(g, i).length); G.spawnUnit(g, p.idx, 'warrior', side);
+  const [a, b] = onOff(g, p, 'encircle', () => U.strength(g, u, { attacking: true, vs: foe })); ok(a >= b + 2, 'Zulu: the horns of the buffalo'); }
+{ const { g, p } = fresh('assyria', 'tiglath'); const u = G.civUnits(g, p.idx).find(x => G.isMilitary(x)); U.fortify(g, u); u.fortify = Math.max(1, u.fortify || 1); const [a, b] = onOff(g, p, 'fortifyBonus', () => U.strength(g, u, { attacking: false })); ok(a === b + 4, 'Tiglath-Pileser: fortified units +4'); }
+{ const { g, p } = fresh('france', 'joan'); const o = other(g, p); G.declareWar(g, p.idx, o.idx); const u = G.civUnits(g, p.idx).find(x => G.isMilitary(x)); const cap = g.settlements[p.capital]; const ti = G.neighbors(g, g.tiles[cap.tile]).find(i => !G.unitsAt(g, i).length && !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain'); G.claimTile(g, cap, ti); g.tiles[ti].worked = false; const foe = G.spawnUnit(g, o.idx, 'warrior', ti);
+  const [a, b] = onOff(g, p, 'liberator', () => U.strength(g, u, { attacking: true, vs: foe })); ok(a === b + 8, 'Joan: drive the invader out'); }
+// events
+{ const { g, p, cap } = fresh('ottoman', 'suleiman'); const o = other(g, p); const s = G.civSettlements(g, o.idx)[0]; const n0 = G.civUnits(g, p.idx).length; G.declareWar(g, p.idx, o.idx); G.foundSettlement(g, o.idx, g.tiles.find(t => !G.isWater(t) && t.owner < 0 && G.dist(t, g.tiles[s.tile]) >= 5 && G.canFoundAt(g, o.idx, t.i)).i); U.captureSettlement(g, s, p.idx);
+  ok(G.civUnits(g, p.idx).length === n0 + 1, 'Ottoman: devshirme raises a unit in a captured settlement');
+  const sets = Array.from({ length: 12 }, () => ({})); ok(fxOf(g, p).noBureaucracy === true, 'Suleiman: no bureaucracy'); }
+{ const { g, p } = fresh('aztec', 'montezuma'); p.stats.captures = 2; const g0 = p.gold; SG.turn(g, p); ok(p.gold >= g0 + 6, 'Montezuma: tribute from captured settlements'); }
+{ const { g, p } = fresh('netherlands', 'dewitt'); p.gold = 500; SG.turn(g, p); ok(p.gold === 510, 'De Witt: 2% interest on the treasury'); }
+{ const { g, p } = fresh('persia', 'darius'); const s2 = G.foundSettlement(g, p.idx, g.tiles.find(t => !G.isWater(t) && t.owner < 0 && G.dist(t, g.tiles[g.settlements[p.capital].tile]) === 5 && G.canFoundAt(g, p.idx, t.i)).i); AU.Roads.turn(g, p); const n1 = g.tiles.filter(t => t.road && !G.settlementAt(g, t.i)).length; ok(n1 >= 2, 'Darius: the Royal Road is laid faster (' + n1 + ' road tiles on the first turn, others lay 1)'); }
+{ const { g, p } = fresh('japan', 'tokugawa'); const o = other(g, p); const cap = g.settlements[p.capital], oc = G.civSettlements(g, o.idx)[0]; o.faithTotal = 999; R.spirit(g, oc).mood = 1; R.reveal(g, o); ok(R.push(g, oc, cap, {}) === 0, 'Tokugawa: sakoku keeps foreign faiths out'); }
+{ const { g, p } = fresh('mali', 'mansa'); const o = other(g, p); p.met[o.idx] = o.met[p.idx] = true; const cap = g.settlements[p.capital]; R.spirit(g, cap).mood = 1; p.faithTotal = 999; R.reveal(g, p); p.faith = 200; const pil = R.buyUnit(g, cap, 'missionary'); const oc = G.civSettlements(g, o.idx)[0]; G.setUnitTile(g, pil, oc.tile); pil.moves = 3; const g0 = p.gold; R.spread(g, pil);
+  ok(p.gold === g0 + 30 && !R.preachedRecently(g, o, p.idx), 'Mansa Musa: pilgrims bring gold, not resentment'); }
+{ const { g, p } = fresh('kongo', 'nzinga'); const o = other(g, p); const third = g.civs.find(c => c !== p && c !== o && !c.minor); if (third) { p.met[o.idx] = o.met[p.idx] = true; G.declareWar(g, o.idx, third.idx); G.declareWar(g, p.idx, third.idx); ok(AU.Diplo.opinion(g, o, p).some(x => x[1] > 0 && /enemy/.test(x[0])), 'Nzinga: the enemy of my enemy'); } }
+{ const { g, p } = fresh('rome', 'caesar', 81); const o = other(g, p); G.declareWar(g, p.idx, o.idx); const u = G.civUnits(g, p.idx).find(x => G.isMilitary(x)); const ti = G.neighbors(g, g.tiles[u.tile]).find(i => !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain' && !G.unitsAt(g, i).length && !G.settlementAt(g, i)); const foe = G.spawnUnit(g, o.idx, 'scout', ti); foe.hp = 1; u.moves = 2; u.attacksLeft = 1;
+  U.attack(g, u, ti); ok(!g.units[foe.id] && u.moves >= 1 && !U.canAttackTile(g, u, ti), 'Caesar: after a kill the victor may still move 1 tile, but not attack again (moves ' + u.moves + ')'); }
+console.log(fails ? fails + ' FAILED' : 'uniqueness OK'); process.exit(fails ? 1 : 0);

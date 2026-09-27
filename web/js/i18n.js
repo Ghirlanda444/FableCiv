@@ -17,7 +17,7 @@
   globalThis._ = I.t;
   I.setLang = function (lang) { try { localStorage.setItem('te_lang', lang); } catch (e) {} };
   // ---------- data ----------
-  var KEYS = { name: 1, desc: 1, descV2: 1, joke: 1, adj: 1, title: 1, line: 1, unlocks: 1, hint: 1, label: 1, kicker: 1, text: 1, look: 0 };
+  var KEYS = { name: 1, desc: 1, descV2: 1, joke: 1, adj: 1, title: 1, line: 1, unlocks: 1, hint: 1, label: 1, kicker: 1, text: 1, likes: 1, hates: 1, site: 1, look: 0 };
   var SKIP = { needs: 1, feature: 1, requiresCount: 1, requires: 1, unit: 1, cities: 1, id: 1, replaces: 1, cards: 1, pre: 1, fx: 1, ai: 1, bias: 1, color: 1, color2: 1, icon: 1, slots: 1, yields: 1, cond: 1, when: 1, terrain: 1, civ: 1, civId: 1, leaders: 0 };
   function walk(o, fn, depth) {
     if (!o || typeof o !== 'object' || depth > 5) return;
@@ -29,7 +29,7 @@
       else if (v && typeof v === 'object') walk(v, fn, depth + 1);
     }
   }
-  I.REGISTRIES = ['TECHS', 'CIVICS', 'UNITS', 'BUILDINGS', 'WONDERS', 'NATIONAL', 'NATURAL_WONDERS', 'RESOURCES', 'TERRAIN', 'FEATURES', 'IMPROVEMENTS', 'CIVS', 'CITY_STATES', 'CITY_STATE_TYPES', 'PANTHEONS', 'FOLLOWER_BELIEFS', 'FOUNDER_BELIEFS', 'ENHANCER_BELIEFS', 'RELIGION_NAMES', 'GOVERNMENTS', 'POLICIES', 'PROJECTS', 'PROMOTIONS', 'SPECIALIZATIONS', 'MASTERY', 'GREAT_TYPES', 'VICTORIES', 'LEANINGS', 'DIFFICULTIES', 'MAP_SIZES', 'MAP_TYPES', 'SPEEDS', 'CULTURES', 'SCENARIOS', 'PALACE_PIECES', 'ERAS', 'ENVOY_TIERS', 'WHEN_LABEL'];
+  I.REGISTRIES = ['TECHS', 'CIVICS', 'UNITS', 'BUILDINGS', 'WONDERS', 'NATIONAL', 'NATURAL_WONDERS', 'RESOURCES', 'TERRAIN', 'FEATURES', 'IMPROVEMENTS', 'CIVS', 'CITY_STATES', 'CITY_STATE_TYPES', 'SPIRITS', 'TENETS', 'FAITH_NAMES', 'GOVERNMENTS', 'POLICIES', 'PROJECTS', 'PROMOTIONS', 'SPECIALIZATIONS', 'MASTERY', 'GREAT_TYPES', 'VICTORIES', 'LEANINGS', 'DIFFICULTIES', 'MAP_SIZES', 'MAP_TYPES', 'SPEEDS', 'CULTURES', 'SCENARIOS', 'PALACE_PIECES', 'ERAS', 'ENVOY_TIERS', 'WHEN_LABEL'];
   // Visits every translatable string of the data; fn(str) may return a replacement.
   I.walkData = function (fn) {
     I.REGISTRIES.forEach(function (r) { if (!AU[r] || r === 'ERAS') return; if (r === 'NATURAL_WONDERS') { for (var nk in AU[r]) { var nw = AU[r][nk], keep = nw.name; delete nw.name; walk(nw, fn, 1); nw.name = keep; } return; } walk(AU[r], fn, 0); }); // natural wonders keep their real names in every language

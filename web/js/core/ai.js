@@ -139,7 +139,7 @@
     var ships = G.civUnits(g, civ.idx).filter(U.isNaval).length, mil = G.civUnits(g, civ.idx).filter(G.isMilitary).length;
     if (mil - ships < sets.length + 1) return false; // soldiers first
     var foeCoast = g.civs.some(function (o) { return o.alive && !o.minor && o.idx !== civ.idx && civ.rel[o.idx].war && G.civSettlements(g, o.idx).some(function (s) { return G.isCoastal(g, s); }); });
-    var want = Math.ceil(coastal / 2) + (sea ? 2 : 0) + (foeCoast ? 2 : 0) + Math.floor(g.turn / 100);
+    var want = (foeCoast ? Math.ceil(coastal / 2) + 2 : Math.ceil(coastal / 3)) + (sea ? (foeCoast ? 2 : 1) : 0) + Math.floor(g.turn / 100); // a peacetime fleet stays small: the sea peoples were building ships instead of growing
     return ships < Math.min(want, sets.length + 2);
   };
   AI.bestShipToBuild = function (g, s) {
@@ -167,7 +167,7 @@
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
     var lean = AU.leaningOf ? AU.leaningOf(G.leaderData(civ)) : 'score';
     if (lean === 'science') sc += (y.science || 0) * 0.8 + (d.perPop ? s.pop * 0.2 : 0); if (lean === 'culture') sc += (y.culture || 0) * 0.8 + (d.tourism || 0) * 2; if (lean === 'religion') sc += (y.faith || 0) * 0.8; if (lean === 'domination' && (d.defense || d.pct && d.pct.unitProduction)) sc += 3;
-    if (y.faith) { var piety = tr.religion !== undefined ? tr.religion : 0.5; sc += y.faith * (0.5 + piety); if (!civ.religion && AU.Religion && AU.Religion.religionsFounded(g) < AU.Religion.maxReligions(g)) sc += (id === 'shrine' ? 5 : 2) * (0.5 + piety); } // faith: pantheon, a Great Prophet, a religion
+    if (y.faith) { var piety = tr.religion !== undefined ? tr.religion : 0.5; sc += y.faith * (0.5 + piety); if (AU.Religion && !AU.Religion.founded(g, civ)) sc += (id === 'shrine' ? 4 : 2) * (0.5 + piety); } // Devotion brings the Revelation of an own faith
     return sc / Math.max(40, d.cost) * 100;
   };
   AI.threatened = function (g, civ) { return g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; }); };
@@ -317,7 +317,8 @@
     var garrisoned = {};
     units.forEach(function (u) { var s = G.settlementAt(g, u.tile); if (s && G.isMilitary(u) && s.civ === civ.idx) garrisoned[s.id] = (garrisoned[s.id] || 0) + 1; });
     var enemyNear = {}; units.forEach(function (u) { enemyNear[u.id] = G.isMilitary(u) ? AI.enemiesNear(g, civ, g.tiles[u.tile], 3).length : 0; });
-    units.sort(function (a, b) { var pa = (a.type === 'settler' ? 3 : 0) + (enemyNear[a.id] ? 2 : 0) + (a.path && a.path.length ? 1 : 0), pb = (b.type === 'settler' ? 3 : 0) + (enemyNear[b.id] ? 2 : 0) + (b.path && b.path.length ? 1 : 0); return pb - pa; }); // Command goes to what matters first
+    var civPrio = function (u) { var d = AU.UNITS[u.type]; return d.religious || d.great ? 2 : 0; }; // Pilgrims and Great People are few and each order counts
+    units.sort(function (a, b) { var pa = (a.type === 'settler' ? 3 : 0) + (enemyNear[a.id] ? 2 : 0) + civPrio(a) + (a.path && a.path.length ? 1 : 0), pb = (b.type === 'settler' ? 3 : 0) + (enemyNear[b.id] ? 2 : 0) + civPrio(b) + (b.path && b.path.length ? 1 : 0); return pb - pa; }); // Command goes to what matters first
     units.forEach(function (u) {
       if (!g.units[u.id]) return;
       if (!G.canOrder(g, u)) { if (G.isMilitary(u) && u.moves > 0) U.fortify(g, u); return; } // out of Command: hold
@@ -339,7 +340,10 @@
     u.aiWait = (u.aiWait || 0) + 1;
     function useNow() { var o = GP.options(g, u).filter(function (x) { return x.action === 'greatuse' && x.ok; })[0]; if (o) { GP.use(g, u); return true; } return false; }
     function goHome() { var home = G.civSettlements(g, civ.idx).filter(function (c) { return !U.tileBlocked(g, u, c.tile, true); }).sort(function (a, b) { return G.dist(g.tiles[a.tile], g.tiles[u.tile]) - G.dist(g.tiles[b.tile], g.tiles[u.tile]); })[0]; if (home && u.tile !== home.tile) { if (!U.orderMove(g, u, home.tile) && u.aiWait > 3) useNow(); } else if (u.aiWait > 3) useNow(); }
-    if (type === 'prophet') { if (!own) goHome(); else if (civ.religion || AU.Religion.religionsFounded(g) >= AU.Religion.maxReligions(g)) GP.use(g, u); return; } // founding itself happens in AI.religion
+    if (type === 'prophet') { // a Sacred Site at home; when every settlement is sacred, convert where it stands
+      if (!own) goHome(); else if (!GP.use(g, u)) { if (!GP.use(g, u, 'convert')) { var unsacred = G.civSettlements(g, civ.idx).filter(function (c) { return !c.sacred && !U.tileBlocked(g, u, c.tile, true); })[0]; if (unsacred) U.orderMove(g, u, unsacred.tile); else GP.use(g, u, 'retire'); } }
+      return;
+    }
     if (type === 'general' || type === 'admiral') { if (!own) goHome(); else { var hurt = G.civUnits(g, civ.idx).filter(function (o) { return o.id !== u.id && o.hp < 50 && G.dist(g.tiles[o.tile], g.tiles[u.tile]) <= 2; }).length; if (hurt >= 2) GP.use(g, u); } return; }
     if (type === 'engineer' && own && u.aiWait < 6) { // walk to a city building a wonder when it is close and reachable
       var city = G.civSettlements(g, civ.idx).filter(function (c) { return c.isCity && c.id !== s.id && c.queue.length && (c.queue[0].kind === 'wonder' || c.queue[0].kind === 'national') && G.dist(g.tiles[c.tile], g.tiles[u.tile]) <= 8 && !U.tileBlocked(g, u, c.tile, true); }).sort(function (a, b) { return G.dist(g.tiles[a.tile], g.tiles[u.tile]) - G.dist(g.tiles[b.tile], g.tiles[u.tile]); })[0];
@@ -348,36 +352,32 @@
     if (!useNow()) goHome();
   };
   // ---------- Religion ----------
+  // Tenets by temperament, Offerings to angry spirits, a Festival when the empire is sullen, a state faith when one takes hold at home,
+  // Pilgrims when there is someone to tell.
+  AI.chooseTenet = function (g, civ, T) {
+    var tr = civ.ai || {}, sets = G.civSettlements(g, civ.idx), pick;
+    if (T.id === 'reach') pick = (tr.aggression || 0) > 0.6 ? 'zeal' : 'open';
+    else if (T.id === 'land') { var wild = sets.filter(function (s) { return s.spirit && (s.spirit.id === 'wood' || s.spirit.id === 'river'); }).length; pick = wild * 2 >= sets.length || (tr.culture || 0) < 0.5 ? 'stewards' : 'builders'; }
+    else { var mood = g.v2 && AU.Society ? AU.Society.mood(g, civ).value : 1; pick = mood < 0 ? 'humility' : 'tithe'; }
+    return pick;
+  };
   AI.religion = function (g, civ) {
-    var R = AU.Religion; if (!R) return;
+    var R = AU.Religion; if (!R || civ.minor) return;
     var tr = civ.ai || {}, piety = tr.religion !== undefined ? tr.religion : 0.5;
-    if (R.canChoosePantheon(g, civ)) {
-      var opts = R.availablePantheons(g); if (opts.length) {
-        var sets = G.civSettlements(g, civ.idx), score = {};
-        opts.forEach(function (p) { var sc = G.rng(g) * 2; var w = p.fx.tileBonus ? p.fx.tileBonus[0].when : null;
-          if (w) sets.forEach(function (s) { s.tiles.forEach(function (i) { var t = g.tiles[i]; if ((w === 'desert' && t.terrain === 'desert') || (w === 'cold' && (t.terrain === 'tundra' || t.terrain === 'snow')) || (w === 'jungle' && (t.feature === 'jungle' || t.feature === 'marsh')) || (w === 'fishing' && G.isWater(t)) || (w === 'camp' && t.resource) || (w === 'mine' && t.hills) || (w === 'quarry' && t.resource === 'stone') || (w === 'sacred' && t.natural)) sc += 1; }); });
-          if (p.id === 'fertility_rites' || p.id === 'religious_settlements') sc += 3; if (p.id === 'god_forge') sc += (tr.aggression || 0) * 4; if (p.id === 'monument_gods') sc += (tr.culture || 0) * 4;
-          score[p.id] = sc; });
-        opts.sort(function (x, y) { return score[y.id] - score[x.id]; }); R.choosePantheon(g, civ, opts[0].id);
-      }
-    }
-    if (R.canFound(g, civ)) {
-      var names = R.availableNames(g), pref = AU.RELIGION_PREF[civ.civId], nm = names.filter(function (n) { return n.id === pref; })[0] || names[Math.floor(G.rng(g) * names.length)];
-      var fol = R.availableBeliefs(g, 'follower'), fdr = R.availableBeliefs(g, 'founder');
-      if (nm && fol.length && fdr.length) R.found(g, civ, nm.id, fol[Math.floor(G.rng(g) * fol.length)].id, fdr[Math.floor(G.rng(g) * fdr.length)].id);
-    }
+    var T = R.pendingTenet(g, civ); if (T) R.chooseTenet(g, civ, AI.chooseTenet(g, civ, T));
+    var sets = G.civSettlements(g, civ.idx);
+    // a state faith: the faith followed by a third of our settlements, or a clear majority when ours is borrowed
+    { var top = R.faithsIn(g, civ)[0]; if (top && top.id !== civ.religion && (civ.religion ? top.n * 5 > sets.length * 3 : top.n * 3 >= sets.length)) R.adopt(g, civ, top.id); }
+    var reserve = 20 + (civ.religion ? R.unitCost(g, civ, 'missionary') * 0.5 : 0);
+    sets.forEach(function (s) { if (s.spirit && s.spirit.mood === -1 && civ.faith >= R.offeringCost(g) + reserve) R.offer(g, civ, s); });
+    if (g.v2 && AU.Society && R.canFestival(g, civ) && AU.Society.mood(g, civ).value < 0) R.festival(g, civ);
     if (AU.Great && civ.faith > 250) { // spare Devotion recruits the Great Person closest to completion
       var GPa = AU.Great, bestT = null, bestF = 0.5; AU.GREAT_ORDER.forEach(function (t) { var f = (GPa.state(civ).pts[t] || 0) / GPa.cost(g, civ, t); if (f > bestF && GPa.canPatronize(g, civ, t, 'faith')) { bestF = f; bestT = t; } });
       if (bestT) GPa.patronize(g, civ, bestT, 'faith');
     }
-    if (R.canEnhance(g, civ)) { var en = R.availableBeliefs(g, 'enhancer'), fol2 = R.availableBeliefs(g, 'follower'); if (en.length && fol2.length) R.enhance(g, civ, en[Math.floor(G.rng(g) * en.length)].id, fol2[Math.floor(G.rng(g) * fol2.length)].id); }
-    // buy missionaries when there is something to convert
     if (civ.religion && piety > 0.25) {
       var mine = G.civUnits(g, civ.idx).filter(function (u) { return AU.UNITS[u.type].religious; }).length;
-      if (mine < 2) {
-        var targets = AI.conversionTargets(g, civ);
-        if (targets.length) { var home = G.civSettlements(g, civ.idx).filter(function (s) { return R.canBuyUnit(g, s, 'missionary'); })[0]; if (home) R.buyUnit(g, home, 'missionary'); }
-      }
+      if (mine < 1 + Math.round(piety * 2)) { var home = sets.filter(function (s) { return R.canBuyUnit(g, s, 'missionary') && AI.conversionTargets(g, civ, s.tile).length; })[0]; if (home) R.buyUnit(g, home, 'missionary'); }
     }
   };
   AI.envoys = function (g, civ) { // free cities: gifts when rich, caravans handled by the units
@@ -397,18 +397,25 @@
     CS.minors(g).forEach(function (m) { if (!m.alive || !civ.met[m.idx] || busy[m.idx] || G.atWar(g, civ.idx, m.idx) || CS.isHostile(g, civ, m)) return; var s = G.civSettlements(g, m.idx)[0]; if (!s) return; s.tiles.forEach(function (i) { if (i === s.tile || U.tileBlocked(g, u, i, true)) return; var d = G.dist(g.tiles[i], g.tiles[u.tile]) - CS.tiesOf(g, civ, m) / 20; if (d < bd) { bd = d; best = i; } }); });
     if (best != null) { U.orderMove(g, u, best); if (g.units[u.id]) CS.openRoute(g, u); }
   };
-  AI.conversionTargets = function (g, civ) {
-    var out = [];
-    for (var id in g.settlements) { var s = g.settlements[id]; if (s.religion === civ.religion) continue; if (s.civ !== civ.idx && (G.atWar(g, civ.idx, s.civ) || !civ.met[s.civ])) continue; out.push(s); }
+  // Settlements worth a Pilgrim: our own first, then friendly or indifferent neighbours (a devout leader of another faith is left alone)
+  AI.conversionTargets = function (g, civ, fromTile) {
+    var out = [], cont = fromTile != null ? g.tiles[fromTile].continent : null;
+    for (var id in g.settlements) {
+      var s = g.settlements[id]; if (s.religion === civ.religion) continue;
+      if (cont != null && g.tiles[s.tile].continent !== cont) continue; // Pilgrims walk
+      if (s.civ !== civ.idx) { var host = g.civs[s.civ]; if (!host || G.atWar(g, civ.idx, s.civ) || !civ.met[s.civ]) continue; if (!host.minor && AU.Diplo && AU.Diplo.agenda(host).id === 'devout' && host.religion) continue; }
+      out.push(s);
+    }
     return out;
   };
   AI.moveReligious = function (g, civ, u) {
     var R = AU.Religion;
-    if (R.canSpread(g, u)) { var here = G.settlementAt(g, u.tile); if (here && here.religion !== u.religion) { R.spread(g, u); return; } }
-    if (R.canInquisition(g, u)) { R.inquisition(g, u); return; }
-    var targets = AI.conversionTargets(g, civ), t = g.tiles[u.tile], best = null, bd = 1e9;
-    targets.forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]) + (s.civ === civ.idx ? 0 : 3); if (d < bd) { bd = d; best = s; } });
-    if (best) { if (!U.orderMove(g, u, best.tile)) U.skip(g, u); } else U.skip(g, u);
+    if (R.canSpread(g, u)) { R.spread(g, u); return; }
+    u.aiBad = u.aiBad || {};
+    var targets = AI.conversionTargets(g, civ, u.tile).filter(function (s) { return !u.aiBad[s.id]; }), t = g.tiles[u.tile], best = null, bd = 1e9;
+    targets.forEach(function (s) { var d = G.dist(t, g.tiles[s.tile]) + (s.civ === civ.idx ? 0 : 3) - (s.religion ? 0 : 2); if (d < bd) { bd = d; best = s; } });
+    if (!best) { u.aiIdle = (u.aiIdle || 0) + 1; if (u.aiIdle > 10) G.removeUnit(g, u); else U.skip(g, u); return; } // nobody left to tell: the Pilgrim goes home for good
+    u.aiIdle = 0; var before = u.tile; if (!U.orderMove(g, u, best.tile) || u.tile === before) { u.aiStuck = (u.aiStuck || 0) + 1; if (u.aiStuck >= 3) { u.aiBad[best.id] = true; u.aiStuck = 0; } if (g.units[u.id]) U.skip(g, u); } else u.aiStuck = 0; // an unreachable target is dropped after three tries
   };
   AI.moveSettler = function (g, civ, u) {
     var t = g.tiles[u.tile];
