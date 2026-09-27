@@ -490,6 +490,7 @@
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
     if (AU.Religion) add(y, AU.Religion.settlementYields(g, s)); // spirit, faith tenets, Sacred Site, Holy City, Festival
     if (AU.Sig) AU.Sig.settlementYields(g, s, civ, fx, y); // signature effects of the civ and its leader
+    if (AU.Roads && civ.rails && civ.rails.length) { var ry = AU.Roads.railYields(g, s, civ); y.gold += ry.gold; pct.production += ry.pct; } // railways: trade between the ends, industry, or the drain of the works
     y.culture += fx.empireCulture || 0; y.gold += fx.empireGold || 0;
     if (fx.happinessPerWonder) y.happiness += fx.happinessPerWonder * wondersHere;
     var coastal = G.isCoastal(g, s);

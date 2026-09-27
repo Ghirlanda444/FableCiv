@@ -11,6 +11,7 @@
       AI.choosePolicies(g, civ);
       AI.religion(g, civ);
       AI.envoys(g, civ);
+      AI.rails(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
     } catch (e) { G.log(g, _('AI error for') + ' ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
@@ -379,6 +380,14 @@
       var mine = G.civUnits(g, civ.idx).filter(function (u) { return AU.UNITS[u.type].religious; }).length;
       if (mine < 1 + Math.round(piety * 2)) { var home = sets.filter(function (s) { return R.canBuyUnit(g, s, 'missionary') && AI.conversionTargets(g, civ, s.tile).length; })[0]; if (home) R.buyUnit(g, home, 'missionary'); }
     }
+  };
+  // Railways: one line at a time, when the treasury can pay it and still keep a reserve; the busiest pair of settlements first
+  AI.rails = function (g, civ) {
+    var RD = AU.Roads; if (!RD || civ.minor || !RD.railUnlocked(g, civ)) return;
+    if (RD.lines(civ).some(function (L) { return !L.done && RD.lineIntact(g, civ, L); })) return;
+    var reserve = 250 + G.civSettlements(g, civ.idx).length * 25, best = null, bs = 0;
+    G.civSettlements(g, civ.idx).forEach(function (s) { RD.railOptions(g, civ, s).forEach(function (o) { if (RD.railWhy(g, civ, s, o) || civ.gold < o.cost + reserve) return; var sc = (s.pop + o.other.pop) / o.cost; if (sc > bs) { bs = sc; best = [s, o]; } }); });
+    if (best) RD.startRail(g, civ, best[0], best[1].other.id);
   };
   AI.envoys = function (g, civ) { // free cities: gifts when rich, caravans handled by the units
     var CS = AU.CityStates; if (!CS || civ.minor) return;

@@ -487,6 +487,16 @@
         seg(Math.max(1.6, rzs * 0.17), 'rgba(70,48,24,0.55)');        // road edge
         seg(Math.max(1, rzs * 0.09), 'rgba(214,182,122,0.95)');       // packed earth
       }
+      var railSegs = []; // railways: dark sleepers under a steel line, drawn over any road
+      for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
+        i = r * g.W + c; t = g.tiles[i]; if (!t.rail || !explored[i]) continue;
+        for (var rl = 0; rl < 6; rl++) { var rn2 = nbAt(t.col, t.row, rl); if (!rn2 || !rn2.rail || !explored[rn2.i]) continue; if (rn2.i < t.i && rn2.row >= r0 && rn2.row <= r1 && rn2.col >= c0 && rn2.col <= c1) continue; railSegs.push([t, rn2]); }
+      }
+      if (railSegs.length) {
+        var rseg = function (w, col, dash) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath(); railSegs.forEach(function (sg) { var a = S(sg[0]), b = S(sg[1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke(); ctx.setLineDash([]); };
+        rseg(Math.max(3, rzs * 0.26), 'rgba(58,42,30,0.95)', [Math.max(1, rzs * 0.05), Math.max(1.5, rzs * 0.07)]); // sleepers
+        rseg(Math.max(1, rzs * 0.07), 'rgba(40,40,46,0.95)');                                                      // steel
+      }
     }
     // pass 1c: reefs and foam lines hugging the wobbly coast
     if (!lowDetail) {

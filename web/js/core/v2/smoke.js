@@ -15,6 +15,7 @@
     var mines = 0, woods = 0;
     s.tiles.forEach(function (i) { var t = g.tiles[i]; if (i === s.tile) return; if (t.worked) { var imp = G.improvementFor(g, t, civ); if (imp === 'mine' || imp === 'quarry') mines++; } if (t.feature === 'forest' || t.feature === 'jungle') woods++; });
     if (mines) { sources += mines * 0.5; src.push(['mines', mines * 0.5]); }
+    if (AU.Roads && civ.rails && civ.rails.length) { var rs = AU.Roads.railYields(g, s, civ).smoke; if (rs) { sources += rs; src.push(['trains', rs]); } }
     var era = civ.era || 0; if (era >= SM.POP_ERA && s.pop >= 6) { var crowd = Math.floor(s.pop / 6); sources += crowd; src.push(['crowds', crowd]); }
     if (woods) { var w = woods * 0.5 * (fx.forestSinkMult || 1); sinks += w; sink.push(['woods', w]); }
     if (fx.smokeSink) { sinks += fx.smokeSink; sink.push(['sparks', fx.smokeSink]); }
@@ -33,7 +34,7 @@
   SM.farmTiles = function (g, s) { var civ = g.civs[s.civ], n = 0; s.tiles.forEach(function (i) { var t = g.tiles[i]; if (i === s.tile || !t.worked) return; var imp = G.improvementFor(g, t, civ); if (imp === 'farm' || imp === 'pasture') n++; }); return n; };
   SM.total = function (g, civ) { var n = 0; G.civSettlements(g, civ.idx).forEach(function (s) { n += SM.smoke(g, s); }); return Math.round(n * 10) / 10; };
   SM.world = function (g) { var n = 0; for (var id in g.settlements) n += SM.smoke(g, g.settlements[id]); return Math.round(n * 10) / 10; };
-  SM.NAMES = { mines: 'worked mines and quarries', crowds: 'crowds', woods: 'woods you own', sparks: 'Sparks', river: 'the river' };
+  SM.NAMES = { trains: 'trains', mines: 'worked mines and quarries', crowds: 'crowds', woods: 'woods you own', sparks: 'Sparks', river: 'the river' };
   SM.describe = function (g, s) {
     var d = SM.detail(g, s), nm = function (k) { return AU.BUILDINGS[k] ? AU.BUILDINGS[k].name : AU.NATIONAL[k] ? AU.NATIONAL[k].name : _(SM.NAMES[k] || k); };
     return { net: d.net, from: d.src.map(function (x) { return nm(x[0]) + ' +' + x[1]; }).join(', '), soaked: d.sink.map(function (x) { return nm(x[0]) + ' -' + x[1]; }).join(', '), happiness: SM.happiness(d.net), heavy: SM.heavy(d.net) };

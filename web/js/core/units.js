@@ -53,7 +53,7 @@
       if (to.terrain === 'ocean' && !(civ.techs.cartography || fx.earlyOcean)) return Infinity;
       return 1;
     }
-    if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return 3; } return Infinity; }
+    if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return to.road && from && from.road ? 0.5 : 3; } return Infinity; } // a mountain road (the Qhapaq Ñan) is walked like any road
     var cost = 1, ud = U.def(g, u);
     if (ud.ignoreTerrain) { if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) return 99; return 1; }
     var fm = fx.forestMoveCost || (ud.forestMove ? 1 : 0);
@@ -61,7 +61,8 @@
     if (to.feature && AU.FEATURES[to.feature].move > cost) cost = fm && (to.feature === 'forest' || to.feature === 'jungle') ? Math.max(cost, fm) : AU.FEATURES[to.feature].move;
     if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle') && !fm) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
     if (AU.Roads) { var rc = AU.Roads.crossing(g, u, to, from); if (rc === 2) cost = 99; else if (rc === 1) cost += 1; } // wading a navigable river ends the move, a stream costs 1 more
-    if (to.road && from && from.road && cost < 99) { var rciv = u.civ >= 0 ? g.civs[u.civ] : null; cost = Math.min(cost, rciv && G.civFx(g, rciv).royalRoad ? 0.34 : 0.5); } // Darius: the Royal Road // road to road: half a move (a road over a river is a bridge)
+    if (to.rail && from && from.rail && cost < 99) cost = Math.min(cost, 0.1); // a train crosses the empire in a turn
+    else if (to.road && from && from.road && cost < 99) { var rciv = u.civ >= 0 ? g.civs[u.civ] : null; cost = Math.min(cost, rciv && G.civFx(g, rciv).royalRoad ? 0.34 : 0.5); } // Darius: the Royal Road // road to road: half a move (a road over a river is a bridge)
     if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
