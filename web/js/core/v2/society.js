@@ -18,7 +18,9 @@
   };
   SO.supplyOf = function (t) { return t.rich == null ? 1 : SO.RICH[t.rich].supply; };
   // Units in service that eat a strategic resource.
-  SO.resourceUse = function (g, civ, res) { var n = 0; G.civUnits(g, civ.idx).forEach(function (u) { if (AU.UNITS[u.type].resource === res) n++; }); return n; };
+  SO.resourceUse = function (g, civ, res) { var n = 0; G.civUnits(g, civ.idx).forEach(function (u) { if (AU.UNITS[u.type].resource === res) n++; });
+    if (res === 'iron' && civ.rails && AU.Roads) n += civ.rails.filter(function (L) { return AU.Roads.lineIntact(g, civ, L); }).length; // every railway line holds 1 Iron
+    return n; };
   SO.resourceSupply = function (g, civ, res) { return G.luxuryCount(g, civ).strategic[res] || 0; };
   SO.canSupply = function (g, civ, res) { return !res || SO.resourceSupply(g, civ, res) > SO.resourceUse(g, civ, res); };
   // ---------- happiness tiers ----------

@@ -63,6 +63,20 @@ Title → New game → **Rules**: *Classic* (default) or *Divergence (beta)*. Th
   - **Peace and trade:** Ashoka: Heritage only while at peace with everyone. Cleopatra: Gold from friends and allies. Itzcoatl: Production from friends and allies. Nzinga: leaders who fight her enemies warm to her. Amanirenas: an empire that makes peace with her pays for it. Mansa Musa: his Pilgrims bring Gold and goodwill. Hatshepsut: Caravan routes bring incense (Devotion, Heritage). De Witt: interest on the treasury. Darius: the Royal Road (faster roads, cheaper moves along them).
   - **Growth, culture and faith:** Augustus: cheaper buildings in the capital. Franz Joseph: the capital gets Heritage per building (the Ringstraße). Maria Theresa: compulsory schooling (Knowledge per 3 population). Alexander: far settlements become Alexandrias. Wu Zetian: Libraries give Influence (the imperial examination). India: Happiness for every faith in the empire. Tokugawa: sakoku keeps foreign faiths out. Saladin: fights harder near any Holy City. Ethiopia: rock churches on hills. Inca: terraces. Nubia: gold mines. Mandukhai: Happiness per Bond. Sundiata: big settlements are happier. Suleiman: no Command lost to bureaucracy. Ramses: Wonders give Great Engineer points. Jayavarman: hospitals. France: Wonders give Fame. Spain: settlements abroad follow the state faith. Poland: frontier settlements are bulwarks. Isabella: fights harder against other faiths. João: coastal trading posts abroad. William of Orange: the water line. Barbarossa: stronger against free cities. Gajah Mada: the Palapa Oath (Production on other islands). Sobieski: the relief of Vienna (strength near friends' settlements).
   - **The audit is now a test.** tests/uniqueness.js fails if any ability has no effect of its own or uses an effect key the rules never read. It also checks 30 signatures in play. The Zulu 100/65/45 strike and Hatshepsut's river Influence are gone, replaced by their signatures.
+- **Railways: a ruler's investment.** Nothing is automatic.
+  - **Who builds and where:** after the Iron Rail Spark (Puffstack Age), with a Railway Station at one end, the player (or the AI, when it can afford it and keep a reserve) picks two of its settlements on one continent, up to 12 tiles apart.
+  - **Construction:** the line is laid tile by tile along the cheapest land route, reusing existing track.
+  - **Costs:**
+    - Gold up front: 50 per flat tile, 75 on hills, woods and marsh, +50 for a river bridge.
+    - Time: 2 turns per tile, 3 on rough ground, +1 for a bridge.
+    - Production: -20% at both ends while the line is being built.
+    - Resources: 1 Iron held by every line (units cannot use it), 1 Coal for every 3 lines (lines beyond it stand idle).
+    - Upkeep: 2 Gold a turn per line.
+  - **Payoff:** each end +2 Gold, plus +1 Gold per 4 population of the other end; +15% Production (at most +30%); rail-to-rail movement costs 0.1. Trains add 0.5 Smoke at each end.
+  - **No fading:** the benefits never fade; Airports and the Interstate System simply add transport of their own.
+  - **Where to see it:** the settlement panel shows the lines and the options with cost, turns and what is missing; both maps draw the track.
+  - **Tests:** tests/rails.js.
+- **Inca rebalanced.** A hill mine under Pachacuti yielded 4 Food and 4.4 Production: the Terrace improvement, the civ's +1 Food per hill and Pachacuti's +1 hill Production all stacked. The civ keeps the Terrace and its mountain crossing, and its signature is now the Qhapaq Ñan: roads over hills at plains cost and through mountains, walked like any road. Pachacuti loses the hill Production.
 - **Civ ladder** (`tools/civ-ladder.js <games> <turns> <v2> [seed]`, `--summary <log>`): AI-only games with a random civ and leader for the player seat, ranked by score; the summary lists average rank, win share and elimination share per civ/leader so an ability that wins or loses too often stands out.
 
 ## Pacing (three 400-turn AI runs, small map, prince)

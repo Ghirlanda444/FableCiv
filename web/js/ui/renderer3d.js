@@ -324,15 +324,15 @@
   // Roads: a brown ribbon from tile centre to tile centre, lifted over the relief; darker and wider where it bridges a river
   P.rebuildRoads = function (g) {
     var T = window.THREE, w = this.world, explored = G.player(g).explored, self = this, sig = 0;
-    for (var i = 0; i < g.tiles.length; i++) if (g.tiles[i].road && explored[i]) sig = (sig * 31 + i + 7) % 1000000007;
+    for (var i = 0; i < g.tiles.length; i++) if ((g.tiles[i].road || g.tiles[i].rail) && explored[i]) sig = (sig * 31 + i * 2 + (g.tiles[i].rail ? 1 : 0) + 7) % 1000000007;
     if (sig === w.roadSig) return; w.roadSig = sig;
     if (w.roads) { w.roads.geometry.dispose(); w.group.remove(w.roads); w.roads = null; }
-    var positions = [], colors = [], road = new T.Color(0xc9a46a), bridge = new T.Color(0x5a3a1f);
+    var positions = [], colors = [], road = new T.Color(0xc9a46a), bridge = new T.Color(0x5a3a1f), rail = new T.Color(0x34343a);
     for (var ti = 0; ti < g.tiles.length; ti++) {
-      var t = g.tiles[ti]; if (!t.road || !explored[ti] || G.isWater(t)) continue;
+      var t = g.tiles[ti]; if (!(t.road || t.rail) || !explored[ti] || G.isWater(t)) continue;
       G.neighbors(g, t).forEach(function (ni) {
-        var n = g.tiles[ni]; if (ni < ti || !n.road || !explored[ni] || G.isWater(n)) return;
-        var a = tileXZ(t), b = tileXZ(n), wide = t.river || n.river, cc = wide ? bridge : road, hw = wide ? 2.2 : 1.3;
+        var n = g.tiles[ni]; if (ni < ti || !(n.road || n.rail) || !explored[ni] || G.isWater(n)) return; var railed = t.rail && n.rail; if (!railed && !(t.road && n.road)) return;
+        var a = tileXZ(t), b = tileXZ(n), wide = t.river || n.river, cc = railed ? rail : wide ? bridge : road, hw = railed ? 1.6 : wide ? 2.2 : 1.3;
         var dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz) || 1, nx = -dz / len * hw, nz = dx / len * hw, steps = 4;
         for (var st = 0; st < steps; st++) {
           var x1 = a[0] + dx * st / steps, z1 = a[1] + dz * st / steps, x2 = a[0] + dx * (st + 1) / steps, z2 = a[1] + dz * (st + 1) / steps;
