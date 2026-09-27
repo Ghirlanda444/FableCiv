@@ -100,6 +100,7 @@ body.push(chapter(5, 'Settlements', 'Towns feed the empire; Cities make it.', `
 ${table(['Town trade', 'Effect'], specs)}
 <h3>Claims and Influence 🎯</h3>
 <p>A settlement starts with its centre and one worked tile and claims one more tile each time it grows. The first three claims are free. After that each claim costs Influence and needs a <b>Boundary Marker</b> in the settlement. You earn Influence every turn (2, +1 per settlement, +1 for every 8 Heritage a turn), and a Growth Hall lets growth wait in a queue instead of idling.</p>
+${tip('A port claims the sea cheaply: with a <b>Lighthouse</b> a water tile costs half the Influence, with a <b>Harbor</b> it is free. Coastal cities that build them early grow on the water when the land runs out.', 'HARBOUR MASTER')}
 ${tip('A settlement on a <b>river</b> starts easy: its river tiles are claimed without Influence or Boundary Marker, it grows 20% cheaper until 8 population, and the river soaks up 1 Smoke.')}
 <h3>Moods</h3>
 <p>The Happiness of a settlement sets its mood, and the mood scales its yields and growth. Luxuries, Shrines, Festivals and many abilities raise Happiness; crowding, Smoke, unrest and angry spirits lower it.</p>
