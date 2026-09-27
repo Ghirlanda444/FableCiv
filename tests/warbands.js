@@ -49,7 +49,8 @@ function assert(c, m) { if (!c) throw new Error('FAIL: ' + m); console.log('ok:'
   const res = U.attack(g, w1, b);
   assert(res && res.warband && res.attackers.length === 3, 'the attack is a Warband exchange');
   assert(!g.units[e2.id] && g.units[e1.id], 'the wounded Rock Chucker (weakest) died first, the Militia lives');
-  assert(w1.moves === 0 && w2.moves === 0 && w3.moves === 0, 'every attacker spent its attack');
+  const km = AU.G.civFx(g, g.civs[0]).killMove || 0; // Caesar: the one who struck the kill keeps a tile to move, never a second attack
+  assert([w1, w2, w3].every(w => w.attacksLeft === 0) && w2.moves === 0 && w3.moves === 0 && w1.moves <= km, 'every attacker spent its attack');
   assert(g.units[e1.id].hp < 100, 'spill-over damage reached the next weakest');
   // Commander multiplies the group
   const g2 = fresh(true); clear(g2); const [a2, b2] = flatPair(g2);

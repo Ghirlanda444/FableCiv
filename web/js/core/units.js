@@ -406,6 +406,7 @@
     if (u.attacksLeft > 0 && u.moves > 0) u.moves = Math.max(1, u.moves - 1);
     else if (def.movesAfterAttack) u.moves = Math.max(0, u.moves - 1);
     else u.moves = 0;
+    if (AU.Sig) AU.Sig.afterAttack(g, u);
     if (u.hp <= 0) { result.attackerKilled = true; if (civ) G.notify(g, civ, { kind: 'loss', text: _('Your') + ' ' + u.name + ' ' + _('died attacking.'), tile: u.tile }); G.removeUnit(g, u); if (target.unit && target.unit.hp > 0) target.unit.xp += 3; }
     if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
     return result;

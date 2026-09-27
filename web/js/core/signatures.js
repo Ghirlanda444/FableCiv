@@ -75,12 +75,14 @@
   // ---------- events ----------
   SG.onKill = function (g, u, v) {
     var civ = u.civ >= 0 ? g.civs[u.civ] : null; if (!civ) return; var fx = G.civFx(g, civ);
-    if (fx.killMove && u.killMoveTurn !== g.turn) { u.killMoveTurn = g.turn; u.moves = Math.max(u.moves, 0) + fx.killMove; } // Veni, vidi, vici
+    if (fx.killMove && u.killMoveTurn !== g.turn) { u.killMoveTurn = g.turn; u.killMovePending = true; } // Veni, vidi, vici: granted once the attack is settled (SG.afterAttack)
     if (fx.adwa && G.tileOwnerCiv(g, g.tiles[v.tile]) === civ.idx) { // Adwa: every invader beaten at home is heard of abroad
       civ.bonusCulture = (civ.bonusCulture || 0) + fx.adwa;
       g.civs.forEach(function (o) { if (o !== civ && o.alive && !o.minor && o.idx !== v.civ && o.rel[civ.idx] && o.met && o.met[civ.idx]) o.rel[civ.idx].attitude = Math.min(80, o.rel[civ.idx].attitude + 1); });
     }
   };
+  // after an attack the rules set the attacker's movement; a victor under Caesar keeps 1 tile to move (never a second attack)
+  SG.afterAttack = function (g, u) { if (!u.killMovePending) return; u.killMovePending = false; var civ = u.civ >= 0 ? g.civs[u.civ] : null; if (civ && g.units[u.id]) u.moves = Math.max(u.moves, G.civFx(g, civ).killMove || 0); };
   SG.onAttack = function (g, u, tileIdx) {
     var civ = u.civ >= 0 ? g.civs[u.civ] : null; if (!civ) return; var fx = G.civFx(g, civ);
     if (fx.shoreRaid && AU.U.isNaval(u) && !G.isWater(g.tiles[tileIdx])) { civ.gold += fx.shoreRaid; if (civ.isPlayer) G.notify(g, civ, { kind: 'combat', text: '+' + fx.shoreRaid + ' ' + _('Gold plundered from the shore.'), tile: tileIdx }); } // the last Viking

@@ -144,6 +144,7 @@
       o.attacksLeft = Math.max(0, (o.attacksLeft === undefined ? 1 : o.attacksLeft) - 1);
       var od = U.def(g, o);
       if (o.attacksLeft > 0 && o.moves > 0) o.moves = Math.max(1, o.moves - 1); else if (od.movesAfterAttack) o.moves = Math.max(0, o.moves - 1); else o.moves = 0;
+      if (AU.Sig) AU.Sig.afterAttack(g, o);
     });
     WB.bury(g, group, result, u);
     if (civ && civ.isPlayer) G.refreshVisibility(g, civ);
