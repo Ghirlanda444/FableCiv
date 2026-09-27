@@ -258,12 +258,40 @@
       var y = AU.baseTileYields(a, civ); sc += y.food * 1.3 + y.production * 1.1 + y.gold * 0.5;
       if (a.resource) sc += 1.5; if (a.river) sc += 0.5; if (G.isWater(a)) water++;
     });
-    if (water > 9) sc -= (water - 9) * 1.5; else if (water > 0) sc += 2;
+    var sea = AI.seaPower(civ), shore = AI.onShore(g, t);
+    if (water > (sea ? 12 : 9)) sc -= (water - (sea ? 12 : 9)) * 1.5; else if (water > 0) sc += 2;
+    if (sea && shore) sc += 5; // a sea power wants ports
     if (t.hills) sc += 2; if (t.river) sc += 2;
     if (t.terrain === 'tundra' || t.terrain === 'desert') sc -= 5;
     return sc;
   };
+  // Peoples whose home is the coast (their start bias) build ports and, when the home shore is full, cross the sea.
+  AI.seaPower = function (civ) { var b = (AU.CIV_BY_ID[civ.civId] || {}).bias || []; return b.indexOf('coast') >= 0; };
+  AI.onShore = function (g, t) { return G.neighbors(g, t).some(function (n) { return g.tiles[n].terrain === 'coast'; }); };
+  AI.canSail = function (g, civ) { return U.canEmbark(g, civ, G.civFx(g, civ)); };
+  // overseas: a coastal site on another shore within 16 tiles of one of our ports
+  AI.findOverseas = function (g, civ, settler) {
+    var ports = G.civSettlements(g, civ.idx).filter(function (s) { return G.isCoastal(g, s); }); if (!ports.length || !AI.canSail(g, civ)) return null;
+    var from = settler ? g.tiles[settler.tile] : g.tiles[ports[0].tile], best = null, bv = -1e9, seen = {};
+    ports.forEach(function (p) {
+      var pt = g.tiles[p.tile];
+      Hex.spiral(pt.col, pt.row, 16, g.W, g.H).forEach(function (i) {
+        if (seen[i]) return; seen[i] = true; var t = g.tiles[i];
+        if (!AI.onShore(g, t) || !G.canFoundAt(g, civ.idx, i)) return;
+        var near = 1e9; G.civSettlements(g, civ.idx).forEach(function (s) { near = Math.min(near, G.dist(g.tiles[s.tile], t)); }); if (near < 5) return;
+        var foe = false; G.neighbors(g, t).concat([i]).forEach(function (n) { if (G.unitsAt(g, n).some(function (u) { return u.civ !== civ.idx && G.isMilitary(u); })) foe = true; }); if (foe) return;
+        var sc = AI.siteScore(g, civ, t) - G.dist(from, t) * 0.5 - (t.continent !== from.continent ? 3 : 0);
+        if (sc > bv) { bv = sc; best = i; }
+      });
+    });
+    return best;
+  };
   AI.findSite = function (g, civ, settler) {
+    var home = AI.findHomeSite(g, civ, settler);
+    if (home == null && AI.seaPower(civ)) return AI.findOverseas(g, civ, settler);
+    return home;
+  };
+  AI.findHomeSite = function (g, civ, settler) {
     var sets = G.civSettlements(g, civ.idx);
     var origin = settler ? g.tiles[settler.tile] : (sets.length ? g.tiles[sets[0].tile] : null);
     if (!origin) return null;
