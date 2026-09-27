@@ -15,6 +15,7 @@ const out = process.argv[2] || path.join(__dirname, 'out', 'shots'); fs.mkdirSyn
   await page.selectOption('#opt-size', 'small');
   await page.fill('#opt-seed', '2718');
   await page.click('#btn-start');
+  await page.waitForSelector('#ld-go:not([hidden])'); await page.click('#ld-go');
   await page.waitForFunction(() => window.AU.App.g && !document.getElementById('game').hidden);
   await page.click('[data-action="found"]');
   // let the AI play our seat for a while, then hand it back

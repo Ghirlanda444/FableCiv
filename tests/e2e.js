@@ -20,6 +20,9 @@ require('fs').mkdirSync(out, { recursive: true });
   await page.fill('#opt-seed', '4242');
   await page.screenshot({ path: out + '/02-setup.png' });
   await page.click('#btn-start');
+  await page.waitForSelector('#ld-go:not([hidden])'); // the loading screen: the leader greets the player
+  await page.screenshot({ path: out + '/02b-loading.png' });
+  await page.click('#ld-go');
   await page.waitForFunction(() => window.AU.App.g && !document.getElementById('game').hidden);
   await page.waitForTimeout(300);
   await page.screenshot({ path: out + '/03-start.png' });
@@ -88,6 +91,7 @@ require('fs').mkdirSync(out, { recursive: true });
   await page.reload();
   await page.waitForSelector('#btn-continue:not([hidden])');
   await page.click('#btn-continue');
+  await page.waitForSelector('#ld-go:not([hidden])'); await page.click('#ld-go');
   await page.waitForFunction(() => window.AU.App.g && !document.getElementById('game').hidden);
   const turn = await page.evaluate(() => AU.App.g.turn);
   console.log('continued from save at turn', turn);

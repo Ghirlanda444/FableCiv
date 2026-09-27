@@ -44,7 +44,8 @@
     importSave: function () { var self = this, inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json,application/json'; inp.onchange = function () { var f = inp.files && inp.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { try { var g = G.deserialize(String(r.result)); self.startGameState(g); self.save(true); self.toast(_('Save file loaded.')); } catch (e) { self.toast(_('That file is not a Tiny Empires save: ') + e.message); } }; r.readAsText(f); }; inp.click(); },
     hasSave: function () { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } },
     save: function (silent) { try { localStorage.setItem(SAVE_KEY, G.serialize(this.g)); if (!silent) this.toast(_('Game saved.')); return true; } catch (e) { if (!silent) this.toast(_('Could not save') + ': ' + e.message); return false; } },
-    load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; this.startGameState(G.deserialize(j)); return true; } catch (e) { this.toast(_('Could not load save') + ': ' + e.message); return false; } },
+    load: function () { try { var j = localStorage.getItem(SAVE_KEY); if (!j) return false; var g = G.deserialize(j), p = G.player(g), self = this;
+        if (AU.Loading && p && AU.Loading.show(p.civId, p.leaderId, { mode: 'continue', turn: g.turn })) setTimeout(function () { AU.Loading.ready(function () { self.startGameState(g); }); }, 400); else this.startGameState(g); return true; } catch (e) { this.toast(_('Could not load save') + ': ' + e.message); return false; } },
     back: function () {
       if (!$('quote').hidden) { $('quote-ok').click(); return true; }
       if (!$('confirm').hidden) { $('confirm').hidden = true; return true; }
@@ -56,7 +57,7 @@
     },
 
     // ---------- Screens ----------
-    showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); },
+    showScreen: function (id) { ['title', 'setup', 'game'].forEach(function (s) { $(s).hidden = s !== id; }); if (AU.Loading) AU.Loading.hide(); },
     renderLangBar: function () {
       var bar = $('lang-bar'); if (!bar || !AU.I18n) return; var I = AU.I18n, html = '';
       for (var k in I.LANGS) html += '<button class="small ' + (k === I.lang ? 'on' : 'ghost') + '" data-lang="' + k + '">' + I.LANGS[k] + '</button>';
@@ -85,7 +86,16 @@
         r.draw(g, null);
       } catch (e) { console.warn('title background failed', e); }
     },
+    // Tiny Empires is laid out for 16:9: a phone held upright gets one gentle hint to turn it
+    rotateHint: function () {
+      var seen = false; try { seen = localStorage.getItem('te-rotate-hint') === '1'; } catch (e) {}
+      if (seen || !window.matchMedia || !window.matchMedia('(orientation: portrait)').matches || !('ontouchstart' in window)) return;
+      var d = document.createElement('div'); d.className = 'rotate-hint'; d.innerHTML = '<span class="rot">📱</span><span>' + _('Tiny Empires plays best with your phone turned sideways.') + '</span><button class="small">OK</button>';
+      var off = function () { d.remove(); try { localStorage.setItem('te-rotate-hint', '1'); } catch (e) {} };
+      d.querySelector('button').onclick = off; window.addEventListener('orientationchange', off, { once: true }); setTimeout(function () { d.remove(); }, 7000); document.body.appendChild(d);
+    },
     bindTitle: function () {
+      App.rotateHint();
       $('btn-new').onclick = function () { App.showSetup(); };
       $('btn-music').onclick = function () { App.settings.music = !(App.settings.music !== false); App.saveSettings(); AU.Audio.setEnabled(App.settings.music); App.refreshMusicBtn(); };
       window.addEventListener('resize', function () { if (!$('title').hidden) App.showKeyArt(); });
@@ -177,9 +187,9 @@
     startNewGame: function () {
       var seed = parseInt($('opt-seed').value, 10);
       var opts = { playerCiv: this.setup.civ, playerLeader: this.setup.leader, mapSize: $('opt-size').value, mapType: $('opt-type').value, speed: $('opt-speed').value, difficulty: $('opt-diff').value, numCivs: parseInt($('opt-civs').value, 10) + 1, numStates: parseInt($('opt-states').value, 10), seed: isNaN(seed) ? undefined : seed, scenario: this.setup.scenario || undefined, v2: true };
-      this.toast(_('Generating the world…'));
-      var self = this;
-      setTimeout(function () { try { self.startGameState(G.newGame(opts)); } catch (e) { console.error(e); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 30);
+      var self = this, shown = AU.Loading && AU.Loading.show(opts.playerCiv, opts.playerLeader, { mode: 'new' });
+      if (!shown) this.toast(_('Generating the world…'));
+      setTimeout(function () { try { var g = G.newGame(opts); if (shown) AU.Loading.ready(function () { self.startGameState(g); }); else self.startGameState(g); } catch (e) { console.error(e); if (AU.Loading) AU.Loading.hide(); self.showSetup(); self.toast(_('Failed to create the game') + ': ' + e.message); } }, 60);
     },
     startGameState: function (g) {
       this.g = g; this.sel = { unit: null, settlement: null, tile: -1 }; this.mode = 'normal'; this.panel = null; $('panel').hidden = true;
@@ -631,6 +641,14 @@
       $('panel').hidden = false; $('toast').hidden = true;
       AU.Panels.render(this, name, this.panelData);
       $('panel-body').scrollTop = 0;
+      if (name === 'city' && this.g && this.panelData.id != null && this.g.settlements[this.panelData.id]) this.centerBeside(this.g.settlements[this.panelData.id].tile);
+    },
+    // 16:9: panels open as a drawer on the right, so the map centres what you look at in the space left of it
+    centerBeside: function (tile) {
+      var r = this.renderer, g = this.g, pn = $('panel'); if (!r || !g) return; r.centerOn(g, tile);
+      var landscape = window.innerWidth > window.innerHeight * 1.3, px = !pn.hidden && landscape ? pn.offsetWidth / 2 : 0;
+      if (px && r.screenToWorld) { var a = r.screenToWorld(r.w / 2, r.h / 2), b = r.screenToWorld(r.w / 2 + px, r.h / 2); if (a && b) { r.cam.x += b[0] - a[0]; if (r.clampCamera) r.clampCamera(g); } }
+      this.invalidate();
     },
     closePanel: function () { if (AU.CityView) AU.CityView.close(); this.panel = null; $('panel').hidden = true; if (this.g) { this.refreshHud(true); this.invalidate(); } else this.showTitle(); },
     refreshPanel: function () { if (this.panel) AU.Panels.render(this, this.panel, this.panelData); },
