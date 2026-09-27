@@ -104,6 +104,17 @@
       RDp.railOptions(g, p, s).slice(0, 5).forEach(function (o) { var why = RDp.railWhy(g, p, s, o); html += '<div class="row"><div class="grow"><b>→ ' + o.other.name + '</b><small>' + o.path.length + ' ' + _('tiles') + (o.fresh < o.path.length ? ' (' + (o.path.length - o.fresh) + ' ' + _('already laid') + ')' : '') + ' · ' + o.turns + ' ' + _('turns') + (why ? ' · ' + why : '') + '</small></div><button class="small" data-action="railstart" data-id="' + s.id + '" data-item="' + o.other.id + '" ' + (why ? 'disabled' : '') + '>' + o.cost + ' 💰</button></div>'; });
       html += '</div>';
     }
+    if (AU.Air && s.civ === p.idx && G.hasBuilding(s, 'airport')) { // airports: routes form on their own, gates grow with every upgrade
+      var ARp = AU.Air, ayp = ARp.yields(g, s, p), prt = ARp.partners(g, p, s), fu = AU.Transport.fuel(g, p), whyA = ARp.upgradeWhy(g, p, s);
+      html += '<div class="section"><h3>✈️ ' + _('Airport') + ' · ' + _('level') + ' ' + ARp.level(s) + '</h3><p class="stat">' + _('Routes form on their own between your Airports, the biggest hubs first. Every level gives 3 gates; a route takes a gate at both ends. Each route brings Gold, Knowledge and visitors by the size of the other end, the 2nd route half as much, the 3rd a third...') + '</p>';
+      html += '<p class="stat">' + prt.length + '/' + ARp.gates(s) + ' ' + _('routes') + (prt.length ? ': ' + prt.map(function (o) { return o.name + ' (' + o.pop + ')'; }).join(', ') : ' · ' + _('build a second Airport to fly')) + ' · +' + ayp.gold + ' 💰 +' + ayp.science + ' 🔬 +' + ayp.fame + ' ' + _('Fame') + '</p>';
+      html += '<p class="stat">⛽ ' + _('Fuel') + ': ' + fu.need + ' ' + _('needed') + ', ' + fu.have + ' ' + _('from Oil') + (fu.cost ? ' · ' + _('imported fuel') + ' -' + fu.cost + ' 💰/' + _('turn') : '') + '</p>';
+      html += '<div class="row"><div class="grow"><b>' + (s.airWork ? _('New terminal under construction') + ': ' + _('level') + ' ' + s.airWork.to + ' ' + _('in') + ' ' + Math.max(0, s.airWork.done - g.turn) + ' ' + _('turns') : _('Enlarge to level') + ' ' + (ARp.level(s) + 1) + ' (' + (ARp.level(s) + 1) * ARp.CFG.gates + ' ' + _('routes') + ')') + '</b><small>' + (s.airWork ? '' : ARp.upgradeTurns(s) + ' ' + _('turns') + (whyA ? ' · ' + whyA : '')) + '</small></div>' + (s.airWork ? '' : '<button class="small" data-action="airupgrade" data-id="' + s.id + '" ' + (whyA ? 'disabled' : '') + '>' + ARp.upgradeCost(g, s) + ' 💰</button>') + '</div></div>';
+    }
+    if (AU.Hwy && s.civ === p.idx && AU.Hwy.inter(s)) { // highways: the interchange paves its land and the interstates on its own
+      var HWp = AU.Hwy, hyp = HWp.yields(g, s, p), jn = HWp.joined(g, p, s);
+      html += '<div class="section"><h3>🛣️ ' + _('Highways') + '</h3><p class="stat">' + _('The Interchange paves one tile a turn around the settlement and one a turn toward every other Interchange within 10 tiles.') + '</p><p class="stat">' + _('Suburbs') + ': +15% ' + _('growth') + ' · ' + _('trucks') + ': ' + hyp.trucks + ' ' + _('worked tiles on a highway') + ' · ' + _('joined') + ': ' + (jn.length ? jn.map(function (o) { return o.name; }).join(', ') : _('none yet')) + ' · +' + hyp.gold + ' 💰 +' + hyp.production + ' ⚙️</p></div>';
+    }
     if (AU.Religion && g.civs[s.civ] && !g.civs[s.civ].minor) {
       var Rl = AU.Religion, pr = s.pressure || {}, rows = Object.keys(pr).filter(function (k) { return pr[k] > 0 && g.religions[k]; }).sort(function (a2, b2) { return pr[b2] - pr[a2]; });
       var spS = Rl.spirit(g, s), SP = AU.SPIRITS[spS.id], hateS = spS.mood === -1 ? Rl.spiritHates(g, s) : null;
@@ -765,6 +776,7 @@
       case 'offering': s = g.settlements[+d.id]; if (s && AU.Religion.offer(g, p, s)) { app.toast(_('The spirit accepts the Offering.')); app.refreshPanel(); app.refreshHud(); } break;
       case 'festival': if (AU.Religion.festival(g, p)) { app.toast(_('A Festival begins!')); app.refreshPanel(); app.refreshHud(); } break;
       case 'adoptfaith': if (AU.Religion.adopt(g, p, d.id)) { app.refreshPanel(); app.refreshHud(); } break;
+      case 'airupgrade': s = g.settlements[+d.id]; if (s && AU.Air.upgrade(g, p, s)) { app.toast('✈️ ' + _('Work on the new terminal begins.')); app.refreshPanel(); app.refreshHud(); } break;
       case 'railstart': s = g.settlements[+d.id]; if (s && AU.Roads.startRail(g, p, s, +d.item)) { app.toast('🚂 ' + _('The crews start laying the line.')); app.refreshPanel(); app.refreshHud(); app.invalidate(); } break;
       case 'buyfaith': s = g.settlements[+d.id]; if (s) { var ru = AU.Religion.buyUnit(g, s, d.item); if (ru) { app.toast(ru.name + ' ' + _('purchased with Devotion.')); app.refreshPanel(); app.refreshHud(); } } break;
       case 'pediasearch': break;

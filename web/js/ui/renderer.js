@@ -487,6 +487,16 @@
         seg(Math.max(1.6, rzs * 0.17), 'rgba(70,48,24,0.55)');        // road edge
         seg(Math.max(1, rzs * 0.09), 'rgba(214,182,122,0.95)');       // packed earth
       }
+      var hwSegs = []; // highways: grey asphalt with a dashed yellow line, over the road
+      for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
+        i = r * g.W + c; t = g.tiles[i]; if (!t.highway || !explored[i]) continue;
+        for (var hl = 0; hl < 6; hl++) { var hn = nbAt(t.col, t.row, hl); if (!hn || !hn.highway || !explored[hn.i]) continue; if (hn.i < t.i && hn.row >= r0 && hn.row <= r1 && hn.col >= c0 && hn.col <= c1) continue; hwSegs.push([t, hn]); }
+      }
+      if (hwSegs.length) {
+        var hseg = function (w, col, dash) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.setLineDash(dash || []); ctx.beginPath(); hwSegs.forEach(function (sg) { var a = S(sg[0]), b = S(sg[1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke(); ctx.setLineDash([]); };
+        hseg(Math.max(3, rzs * 0.24), 'rgba(52,54,60,0.95)');                                                    // asphalt
+        hseg(Math.max(0.8, rzs * 0.035), 'rgba(240,200,60,0.9)', [Math.max(1.5, rzs * 0.08), Math.max(1.5, rzs * 0.08)]); // lane line
+      }
       var railSegs = []; // railways: dark sleepers under a steel line, drawn over any road
       for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
         i = r * g.W + c; t = g.tiles[i]; if (!t.rail || !explored[i]) continue;

@@ -218,7 +218,9 @@
         if (b === 'coast') n += x.terrain === 'coast' ? 1 : 0; else if (b === 'river') n += x.river && !G.isWater(x) ? 1 : 0; else if (b === 'hills') n += x.hills ? 1 : 0;
         else if (b === 'mountain') n += x.terrain === 'mountain' ? 1 : 0; else if (b === 'lake') n += x.terrain === 'lake' ? 1 : 0;
         else if (b === 'forest' || b === 'jungle' || b === 'marsh') n += x.feature === b ? 1 : 0; else n += x.terrain === b ? 1 : 0; });
-      if (b === 'coast') n = Math.min(n, 6) + (Hex.spiral(t.col, t.row, 1, g.W, g.H).some(function (i) { return g.tiles[i].terrain === 'coast'; }) ? 4 : 0);
+      if (b === 'coast') { // a harbour on the coast, not an islet: being on the shore counts, open water beyond a quarter of the land around costs
+        var shore = Hex.spiral(t.col, t.row, 1, g.W, g.H).some(function (i) { return g.tiles[i].terrain === 'coast'; }), wet = ring.filter(function (i) { return G.isWater(g.tiles[i]); }).length;
+        n = (shore ? 20 : 0) - Math.max(0, wet - 3); }
       score += w * n;
     });
     return score;
@@ -491,6 +493,8 @@
     if (AU.Religion) add(y, AU.Religion.settlementYields(g, s)); // spirit, faith tenets, Sacred Site, Holy City, Festival
     if (AU.Sig) AU.Sig.settlementYields(g, s, civ, fx, y); // signature effects of the civ and its leader
     if (AU.Roads && civ.rails && civ.rails.length) { var ry = AU.Roads.railYields(g, s, civ); y.gold += ry.gold; pct.production += ry.pct; } // railways: trade between the ends, industry, or the drain of the works
+    if (AU.Air && G.hasBuilding(s, 'airport')) { var ay = AU.Air.yields(g, s, civ); y.gold += ay.gold; y.science += ay.science; } // air routes to your other Airports
+    if (AU.Hwy && AU.Hwy.inter(s)) { var hy = AU.Hwy.yields(g, s, civ); y.gold += hy.gold; y.production += hy.production; } // trucks and interstates
     y.culture += fx.empireCulture || 0; y.gold += fx.empireGold || 0;
     if (fx.happinessPerWonder) y.happiness += fx.happinessPerWonder * wondersHere;
     var coastal = G.isCoastal(g, s);
@@ -1018,6 +1022,7 @@
       });
       s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
       if (AU.Sig) t += AU.Sig.fame(g, civ, fx, s);
+      if (AU.Air && G.hasBuilding(s, 'airport')) t += AU.Air.yields(g, s, civ).fame; // visitors off the planes
       if (heavy) t = t0 + (t - t0) * 0.5; // nobody visits a smoky town
     });
     if (AU.Palace && !civ.minor) t += AU.Palace.fx(civ).tourism;
@@ -1068,7 +1073,7 @@
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
     s.foodSurplus = surplus; // the Field Spirit hates hunger
-    if (surplus > 0) surplus *= (fx.growthMult || 1) * (AU.Sig ? AU.Sig.growthMult(g, s, fx) : 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
+    if (surplus > 0) surplus *= (fx.growthMult || 1) * (AU.Sig ? AU.Sig.growthMult(g, s, fx) : 1) * (AU.Hwy ? AU.Hwy.growthMult(g, s) : 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
     if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
     else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
@@ -1270,6 +1275,7 @@
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
     if (AU.Roads) g.civs.forEach(function (civ) { AU.Roads.turn(g, civ); }); // every empire lays its roads
+    if (AU.Transport) g.civs.forEach(function (civ) { AU.Transport.turn(g, civ); }); // airports and highways
     if (AU.Sig) g.civs.forEach(function (civ) { AU.Sig.turn(g, civ); });
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
     if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); AU.Society.refugeTurn(g); }

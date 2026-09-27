@@ -12,6 +12,7 @@
       AI.religion(g, civ);
       AI.envoys(g, civ);
       AI.rails(g, civ);
+      AI.airports(g, civ);
       AI.manageSettlements(g, civ);
       AI.moveUnits(g, civ);
     } catch (e) { G.log(g, _('AI error for') + ' ' + civ.civId + ': ' + (e && e.message)); if (typeof console !== 'undefined') console.error(e); }
@@ -163,6 +164,8 @@
     if (d.defense) sc += 2 + tr.aggression * 2 + (AI.threatened(g, civ) ? 4 : 0);
     if (g.v2 && AU.Smoke) { var smk = AU.Smoke.smoke(g, s); if (AU.Smoke.SINKS[id] && smk >= 3) sc += 4 + smk; if (AU.Smoke.SOURCES[id] && smk >= 5) sc -= 3; }
     if (d.perPop) sc += s.pop * 0.3;
+    if (id === 'airport' && AU.Air) sc += 3 + Math.min(4, AU.Air.airports(g, civ).length) * 1.5 + s.pop * 0.2; // every Airport adds routes to the others
+    if (id === 'interchange' && AU.Hwy) { var nearI = AU.Hwy.interchanges(g, civ).filter(function (o) { return G.dist(g.tiles[o.tile], g.tiles[s.tile]) <= AU.Hwy.CFG.reach; }).length; sc += 3 + s.pop * 0.3 + Math.min(4, nearI) * 2; }
     if (d.waterYields) { var wt = 0; s.tiles.forEach(function (i) { if (g.tiles[i].worked && G.isWater(g.tiles[i])) wt++; }); sc += wt * ((d.waterYields.food || 0) * 1.4 + (d.waterYields.production || 0) * 1.5 + (d.waterYields.gold || 0) * 0.8); }
     if (d.pct) sc += 3;
     if (!s.isCity) sc -= (y.production || 0) * 0.5; // production is just gold in towns
@@ -388,6 +391,12 @@
     var reserve = 250 + G.civSettlements(g, civ.idx).length * 25, best = null, bs = 0;
     G.civSettlements(g, civ.idx).forEach(function (s) { RD.railOptions(g, civ, s).forEach(function (o) { if (RD.railWhy(g, civ, s, o) || civ.gold < o.cost + reserve) return; var sc = (s.pop + o.other.pop) / o.cost; if (sc > bs) { bs = sc; best = [s, o]; } }); });
     if (best) RD.startRail(g, civ, best[0], best[1].other.id);
+  };
+  AI.airports = function (g, civ) { // enlarge the biggest Airport when the treasury allows, one at a time
+    var AR = AU.Air; if (!AR || civ.minor) return; var list = AR.airports(g, civ); if (list.length < 2 || list.some(function (s) { return s.airWork; })) return;
+    var reserve = 300 + G.civSettlements(g, civ.idx).length * 25, s = list.slice().sort(function (a, b) { return b.pop - a.pop; })[0];
+    if (AR.level(s) >= 1 + Math.floor(list.length / 3)) return; // a hub only pays when there are Airports to fill its gates
+    if (!AR.upgradeWhy(g, civ, s) && civ.gold >= AR.upgradeCost(g, s) + reserve) AR.upgrade(g, civ, s);
   };
   AI.envoys = function (g, civ) { // free cities: gifts when rich, caravans handled by the units
     var CS = AU.CityStates; if (!CS || civ.minor) return;
