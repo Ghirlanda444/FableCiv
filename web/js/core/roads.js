@@ -39,6 +39,7 @@
     var path = [goal]; while (path[0] !== a) path.unshift(prev[path[0]]);
     return path;
   }
+  RD.roadPath = roadPath;
   // links: each settlement joins the nearest settlement already in the network (the capital first), same continent, up to MAX_LINK tiles
   RD.links = function (g, civ) {
     var sets = G.civSettlements(g, civ.idx); if (sets.length < 2) return [];

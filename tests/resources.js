@@ -18,7 +18,7 @@ assert(G.luxuryCount(g, pl).strategic.iron === 3, 'a rich Iron tile supplies 3 (
 g.tiles[spot].resource = 'uranium'; pl._lux = null; assert(!G.luxuryCount(g, pl).strategic.uranium, 'hidden Uranium does not count');
 g.tiles[spot].resource = 'iron'; pl._lux = null;
 // new needs
-assert(AU.UNITS.tank.resource === 'rubber' && AU.UNITS.jet_fighter.resource === 'aluminum' && AU.UNITS.submarine.resource === 'uranium' && AU.UNITS.catapult.resource === 'copper' && AU.BUILDINGS.nuclear_plant.resource === 'uranium' && AU.BUILDINGS.airport.resource === 'aluminum', 'resource needs assigned');
+assert(AU.UNITS.tank.resource === 'rubber' && AU.UNITS.jet_fighter.resource === 'aluminum' && AU.UNITS.submarine.resource === 'uranium' && AU.UNITS.catapult.resource === 'copper' && AU.BUILDINGS.nuclear_plant.resource === 'uranium' && !AU.BUILDINGS.airport.resource && AU.Air.CFG.alumAt === 3, 'resource needs assigned');
 // synthesis
 assert(!SY.canRun(g, pl), 'no Synthesis in the first age');
 pl.era = 5; st.era = 5; pl._fx = null; g.fxGen = (g.fxGen || 0) + 1;

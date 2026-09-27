@@ -3,7 +3,7 @@
 (function (AU) {
   var G = AU.G, SM = AU.Smoke = {};
   SM.on = function (g) { return !!(g && g.v2); };
-  SM.SOURCES = { workshop: 1, factory: 3, power_plant: 4, ironworks: 2, railway_station: 1, nuclear_plant: 1, stock_exchange: 0.5, airport: 1, data_center: 1 };
+  SM.SOURCES = { workshop: 1, factory: 3, power_plant: 4, ironworks: 2, railway_station: 1, nuclear_plant: 1, stock_exchange: 0.5, airport: 1, data_center: 1, interchange: 1 };
   SM.SINKS = { aqueduct: 1, sewer: 2, hospital: 1, national_park: 3 };
   SM.POP_ERA = 4; // from the Puffstack Age on, crowds smoke too
   SM.HEAVY = 6;
