@@ -139,7 +139,7 @@
     var ships = G.civUnits(g, civ.idx).filter(U.isNaval).length, mil = G.civUnits(g, civ.idx).filter(G.isMilitary).length;
     if (mil - ships < sets.length + 1) return false; // soldiers first
     var foeCoast = g.civs.some(function (o) { return o.alive && !o.minor && o.idx !== civ.idx && civ.rel[o.idx].war && G.civSettlements(g, o.idx).some(function (s) { return G.isCoastal(g, s); }); });
-    var want = Math.ceil(coastal / 2) + (sea ? 2 : 0) + (foeCoast ? 2 : 0) + Math.floor(g.turn / 100);
+    var want = (foeCoast ? Math.ceil(coastal / 2) + 2 : Math.ceil(coastal / 3)) + (sea ? (foeCoast ? 2 : 1) : 0) + Math.floor(g.turn / 100); // a peacetime fleet stays small: the sea peoples were building ships instead of growing
     return ships < Math.min(want, sets.length + 2);
   };
   AI.bestShipToBuild = function (g, s) {

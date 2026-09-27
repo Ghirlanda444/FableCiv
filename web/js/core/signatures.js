@@ -16,13 +16,13 @@
   SG.settlementYields = function (g, s, civ, fx, y) {
     var t = g.tiles[s.tile], ct = capTile(g, civ);
     if (fx.capitalCulturePerBuilding && s.isCapital) y.culture += fx.capitalCulturePerBuilding * s.buildings.filter(function (b) { return AU.BUILDINGS[b]; }).length; // Ringstraße
-    if (fx.manyFaiths && AU.Religion) y.happiness += Math.min(3, Math.max(0, AU.Religion.faithsIn(g, civ).length - 1)) * fx.manyFaiths; // Dharma
+    if (fx.manyFaiths && AU.Religion) y.happiness += Math.min(2, Math.max(0, AU.Religion.faithsIn(g, civ).length - 1)) * fx.manyFaiths; // Dharma
     if (fx.edictsPeace && !atWarWithAnyone(g, civ)) y.culture += fx.edictsPeace; // Edicts of Ashoka
     if (fx.palapa && ct && t.continent !== ct.continent) { y.production += fx.palapa; y.happiness += 1; } // the Palapa Oath: one Nusantara
     if (fx.bondHappiness && g.v2 && AU.Society) y.happiness += Math.min(3, (civ.bonds || []).length) * fx.bondHappiness; // Mandukhai reunites the clans
     if (fx.desertRiver) { var n = worked(g, s, SG.isDesertRiver); y.food += 2 * n; y.production += n; } // the black land of the Nile
     if (fx.farScience && ct && !s.isCapital && G.dist(t, ct) >= 10) { y.science += fx.farScience; y.culture += 1; } // an Alexandria at the end of the world
-    if (fx.riverCity && t.river) y.production += Math.floor(s.pop / 4) * fx.riverCity; // Babylon on the Euphrates
+    if (fx.riverCity && t.river) y.production += Math.floor(s.pop / 5) * fx.riverCity; // Babylon on the Euphrates
     if (fx.danube && (t.navigable || G.neighbors(g, t).some(function (i) { return g.tiles[i].navigable; }))) { y.gold += fx.danube; y.culture += 1; } // the Danube monarchy
     if (fx.schooling) y.science += Math.floor(s.pop / 3) * fx.schooling; // Maria Theresa's compulsory schooling
     if (fx.terraces) worked(g, s, function (x) { if (!x.hills) return false; y.food += 1; if (G.improvementFor(g, x, civ) === 'farm') y.food += 1; return true; }); // Andean terraces
@@ -31,7 +31,7 @@
     if (fx.rockChurches && t.hills && (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple'))) y.faith += fx.rockChurches; // Lalibela
     if (fx.bigHappiness && s.pop >= 6) y.happiness += fx.bigHappiness; // the Kouroukan Fouga charter
     if (fx.nubianGold) y.gold += worked(g, s, function (x) { return G.improvementFor(g, x, civ) === 'mine'; }) * fx.nubianGold; // Ta-Nehesi, the land of gold
-    if (fx.feitoria && ct && t.continent !== ct.continent && G.isCoastal(g, s)) { y.gold += fx.feitoria; y.production += 1; } // a feitoria
+    if (fx.feitoria && !s.isCapital && G.isCoastal(g, s)) { y.gold += fx.feitoria + (ct && t.continent !== ct.continent ? 1 : 0); y.production += 1; } // a feitoria
     if (fx.hospitals && (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple'))) y.happiness += fx.hospitals; // Jayavarman's 102 hospitals
     if (fx.allyProduction) y.production += Math.min(3, friends(g, civ)) * fx.allyProduction; // the Triple Alliance
     if (fx.bulwark && SG.nearForeign(g, s, 6)) y.faith += fx.bulwark; // Antemurale

@@ -7,7 +7,7 @@
   // Every spirit also hates Smoke of 4 or more, and a settlement of 8 or more needs a Shrine or Temple to keep its spirit pleased.
   AU.SPIRITS = {
     river: { name: 'River Spirit', icon: '🌊', site: 'a settlement on a river', likes: 'three worked river tiles', hates: 'any Smoke over 1', gift: { food: 2 } },
-    sea: { name: 'Sea Spirit', icon: '🐚', site: 'a settlement on the coast', likes: 'two worked water tiles', hates: 'a hot world', gift: { gold: 2 } },
+    sea: { name: 'Sea Spirit', icon: '🐚', site: 'a settlement on the coast', likes: 'two worked water tiles', hates: 'a hot world', gift: { food: 1, gold: 2 } },
     peak: { name: 'Mountain Spirit', icon: '🏔️', site: 'a settlement beside a mountain', likes: 'a worked Mine or Quarry', hates: 'enemy soldiers in its land', gift: { production: 2 } },
     wood: { name: 'Wood Spirit', icon: '🌲', site: 'a settlement among woods', likes: 'four woods in its land', hates: 'woods cut down', gift: { culture: 1, production: 1 } },
     sun: { name: 'Sun Spirit', icon: '☀️', site: 'a settlement in the desert', likes: 'a Shrine, Temple or Wonder', hates: 'a cold world', gift: { culture: 2 } },
