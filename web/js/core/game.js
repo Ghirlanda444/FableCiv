@@ -218,7 +218,9 @@
         if (b === 'coast') n += x.terrain === 'coast' ? 1 : 0; else if (b === 'river') n += x.river && !G.isWater(x) ? 1 : 0; else if (b === 'hills') n += x.hills ? 1 : 0;
         else if (b === 'mountain') n += x.terrain === 'mountain' ? 1 : 0; else if (b === 'lake') n += x.terrain === 'lake' ? 1 : 0;
         else if (b === 'forest' || b === 'jungle' || b === 'marsh') n += x.feature === b ? 1 : 0; else n += x.terrain === b ? 1 : 0; });
-      if (b === 'coast') n = Math.min(n, 6) + (Hex.spiral(t.col, t.row, 1, g.W, g.H).some(function (i) { return g.tiles[i].terrain === 'coast'; }) ? 4 : 0);
+      if (b === 'coast') { // a harbour on the coast, not an islet: being on the shore counts, open water beyond a quarter of the land around costs
+        var shore = Hex.spiral(t.col, t.row, 1, g.W, g.H).some(function (i) { return g.tiles[i].terrain === 'coast'; }), wet = ring.filter(function (i) { return G.isWater(g.tiles[i]); }).length;
+        n = (shore ? 20 : 0) - Math.max(0, wet - 3); }
       score += w * n;
     });
     return score;

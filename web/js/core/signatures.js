@@ -34,6 +34,11 @@
     if (fx.hospitals && (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple'))) y.happiness += fx.hospitals; // Jayavarman's 102 hospitals
     if (fx.allyProduction) y.production += Math.min(3, friends(g, civ)) * fx.allyProduction; // the Triple Alliance
     if (fx.bulwark && SG.nearForeign(g, s, 6)) y.faith += fx.bulwark; // Antemurale
+    if (fx.shipyards && G.isCoastal(g, s)) y.production += (1 + Math.floor(s.pop / 3)) * fx.shipyards; // the Royal Dockyards
+    if (fx.paddies) y.food += worked(g, s, function (x) { return !G.isWater(x) && !x.hills && x.terrain !== 'mountain' && (x.river || G.neighbors(g, x).some(function (i) { return G.isWater(g.tiles[i]); })); }) * fx.paddies; // rice paddies
+    if (fx.lisbon && s.isCapital) { var ports = Math.min(6, G.civSettlements(g, civ.idx).filter(function (o) { return G.isCoastal(g, o); }).length); y.production += ports * fx.lisbon; y.gold += ports * fx.lisbon; } // Lisbon
+    if (fx.subak) y.food += ((G.hasBuilding(s, 'shrine') ? 1 : 0) + (G.hasBuilding(s, 'temple') ? 1 : 0)) * fx.subak; // Bali's temple-run irrigation
+    if (fx.moai) { if (G.hasBuilding(s, 'monument')) { y.production += fx.moai; y.food += fx.moai; } y.production += 2 * fx.moai * s.buildings.filter(function (b) { return AU.WONDERS[b]; }).length; } // the moai quarries
   };
   // settlement defense (added in G.settlementStrength)
   SG.settlementStrength = function (g, s, fx) {

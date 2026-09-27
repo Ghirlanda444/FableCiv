@@ -4,7 +4,9 @@
   var S = {
     leader: {
       augustus: { drop: ['happinessBonus'], fx: { capitalBuildCost: 0.75 }, desc: 'Wonders cost 20% less and each yields +2 Heritage. Buildings in the capital cost 25% less: he found a city of brick and left one of marble.' },
-      caesar: { drop: ['xpMult'], fx: { killMove: 1 }, desc: 'Land units +3 Strength. Every kill grants +25 Gold, and the victor may move 1 more tile: veni, vidi, vici.' },
+      caesar: { drop: ['xpMult', 'landBonus'], fx: { killMove: 1 }, desc: 'Every kill grants +25 Gold, and the victor may move 1 more tile: veni, vidi, vici.' },
+      gitarja: { drop: [], fx: { subak: 2 }, desc: 'Coastal settlements +2 Heritage and +1 Happiness. Subak: the temples run the rice terraces, so every Shrine and Temple yields +2 Food.' },
+      hotu: { drop: [], fx: { moai: 1 }, desc: 'Each Wonder yields +3 Heritage. Coastal settlements +2 Heritage. Monuments +1 Heritage. The moai quarries: every Monument also yields +1 Production and +1 Food, and every Wonder +2 Production where it stands.' },
       tokugawa: { drop: ['cityDefense'], fx: { sakoku: true }, desc: 'Units +5 Strength inside your borders. Towns turn Production into Gold at 125% instead of 100%. The closed country: other faiths cannot spread into your settlements and foreign Pilgrims are turned away.' },
       hojo: { drop: [], fx: { divineWind: 15 }, desc: 'Naval units +6 Strength and +1 Movement. Units +5 Strength while on Coast water. The divine wind: enemy ships within 2 tiles of your settlements lose 15 HP every turn.' },
       wu: { drop: ['happinessBonus'], fx: { examInfluence: 1 }, desc: 'Each worked Luxury resource yields +2 Heritage. The imperial examination: every Library adds +1 Influence a turn.' },
@@ -54,6 +56,9 @@
       nzinga: { drop: ['healBonusHome'], fx: { enemyOfEnemy: 5 }, desc: 'Units +5 Strength against units whose empire comes from another continent, and +4 in Rainforest and Marsh. The enemy of my enemy: leaders at war with one of your enemies warm to you.' }
     },
     civ: {
+      england: { drop: [], fx: { shipyards: 1 }, desc: 'Naval units +1 Movement and cost 20% less. Coastal settlements +2 Gold. Ships +6 Strength against settlements. Settlements on another continent get one more free claim. The Royal Dockyards: coastal settlements +1 Production, +1 more for every 3 population.' },
+      japan: { drop: [], fx: { paddies: 1 }, desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +1 Production. Every Warband member strikes harder: 100/70/50% instead of 100/60/40%. Rice paddies: every worked flat tile on a river or next to water yields +1 Food.' },
+      portugal: { drop: [], fx: { lisbon: 1 }, desc: 'Naval units +1 Movement and can cross Ocean from the start. Coastal settlements +2 Gold and +1 Devotion. Worked Coast and Ocean tiles yield +1 Gold. Lisbon, port of an empire: the capital +1 Production and +1 Gold for every coastal settlement you own (at most 6).' },
       india: { drop: ['happinessBonus'], fx: { manyFaiths: 1 }, desc: 'Specialized Towns yield +2 Heritage. +1 Happiness in every settlement for each faith followed in your empire beyond the first (up to +2).' },
       zulu: { drop: ['warbandWeights'], fx: { encircle: 2 }, desc: 'Melee and anti-cavalry units cost 25% less and start with a level of experience. The horns of the buffalo: +2 Strength attacking a unit for each of your other units next to it (up to +6).' },
       egypt: { drop: ['tileBonus'], fx: { desertRiver: true }, desc: 'The black land of the Nile: worked Desert tiles on a river yield +2 Food and +1 Production. Settlements on rivers +1 Production and +1 Heritage. Claiming a river tile grants +2 Influence.' },
