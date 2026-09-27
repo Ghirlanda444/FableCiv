@@ -53,7 +53,7 @@
       if (to.terrain === 'ocean' && !(civ.techs.cartography || fx.earlyOcean)) return Infinity;
       return 1;
     }
-    if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return 3; } return Infinity; }
+    if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return to.road && from && from.road ? 0.5 : 3; } return Infinity; } // a mountain road (the Qhapaq Ñan) is walked like any road
     var cost = 1, ud = U.def(g, u);
     if (ud.ignoreTerrain) { if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) return 99; return 1; }
     var fm = fx.forestMoveCost || (ud.forestMove ? 1 : 0);

@@ -20,6 +20,7 @@
   RD.wading = function (g, u) { var t = g.tiles[u.tile]; if (!t || !t.navigable || RD.bridged(g, t)) return false; var civ = u.civ >= 0 ? g.civs[u.civ] : null; return !(civ && G.civFx(g, civ).riverCrossing); };
   // cheapest land path between two tiles for a road, through own or unowned land only
   function roadPath(g, civ, a, b) {
+    var andes = !!G.civFx(g, civ).mountainRoads; // the Inca lay roads through mountains and over hills at plains cost
     var dist = {}, prev = {}, open = [[0, a]], goal = b, own = function (t) { if (t.owner < 0) return true; return G.tileOwnerCiv(g, t) === civ.idx; };
     dist[a] = 0;
     var ta = g.tiles[a], tb = g.tiles[b], limit = G.dist(ta, tb) * 3 + 6, guard = 0;
@@ -28,9 +29,9 @@
       var cur = open.splice(bi, 1)[0], ci = cur[1]; if (ci === goal) break; if (cur[0] > dist[ci]) continue;
       var nb = G.neighbors(g, g.tiles[ci]);
       for (var n = 0; n < nb.length; n++) {
-        var ni = nb[n], t = g.tiles[ni]; if (G.isWater(t) || AU.TERRAIN[t.terrain].impassable || !own(t)) continue;
+        var ni = nb[n], t = g.tiles[ni]; if (G.isWater(t) || (AU.TERRAIN[t.terrain].impassable && !(andes && t.terrain === 'mountain')) || !own(t)) continue;
         if (G.dist(t, ta) + G.dist(t, tb) > limit) continue;
-        var step = t.road ? 0.2 : (t.hills ? 2 : 1) + (t.feature === 'forest' || t.feature === 'jungle' || t.feature === 'marsh' ? 1 : 0) + (t.river ? 0.5 : 0);
+        var step = t.road ? 0.2 : (t.hills && !andes ? 2 : 1) + (andes && t.terrain === 'mountain' ? 0.5 : 0) + (t.feature === 'forest' || t.feature === 'jungle' || t.feature === 'marsh' ? 1 : 0) + (t.river ? 0.5 : 0);
         var nd = dist[ci] + step; if (dist[ni] === undefined || nd < dist[ni]) { dist[ni] = nd; prev[ni] = ci; open.push([nd, ni]); }
       }
     }
