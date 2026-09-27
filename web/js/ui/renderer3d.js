@@ -321,6 +321,32 @@
     var cnt = 0; for (var i = 0; i < explored.length; i++) cnt += explored[i];
     w.riverSig = cnt;
   };
+  // Roads: a brown ribbon from tile centre to tile centre, lifted over the relief; darker and wider where it bridges a river
+  P.rebuildRoads = function (g) {
+    var T = window.THREE, w = this.world, explored = G.player(g).explored, self = this, sig = 0;
+    for (var i = 0; i < g.tiles.length; i++) if (g.tiles[i].road && explored[i]) sig = (sig * 31 + i + 7) % 1000000007;
+    if (sig === w.roadSig) return; w.roadSig = sig;
+    if (w.roads) { w.roads.geometry.dispose(); w.group.remove(w.roads); w.roads = null; }
+    var positions = [], colors = [], road = new T.Color(0xc9a46a), bridge = new T.Color(0x5a3a1f);
+    for (var ti = 0; ti < g.tiles.length; ti++) {
+      var t = g.tiles[ti]; if (!t.road || !explored[ti] || G.isWater(t)) continue;
+      G.neighbors(g, t).forEach(function (ni) {
+        var n = g.tiles[ni]; if (ni < ti || !n.road || !explored[ni] || G.isWater(n)) return;
+        var a = tileXZ(t), b = tileXZ(n), wide = t.river || n.river, cc = wide ? bridge : road, hw = wide ? 2.2 : 1.3;
+        var dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz) || 1, nx = -dz / len * hw, nz = dx / len * hw, steps = 4;
+        for (var st = 0; st < steps; st++) {
+          var x1 = a[0] + dx * st / steps, z1 = a[1] + dz * st / steps, x2 = a[0] + dx * (st + 1) / steps, z2 = a[1] + dz * (st + 1) / steps;
+          var y1 = Math.max(0.2, self.heightAt(x1, z1)) + (wide ? 1.1 : 0.6), y2 = Math.max(0.2, self.heightAt(x2, z2)) + (wide ? 1.1 : 0.6);
+          positions.push(x1 - nx, y1, z1 - nz, x1 + nx, y1, z1 + nz, x2 + nx, y2, z2 + nz, x1 - nx, y1, z1 - nz, x2 + nx, y2, z2 + nz, x2 - nx, y2, z2 - nz);
+          for (var q = 0; q < 6; q++) colors.push(cc.r, cc.g, cc.b);
+        }
+      });
+    }
+    if (!positions.length) return;
+    var geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(new Float32Array(positions), 3)); geo.setAttribute('color', new T.BufferAttribute(new Float32Array(colors), 3));
+    w.roads = new T.Mesh(geo, new T.MeshBasicMaterial({ vertexColors: true, side: T.DoubleSide, transparent: true, opacity: 0.92 }));
+    w.group.add(w.roads);
+  };
   P.rebuildBorders = function (g) {
     var T = window.THREE, w = this.world, sig = 0, explored = G.player(g).explored, self = this;
     for (var i = 0; i < g.tiles.length; i++) { var o = g.tiles[i].owner; if (o >= 0) sig = (sig * 31 + o + (g.settlements[o] ? g.settlements[o].civ * 7 : 0) + (g.tiles[i].worked ? 3 : 0)) % 1000000007; }
@@ -554,6 +580,7 @@
     this.rebuildFeatures(g, false);
     this.applyFog(g, false);
     this.rebuildBorders(g);
+    this.rebuildRoads(g);
     this.rebuildCamps(g);
     this.syncSettlements(g);
     this.syncUnits(g, app);

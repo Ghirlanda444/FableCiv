@@ -24,12 +24,14 @@
       if (o === civ || !o.alive || !civ.met[o.idx]) return;
       var rel = civ.rel[o.idx];
       if (rel.war) {
+        if (AU.Diplo && AU.Diplo.canBuyPeace(g, civ.idx, o.idx) && G.militaryStrength(g, o.idx) > G.militaryStrength(g, civ.idx) * 1.1 && g.turn - rel.warSince >= 3) { AU.Diplo.buyPeace(g, civ.idx, o.idx); return; } // Queen of Cities: gold, not blood
         if (G.aiAcceptsPeace(g, civ, o.idx) && G.rng(g) < 0.12) {
           if (o.isPlayer) { civ.peaceOffer = g.turn; G.notify(g, o, { kind: 'peace_offer', text: G.leaderName(civ) + ' of ' + G.civData(civ).name + ' proposes peace.', panel: 'diplomacy' }); }
           else if (G.aiAcceptsPeace(g, o, civ.idx)) G.makePeace(g, civ.idx, o.idx);
         }
         return;
       }
+      if (AU.Diplo && (G.civFx(g, civ).giftMult || 1) > 1 && !o.minor && AU.Diplo.canGift(g, civ.idx, o.idx) && civ.gold > 250 && (o.rel[civ.idx] ? o.rel[civ.idx].attitude : 0) < 20 && G.militaryStrength(g, o.idx) > G.militaryStrength(g, civ.idx)) AU.Diplo.gift(g, civ.idx, o.idx); // a strong neighbour is bought, not fought
       // attitude drift
       var rest = G.civFx(g, o).attitudeBonus || 0; // a reputation for peace (Insights, Sparks) is the level their opinion drifts back to
       if (rel.attitude < rest) rel.attitude = Math.min(rest, rel.attitude + 0.5); else if (rel.attitude > rest) rel.attitude = Math.max(rest, rel.attitude - 0.2);

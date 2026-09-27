@@ -46,6 +46,22 @@
     return false;
   };
   // Every 10 turns a Joyful empire draws one citizen from each Miserable neighbour into its smallest settlement.
+  // Refuge (Theodora): every 5 turns a family from an Unhappy or Miserable neighbour settles with an empire that is at least Content
+  SO.refugeTurn = function (g) {
+    if (!SO.on(g) || g.turn % 5 !== 0) return;
+    g.civs.forEach(function (a) {
+      if (!a.alive || a.minor || !G.civFx(g, a).refuge) return;
+      var ma = SO.mood(g, a).tier.id; if (ma === 'miserable' || ma === 'unhappy') return;
+      g.civs.forEach(function (b) {
+        if (!b.alive || b.minor || b === a) return; var mb = SO.mood(g, b).tier.id; if ((mb !== 'miserable' && mb !== 'unhappy') || !SO.sharesBorder(g, a.idx, b.idx)) return;
+        var from = null; G.civSettlements(g, b.idx).forEach(function (s) { if (s.pop >= 3 && (!from || s.pop > from.pop)) from = s; });
+        var to = null; G.civSettlements(g, a.idx).forEach(function (s) { if (!to || s.pop < to.pop) to = s; });
+        if (!from || !to) return;
+        from.pop -= 1; G.unworkWorstTile(g, from); to.pop += 1; to.pendingGrowth += 1; G.autoExpand(g, to);
+        G.notify(g, a, { kind: 'growth', text: '🧳 ' + _('Refuge') + ': ' + _('a family from') + ' ' + from.name + ' (' + G.civData(b).name + ') ' + _('settled in') + ' ' + to.name + '.', tile: to.tile, settlement: to.id });
+      });
+    });
+  };
   SO.migrationTurn = function (g) {
     if (!SO.on(g) || g.turn % SO.MIGRATION_EVERY !== 0) return [];
     var majors = g.civs.filter(function (c) { return c.alive && !c.minor; }), moods = {}, moves = [];

@@ -515,6 +515,7 @@
       y.culture += (fx.luxuryCulture || 0) * lux; y.gold += (fx.luxuryGold || 0) * lux;
       y.gold += (fx.goldPerWonder || 0) * wonders;
       if (fx.capitalYields) add(y, fx.capitalYields);
+      if (fx.capitalCulturePerCapture) y.culture += fx.capitalCulturePerCapture * (civ.stats.captures || 0); // Trajan's Column
     }
     if (g.v2 && s.isCapital && AU.Society) add(y, AU.Society.bondYields(g, civ)); // bonded free cities send half their yields
     // happiness
@@ -961,6 +962,7 @@
     for (var id in g.settlements) {
       var s = g.settlements[id]; if (!(s.unrest > g.turn) || s.origCiv === undefined) continue;
       var owner = g.civs[s.civ], old = g.civs[s.origCiv]; if (!old || !old.alive || old.minor || old.idx === s.civ) continue;
+      if (G.civFx(g, owner).noRevolt) continue; // Purple Shroud
       var cap = owner.capital && g.settlements[owner.capital]; var far = !cap || G.dist(g.tiles[cap.tile], g.tiles[s.tile]) > (G.isRunaway(g, owner) ? 5 : 8); // a runaway holds its conquests less firmly
       if (!far || G.settlementYields(g, s).happiness >= 0) continue;
       var garrison = G.unitsAt(g, s.tile).some(function (u) { return u.civ === s.civ && G.isMilitary(u); });
@@ -1068,7 +1070,7 @@
     var civ = g.civs[s.civ], fx = G.civFx(g, civ), y = G.settlementYields(g, s);
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
-    if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)); // Housing: every point makes growth 5% faster
+    if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
     if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
     else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
@@ -1112,6 +1114,7 @@
     civ._turnCulture = (civ._turnCulture || 0) + y.culture;
     // heal settlement
     if (s.attackedTurn !== g.turn) s.hp = Math.min(G.settlementMaxHp(g, s), s.hp + 15);
+    if (s.isCapital && fx.capitalWallHeal) s.hp = Math.min(G.settlementMaxHp(g, s), s.hp + fx.capitalWallHeal); // Theodosian Walls: mended even under siege
     return sends;
   };
   G.unworkWorstTile = function (g, s) {
@@ -1267,8 +1270,9 @@
     // economy
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
+    if (AU.Roads) g.civs.forEach(function (civ) { AU.Roads.turn(g, civ); }); // every empire lays its roads
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
-    if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); }
+    if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); AU.Society.refugeTurn(g); }
     if (g.v2 && AU.Climate) AU.Climate.turn(g);
     G.revoltsTurn(g);
     g.civs.forEach(function (civ) { if (!civ.isPlayer || !civ.alive) return; var run = G.isRunaway(g, civ); if (run && !civ.flags['runawayWarned']) { civ.flags['runawayWarned'] = g.turn; G.notify(g, civ, { big: true, kind: 'war', text: '⚖️ ' + _('The world grows wary of your size: other leaders trust you less, and a wide realm is slow to command.'), panel: 'diplomacy' }); } else if (!run && civ.flags['runawayWarned']) delete civ.flags['runawayWarned']; });

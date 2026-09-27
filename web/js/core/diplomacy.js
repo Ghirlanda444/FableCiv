@@ -103,8 +103,16 @@
   D.canGift = function (g, a, b) { var r = D.rel(g, a, b); return !!r && !r.war && g.turn - r.giftTurn >= 10 && g.civs[a].gold >= 100; };
   D.gift = function (g, a, b) {
     if (!D.canGift(g, a, b)) return { ok: false, text: _('You gifted them recently or cannot afford 100 Gold.') };
-    g.civs[a].gold -= 100; g.civs[b].gold += 100; D.rel(g, a, b).giftTurn = g.turn; D.log(g, b, a, _('Received a gift of 100 Gold'), 8);
-    return { ok: true, text: _('The gift is accepted with thanks.') + ' (+8 opinion)' };
+    var gm = G.civFx(g, g.civs[a]).giftMult || 1; g.civs[a].gold -= 100; g.civs[b].gold += 100; D.rel(g, a, b).giftTurn = g.turn; D.log(g, b, a, _('Received a gift of 100 Gold'), 8 * gm);
+    return { ok: true, text: _('The gift is accepted with thanks.') + ' (+' + (8 * gm) + ' opinion)' };
+  };
+  // Queen of Cities: at war, Byzantium may pay for peace. The price grows with the enemy's size and the length of the war.
+  D.peacePrice = function (g, a, b) { var r = D.rel(g, a, b); return Math.round((100 + 20 * G.civSettlements(g, b).length + 2 * Math.max(0, g.turn - (r ? r.warSince : g.turn))) * G.speed(g)); };
+  D.canBuyPeace = function (g, a, b) { var r = D.rel(g, a, b); return !!r && r.war && !!G.civFx(g, g.civs[a]).buyPeace && g.civs[a].gold >= D.peacePrice(g, a, b); };
+  D.buyPeace = function (g, a, b) {
+    if (!D.canBuyPeace(g, a, b)) return { ok: false, text: _('Not enough Gold to buy peace.') };
+    var price = D.peacePrice(g, a, b); g.civs[a].gold -= price; g.civs[b].gold += price; G.makePeace(g, a, b); D.log(g, b, a, _('Paid for peace'), 4);
+    return { ok: true, text: _('They take the Gold. Peace is signed.') + ' (-' + price + ' ' + _('Gold') + ')' };
   };
   D.wantsFriendship = function (g, ai, other) { var r = D.rel(g, ai.idx, other); return !!r && !r.war && r.attitude >= 15 && !D.isDenounced(g, ai.idx, other) && !D.isDenounced(g, other, ai.idx); };
   D.declareFriendship = function (g, a, b) {
