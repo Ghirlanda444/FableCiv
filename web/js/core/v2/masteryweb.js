@@ -195,7 +195,7 @@
     return best;
   };
   // Heritage: Culture piles up too. Once per age an empire may Reform: take back an Insight already decided and choose its other branch.
-  MW.reformCost = function (g, civ) { var fx = G.civFx(g, civ); return Math.round(120 * (1 + (st(civ).era || 0) * 0.75) * G.speed(g) * (fx.civicCostMult || 1)); };
+  MW.reformCost = function (g, civ) { var fx = G.civFx(g, civ); return Math.round(120 * (1 + (st(civ).era || 0) * 0.75) * G.speed(g) * (fx.civicCostMult || 1) * (fx.reformCostMult || 1)); };
   MW.reformsPerAge = function (g, civ) { return 1 + (G.civFx(g, civ).reformsPerAge || 0); };
   MW.reformsLeft = function (g, civ) { var s = st(civ); s.reformUsed = s.reformUsed || {}; return MW.reformsPerAge(g, civ) - (s.reformUsed[s.era] || 0); };
   MW.canReform = function (g, civ, hubId) { var s = st(civ), hub = AU.V2.HUB_BY_ID[hubId]; if (!hub || !s.traits[hubId] || hub.turning !== undefined || hub.branches.length < 2) return false; return MW.reformsLeft(g, civ) > 0 && (s.heritage || 0) >= MW.reformCost(g, civ); };

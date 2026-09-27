@@ -60,6 +60,8 @@
     if (to.hills) cost = ud.ignoreHills ? 1 : (fx.hillsMoveCost || 2);
     if (to.feature && AU.FEATURES[to.feature].move > cost) cost = fm && (to.feature === 'forest' || to.feature === 'jungle') ? Math.max(cost, fm) : AU.FEATURES[to.feature].move;
     if (to.hills && to.feature && (to.feature === 'forest' || to.feature === 'jungle') && !fm) cost = Math.max(cost, (fx.hillsMoveCost || 2) + 1);
+    if (AU.Roads) { var rc = AU.Roads.crossing(g, u, to, from); if (rc === 2) cost = 99; else if (rc === 1) cost += 1; } // wading a navigable river ends the move, a stream costs 1 more
+    if (to.road && from && from.road && cost < 99) cost = Math.min(cost, 0.5); // road to road: half a move (a road over a river is a bridge)
     if (from && G.isWater(from) && !fx.freeDisembark && !ud.amphibious) cost = 99; // disembarking ends the move
     // territory rules: military units may not enter foreign territory at peace
     var ownerCiv = G.tileOwnerCiv(g, to);
@@ -306,6 +308,9 @@
     }
     if (!def.noDamagePenalty && !fx.noDamagePenalty) str -= Math.floor((100 - u.hp) / 10);
     if (u.baited && u.baited.until > g.turn) str -= u.baited.str; // shaken by a Scarecrow Crew's ambush
+    if (fx.longWarBonus && ctx && ctx.vs && ctx.vs.civ !== undefined && ctx.vs.civ >= 0 && civ && civ.rel[ctx.vs.civ] && civ.rel[ctx.vs.civ].war) str += Math.min(fx.longWarBonus, Math.floor((g.turn - civ.rel[ctx.vs.civ].warSince) / 5)); // Bulgaroktonos
+    if (fx.shroudDefense && !(ctx && ctx.attacking)) { var ss = G.settlementAt(g, u.tile); if (ss && ss.civ === u.civ && (ss.hp < G.settlementMaxHp(g, ss) || ss.unrest > g.turn || (G.settlementYields(g, ss).happiness || 0) < 0)) str += fx.shroudDefense; } // Purple Shroud
+    if (ctx && ctx.attacking && cls !== 'naval' && cls !== 'navalRanged' && AU.Roads && AU.Roads.wading(g, u)) str = Math.round(str * 0.75); // attacking out of a river with no bridge
     return Math.max(1, str);
   };
   U.damage = function (g, diff) {

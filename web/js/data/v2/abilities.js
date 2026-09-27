@@ -33,7 +33,6 @@
     leader: {
       cyrus: { fx: { noUnrest: true }, both: 'Captured settlements suffer no unrest and never revolt.' },
       suleiman: { fx: { unrestMult: 0.5 }, both: 'Unrest in captured settlements lasts half as long.' },
-      trajan: { fx: { farOrderDiscount: 1 }, both: 'Units far from your settlements cost 1 less Command.' },
       roosevelt: { fx: { commandBonus: 1 }, both: '+1 Command every turn.' },
       genghis: { fx: { commandBonus: 1 }, both: '+1 Command every turn: the Horde moves as one.' },
       pachacuti: { fx: { roadOrders: true }, both: 'Orders to units on your roads cost 1 Command wherever they are.' },

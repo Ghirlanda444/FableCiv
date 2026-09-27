@@ -472,6 +472,22 @@
       strokeRiver(pts, function (p) { return wf(p) + 0.6; }, 'rgb(58,150,190)');                                   // water
       if (!lowDetail) strokeRiver(pts, function (p) { return Math.max(0.7, wf(p) * 0.3); }, 'rgba(210,240,255,0.5)'); // glint
     });
+    // pass 2b: roads, a light track between tile centres; where a road meets a river it becomes a timber bridge
+    if (!groundOnly) {
+      ctx.lineCap = 'round';
+      var roadSegs = [];
+      for (r = r0; r <= r1; r++) for (c = c0; c <= c1; c++) {
+        i = r * g.W + c; t = g.tiles[i]; if (!t.road || !explored[i] || G.isWater(t)) continue;
+        for (var re = 0; re < 6; re++) { var rn = nbAt(t.col, t.row, re); if (!rn || !rn.road || !explored[rn.i] || G.isWater(rn)) continue; if (rn.i < t.i && rn.row >= r0 && rn.row <= r1 && rn.col >= c0 && rn.col <= c1) continue; roadSegs.push([t, rn]); }
+      }
+      if (roadSegs.length) {
+        var seg = function (w, col, f) { ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); roadSegs.forEach(function (sg) { if (f && !f(sg)) return; var a = S(sg[0]), b = S(sg[1]); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); }); ctx.stroke(); };
+        var onRiver = function (sg) { return sg[0].river || sg[1].river; };
+        seg(Math.max(3, rzs * 0.34), 'rgba(84,56,28,0.95)', onRiver); // bridge deck under the road where it crosses water
+        seg(Math.max(1.6, rzs * 0.17), 'rgba(70,48,24,0.55)');        // road edge
+        seg(Math.max(1, rzs * 0.09), 'rgba(214,182,122,0.95)');       // packed earth
+      }
+    }
     // pass 1c: reefs and foam lines hugging the wobbly coast
     if (!lowDetail) {
       for (var ri = 0; ri < reefs.length; ri++) drawSprite(this.reefSprite(Math.round(rzs), reefs[ri].i % 4), S(reefs[ri]));

@@ -76,6 +76,7 @@
             actions.push({ label: _('Declare war'), danger: true, on: D.canDeclareWar(g, p.idx, civ.idx), hint: friend || ally ? _('Not while friends or allied') : (mine2.peaceUntil > g.turn ? _('Peace treaty until turn') + ' ' + mine2.peaceUntil : ''), fn: function () { app.confirm(_('Declare war on') + ' ' + d.name + '? ' + _('Other leaders will remember this.'), function () { G.declareWar(g, p.idx, civ.idx); UI.say('"So be it. ' + d.name + ' ' + _('will answer steel with steel.') + '"'); }); } });
           } else {
             var offer = civ.peaceOffer && g.turn - civ.peaceOffer < 5;
+            if (G.civFx(g, p).buyPeace) actions.push({ label: _('Buy peace') + ' (' + D.peacePrice(g, p.idx, civ.idx) + ' ' + _('Gold') + ')', on: D.canBuyPeace(g, p.idx, civ.idx), fn: function () { UI.say(D.buyPeace(g, p.idx, civ.idx).text); } });
             actions.push({ label: offer ? _('Accept their peace offer') : _('Propose peace'), on: true, fn: function () { if (offer || AU.AI.respondToPeaceProposal(g, civ, p.idx)) { G.makePeace(g, p.idx, civ.idx); civ.peaceOffer = null; UI.say('"' + _('Enough blood has been spilled. Let there be peace.') + '"'); } else { r.attitude += 1; UI.say('"' + _('Peace? Not while your armies stand where they stand.') + '"'); } } });
           }
         }
