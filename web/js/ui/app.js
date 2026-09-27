@@ -237,7 +237,7 @@
         '<span class="y" data-panel="empire" title="' + _('Command: unit orders left this turn') + '">🎖️ <b>' + G.commandLeft(g, p) + '</b><small>/' + G.commandMax(g, p) + '</small></span>' +
         (g.v2 ? '<span class="y" data-panel="empire">🎯 <b>' + Math.floor(p.influence || 0) + '</b><small>+' + G.influenceIncome(g, p) + '</small></span>' : '') +
         (g.v2 && AU.Society ? (function () { var md = AU.Society.mood(g, p); return '<span class="y" data-panel="empire">' + md.tier.icon + ' <small>' + _(md.tier.name) + (unhappy ? ' · ' + unhappy + ' 😠' : '') + '</small></span>'; })() : '<span class="y" data-panel="empire">' + (unhappy ? '😠 <b>' + unhappy + '</b><small>unhappy</small>' : '😊 <small>' + sets.length + ' settlements</small>') + '</span>');
-      $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + AU.ERAS[p.era] + ' ' + _('Era');
+      $('top-turn').innerHTML = '<b>' + _('Turn') + ' ' + g.turn + '</b><br>' + (g.v2 && AU.MasteryWeb && AU.V2.ERAS[AU.MasteryWeb.state(p).era] ? AU.V2.ERAS[AU.MasteryWeb.state(p).era].name : AU.ERAS[p.era] + ' ' + _('Era')); // Divergence: the age, not a classic era
       this.refreshNotifs();
       this.refreshContext();
       var need = this.unitsNeedingOrders().length;
