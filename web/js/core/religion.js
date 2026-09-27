@@ -234,6 +234,7 @@
     v *= road ? 2 : d <= 3 ? 1 : d <= 6 ? 0.6 : 0.3;
     if (g.tiles[src.tile].river && g.tiles[dst.tile].river) v *= 1.5; // stories travel along the river
     if (dst.religion && dst.religion !== rel.id && R.hasTenet(g, dst.religion, 'zeal')) v *= 0.5;
+    var host = g.civs[dst.civ]; if (host && dst.civ !== src.civ && G.civFx(g, host).sakoku) return 0; // Sakoku: the country is closed
     return v;
   };
   R.spreadTurn = function (g) {
@@ -281,12 +282,14 @@
     return G.spawnUnit(g, civ.idx, id, s.tile, { charges: d.charges + (fx.missionaryCharges || 0), religion: civ.religion });
   };
   R.spreadStrength = function (g, u) { var civ = g.civs[u.civ]; return 100 + ((civ && G.civFx(g, civ).pilgrimStrength) || 0); };
-  R.canSpread = function (g, u) { var d = R.unitDef(u.type); if (!d || u.charges <= 0 || u.moves <= 0 || !R.rel(g, u.religion)) return false; var s = G.settlementAt(g, u.tile); if (!s || s.religion === u.religion) return false; if (s.civ !== u.civ && G.atWar(g, u.civ, s.civ)) return false; return true; };
+  R.canSpread = function (g, u) { var d = R.unitDef(u.type); if (!d || u.charges <= 0 || u.moves <= 0 || !R.rel(g, u.religion)) return false; var s = G.settlementAt(g, u.tile); if (!s || s.religion === u.religion) return false; if (s.civ !== u.civ && G.atWar(g, u.civ, s.civ)) return false; if (s.civ !== u.civ && g.civs[s.civ] && G.civFx(g, g.civs[s.civ]).sakoku) return false; return true; };
   R.spread = function (g, u) {
     if (!R.canSpread(g, u)) return false;
     var s = G.settlementAt(g, u.tile), host = g.civs[s.civ];
     R.addPressure(g, s, u.religion, R.spreadStrength(g, u));
-    if (host && host.idx !== u.civ && !host.minor && host.religion !== u.religion) { host.preachedBy = host.preachedBy || {}; host.preachedBy[u.civ] = g.turn; }
+    var ofx = g.civs[u.civ] ? G.civFx(g, g.civs[u.civ]) : {};
+    if (host && host.idx !== u.civ && ofx.welcomePilgrims) { g.civs[u.civ].gold += ofx.welcomePilgrims; if (!host.minor && host.rel[u.civ]) host.rel[u.civ].attitude = Math.min(80, host.rel[u.civ].attitude + 2); } // Mansa Musa's pilgrims bring gold, not trouble
+    else if (host && host.idx !== u.civ && !host.minor && host.religion !== u.religion) { host.preachedBy = host.preachedBy || {}; host.preachedBy[u.civ] = g.turn; }
     u.charges--; u.moves = 0;
     if (u.charges <= 0) G.removeUnit(g, u);
     var owner = g.civs[u.civ]; if (owner) owner.flags['ev:spread'] = g.turn;

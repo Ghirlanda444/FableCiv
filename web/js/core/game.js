@@ -330,6 +330,7 @@
       if (fx.abroadFreeBuilding) G.addBuilding(g, s, fx.abroadFreeBuilding);
     }
     if (fx.freeUnitOnFound) { G.spawnUnit(g, civIdx, fx.freeUnitOnFound, tileIdx); }
+    if (AU.Sig) AU.Sig.onFound(g, s, civ, fx);
     G.revealAround(g, civ, t.col, t.row, 3);
     G.log(g, G.civData(civ).name + ' founded ' + s.name + '.', civIdx);
     return s;
@@ -488,6 +489,7 @@
     y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
     if (AU.Religion) add(y, AU.Religion.settlementYields(g, s)); // spirit, faith tenets, Sacred Site, Holy City, Festival
+    if (AU.Sig) AU.Sig.settlementYields(g, s, civ, fx, y); // signature effects of the civ and its leader
     y.culture += fx.empireCulture || 0; y.gold += fx.empireGold || 0;
     if (fx.happinessPerWonder) y.happiness += fx.happinessPerWonder * wondersHere;
     var coastal = G.isCoastal(g, s);
@@ -571,7 +573,7 @@
       if (fx.classCostMult && fx.classCostMult[d.cls]) cost *= fx.classCostMult[d.cls];
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && fx.navalCostMult) cost *= fx.navalCostMult;
       if ((d.cls === 'naval' || d.cls === 'navalRanged') && s && G.hasBuilding(s, 'colossus')) cost *= 0.8;
-    } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1) * (fx.buildingDiscount && fx.buildingDiscount[id] || 1); }
+    } else if (kind === 'building') { cost = AU.BUILDINGS[id].cost * (fx.buildingCostMult || 1) * (fx.buildingDiscount && fx.buildingDiscount[id] || 1) * (AU.Sig ? AU.Sig.buildCostMult(g, civ, fx, s) : 1); }
     else if (kind === 'wonder') { cost = AU.WONDERS[id].cost * (fx.wonderCostMult || 1); if (AU.WONDERS[id].tier === 'great' && s && s.isCity) cost *= G.GREAT_CAPITAL_MULT; } // the capital can raise a Great Wonder, but a Town of the trade does it for less
     else if (kind === 'national') { cost = AU.NATIONAL[id].cost * (fx.buildingCostMult || 1); }
     else if (kind === 'project') { cost = AU.PROJECTS[id].cost * (fx.projectCostMult || 1); }
@@ -921,7 +923,7 @@
     if (civ.minor || civ.idx < 0) return 999;
     var sets = G.civSettlements(g, civ.idx), n = G.COMMAND_BASE + sets.length, fx = G.civFx(g, civ);
     sets.forEach(function (s) { if (s.unrest > g.turn) { n -= 1; return; } s.buildings.forEach(function (b) { n += G.COMMAND_BUILDINGS[b] || 0; }); });
-    if (sets.length > 8) n -= Math.floor((sets.length - 8) / 3); // bureaucracy
+    if (sets.length > 8 && !fx.noBureaucracy) n -= Math.floor((sets.length - 8) / 3); // bureaucracy (Suleiman's law code knows none)
     n += fx.commandBonus || 0;
     return Math.max(3, Math.round(n));
   };
@@ -987,6 +989,7 @@
     ca.rel[b].attitude += 10; cb.rel[a].attitude += 10;
     G.log(g, G.civData(ca).name + ' and ' + G.civData(cb).name + ' made peace.', a);
     g.civs.forEach(function (c) { if (c.isPlayer && (c.idx === a || c.idx === b)) G.notify(g, c, { kind: 'peace', text: _('Peace with') + ' ' + G.civData(c.idx === a ? cb : ca).name + '.', panel: 'diplomacy' }); });
+    if (AU.Sig) AU.Sig.onPeace(g, a, b);
   };
   G.militaryStrength = function (g, civIdx) { var s = 0; G.civUnits(g, civIdx).forEach(function (u) { var d = AU.UNITS[u.type]; s += Math.max(d.strength, d.ranged || 0) * u.hp / 100; }); return s; };
   G.aiAcceptsPeace = function (g, ai, other) {
@@ -1013,6 +1016,7 @@
         else if (AU.BUILDINGS[b]) { var bd = AU.BUILDINGS[b]; t += bd.tourism !== undefined ? bd.tourism : (bd.yields && bd.yields.culture ? bd.yields.culture * 0.5 : 0); }
       });
       s.tiles.forEach(function (i) { if (g.tiles[i].natural) t += 2; });
+      if (AU.Sig) t += AU.Sig.fame(g, civ, fx, s);
       if (heavy) t = t0 + (t - t0) * 0.5; // nobody visits a smoky town
     });
     if (AU.Palace && !civ.minor) t += AU.Palace.fx(civ).tourism;
@@ -1063,7 +1067,7 @@
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
     s.foodSurplus = surplus; // the Field Spirit hates hunger
-    if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
+    if (surplus > 0) surplus *= (fx.growthMult || 1) * (AU.Sig ? AU.Sig.growthMult(g, s, fx) : 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
     if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
     else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
     var sends = 0;
@@ -1184,6 +1188,7 @@
     if (G.hasBuilding(s, 'alhambra')) str += 8;
     if (g.tiles[s.tile].hills) str += 3 + (fx.hillsDefense || 0);
     if (fx.coastalDefense && G.isCoastal(g, s)) str += fx.coastalDefense;
+    if (AU.Sig) str += AU.Sig.settlementStrength(g, s, fx);
     if (s.specialization === 'fort') str += 5;
     var utD = G.civData(civ).ut; if (utD && s.specialization === utD.id && utD.fx && utD.fx.defense) str += utD.fx.defense;
     var garrison = G.unitsAt(g, s.tile).filter(function (u) { return G.isMilitary(u); })[0];
@@ -1264,6 +1269,7 @@
     g.civs.forEach(function (civ) { G.processCiv(g, civ); });
     if (AU.Religion) AU.Religion.spreadTurn(g);
     if (AU.Roads) g.civs.forEach(function (civ) { AU.Roads.turn(g, civ); }); // every empire lays its roads
+    if (AU.Sig) g.civs.forEach(function (civ) { AU.Sig.turn(g, civ); });
     if (AU.CityStates) g.civs.forEach(function (civ) { if (civ.minor) { AU.CityStates.turn(g, civ); if (AU.Diplo) AU.Diplo.questTurn(g, civ); } });
     if (g.v2 && AU.Society) { g.civs.forEach(function (civ) { AU.Society.bondsTurn(g, civ); }); AU.Society.migrationTurn(g); AU.Society.refugeTurn(g); }
     if (g.v2 && AU.Climate) AU.Climate.turn(g);

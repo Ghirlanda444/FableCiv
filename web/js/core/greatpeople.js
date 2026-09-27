@@ -13,6 +13,7 @@
     G.civSettlements(g, civ.idx).forEach(function (s) { s.buildings.forEach(function (b) { var p = AU.GREAT_POINTS[b]; if (p) for (var t in p) out[t] += p[t]; }); });
     var y = G.civYields(g, civ); out.prophet += Math.floor((y.faith || 0) / 3);
     var gfx0 = G.civFx(g, civ); if (gfx0.greatPointsPerTurn) for (var gk in gfx0.greatPointsPerTurn) if (out[gk] !== undefined) out[gk] += gfx0.greatPointsPerTurn[gk];
+    if (AU.Sig) AU.Sig.greatPoints(g, civ, gfx0, out);
     if (g.v2 && AU.MasteryWeb && AU.MasteryWeb.greatSlots) AU.MasteryWeb.greatSlots(civ).forEach(function (t) { if (out[t] !== undefined) out[t] += 2; }); // Sparks that open a Great Person slot
     var fx = G.civFx(g, civ); if (fx.greatPeopleMult) for (var k in out) out[k] = Math.round(out[k] * fx.greatPeopleMult);
     AU.GREAT_ORDER.forEach(function (t) { if (!GP.available(g, civ, t)) out[t] = 0; });

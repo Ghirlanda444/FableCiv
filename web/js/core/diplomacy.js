@@ -60,6 +60,7 @@
     if (AU.Religion && civ.religion && other.religion === civ.religion) { // a shared state faith; twice with Open Doors, twice for a devout leader
       var sf = 3 * (AU.Religion.hasTenet(g, civ.religion, 'open') ? 2 : 1) * (ag.id === 'devout' ? 2 : 1); out.push([_('You share their faith'), sf]);
     }
+    if (G.civFx(g, other).enemyOfEnemy && g.civs.some(function (c) { return c !== civ && c !== other && c.alive && !c.minor && G.atWar(g, civ.idx, c.idx) && G.atWar(g, other.idx, c.idx); })) out.push([_('Fights the same enemy'), G.civFx(g, other).enemyOfEnemy]); // Nzinga
     if (AU.Religion && AU.Religion.preachedRecently(g, civ, other.idx)) out.push([_('Your pilgrims preach in their settlements'), ag.id === 'devout' ? -6 : -3]);
     if (D.isFriend(g, civ.idx, other.idx)) out.push([_('Declared friendship'), 3]);
     if (D.isAlly(g, civ.idx, other.idx)) out.push([_('Allied'), 4]);

@@ -1,0 +1,80 @@
+// Signature pass: every civ and leader ability has at least one effect nobody else has, taken from its history.
+// Each entry drops the generic effects it shared with others, adds its signature (rules in core/signatures.js) and gives the full card text.
+(function (AU) {
+  var S = {
+    leader: {
+      augustus: { drop: ['happinessBonus'], fx: { capitalBuildCost: 0.75 }, desc: 'Wonders cost 20% less and each yields +2 Heritage. Buildings in the capital cost 25% less: he found a city of brick and left one of marble.' },
+      caesar: { drop: ['xpMult'], fx: { killMove: 1 }, desc: 'Land units +3 Strength. Every kill grants +25 Gold, and the victor may move 1 more tile: veni, vidi, vici.' },
+      tokugawa: { drop: ['cityDefense'], fx: { sakoku: true }, desc: 'Units +5 Strength inside your borders. Towns turn Production into Gold at 125% instead of 100%. The closed country: other faiths cannot spread into your settlements and foreign Pilgrims are turned away.' },
+      hojo: { drop: ['navalMoves'], fx: { divineWind: 15 }, desc: 'Naval units +6 Strength. Units +5 Strength while on Coast water. The divine wind: enemy ships within 2 tiles of your settlements lose 15 HP every turn.' },
+      wu: { drop: ['happinessBonus'], fx: { examInfluence: 1 }, desc: 'Each worked Luxury resource yields +2 Heritage. The imperial examination: every Library adds +1 Influence a turn.' },
+      ashoka: { drop: ['culturePerSettlement'], fx: { edictsPeace: 2 }, desc: '+1 Devotion per settlement, and +2 Heritage per settlement while you are at peace with every empire. Capturing a settlement grants +150 Heritage and keeps its buildings. +6 Influence whenever you decide an Insight.' },
+      gajah: { drop: ['captureGold'], fx: { palapa: 2 }, desc: 'Naval units +5 Strength. Embarked units +1 Movement. The Palapa Oath: settlements on another continent or island than your capital +2 Production and +1 Happiness.' },
+      genghis: { drop: ['captureGold'], fx: { terror: true }, desc: 'Cavalry +5 Strength. Capturing a settlement heals your units nearby, and terror runs ahead: the loser\'s other settlements within 6 tiles lose 30% of their HP. +1 Command every turn: the Horde moves as one.' },
+      mandukhai: { drop: ['happinessBonus'], fx: { bondHappiness: 1 }, desc: 'Units heal +10 everywhere and gain experience 50% faster. The clans reunited: +1 Happiness in every settlement for each Bond with a free city (up to +3).' },
+      cetshwayo: { drop: ['healBonusHome'], fx: { vsAdvanced: 6 }, desc: 'Units +8 Strength when defending inside your borders, and +6 against empires that have lit more Sparks than you.' },
+      darius: { drop: ['goldPerFollowerSettlement'], fx: { royalRoad: true }, desc: 'Towns +3 Gold, specialized Towns also +1 Knowledge. Purchases cost 10% less. The Royal Road: your roads are laid one tile faster per link and moving along them costs a third of a movement.' },
+      cleopatra: { drop: ['yieldMult'], fx: { friendGold: 3 }, desc: 'Other leaders start friendlier toward you. Wars declared on you cause half the war weariness. +3 Gold a turn for every empire in friendship or alliance with you.' },
+      ramses: { drop: ['faithPerWonder'], fx: { wonderGreatPoints: 2 }, desc: 'Wonders cost 25% less and each yields +1 Happiness and +2 Heritage. Each Wonder you own adds +2 Great Engineer points a turn.' },
+      hatshepsut: { drop: ['navalMoves', 'riverClaimInfluence'], fx: { routeIncense: 2 }, desc: 'Each worked Luxury resource yields +2 Gold. Trade Outpost Towns +3 Gold. The expedition to Punt: every Caravan route brings +2 Devotion and +1 Heritage a turn.' },
+      saladin: { drop: ['captureHeal'], fx: { holyWar: 6 }, desc: 'Units +5 Strength within 3 tiles of your settlements, and +6 within 3 tiles of any Holy City.' },
+      joan: { drop: ['homeDefenseBonus', 'happinessBonus'], fx: { liberator: 8 }, desc: 'Units +8 Strength attacking enemy units inside your borders. Units heal +10 inside your borders.' },
+      montezuma: { drop: ['captureGold'], fx: { captureIncome: 3 }, desc: 'Each worked Luxury resource gives +1 extra Happiness. Every settlement you have captured pays +3 Gold of tribute a turn.' },
+      itzcoatl: { drop: ['unitCostMult'], fx: { allyProduction: 2 }, desc: 'Capital +15% Production. Pioneers cost 20% less. +2 Production in every settlement for each empire in friendship or alliance with you (up to 3).' },
+      huayna: { drop: ['settlerCostMult'], fx: { mitaLabor: 1 }, desc: 'Towns turn Production into Gold at 130% instead of 100% and grow 15% faster. The Mit\'a levy: Towns +1 Production per 3 population.' },
+      leonidas: { drop: ['classBonus'], fx: { outnumbered: 3 }, desc: '+10 Strength when defending on Hills. New units start at level 1. The hot gates: defending units +3 Strength for each enemy next to them beyond the first (up to +9).' },
+      alexander: { drop: ['cavalryBonus'], fx: { farScience: 3 }, desc: 'No war weariness. Capturing a settlement adds +60 Knowledge to your studies. Every settlement 10 or more tiles from your capital +3 Knowledge and +1 Heritage: an Alexandria at the ends of the world.' },
+      barbarossa: { drop: [], fx: { vsMinor: 8 }, desc: 'Towns +2 Gold. Cities +2 Production. Units +8 Strength against free cities.' },
+      ivan: { drop: ['captureGold'], fx: { kazan: true }, desc: 'Units +6 Strength when defending inside your borders. Settlements +5 defense. Capturing a settlement also claims the free land within 2 tiles of it.' },
+      isabella: { drop: ['navalMoves'], fx: { combatBonusVsOtherReligion: 5 }, desc: 'Settlements founded on another continent start with +2 population and a free Granary. Units +5 Strength against empires of another state faith.' },
+      philip: { drop: ['navalCostMult'], fx: { fleetBonus: 1 }, desc: 'Naval units +6 Strength, and +1 more for each of your ships within 2 tiles (up to +6). Shrines yield +2 extra Heritage.' },
+      suleiman: { drop: ['yieldMult'], fx: { noBureaucracy: true }, desc: '+2 Happiness in every settlement. Captured settlements get +3 Happiness and their unrest lasts half as long. The Kanun: however large the empire, bureaucracy never costs you Command.' },
+      trung: { drop: ['homeDefenseBonus'], fx: { uprising: true }, desc: 'Every settlement gets free Walls once the Stick Ring Spark fires. The uprising: when an enemy captures one of your settlements, two free melee units rise beside it.' },
+      leloi: { drop: ['healBonusHome'], fx: { ambush: 6 }, desc: 'Forest and Rainforest cost 1 Movement for your units. Units attacking out of Forest or Rainforest +6 Strength. Every kill grants +8 Heritage.' },
+      menelik: { drop: ['hillsDefenseBonus'], fx: { adwa: 15 }, desc: 'Units +5 Strength against units whose empire comes from another continent. Every enemy unit destroyed inside your borders grants +15 Heritage and warms every other leader who knows you.' },
+      mansa: { drop: ['yieldMult'], fx: { welcomePilgrims: 30 }, desc: 'Trade Outpost Towns +4 Gold. +100 Gold whenever you found a settlement. The golden pilgrimage: your Pilgrims are welcome abroad; each story told in a foreign settlement brings +30 Gold and warms its leader.' },
+      sundiata: { drop: ['healBonusAll', 'happinessBonus'], fx: { bigHappiness: 2 }, desc: 'Cavalry +5 Strength. The Kouroukan Fouga charter: settlements of 6 or more population +2 Happiness.' },
+      harald: { drop: ['goldPerKill'], fx: { shoreRaid: 25 }, desc: 'Units +5 Strength while on Coast water. Every strike from a ship onto the shore plunders 25 Gold.' },
+      olav: { drop: ['captureCulture'], fx: { christening: true }, desc: 'Shrines +2 Heritage. Naval units +4 Strength. Settlements you capture convert to your state faith.' },
+      nebuchadnezzar: { drop: ['growthMult'], fx: { riverCity: 1 }, desc: 'Wonders cost 15% less and each yields +1 Happiness. Babylon on the Euphrates: settlements on a river +5 defense and +1 Production per 4 population.' },
+      franz_joseph: { drop: ['happinessBonus', 'culturePerWonder'], fx: { capitalCulturePerBuilding: 1 }, desc: 'Buildings cost 10% less. The Ringstraße: the capital yields +1 Heritage for every building in it.' },
+      maria_theresa: { drop: ['growthMult', 'xpMult'], fx: { schooling: 1 }, desc: 'Libraries +1 Knowledge. Compulsory schooling: every settlement +1 Knowledge per 3 population.' },
+      hannibal: { drop: ['classBonus'], fx: { forage: 15 }, desc: 'Units can cross Mountains. All units +4 Strength on any continent other than your capital\'s and heal +15 in foreign land: the army lives off the country.' },
+      sobieski: { drop: ['nearHomeBonus'], fx: { reliefOfVienna: 5 }, desc: 'Cavalry +5 Strength. +5 Devotion per kill. The relief of Vienna: units +5 Strength within 3 tiles of your settlements or those of a friend or ally.' },
+      ashurbanipal: { drop: ['captureScience'], fx: { captureLibrary: true }, desc: 'Captured settlements get a free Library. Libraries +2 Heritage. +10 Heritage whenever a Spark fires.' },
+      tiglath: { drop: ['xpMult'], fx: { fortifyBonus: 4 }, desc: 'Units cost 15% less. Siege units +1 Movement. The standing army: fortified units +4 Strength.' },
+      amanirenas: { drop: ['goldPerKill'], fx: { peaceTribute: 100 }, desc: 'Units +6 Strength when defending inside your borders, and +4 against units whose empire comes from another continent. The treaty of Samos: an empire that makes peace with you without having taken one of your settlements pays up to 100 Gold.' },
+      piye: { drop: ['combatBonusOwnReligion'], fx: { coreligion: 50 }, desc: '+5 Devotion per kill. Captured settlements keep their buildings. A captured settlement that already follows your state faith suffers no unrest and brings +50 Devotion.' },
+      joao: { drop: ['abroadFoundPop', 'abroadFreeBuilding'], fx: { feitoria: 3 }, desc: 'Naval units +4 Strength. Feitorias: coastal settlements on another continent +3 Gold and +1 Production.' },
+      william_orange: { drop: ['homeDefenseBonus'], fx: { waterLine: 6 }, desc: 'Coastal settlements +5 defense. +1 Happiness in every settlement. The water line: units defending on your own river or coast tiles +6 Strength.' },
+      dewitt: { drop: ['yieldMult'], fx: { interest: 0.02 }, desc: '+20 Gold whenever a Spark fires. Naval units cost 15% less. Your treasury earns 2% interest a turn (up to 25 Gold).' },
+      jayavarman: { drop: ['happinessBonus', 'faithPerWonder'], fx: { hospitals: 1 }, desc: 'Wonders cost 10% less. His 102 hospitals: settlements with a Shrine or Temple +1 Happiness, and your units heal fully inside your settlements.' },
+      nzinga: { drop: ['healBonusHome'], fx: { enemyOfEnemy: 5 }, desc: 'Units +5 Strength against units whose empire comes from another continent, and +4 in Rainforest and Marsh. The enemy of my enemy: leaders at war with one of your enemies warm to you.' }
+    },
+    civ: {
+      india: { drop: ['happinessBonus'], fx: { manyFaiths: 1 }, desc: 'Specialized Towns yield +2 Heritage. +1 Happiness in every settlement for each faith followed in your empire beyond the first (up to +3).' },
+      zulu: { drop: ['warbandWeights'], fx: { encircle: 2 }, desc: 'Melee and anti-cavalry units cost 25% less and start with a level of experience. The horns of the buffalo: +2 Strength attacking a unit for each of your other units next to it (up to +6).' },
+      egypt: { drop: ['tileBonus'], fx: { desertRiver: true }, desc: 'The black land of the Nile: worked Desert tiles on a river yield +2 Food and +1 Production. Settlements on rivers +1 Production and +1 Heritage. Claiming a river tile grants +2 Influence.' },
+      france: { drop: [], fx: { wonderFame: 3 }, desc: 'Each Wonder yields +2 Heritage and +3 Fame. Wonders cost 10% less.' },
+      inca: { drop: ['tileBonus'], fx: { terraces: true }, desc: 'Terraces: worked Hills yield +1 Food, +2 with a Farm. Units can cross Mountains (3 movement).' },
+      spain: { drop: ['combatBonusVsOtherReligion'], fx: { abroadFaith: true }, desc: 'Units +5 Strength when fighting on a continent other than your capital\'s. Settlements you found or capture on another continent follow your state faith. Dispersing camps grants double Gold.' },
+      ottoman: { drop: ['captureKeepBuildings'], fx: { devshirme: true }, desc: 'Siege units +1 Movement and +5 Strength vs settlements. Devshirme: every settlement you capture raises a free melee unit.' },
+      vietnam: { drop: ['tileBonus'], fx: { delta: true }, desc: 'The Mekong delta: worked Marsh tiles and river tiles beside the sea yield +1 Food and +1 Production. Units +5 Strength in Rainforest and Marsh.' },
+      ethiopia: { drop: [], fx: { rockChurches: 3 }, desc: 'Settlements on Hills yield +2 Heritage and +3 defense, and +3 Devotion with a Shrine or Temple: the rock churches of Lalibela. Worked Hills +1 Gold.' },
+      austria_hungary: { drop: ['culturePerSettlement', 'happinessBonus'], fx: { danube: 2 }, desc: 'The Danube monarchy: settlements on or beside a navigable river +2 Gold and +1 Heritage. Captured settlements gain +2 extra Happiness.' },
+      poland: { drop: ['combatBonusVsOtherReligion'], fx: { bulwark: 2 }, desc: '+1 Devotion per settlement. Units +4 Strength when defending inside your borders. The bulwark: settlements within 6 tiles of a foreign empire +4 defense and +2 Devotion.' },
+      assyria: { drop: [], fx: { deport: true }, desc: 'Captured settlements lose no population and grant +40 Knowledge; everyone beyond 3 population is deported to your capital. Siege units +5 Strength vs settlements. -1 Happiness in every settlement.' },
+      nubia: { drop: ['tileBonus'], fx: { nubianGold: 2 }, desc: 'Ranged units +2 Strength and cost 15% less. The land of gold: worked Mines +2 Gold.' },
+      khmer: { drop: ['combatBonusOwnReligion'], fx: { mekongGrowth: 1.25 }, desc: 'Settlements founded on a river +2 Devotion and +1 Heritage and grow 25% faster: the Mekong feeds Angkor. Worked River tiles +1 Food.' }
+    }
+  };
+  function apply(ab, r) {
+    if (!ab || !r) return; ab.fx = ab.fx || {};
+    r.drop.forEach(function (k) { delete ab.fx[k]; });
+    for (var k in r.fx) ab.fx[k] = r.fx[k];
+    ab.desc = r.desc; ab.descV2 = r.desc;
+  }
+  for (var l in S.leader) apply(AU.LEADER_BY_ID[l] && AU.LEADER_BY_ID[l].ability, S.leader[l]);
+  for (var c in S.civ) apply(AU.CIV_BY_ID[c] && AU.CIV_BY_ID[c].ability, S.civ[c]);
+  AU.V2_SIGNATURES = S;
+})(globalThis.AU = globalThis.AU || {});
