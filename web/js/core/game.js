@@ -1134,18 +1134,21 @@
   G.influenceFromHeritage = function (g, civ) { if (!g.v2) return 0; var y = G.civYields(g, civ); return Math.floor((y.culture || 0) / 8); };
   G.influenceIncome = function (g, civ) { return 2 + G.civSettlements(g, civ.idx).length + G.influenceFromHeritage(g, civ) + (G.civFx(g, civ).influencePerTurn || 0); };
   // Rivers (Divergence): a river tile is claimed free of Influence and needs no Boundary Marker; the river is the border everyone agrees on.
-  G.freeClaimTile = function (g, tileIdx) { return !!(g.v2 && tileIdx != null && g.tiles[tileIdx] && g.tiles[tileIdx].river); };
+  G.freeClaimTile = function (g, tileIdx, s) { if (!g.v2 || tileIdx == null || !g.tiles[tileIdx]) return false; return !!g.tiles[tileIdx].river || (!!s && G.seaClaim(g, s, tileIdx) === 'free'); };
+  // The sea is cheap to claim for a port: with a Lighthouse a water tile costs half the Influence, with a Harbor none at all.
+  G.seaClaim = function (g, s, tileIdx) { var t = g.tiles[tileIdx]; if (!g.v2 || !s || !t || !G.isWater(t)) return null; return G.hasBuilding(s, 'harbor') ? 'free' : G.hasBuilding(s, 'lighthouse') ? 'half' : null; };
+  G.tileClaimCost = function (g, s, tileIdx) { if (G.freeClaimTile(g, tileIdx, s)) return 0; var c = G.claimCost(g, s); return tileIdx != null && G.seaClaim(g, s, tileIdx) === 'half' ? Math.ceil(c / 2) : c; };
   G.claimBlocker = function (g, s, tileIdx) { // null when the next claim may happen, else why not
     if (!g.v2) return null;
     var n = G.claimedCount(g, s); if (n < G.freeClaims(g, s)) return null;
-    if (G.freeClaimTile(g, tileIdx)) return null;
+    if (G.freeClaimTile(g, tileIdx, s)) return null;
     if (!G.hasBuilding(s, 'boundary_marker') && !G.hasBuilding(s, 'growth_hall')) return 'building';
-    var civ = g.civs[s.civ]; if ((civ.influence || 0) < G.claimCost(g, s)) return 'influence';
+    var civ = g.civs[s.civ]; if ((civ.influence || 0) < (tileIdx != null ? G.tileClaimCost(g, s, tileIdx) : G.claimCost(g, s))) return 'influence';
     return null;
   };
-  // The tiles a settlement may claim right now: all candidates when nothing blocks, else only the free river tiles.
-  G.claimableTiles = function (g, s) { var c = G.expansionCandidates(g, s); if (!G.claimBlocker(g, s)) return c; return c.filter(function (i) { return G.freeClaimTile(g, i); }); };
-  G.payClaim = function (g, s, tileIdx) { if (!g.v2) return; var civ = g.civs[s.civ]; if (G.freeClaimTile(g, tileIdx)) { var rfx = G.civFx(g, civ); if (rfx.riverClaimInfluence) civ.influence = (civ.influence || 0) + rfx.riverClaimInfluence; return; } var cost = G.claimCost(g, s); if (cost > 0) civ.influence = (civ.influence || 0) - cost; };
+  // The tiles a settlement may claim right now: all candidates when nothing blocks, else only those it can still afford (free river and harbour tiles, half-price sea).
+  G.claimableTiles = function (g, s) { var c = G.expansionCandidates(g, s); if (!G.claimBlocker(g, s)) return c; return c.filter(function (i) { return !G.claimBlocker(g, s, i); }); };
+  G.payClaim = function (g, s, tileIdx) { if (!g.v2) return; var civ = g.civs[s.civ]; if (G.freeClaimTile(g, tileIdx, s)) { var rfx = G.civFx(g, civ); if (rfx.riverClaimInfluence && g.tiles[tileIdx].river) civ.influence = (civ.influence || 0) + rfx.riverClaimInfluence; return; } var cost = G.tileClaimCost(g, s, tileIdx); if (cost > 0) civ.influence = (civ.influence || 0) - cost; };
   G.autoExpand = function (g, s) {
     if (g.v2 && !G.hasBuilding(s, 'growth_hall') && s.pendingGrowth > 1) { s.specialists += s.pendingGrowth - 1; s.pendingGrowth = 1; } // without a Growth Hall only one claim waits; the rest become specialists
     while (s.pendingGrowth > 0) {
@@ -1156,7 +1159,7 @@
       var best = null, bv = -1e9;
       // a small or starving settlement claims food first, or it never grows: a 1-Food luxury must not beat a 3-Food grassland while the surplus is one
       var surplus = G.settlementYields(g, s).food - s.pop * 2, hungry = (s.pop <= 6 && surplus <= 2) || surplus <= 0;
-      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = hungry ? y.food * 4 + y.production * 1.2 + y.gold * 0.3 + y.science * 0.5 + y.culture * 0.5 + (t.resource ? (y.food >= 2 ? 1.5 : 0.5) : 0) : y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); v += (G.freeClaimTile(g, i) && G.claimCost(g, s) > 0 ? 1.5 : 0); if (v > bv) { bv = v; best = i; } });
+      cands.forEach(function (i) { var t = g.tiles[i]; var y = G.tileYields(g, t, s); var v = hungry ? y.food * 4 + y.production * 1.2 + y.gold * 0.3 + y.science * 0.5 + y.culture * 0.5 + (t.resource ? (y.food >= 2 ? 1.5 : 0.5) : 0) : y.food * 1.5 + y.production * 1.3 + y.gold * 0.7 + y.science + y.culture + (t.resource ? 2 : 0); var full = G.claimCost(g, s); if (full > 0) v += 1.5 * (full - G.tileClaimCost(g, s, i)) / full; if (v > bv) { bv = v; best = i; } });
       G.payClaim(g, s, best); G.claimTile(g, s, best); s.pendingGrowth--;
     }
   };
