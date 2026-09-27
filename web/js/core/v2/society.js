@@ -58,6 +58,7 @@
         var to = null; G.civSettlements(g, a.idx).forEach(function (s) { if (!to || s.pop < to.pop) to = s; });
         if (!from || !to) return;
         from.pop -= 1; G.unworkWorstTile(g, from); to.pop += 1; to.pendingGrowth += 1; G.autoExpand(g, to);
+        if (from.religion && AU.Religion) AU.Religion.addPressure(g, to, from.religion, 40); // families bring their faith
         G.notify(g, a, { kind: 'growth', text: '🧳 ' + _('Refuge') + ': ' + _('a family from') + ' ' + from.name + ' (' + G.civData(b).name + ') ' + _('settled in') + ' ' + to.name + '.', tile: to.tile, settlement: to.id });
       });
     });

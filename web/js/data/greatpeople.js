@@ -2,7 +2,7 @@
 // Each kind has its own points, its own rising cost and a list of historical names in era order.
 (function (AU) {
   AU.GREAT_TYPES = {
-    prophet:   { name: 'Great Prophet',   icon: '🕊️', unit: 'great_prophet',   yield: 'faith',      desc: 'Founds a religion in one of your settlements (only a Great Prophet can). If every religion of the world is already founded, spreads your religion powerfully instead, or retires for Devotion.' },
+    prophet:   { name: 'Great Prophet',   icon: '🕊️', unit: 'great_prophet',   yield: 'faith',      desc: 'Makes one of your settlements a Sacred Site (+3 Devotion, +2 Heritage, its spirit always pleased, its faith pushes twice as hard) or converts a settlement to your state faith. Earned once you have a state faith.' },
     scientist: { name: 'Great Scientist', icon: '🔬', unit: 'great_scientist', yield: 'science',    desc: 'Instantly completes the technology you are researching (or the cheapest available one).' },
     engineer:  { name: 'Great Engineer',  icon: '⚙️', unit: 'great_engineer',  yield: 'production', desc: 'Adds a huge burst of Production to what a City is building: a quick way to finish a wonder. In a Town the burst becomes Gold.' },
     merchant:  { name: 'Great Merchant',  icon: '💰', unit: 'great_merchant',  yield: 'gold',       desc: 'Brings a large sum of Gold to the treasury and one envoy to send to a city-state.' },

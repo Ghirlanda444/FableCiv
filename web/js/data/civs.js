@@ -122,7 +122,7 @@
       ] },
 
     { id: 'arabia', name: 'Arabia', adj: 'Arabian', difficulty: 'medium', bias: ['desert'], color: '#1a7a4a', color2: '#f4f4f4',
-      ability: { name: 'Caravanserai', desc: 'Worked Desert tiles yield +1 Gold. Trade Outposts yield +2 Knowledge. Your religion spreads 50% faster.', fx: { tileBonus: [{ when: 'desert', yields: { gold: 1 } }], specializationYields: { trade: { science: 2 } }, pressureMult: 0.5 } },
+      ability: { name: 'Caravanserai', desc: 'Worked Desert tiles yield +1 Gold. Trade Outposts yield +2 Knowledge. Your Caravans carry your state faith three times as hard.', fx: { tileBonus: [{ when: 'desert', yields: { gold: 1 } }], specializationYields: { trade: { science: 2 } }, caravanFaith: 3 } },
       uu: { id: 'mamluk', name: 'Mamluk', replaces: 'knight', strength: 2, attack: 4, healAlways: true, desc: '+2 Strength, +4 attacking, heals every turn even after moving' },
       ub: { id: 'madrasa', name: 'Madrasa', replaces: 'university', yields: { science: 2, culture: 1 }, desc: '+2 Knowledge, +1 Heritage' },
       cities: ['Cairo', 'Damascus', 'Baghdad', 'Mecca', 'Medina', 'Aleppo', 'Basra', 'Jerusalem', 'Kufa', 'Mosul', 'Sana\'a', 'Muscat', 'Taif', 'Jeddah', 'Riyadh', 'Najran', 'Homs', 'Hama', 'Tripoli', 'Tyre', 'Acre', 'Gaza', 'Amman', 'Kairouan', 'Fustat', 'Fez', 'Tunis', 'Tangier', 'Samarra', 'Wasit', 'Raqqa', 'Aden', 'Zabid', 'Shibam', 'Mukalla', 'Salalah', 'Qatif', 'Hofuf', 'Tabuk', 'Khaybar'],
@@ -180,7 +180,7 @@
       cities: ['Mutal', 'Yaxchilan', 'Calakmul', 'Uxmal', 'Chichen Itza', 'Copan', 'Palenque', 'Caracol', 'Coba', 'Tulum', 'Mayapan', 'Naranjo', 'Quirigua', 'Bonampak', 'Piedras Negras', 'Dos Pilas', 'Seibal', 'Altar de Sacrificios', 'El Mirador', 'Nakbe', 'Uaxactun', 'Rio Azul', 'Xunantunich', 'Lamanai', 'Altun Ha', 'Cerros', 'Edzna', 'Kabah', 'Sayil', 'Labna', 'Dzibilchaltun', 'Ek Balam', 'Izamal', 'Becan', 'Comalcalco', 'Tonina', 'Kaminaljuyu', 'Zaculeu', 'Iximche', 'Cancuen'],
       leaders: [
         L('sixsky', 'Lady Six Sky', 'Queen', 'Ix Mutal Ajaw', 'Settlements within 6 tiles of your capital yield +15%. Units within 6 tiles of your capital +5 Strength.', { capitalRadiusBonus: { radius: 6, mult: 1.15 }, capitalRadiusCombat: { radius: 6, bonus: 5 } }, { aggression: 0.4, expansion: 0.5, science: 0.8, culture: 0.5 }),
-        L('pakal', 'K\'inich Janaab\' Pakal', 'Ajaw', 'Temple of Inscriptions', 'Wonders cost 15% less. Each Wonder yields +3 Knowledge and +1 Happiness. You start with a free Pantheon.', { wonderCostMult: 0.85, sciencePerWonder: 3, happinessPerWonder: 1, freePantheon: true }, { aggression: 0.3, expansion: 0.5, science: 0.8, culture: 0.7 })
+        L('pakal', 'K\'inich Janaab\' Pakal', 'Ajaw', 'Temple of Inscriptions', 'Wonders cost 15% less. Each Wonder yields +3 Knowledge and +1 Happiness. The spirit of your capital is always pleased.', { wonderCostMult: 0.85, sciencePerWonder: 3, happinessPerWonder: 1, capitalBlessed: true }, { aggression: 0.3, expansion: 0.5, science: 0.8, culture: 0.7 })
       ] },
 
     { id: 'shawnee', name: 'Shawnee', adj: 'Shawnee', difficulty: 'medium', bias: ['forest', 'river'], color: '#6e2c00', color2: '#7fb3d5',

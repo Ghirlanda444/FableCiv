@@ -49,7 +49,7 @@
     var g = {
       version: 1, seed: seed, turn: 1, W: map.width, H: map.height, tiles: map.tiles, rivers: map.rivers,
       civs: [], units: {}, settlements: {}, nextId: 1, camps: map.camps.map(function (i) { return { tile: i, counter: 4 + rng.int(4) }; }),
-      wonders: {}, religions: {}, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
+      wonders: {}, religions: {}, relVersion: 2, naturalFound: {}, difficulty: opts.difficulty || 'prince', maxTurns: opts.maxTurns || AU.SPEEDS[speed].turns, victory: null, log: [], notifications: [],
       playerIdx: 0, rngState: rng.s, speed: speed, mapType: sc ? sc.map : (opts.mapType || 'continents'), scenario: sc ? sc.id : null, v2: !!opts.v2
     };
     // pick civs: player's chosen one first, then random others (a scenario fixes the cast and their leaders)
@@ -487,15 +487,7 @@
     if (fx.sciencePerStrategic && s.id === civ.capital) y.science += fx.sciencePerStrategic * Object.keys(G.luxuryCount(g, civ).strategic).length;
     y.faith += (fx.faithPerSettlement || 0) + (fx.faithPerWonder || 0) * wondersHere;
     if (fx.faithPerNaturalWonder) { var nat = 0; s.tiles.forEach(function (i) { if (g.tiles[i].natural) nat++; }); y.faith += fx.faithPerNaturalWonder * nat; }
-    var rfx = AU.Religion ? AU.Religion.settlementFx(g, s) : null;
-    if (rfx) {
-      y.gold += rfx.goldPerSettlement || 0; y.culture += rfx.culturePerSettlement || 0; y.happiness += rfx.happinessBonus || 0;
-      y.faith += (rfx.faithPerWonder || 0) * wondersHere;
-      if (rfx.productionPerPop) y.production += rfx.productionPerPop * s.pop;
-      if (rfx.buildingBonus) s.buildings.forEach(function (b) { if (rfx.buildingBonus[b]) add(y, rfx.buildingBonus[b]); });
-      if (rfx.yieldMult) for (var rk0 in rfx.yieldMult) if (y[rk0] !== undefined) y[rk0] *= rfx.yieldMult[rk0];
-    }
-    if (s.religion && AU.Religion && g.religions[s.religion] && g.religions[s.religion].holyCity === s.id) y.faith += 2;
+    if (AU.Religion) add(y, AU.Religion.settlementYields(g, s)); // spirit, faith tenets, Sacred Site, Holy City, Festival
     y.culture += fx.empireCulture || 0; y.gold += fx.empireGold || 0;
     if (fx.happinessPerWonder) y.happiness += fx.happinessPerWonder * wondersHere;
     var coastal = G.isCoastal(g, s);
@@ -596,7 +588,7 @@
   };
   G.canBuildUnit = function (g, s, id) {
     var civ = g.civs[s.civ], d = G.unitType(g, civ, id);
-    if (d.religious || d.great) return false; // great people are earned, never built; missionaries, apostles and inquisitors are bought with Devotion only (see Religion)
+    if (d.religious || d.great) return false; // great people are earned, never built; Pilgrims are bought with Devotion only (see Religion)
     if (d.v2 && !g.v2) return false;
     if (!G.gateOk(g, civ, 'unit', id, d)) return false;
     if (d.popCost && s.pop <= d.popCost) return false; // a settler takes people with it: the settlement needs pop 2
@@ -1070,6 +1062,7 @@
     var civ = g.civs[s.civ], fx = G.civFx(g, civ), y = G.settlementYields(g, s);
     // food
     var surplus = y.food - s.pop * 2 + (foodBonus || 0);
+    s.foodSurplus = surplus; // the Field Spirit hates hunger
     if (surplus > 0) surplus *= (fx.growthMult || 1) * (s.isCity ? (fx.cityGrowthMult || 1) : (fx.townGrowthMult || 1)) * (1 + 0.05 * (fx.housingBonus || 0)) * (fx.smallGrowthMult && s.pop <= 5 ? fx.smallGrowthMult : 1); // Housing: every point makes growth 5% faster
     if (g.v2 && AU.Society) { if (surplus > 0) { var gm = AU.Society.tierOf(y.happiness).growth; if (gm < 1 && fx.noUnhappinessPenalty) gm = 1; surplus *= gm; } }
     else if (y.happiness < 0 && surplus > 0 && !fx.noUnhappinessPenalty) surplus *= 0.5;
@@ -1305,6 +1298,7 @@
   };
   G.deserialize = function (json) {
     var g = JSON.parse(json);
+    if (AU.Religion) AU.Religion.migrate(g);
     g.civs.forEach(function (c) { c.visible = null; if (c.explored && c.explored.rle !== undefined) c.explored = rleDecode(c.explored.rle, g.W * g.H); });
     G.refreshVisibility(g, G.player(g));
     return g;

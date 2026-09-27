@@ -42,7 +42,7 @@
       cities: ['Kraków', 'Warszawa', 'Gniezno', 'Poznań', 'Wrocław', 'Gdańsk', 'Lublin', 'Toruń', 'Łódź', 'Szczecin', 'Płock', 'Sandomierz', 'Kalisz', 'Radom', 'Częstochowa', 'Bydgoszcz', 'Białystok', 'Rzeszów', 'Kielce', 'Opole', 'Katowice', 'Olsztyn', 'Elbląg', 'Legnica', 'Przemyśl', 'Zamość', 'Tarnów', 'Włocławek', 'Łęczyca', 'Sieradz', 'Wieliczka', 'Malbork', 'Grudziądz', 'Chełmno', 'Koszalin', 'Słupsk', 'Gorzów', 'Zielona Góra', 'Nowy Sącz', 'Piotrków'],
       leaders: [
         L('casimir', 'Casimir III', 'The Great', 'Poland of Brick', 'Buildings cost 15% less and Walls half. Settlements grow 10% faster.', { buildingCostMult: 0.85, wallsMult: 0.5, growthMult: 1.1 }, { aggression: 0.3, expansion: 0.7, science: 0.6, culture: 0.6 }),
-        L('jadwiga', 'Jadwiga', 'King of Poland', 'Evangelist Queen', 'Your religion spreads 50% faster and religious units cost 25% less. You start with a free Pantheon.', { pressureMult: 1.5, religiousUnitCostMult: 0.75, freePantheon: true }, { aggression: 0.2, expansion: 0.5, science: 0.6, culture: 0.8 }),
+        L('jadwiga', 'Jadwiga', 'King of Poland', 'Evangelist Queen', 'Union of Krewo: every empire that declared friendship with you feels your state faith in its capital (+10 pressure a turn). Pilgrims cost 25% less.', { friendFaith: 10, religiousUnitCostMult: 0.75 }, { aggression: 0.2, expansion: 0.5, science: 0.6, culture: 0.8 }),
         L('sobieski', 'Jan III Sobieski', 'King', 'Relief of Vienna', 'Cavalry +5 Strength. Units +3 Strength within 3 tiles of your settlements. +5 Devotion per kill.', { cavalryBonus: 5, nearHomeBonus: 3, faithFromKills: 5 }, { aggression: 0.75, expansion: 0.5, science: 0.4, culture: 0.5 })
       ] },
 
@@ -93,7 +93,7 @@
       cities: ['Yasodharapura', 'Hariharalaya', 'Indrapura', 'Isanapura', 'Lingapura', 'Banteay Chhmar', 'Preah Khan', 'Phimai', 'Lavo', 'Vyadhapura', 'Angkor Borei', 'Oudong', 'Longvek', 'Phnom Penh', 'Battambang', 'Siem Reap', 'Kampot', 'Kratie', 'Stung Treng', 'Kampong Cham', 'Kampong Thom', 'Takeo', 'Prey Veng', 'Svay Rieng', 'Pursat', 'Kampong Chhnang', 'Sisophon', 'Poipet', 'Sihanoukville', 'Koh Kong', 'Pailin', 'Kep', 'Preah Vihear', 'Beng Mealea', 'Banteay Srei', 'Wat Phu', 'Sdok Kok Thom', 'Phanom Rung', 'Muang Tam', 'Bakong'],
       leaders: [
         L('jayavarman', 'Jayavarman VII', 'Devaraja', 'Bayon', 'Wonders cost 10% less and each yields +2 Devotion. +1 Happiness in every settlement.', { faithPerWonder: 2, wonderCostMult: 0.9, happinessBonus: 1 }, { aggression: 0.4, expansion: 0.5, science: 0.5, culture: 0.8 }),
-        L('suryavarman', 'Suryavarman II', 'Devaraja', 'Angkor Wat', 'Your religion spreads 30% faster. Settlements following it yield +1 Heritage. Units +3 Strength against empires that share your religion.', { pressureMult: 1.3, culturePerFollowerSettlement: 1, combatBonusOwnReligion: 3 }, { aggression: 0.7, expansion: 0.6, science: 0.4, culture: 0.6 })
+        L('suryavarman', 'Suryavarman II', 'Devaraja', 'Angkor Wat', 'Every settlement with a Wonder is a Sacred Site (+3 Devotion, +2 Heritage, spirit always pleased). Settlements following your state faith yield +1 Heritage. Units +3 Strength fighting beside settlements of your faith.', { wonderSacred: true, culturePerFollowerSettlement: 1, combatBonusOwnReligion: 3 }, { aggression: 0.7, expansion: 0.6, science: 0.4, culture: 0.6 })
       ] },
 
     { id: 'kongo', name: 'Kongo', adj: 'Kongolese', difficulty: 'hard', bias: ['jungle', 'river'], color: '#f4a261', color2: '#264653',
@@ -103,7 +103,7 @@
       cities: ['Mbanza Kongo', 'Mbanza Mbata', 'Mbanza Nsundi', 'Mbanza Mpangu', 'Mbanza Mpemba', 'Mbanza Soyo', 'Mbanza Wembo', 'Mbanza Mbamba', 'Kabasa', 'Matamba', 'Loango', 'Mpinda', 'Ngoyo', 'Kakongo', 'Cabinda', 'Nkusu', 'Wandu', 'Nkondo', 'Mbwila', 'Kinsundi', 'Bumbu', 'Ndembo', 'Zombo', 'Kibangu', 'Lemba', 'Mbula', 'Kongo dia Nlaza', 'Mbanza Nkanda', 'Vunda', 'Mpangala', 'Kinkanga', 'Mukondo', 'Noki', 'Boma', 'Matadi', 'Songololo', 'Kimpese', 'Mbanza-Ngungu', 'Malanza', 'Mpumbu'],
       leaders: [
         L('nzinga', 'Nzinga Mbande', 'Ngola', 'Queen of Matamba', 'Units +5 Strength against units whose empire comes from another continent, and +4 in Rainforest and Marsh. Units heal +10 inside your borders.', { combatBonusVsInvaders: 5, combatBonusJungle: 4, healBonusHome: 10 }, { aggression: 0.6, expansion: 0.5, science: 0.4, culture: 0.5 }),
-        L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your religion spreads 50% faster. Settlements following it yield +1 Knowledge. Every settlement gets a free Shrine once you know Mysticism.', { pressureMult: 1.5, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
+        L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your Pilgrims tell their story twice as strongly. Settlements following your state faith yield +1 Knowledge. Every settlement gets a free Shrine once you know Mysticism.', { pilgrimStrength: 100, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
       ] },
 
   ];
