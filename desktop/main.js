@@ -9,7 +9,7 @@ const WEB_DIR = path.join(__dirname, 'web');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1400, height: 900, minWidth: 800, minHeight: 600,
+    width: 1600, height: 900, minWidth: 1024, minHeight: 576,
     title: 'FableCiv',
     backgroundColor: '#0b0e14',
     autoHideMenuBar: true,

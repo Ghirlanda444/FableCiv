@@ -382,3 +382,75 @@ details.rules .help p { font-size: 13px; margin: 8px 0; }
 .row.spark-card.lane { background: linear-gradient(180deg, #fff3c4, #ffe08a); border-color: var(--gold2); }
 @media (max-width: 900px) { .wsummary { grid-template-columns: auto 1fr; } .wknow { grid-column: 1 / -1; text-align: left; } }
 @media (max-width: 560px) { .wfork { grid-template-columns: 1fr; } .wfork .mid svg { transform: rotate(90deg); height: 44px; } .whub .opts { grid-template-columns: 1fr; } .wforks, .wdoors { grid-template-columns: 1fr; } }
+
+/* ---------- 16:9 landscape: the main layout ----------
+   The map owns the middle of the screen. The selection card docks bottom-left, the turn buttons bottom-right,
+   tips and the tutorial float top-left, and panels open as a drawer on the right so the map stays in view. */
+@media (orientation: landscape) and (min-aspect-ratio: 4/3) {
+  #bottombar { background: none; pointer-events: none; align-items: flex-end; justify-content: space-between; }
+  #bottombar > * { pointer-events: auto; }
+  #context { flex: 0 1 460px; max-width: min(460px, 46vw); }
+  #context .card { max-height: calc(100vh - var(--topbar-h, 54px) - 24px - var(--safe-bottom)); overflow-y: auto; background-clip: padding-box; }
+  #context:empty { visibility: hidden; }
+  .tip-card { left: auto; right: 10px; width: min(420px, 42vw); bottom: auto; top: calc(var(--topbar-h, 54px) + 44px + var(--safe-top)); max-height: calc(100vh - var(--topbar-h, 54px) - 250px); overflow-y: auto; }
+  .tutorial { left: 10px; right: auto; width: min(460px, 46vw); top: calc(var(--topbar-h, 54px) + 44px + var(--safe-top)); }
+  .panel { left: auto; right: 0; top: 0; bottom: 0; width: min(780px, 60vw); transform: none; border-left: 4px solid var(--wood3); border-right: none; box-shadow: -10px 0 40px rgba(0,0,0,.55); }
+  #setup .sheet, #setup .setup-inner { max-width: 1280px; }
+}
+/* phones held sideways: short screens, so everything gets a little tighter */
+@media (orientation: landscape) and (max-height: 520px) {
+  #topbar .icon { width: 36px; height: 36px; font-size: 17px; }
+  #top-yields .y { padding: 2px 6px; font-size: 12px; }
+  #context { font-size: 12px; max-width: min(420px, 48vw); }
+  #context .card { padding: 6px 8px; }
+  #context .card h3 { font-size: 14px; }
+  button.turn { min-width: 108px; padding: 8px 8px; font-size: 14px; }
+  #turn-controls { gap: 4px; }
+  .panel { width: min(640px, 66vw); }
+  .panel-head { padding-top: calc(4px + var(--safe-top)); padding-bottom: 4px; }
+  .panel-head h2 { font-size: 17px; }
+  .tip-card, .tutorial { font-size: 12px; padding: 6px 10px; }
+}
+/* portrait still works: a one-time hint suggests turning the phone */
+.rotate-hint { position: fixed; left: 50%; top: calc(10px + var(--safe-top)); transform: translateX(-50%); z-index: 70; display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; background: var(--paper-tex), linear-gradient(180deg, #fbf3e0, #efe0bf); border: 2px solid var(--wood3); border-radius: 14px; box-shadow: 0 0 0 2px var(--gold2), 0 6px 20px rgba(0,0,0,.5); color: var(--paper-ink); font-weight: 700; font-size: 13px; max-width: calc(100vw - 24px); }
+.rotate-hint .rot { font-size: 24px; display: inline-block; animation: rotphone 2.4s ease-in-out infinite; }
+@keyframes rotphone { 0%, 30% { transform: rotate(0); } 55%, 85% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
+@media (orientation: landscape) { .rotate-hint { display: none; } }
+
+/* ---------- loading screen: the leader greets you while the world is made ---------- */
+.loading { position: fixed; inset: 0; z-index: 40; overflow-y: auto; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, 1fr); gap: 0; color: #f3e7cc;
+  background: radial-gradient(ellipse at 78% 55%, color-mix(in srgb, var(--civ1) 55%, transparent), transparent 62%), linear-gradient(135deg, #0d1a2e 0%, #13233d 55%, #0a1322 100%); }
+.loading::before { content: ''; position: absolute; inset: 0; background: url(assets/keyart/title_landscape.jpg) center / cover no-repeat; opacity: .12; filter: saturate(.6) blur(2px); pointer-events: none; }
+.loading > * { position: relative; }
+.ld-card { margin: clamp(10px, 3vh, 28px) 0 clamp(10px, 3vh, 28px) clamp(10px, 3vw, 40px); padding: clamp(12px, 2.4vh, 24px) clamp(14px, 2.2vw, 30px); align-self: center;
+  background: linear-gradient(180deg, rgba(14,28,52,.93), rgba(10,20,38,.95)); border: 2px solid rgba(240,200,80,.55); border-radius: 16px; box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 18px 50px rgba(0,0,0,.55); align-self: safe center; }
+.ld-head { display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(240,200,80,.35); padding-bottom: 10px; margin-bottom: 10px; }
+.ld-emblem-img { width: clamp(44px, 7vh, 72px); height: auto; filter: drop-shadow(0 3px 6px rgba(0,0,0,.5)); }
+.ld-head h1 { margin: 0; font-family: var(--font-display); font-size: clamp(20px, 3.6vh, 34px); color: #f7dc8a; letter-spacing: .5px; text-shadow: 0 2px 0 rgba(0,0,0,.5); line-height: 1.1; }
+.ld-sub { color: #cdbd98; font-size: clamp(12px, 1.9vh, 16px); margin-top: 2px; }
+.ld-story p { margin: 0 0 8px; font-size: clamp(13px, 2.1vh, 17px); line-height: 1.45; color: #efe4c8; }
+.ld-card h2 { margin: 12px 0 6px; font-family: var(--font-display); font-size: clamp(14px, 2.3vh, 19px); color: #f7dc8a; text-align: center; letter-spacing: 1px; text-transform: uppercase; border-top: 1px solid rgba(240,200,80,.35); padding-top: 8px; }
+.ld-feats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.ld-feat { display: flex; gap: 8px; align-items: flex-start; }
+.ld-ficon { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 10px; background: rgba(240,200,80,.12); border: 1px solid rgba(240,200,80,.35); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.ld-ico { width: 38px; height: 38px; object-fit: contain; } .ld-emoji { font-size: 22px; }
+.ld-fname { font-family: var(--font-display); font-weight: 800; color: #f7dc8a; font-size: clamp(13px, 2vh, 16px); }
+.ld-kind { font-family: inherit; font-weight: 700; font-size: 11px; color: #a9b7cf; text-transform: uppercase; letter-spacing: .6px; margin-left: 4px; }
+.ld-ftext { font-size: clamp(12px, 1.8vh, 14px); color: #dcd1b6; line-height: 1.35; }
+.ld-side { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; min-height: 100%; }
+.ld-status { font-family: var(--font-display); font-size: clamp(18px, 3.6vh, 32px); color: rgba(243,231,204,.8); letter-spacing: 1px; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+.ld-dots i { font-style: normal; animation: lddot 1.4s infinite; opacity: .2; } .ld-dots i:nth-child(2) { animation-delay: .2s; } .ld-dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes lddot { 0%, 100% { opacity: .2; } 40% { opacity: 1; } }
+.ld-portrait { flex: 1; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 0; }
+.ld-leader { height: min(66vh, 600px); max-width: 100%; object-fit: contain; filter: drop-shadow(0 20px 30px rgba(0,0,0,.6)); animation: ldin .7s ease-out both; }
+@keyframes ldin { from { opacity: 0; transform: translateY(18px) scale(.97); } to { opacity: 1; transform: none; } }
+.ld-go { margin-top: 10px; min-width: 240px; font-size: clamp(16px, 2.6vh, 22px); animation: ldin .4s ease-out both; }
+@media (orientation: portrait), (max-width: 760px) {
+  .loading { display: flex; flex-direction: column; } .loading > * { flex: none; }
+  .ld-side { order: -1; min-height: 0; padding: 12px 12px 0; } .ld-portrait { flex: none; } .ld-leader { height: 30vh; }
+  .ld-card { margin: 8px 10px 16px; } .ld-feats { grid-template-columns: 1fr; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .ld-story p { font-size: 12px; margin-bottom: 4px; } .ld-card { padding: 10px 14px; align-self: start; } .ld-side { position: sticky; top: 0; height: 100vh; min-height: 0; align-self: start; } .ld-feats { gap: 6px 12px; }
+  .ld-ftext { font-size: 11px; } .ld-leader { height: calc(100vh - 130px); } .ld-status { font-size: 16px; } .ld-go { min-width: 180px; padding: 8px 14px; }
+}

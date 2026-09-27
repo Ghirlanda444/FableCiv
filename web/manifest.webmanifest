@@ -4,7 +4,7 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "fullscreen",
-  "orientation": "any",
+  "orientation": "landscape",
   "background_color": "#0b0e14",
   "theme_color": "#0b0e14",
   "description": "A cute chibi strategy game: 40 empires, religion, free cities, towns and cities, eight eras.",
