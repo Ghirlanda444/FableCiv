@@ -38,6 +38,11 @@
     if (fx.paddies) y.food += worked(g, s, function (x) { return !G.isWater(x) && !x.hills && x.terrain !== 'mountain' && (x.river || G.neighbors(g, x).some(function (i) { return G.isWater(g.tiles[i]); })); }) * fx.paddies; // rice paddies
     if (fx.lisbon && s.isCapital) { var ports = Math.min(6, G.civSettlements(g, civ.idx).filter(function (o) { return G.isCoastal(g, o); }).length); y.production += ports * fx.lisbon; y.gold += ports * fx.lisbon; } // Lisbon
     if (fx.subak) y.food += ((G.hasBuilding(s, 'shrine') ? 1 : 0) + (G.hasBuilding(s, 'temple') ? 1 : 0)) * fx.subak; // Bali's temple-run irrigation
+    if (fx.dure) { var dq = Math.floor(s.pop / 4) * fx.dure; y.food += dq; y.production += dq; } // Korean village work teams
+    if (fx.stockfish && G.isCoastal(g, s)) { y.food += 2 * fx.stockfish; y.gold += fx.stockfish; } // Norwegian dried cod
+    if (fx.poleis) { var near = Math.min(3, G.civSettlements(g, civ.idx).filter(function (o) { return o !== s && G.dist(g.tiles[o.tile], t) <= 6; }).length) * fx.poleis; y.production += near; y.science += near; } // the Greek poleis
+    if (fx.windmills && (G.hasBuilding(s, 'market') || G.hasBuilding(s, 'workshop'))) { y.production += fx.windmills; y.food += 1; } // Dutch windmills
+    if (fx.cothon && s.isCity && G.isCoastal(g, s)) y.production += fx.cothon; // the Cothon of Carthage
     if (fx.moai) { if (G.hasBuilding(s, 'monument')) { y.production += fx.moai; y.food += fx.moai; } y.production += 2 * fx.moai * s.buildings.filter(function (b) { return AU.WONDERS[b]; }).length; } // the moai quarries
   };
   // settlement defense (added in G.settlementStrength)
