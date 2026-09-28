@@ -4,12 +4,17 @@ require('../tests/load.js'); const G = AU.G;
 if (process.argv[2] === '--summary') {
   const fs = require('fs'), rows = fs.readFileSync(process.argv[3], 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l));
   // civ-level and civ/leader-level tables; a seat's rank is normalised to 0 (first) .. 1 (last) so games with different civ counts compare
-  function table(keyOf, minN) { const acc = {}; rows.forEach(r => { const n = r.civs.length; r.civs.forEach(c => { const k = keyOf(c); acc[k] = acc[k] || { n: 0, rank: 0, top: 0, dead: 0, score: 0 }; acc[k].n++; acc[k].rank += n > 1 ? (c.rank - 1) / (n - 1) : 0; if (c.rank === 1) acc[k].top++; if (!c.alive) acc[k].dead++; acc[k].score += c.score; }); });
-    return Object.keys(acc).map(k => ({ k, n: acc[k].n, rank: acc[k].rank / acc[k].n, top: acc[k].top / acc[k].n, dead: acc[k].dead / acc[k].n, score: acc[k].score / acc[k].n })).filter(o => o.n >= (minN || 1)).sort((a, b) => a.rank - b.rank); }
+  // victories reached during the game (domination, science, culture, religion) by the civ that reached them; 'wins' stays the top score at the end
+  const VT = { domination: 'dom', science: 'sci', culture: 'her', religion: 'rel', score: 'score' };
+  function vicOf(r, c) { return r.victory && r.victory.civ === c.civ && r.victory.leader === c.leader ? (VT[r.victory.type] || r.victory.type) : null; }
+  function table(keyOf, minN) { const acc = {}; rows.forEach(r => { const n = r.civs.length; r.civs.forEach(c => { const k = keyOf(c); acc[k] = acc[k] || { n: 0, rank: 0, top: 0, dead: 0, score: 0, vic: {} }; const v = vicOf(r, c); if (v) acc[k].vic[v] = (acc[k].vic[v] || 0) + 1; acc[k].n++; acc[k].rank += n > 1 ? (c.rank - 1) / (n - 1) : 0; if (c.rank === 1) acc[k].top++; if (!c.alive) acc[k].dead++; acc[k].score += c.score; }); });
+    return Object.keys(acc).map(k => ({ k, n: acc[k].n, rank: acc[k].rank / acc[k].n, top: acc[k].top / acc[k].n, dead: acc[k].dead / acc[k].n, score: acc[k].score / acc[k].n, vic: Object.keys(acc[k].vic).map(t => t + ' ' + acc[k].vic[t]).join(', ') || '-' })).filter(o => o.n >= (minN || 1)).sort((a, b) => a.rank - b.rank); }
   const md = process.argv.indexOf('--md') >= 0, minN = +(process.argv[process.argv.indexOf('--min') + 1] || 0) || 1;
-  function print(title, out) { if (md) { console.log('\n### ' + title + '\n\n| civ | games | avg place (0 first, 1 last) | wins | eliminated | score |\n|---|---|---|---|---|---|'); out.forEach(o => console.log('| ' + o.k + ' | ' + o.n + ' | ' + o.rank.toFixed(2) + ' | ' + Math.round(o.top * 100) + '% | ' + Math.round(o.dead * 100) + '% | ' + Math.round(o.score) + ' |')); }
-    else { console.log('\n== ' + title); out.forEach(o => console.log(o.k.padEnd(28), 'games', String(o.n).padStart(3), 'place', o.rank.toFixed(2), 'wins', (Math.round(o.top * 100) + '%').padStart(4), 'eliminated', (Math.round(o.dead * 100) + '%').padStart(4), 'score', Math.round(o.score))); } }
+  function print(title, out) { if (md) { console.log('\n### ' + title + '\n\n| # | civ | games | avg place (0 first, 1 last) | wins | eliminated | score | victories reached |\n|---|---|---|---|---|---|---|---|'); out.forEach((o, i) => console.log('| ' + (i + 1) + ' | ' + o.k + ' | ' + o.n + ' | ' + o.rank.toFixed(2) + ' | ' + Math.round(o.top * 100) + '% | ' + Math.round(o.dead * 100) + '% | ' + Math.round(o.score) + ' | ' + o.vic + ' |')); }
+    else { console.log('\n== ' + title); out.forEach((o, i) => console.log(String(i + 1).padStart(3), o.k.padEnd(28), 'games', String(o.n).padStart(3), 'place', o.rank.toFixed(2), 'wins', (Math.round(o.top * 100) + '%').padStart(4), 'eliminated', (Math.round(o.dead * 100) + '%').padStart(4), 'score', String(Math.round(o.score)).padStart(5), 'victories', o.vic)); } }
+  const vt = {}; rows.forEach(r => { const t = r.victory ? r.victory.type : 'none (top score at the end)'; vt[t] = (vt[t] || 0) + 1; });
   console.log((md ? '## ' : '') + 'Civ ladder: ' + rows.length + ' games, ' + (rows[0] && rows[0].v2 ? 'Divergence' : 'classic') + ' rules, ' + (rows[0] ? rows[0].turns : '?') + ' turns');
+  console.log((md ? '\n' : '') + 'Games decided by: ' + Object.keys(vt).map(t => t + ' ' + vt[t]).join(', '));
   print('By civilization (' + minN + '+ games)', table(c => c.civ, minN)); print('By leader (' + minN + '+ games)', table(c => c.civ + '/' + c.leader, minN)); return;
 }
 const games = +process.argv[2] || 4, turns = +process.argv[3] || 250, v2 = process.argv[4] === '1', seed0 = +(process.argv[5] || 100);
@@ -22,5 +27,6 @@ for (let k = 0; k < games; k++) {
   for (let t = 0; t < turns; t++) G.endTurn(g);
   const majors = g.civs.filter(c => !c.minor).map(c => ({ civ: c.civId, leader: c.leaderId, alive: !!c.alive, score: c.alive ? G.score(g, c) : 0, sets: G.civSettlements(g, c.idx).length })).sort((a, b) => b.score - a.score);
   majors.forEach((c, i) => { c.rank = i + 1; });
-  console.log(JSON.stringify({ seed, v2, turns, civs: majors }));
+  const vic = g.victory && g.civs[g.victory.civ] ? { type: g.victory.type, civ: g.civs[g.victory.civ].civId, leader: g.civs[g.victory.civ].leaderId, turn: g.victory.turn } : null;
+  console.log(JSON.stringify({ seed, v2, turns, civs: majors, victory: vic }));
 }
