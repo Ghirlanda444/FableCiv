@@ -12,9 +12,9 @@ if (process.argv[2] === '--summary') {
   const md = process.argv.indexOf('--md') >= 0, minN = +(process.argv[process.argv.indexOf('--min') + 1] || 0) || 1;
   function print(title, out) { if (md) { console.log('\n### ' + title + '\n\n| # | civ | games | avg place (0 first, 1 last) | wins | eliminated | score | victories reached |\n|---|---|---|---|---|---|---|---|'); out.forEach((o, i) => console.log('| ' + (i + 1) + ' | ' + o.k + ' | ' + o.n + ' | ' + o.rank.toFixed(2) + ' | ' + Math.round(o.top * 100) + '% | ' + Math.round(o.dead * 100) + '% | ' + Math.round(o.score) + ' | ' + o.vic + ' |')); }
     else { console.log('\n== ' + title); out.forEach((o, i) => console.log(String(i + 1).padStart(3), o.k.padEnd(28), 'games', String(o.n).padStart(3), 'place', o.rank.toFixed(2), 'wins', (Math.round(o.top * 100) + '%').padStart(4), 'eliminated', (Math.round(o.dead * 100) + '%').padStart(4), 'score', String(Math.round(o.score)).padStart(5), 'victories', o.vic)); } }
-  const vt = {}; rows.forEach(r => { const t = r.victory ? r.victory.type : 'none (top score at the end)'; vt[t] = (vt[t] || 0) + 1; });
+  const vt = {}, vturn = []; rows.forEach(r => { const t = r.victory ? r.victory.type : 'none (top score at the end)'; vt[t] = (vt[t] || 0) + 1; if (r.victory) vturn.push(r.victory.turn); }); vturn.sort((a, b) => a - b);
   console.log((md ? '## ' : '') + 'Civ ladder: ' + rows.length + ' games, ' + (rows[0] && rows[0].v2 ? 'Divergence' : 'classic') + ' rules, ' + (rows[0] ? rows[0].turns : '?') + ' turns');
-  console.log((md ? '\n' : '') + 'Games decided by: ' + Object.keys(vt).map(t => t + ' ' + vt[t]).join(', '));
+  console.log((md ? '\n' : '') + 'Games decided by: ' + Object.keys(vt).map(t => t + ' ' + vt[t]).join(', ') + (vturn.length ? ' · victory turn: earliest ' + vturn[0] + ', median ' + vturn[Math.floor(vturn.length / 2)] + ', latest ' + vturn[vturn.length - 1] : '') + '. "wins" = the victor, or the top score when nobody won.');
   print('By civilization (' + minN + '+ games)', table(c => c.civ, minN)); print('By leader (' + minN + '+ games)', table(c => c.civ + '/' + c.leader, minN)); return;
 }
 const games = +process.argv[2] || 4, turns = +process.argv[3] || 250, v2 = process.argv[4] === '1', seed0 = +(process.argv[5] || 100);
@@ -24,9 +24,10 @@ for (let k = 0; k < games; k++) {
   const [pick, leader] = all[(seed * 7 + k) % all.length];
   const g = G.newGame({ playerCiv: pick, playerLeader: leader ? leader.id : undefined, mapSize: 'standard', mapType: 'continents', numCivs: 6, numStates: 3, seed, difficulty: 'prince', v2 }); // a standard map: room to settle, so abilities decide more than who spawned next to a warlord
   const pl = G.player(g); pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER_BY_ID[pl.leaderId].ai);
-  for (let t = 0; t < turns; t++) G.endTurn(g);
+  for (let t = 0; t < turns && !g.victory; t++) G.endTurn(g); // the game ends at its first victory, as it does for a player
   const majors = g.civs.filter(c => !c.minor).map(c => ({ civ: c.civId, leader: c.leaderId, alive: !!c.alive, score: c.alive ? G.score(g, c) : 0, sets: G.civSettlements(g, c.idx).length })).sort((a, b) => b.score - a.score);
+  if (g.victory) { const vi = majors.findIndex(c => c.civ === g.civs[g.victory.civ].civId && c.leader === g.civs[g.victory.civ].leaderId); if (vi > 0) majors.unshift(majors.splice(vi, 1)[0]); } // the victor places first, the rest by score
   majors.forEach((c, i) => { c.rank = i + 1; });
   const vic = g.victory && g.civs[g.victory.civ] ? { type: g.victory.type, civ: g.civs[g.victory.civ].civId, leader: g.civs[g.victory.civ].leaderId, turn: g.victory.turn } : null;
-  console.log(JSON.stringify({ seed, v2, turns, civs: majors, victory: vic }));
+  console.log(JSON.stringify({ seed, v2, turns, played: g.turn, civs: majors, victory: vic }));
 }
