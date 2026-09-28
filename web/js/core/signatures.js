@@ -43,6 +43,7 @@
     if (fx.poleis) { var near = Math.min(3, G.civSettlements(g, civ.idx).filter(function (o) { return o !== s && G.dist(g.tiles[o.tile], t) <= 6; }).length) * fx.poleis; y.production += near; y.science += near; } // the Greek poleis
     if (fx.windmills && (G.hasBuilding(s, 'market') || G.hasBuilding(s, 'workshop'))) { y.production += fx.windmills; y.food += 1; } // Dutch windmills
     if (fx.cothon && s.isCity && G.isCoastal(g, s)) y.production += fx.cothon; // the Cothon of Carthage
+    if (fx.hanTribute && G.hasBuilding(s, 'walls')) { y.food += fx.hanTribute; y.production += fx.hanTribute; } // free of the Han tribute
     if (fx.moai) { if (G.hasBuilding(s, 'monument')) { y.production += fx.moai; y.food += fx.moai; } y.production += 2 * fx.moai * s.buildings.filter(function (b) { return AU.WONDERS[b]; }).length; } // the moai quarries
   };
   // settlement defense (added in G.settlementStrength)
@@ -128,6 +129,7 @@
     if (fx.captureIncome) civ.gold += (civ.stats.captures || 0) * fx.captureIncome; // tribute
     if (fx.interest) civ.gold += Math.min(25, Math.floor(Math.max(0, civ.gold) * fx.interest)); // the Amsterdam exchange
     if (fx.routeIncense) { var r = G.civUnits(g, civ.idx).filter(function (u) { return u.route != null; }).length; civ.bonusFaith = (civ.bonusFaith || 0) + r * fx.routeIncense; civ.bonusCulture = (civ.bonusCulture || 0) + r; } // incense from Punt
+    if (fx.generalWinter) for (var gid in g.units) { var gu = g.units[gid]; if (gu.civ < 0 || gu.civ === civ.idx || AU.U.isNaval(gu) || !G.isMilitary(gu) || !G.atWar(g, gu.civ, civ.idx)) continue; var gt = g.tiles[gu.tile]; if (G.tileOwnerCiv(g, gt) !== civ.idx || G.isWater(gt)) continue; gu.hp = Math.max(10, gu.hp - fx.generalWinter * (gt.terrain === 'tundra' || gt.terrain === 'snow' ? 2 : 1)); } // General Winter
     if (fx.divineWind) G.civSettlements(g, civ.idx).forEach(function (s) { var st = g.tiles[s.tile]; for (var id in g.units) { var u = g.units[id]; if (u.civ < 0 || u.civ === civ.idx || !AU.U.isNaval(u) || !G.atWar(g, u.civ, civ.idx)) continue; if (G.dist(g.tiles[u.tile], st) <= 2) u.hp = Math.max(10, u.hp - fx.divineWind); } }); // kamikaze
   };
   SG.greatPoints = function (g, civ, fx, out) { if (fx.wonderGreatPoints) { var w = 0; for (var k in g.wonders) { var s = g.settlements[g.wonders[k]]; if (s && s.civ === civ.idx) w++; } out.engineer += w * fx.wonderGreatPoints; } };
