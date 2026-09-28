@@ -71,14 +71,14 @@
       if (o === civ || !o.alive || o.minor || !civ.met[o.idx] || !AU.Diplo || !(civ.rel[o.idx].war || AU.Diplo.canDeclareWar(g, civ.idx, o.idx))) return;
       var cap = g.settlements[o.originalCapital]; if (!cap || cap.civ !== o.idx || !AI.reachable(g, civ, cap)) return;
       var ratio = myS / Math.max(1, G.militaryStrength(g, o.idx)), ship = !!o.voyage;
-      if (ratio < (ship ? 0.8 : 1.25)) return;
+      if (ratio < (ship ? 0.8 : 1.1)) return;
       var v = ratio * 10 - G.dist(home, g.tiles[cap.tile]) * 0.5 + (ship ? 40 : 0) + (o.projects && o.projects.moon_landing ? 8 : 0);
       if (v > bv) { bv = v; best = o; }
     });
     if (!best) return;
     var r = civ.rel[best.idx];
     if (r.war) { r.campaign = true; return; }
-    if (G.rng(g) < (best.voyage ? 0.5 : 0.04)) { G.declareWar(g, civ.idx, best.idx); r.campaign = true; G.log(g, G.civData(civ).name + ' marches on ' + G.civData(best).name + '.', civ.idx); }
+    if (G.rng(g) < (best.voyage ? 0.5 : 0.06)) { G.declareWar(g, civ.idx, best.idx); r.campaign = true; G.log(g, G.civData(civ).name + ' marches on ' + G.civData(best).name + '.', civ.idx); }
   };
   // the campaign ends when the rival's original capital is ours (or the rival is gone)
   AI.campaignGoal = function (g, civ, oIdx) { var o = g.civs[oIdx], r = civ.rel[oIdx]; if (!r || !r.campaign || !r.war) return null; var cap = o && o.alive ? g.settlements[o.originalCapital] : null; if (!cap || cap.civ === civ.idx) { r.campaign = false; return null; } return cap; };
