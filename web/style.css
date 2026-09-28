@@ -10,7 +10,7 @@
   --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --paper-tex: url(assets/ui/paper.png); --wood-tex: url(assets/ui/wood.png);
   --frame: 0 0 0 2px var(--gold2), 0 0 0 5px var(--wood), 0 0 0 6px rgba(255,220,150,.35), 0 10px 30px rgba(0,0,0,.55);
-  --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); --safe-left: env(safe-area-inset-left, 0px); --safe-right: env(safe-area-inset-right, 0px);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); font-weight: 600; overflow: hidden; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -50,6 +50,26 @@ select:focus, input:focus { outline: none; border-color: var(--gold2); box-shado
 .logo-w2 { font-size: .92em; }
 .tagline { display: inline-block; color: #fff3d6; margin: 10px 0 18px; padding: 7px 16px; border-radius: 14px; background: rgba(40,24,10,.72); border: 1px solid rgba(255,220,150,.3); text-shadow: 0 1px 3px rgba(0,0,0,.8); font-size: 14px; line-height: 1.35; }
 .title-buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+/* 16:9 title: logo, version and languages on the left, the menu on the right, so nothing falls off a short screen */
+@media (orientation: landscape) and (min-aspect-ratio: 4/3) {
+  #title { align-items: center; overflow-y: auto; }
+  #title .title-inner { max-width: 1100px; margin: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "logo buttons" "tagline buttons" "version buttons" "lang buttons"; align-content: center; align-items: center; column-gap: clamp(20px, 4vw, 56px); padding: calc(16px + var(--safe-top)) calc(24px + var(--safe-right, 0px)) calc(16px + var(--safe-bottom)) calc(24px + var(--safe-left, 0px)); }
+  #title .logo { grid-area: logo; align-self: end; } #title .tagline { grid-area: tagline; justify-self: center; } #title .version { grid-area: version; } #title .lang-bar { grid-area: lang; align-self: start; }
+  #title .title-buttons { grid-area: buttons; align-items: stretch; }
+  #title .logo-img { width: min(40vw, 460px); }
+  #title .logo-text { font-size: clamp(38px, 6vw, 72px); }
+  #title button.big { min-width: 0; width: 100%; }
+}
+/* phones held sideways: the menu in two columns, New Game and Continue across the top */
+@media (orientation: landscape) and (min-aspect-ratio: 4/3) and (max-height: 560px) {
+  #title .title-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  #title #btn-continue, #title #btn-new { grid-column: 1 / -1; }
+  #title button.big { padding: 8px 10px; font-size: 15px; border-bottom-width: 4px; border-radius: 14px; }
+  #title .logo-img { width: min(38vw, 340px); }
+  #title .tagline { display: none; }
+  #title .version { margin-top: 6px; }
+  #title .lang-bar button { padding: 3px 7px; font-size: 11px; }
+}
 .version { color: #d8c7a4; font-size: 12px; margin-top: 16px; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
 #setup { overflow: auto; touch-action: pan-y; background: var(--paper-tex), var(--paper); }
 .setup-inner { padding: calc(16px + var(--safe-top)) 16px calc(24px + var(--safe-bottom)); max-width: 900px; margin: 0 auto; }
