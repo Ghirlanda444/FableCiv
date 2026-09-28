@@ -1,4 +1,5 @@
 name: Civ ladder (balance)
+run-name: Civ ladder · ${{ github.event.inputs.map_size || 'standard' }} ${{ github.event.inputs.map_type || 'continents' }} · ${{ github.event.inputs.speed || 'standard' }} speed
 
 # AI-only games with a random civilization in the player seat, played to the first victory; the victor ranks first, the rest by score. The job summary shows which civs and
 # leaders win or get eliminated too often. Free to run: no art, no secrets.
@@ -10,9 +11,25 @@ on:
         required: false
         default: "12"
       turns:
-        description: "Turns per game (a game also ends at its first victory, near turn 315 at Standard speed)"
+        description: "Turns per game at Standard speed, scaled by the speed (a game also ends at its first victory)"
         required: false
         default: "400"
+      map_size:
+        description: "Map size: tiny, small, standard, large, huge, enormous"
+        required: false
+        default: "standard"
+      map_type:
+        description: "Map type: continents, pangaea, fractal, archipelago, islands, donut, inland_sea, terra"
+        required: false
+        default: "continents"
+      speed:
+        description: "Game speed: quick, standard, epic, marathon"
+        required: false
+        default: "standard"
+      civs:
+        description: "Empires per game (empty: 6 on standard, the map size's default otherwise)"
+        required: false
+        default: ""
   schedule:
     - cron: "0 4 * * 1" # Mondays
 
@@ -23,7 +40,7 @@ jobs:
   play:
     name: Divergence shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 330
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +52,7 @@ jobs:
         with:
           node-version: "22"
       - name: Play
-        run: node tools/civ-ladder.js "${{ github.event.inputs.games || '12' }}" "${{ github.event.inputs.turns || '400' }}" "${{ matrix.rules }}" $((1000 + ${{ matrix.rules }} * 500 + ${{ matrix.shard }} * 50 + ${{ github.run_number }} % 50)) > ladder-${{ matrix.rules }}-${{ matrix.shard }}.log
+        run: node tools/civ-ladder.js "${{ github.event.inputs.games || '12' }}" "${{ github.event.inputs.turns || '400' }}" "${{ matrix.rules }}" $((1000 + ${{ matrix.rules }} * 500 + ${{ matrix.shard }} * 50 + ${{ github.run_number }} % 50)) "${{ github.event.inputs.map_size || 'standard' }}" "${{ github.event.inputs.map_type || 'continents' }}" "${{ github.event.inputs.speed || 'standard' }}" "${{ github.event.inputs.civs || '' }}" > ladder-${{ matrix.rules }}-${{ matrix.shard }}.log
       - uses: actions/upload-artifact@v4
         with:
           name: ladder-${{ matrix.rules }}-${{ matrix.shard }}
