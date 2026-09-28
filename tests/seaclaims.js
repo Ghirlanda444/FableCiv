@@ -14,4 +14,13 @@ G.addBuilding(g, s, 'lighthouse'); ok(G.tileClaimCost(g, s, water) === Math.ceil
 G.addBuilding(g, s, 'harbor'); ok(G.tileClaimCost(g, s, water) === 0 && G.freeClaimTile(g, water, s), 'a Harbor makes the sea free');
 p.influence = 0; ok(G.claimableTiles(g, s).indexOf(water) >= 0 && (land == null || G.claimableTiles(g, s).indexOf(land) < 0), 'with no Influence left a port still claims the sea');
 s.pendingGrowth = 1; G.autoExpand(g, s); ok(s.tiles.some(i => G.isWater(g.tiles[i])) && p.influence === 0, 'the city claims a water tile for free');
+// seafaring by age (Divergence has no Sailing tech: the ages open the sea)
+{ const MW = AU.MasteryWeb, st = MW.state(p), fx = G.civFx(g, p), era0 = st.era;
+  const shore = g.tiles.find(t => t.terrain === 'coast' && G.neighbors(g, t).some(n => !G.isWater(g.tiles[n]) && !AU.TERRAIN[g.tiles[n].terrain].impassable));
+  const land = g.tiles[G.neighbors(g, shore).find(n => !G.isWater(g.tiles[n]) && !AU.TERRAIN[g.tiles[n].terrain].impassable)];
+  const u = G.spawnUnit(g, p.idx, 'warrior', land.i);
+  st.era = 0; p.v2 && (p.v2.era = 0); ok(!U.canEmbark(g, p, fx) && U.enterCost(g, u, shore, land) === Infinity, 'Pebble Age: nobody takes to the sea');
+  st.era = 1; ok(U.canEmbark(g, p, fx) && U.enterCost(g, u, shore, land) === 1 && !U.canOcean(g, p, fx), 'Marble Age: units embark on the coast, not yet the ocean');
+  st.era = 3; ok(U.canOcean(g, p, fx), 'Easel Age: boats cross the ocean');
+  st.era = era0; }
 console.log(fails ? fails + ' FAILED' : 'seaclaims OK'); process.exit(fails ? 1 : 0);

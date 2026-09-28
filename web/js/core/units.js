@@ -37,6 +37,10 @@
   U.civ = function (g, u) { return u.civ >= 0 ? g.civs[u.civ] : null; };
 
   // Movement cost to enter tile `to` for unit u; Infinity if not allowed.
+  // Taking to the sea: land units embark from Seafaring (Divergence: the Marble Age) and cross the Ocean from Mapmaking (the Easel Age).
+  U.EMBARK_ERA = 1; U.OCEAN_ERA = 3;
+  U.canEmbark = function (g, civ, fx) { return !!civ && (!!(fx && fx.earlyEmbark) || (g.v2 ? G.era(civ) >= U.EMBARK_ERA : !!civ.techs.sailing)); };
+  U.canOcean = function (g, civ, fx) { return !!civ && (!!(fx && fx.earlyOcean) || (g.v2 ? G.era(civ) >= U.OCEAN_ERA : !!civ.techs.cartography)); };
   U.enterCost = function (g, u, to, from) {
     var T = AU.TERRAIN[to.terrain];
     var civ = U.civ(g, u), fx = civ ? G.civFx(g, civ) : {};
@@ -45,12 +49,12 @@
     var naval = U.isNaval(u);
     if (naval) {
       if (!T.water) { if (to.navigable) return 1; var s = G.settlementAt(g, to.i); if (!s || s.civ !== u.civ) return Infinity; return 1; }
-      if (to.terrain === 'ocean' && !(AU.UNITS[u.type].ocean || (civ && (civ.techs.cartography || fx.earlyOcean)))) return Infinity;
+      if (to.terrain === 'ocean' && !(AU.UNITS[u.type].ocean || U.canOcean(g, civ, fx))) return Infinity;
       return 1;
     }
     if (T.water) {
-      if (!civ || !(civ.techs.sailing || fx.earlyEmbark)) return Infinity;
-      if (to.terrain === 'ocean' && !(civ.techs.cartography || fx.earlyOcean)) return Infinity;
+      if (!U.canEmbark(g, civ, fx)) return Infinity;
+      if (to.terrain === 'ocean' && !U.canOcean(g, civ, fx)) return Infinity;
       return 1;
     }
     if (T.impassable) { if (fx.mountainsPassable && !naval) { var ownerM = G.tileOwnerCiv(g, to); if (ownerM >= 0 && ownerM !== u.civ && G.isMilitary(u) && !G.atWar(g, u.civ, ownerM)) return Infinity; return to.road && from && from.road ? 0.5 : 3; } return Infinity; } // a mountain road (the Qhapaq Ñan) is walked like any road
@@ -88,7 +92,7 @@
   function Heap() { this.a = []; }
   Heap.prototype.push = function (d, v) { var a = this.a; a.push([d, v]); var i = a.length - 1; while (i > 0) { var p = (i - 1) >> 1; if (a[p][0] <= a[i][0]) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; } };
   Heap.prototype.pop = function () { var a = this.a, top = a[0], last = a.pop(); if (a.length) { a[0] = last; var i = 0, n = a.length; for (;;) { var l = 2 * i + 1, r = l + 1, m = i; if (l < n && a[l][0] < a[m][0]) m = l; if (r < n && a[r][0] < a[m][0]) m = r; if (m === i) break; var t = a[m]; a[m] = a[i]; a[i] = t; i = m; } } return top; };
-  U.dijkstra = function (g, u, maxCost) {
+  U.dijkstra = function (g, u, maxCost, target, landOnly) { // with a target the search stops as soon as the target is settled; landOnly keeps a walk on its own shore
     var dist = {}, prev = {}, open = new Heap();
     open.push(0, u.tile); dist[u.tile] = 0;
     if (maxCost === undefined) maxCost = 40;
@@ -96,11 +100,13 @@
     while (open.a.length) {
       var cur = open.pop(), d = cur[0], idx = cur[1];
       if (d > dist[idx]) continue;
+      if (target !== undefined && idx === target) break;
       if (d >= maxCost) continue;
       var t = g.tiles[idx], nb = G.neighbors(g, t);
       var held = zoc && idx !== u.tile && AU.Warbands.zocAt(g, u.civ, idx); // zone of control: a stop here ends the turn, the walk goes on next turn
       for (var k = 0; k < nb.length; k++) {
         var n = nb[k], nt = g.tiles[n];
+        if (landOnly && G.isWater(nt)) continue;
         var c = U.enterCost(g, u, nt, t);
         if (c === Infinity) continue;
         if (held) c += zocCost;
@@ -122,7 +128,8 @@
   };
   U.findPath = function (g, u, target) {
     if (target === u.tile) return [];
-    var res = U.dijkstra(g, u);
+    var from = g.tiles[u.tile], to = g.tiles[target], landOnly = !U.isNaval(u) && !G.isWater(from) && !G.isWater(to) && from.continent === to.continent; // no boat trips to a place on the same land
+    var res = U.dijkstra(g, u, undefined, target, landOnly);
     if (res.dist[target] === undefined) return null;
     var path = [], cur = target;
     while (cur !== u.tile) { path.push(cur); cur = res.prev[cur]; }
