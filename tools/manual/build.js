@@ -146,7 +146,7 @@ ${fig(shot('web'), 'The Mastery Web: five lanes of foundation Sparks, their prog
 <p>The 32 foundation Sparks sit in five lanes, one per way of life. Light every Spark of a lane in its age and the lane is <b>mastered</b>: a permanent reward of its own, different in every age.</p>
 ${table(['Lane', 'First and last reward'], laneRows)}
 <h3>Ages</h3>
-<p>20 foundation Sparks (24 from the second age) open a <b>Turning Point</b> into the next age. An age lasts at least 36 turns; every foundation Spark beyond the threshold cuts 2 turns and every lane mastered 3, down to 22.</p>
+<p>20 foundation Sparks (24 from the second age) open a <b>Turning Point</b> into the next age. An age lasts at least 70 turns; every foundation Spark beyond the threshold cuts 4 turns and every lane mastered 5, down to 45 (at Standard speed; Quick is shorter, Epic and Marathon longer).</p>
 ${table(['', 'Age', ''], eraRows)}
 <h3>Insights 🔮 and Reforms</h3>
 <p>Insights replace civics and governments: a decision between two doors that becomes a permanent trait. Heritage 🎭 builds up, and once per age it pays for a <b>Reform</b> that reopens one decided Insight and takes its other door.</p>

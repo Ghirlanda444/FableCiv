@@ -21,6 +21,6 @@ function fresh(civ, leader, seed) { const g = G.newGame({ playerCiv: civ, player
 // the age clock
 { const { g, p } = fresh('rome', 'trajan'); const s = MW.state(p); const base = MW.ageTurnsNeeded(g, p);
   MW.nodesOfEra(0).filter(n => n.pool === 'foundation').slice(0, 20).forEach(n => { s.unlocked[n.id] = 1; }); ok(MW.ageTurnsNeeded(g, p) === base, 'at the threshold the age lasts ' + base + ' turns');
-  MW.nodesOfEra(0).filter(n => n.pool === 'foundation').slice(20, 25).forEach(n => { s.unlocked[n.id] = 1; }); ok(MW.ageTurnsNeeded(g, p) === Math.round((36 - 10) * G.speed(g)), 'five extra Sparks cut it by 10 turns (' + MW.ageTurnsNeeded(g, p) + ')');
-  s.lanes = { '0:Sustenance': 1, '0:Craft': 1 }; ok(MW.ageTurnsNeeded(g, p) === Math.round(22 * G.speed(g)), 'two lanes more reach the floor of 22'); }
+  MW.nodesOfEra(0).filter(n => n.pool === 'foundation').slice(20, 25).forEach(n => { s.unlocked[n.id] = 1; }); ok(MW.ageTurnsNeeded(g, p) === Math.round((MW.MIN_ERA_TURNS - 5 * MW.SPARK_SHAVE) * G.speed(g)), 'five extra Sparks cut it by ' + 5 * MW.SPARK_SHAVE + ' turns (' + MW.ageTurnsNeeded(g, p) + ')');
+  s.lanes = { '0:Sustenance': 1, '0:Craft': 1 }; ok(MW.ageTurnsNeeded(g, p) === Math.round(MW.FLOOR_ERA_TURNS * G.speed(g)), 'two lanes more reach the floor of ' + MW.FLOOR_ERA_TURNS); }
 console.log(fails ? fails + ' FAILED' : 'honesty OK'); process.exit(fails ? 1 : 0);

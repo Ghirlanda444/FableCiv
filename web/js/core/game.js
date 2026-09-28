@@ -730,7 +730,7 @@
       G.log(g, G.civData(civ).name + ' completed ' + AU.PROJECTS[id].name + '.', civ.idx);
       g.civs.forEach(function (c) { G.notify(g, c, { kind: 'project', text: (c === civ ? _('You') : G.civData(civ).name) + ' completed ' + AU.PROJECTS[id].name + '!', tile: s.tile }); });
       if (id === 'launch_satellite') { for (var i = 0; i < civ.explored.length; i++) civ.explored[i] = 1; }
-      if (id === 'colony_ship') g.victory = { type: 'science', civ: civ.idx, turn: g.turn };
+      if (id === 'colony_ship' && !g.victory) g.victory = { type: 'science', civ: civ.idx, turn: g.turn }; // the first Colony Ship wins; a later one does not steal it
     }
     return true;
   };
