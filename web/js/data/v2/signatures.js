@@ -56,6 +56,8 @@
       nzinga: { drop: ['healBonusHome'], fx: { enemyOfEnemy: 5 }, desc: 'Units +5 Strength against units whose empire comes from another continent, and +4 in Rainforest and Marsh. The enemy of my enemy: leaders at war with one of your enemies warm to you.' }
     },
     civ: {
+      arabia: { drop: [], fx: { caravanWells: 1 }, desc: 'Worked Desert tiles yield +1 Gold. The wells of the caravan roads: worked Desert tiles on a road or a river, or at an Oasis, also yield +1 Food. Trade Outposts yield +2 Knowledge. Your Caravans carry your state faith three times as hard. Bonds with free cities cost half the Influence upkeep.' },
+      mali: { drop: ['cityYieldMult'], fx: { saltMines: 1 }, desc: 'Worked Desert tiles yield +2 Gold and +1 Production: the salt of Taghaza. Purchases cost 15% less. Caravans: two extra, and each route yields +2 Gold.' },
       russia: { drop: [], fx: { generalWinter: 8 }, desc: 'Tundra and Snow tiles yield +1 Food and +1 Production when worked. Settlements expand into a fourth ring. Your tiles never change with the climate. General Winter: enemy land units inside your borders lose 8 HP every turn, 16 on Tundra and Snow (never below 10 HP).' },
       america: { drop: ['townGrowthMult'], fx: {}, desc: 'Pioneers cost 20% less and move +1. Every settlement gets four free claims instead of three.' },
       korea: { drop: [], fx: { dure: 1 }, desc: 'Libraries and Universities yield +2 Knowledge. Urban Centers +3 Knowledge. Studying a foundation Spark refunds a fifth of its cost. Capital +3 Knowledge for every lane mastered. Dure, the village work teams: every settlement +1 Food and +1 Production for every 4 population.' },

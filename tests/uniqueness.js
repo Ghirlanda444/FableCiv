@@ -83,4 +83,8 @@ function y(g, s) { return G.settlementYields(g, s); }
   const e = G.spawnUnit(g, o.idx, 'warrior', tile.i); e.hp = 100; SG.turn(g, p); ok(e.hp === 84, 'Russia: General Winter bites invaders on the tundra (100 -> ' + e.hp + ')');
   tile.terrain = 'plains'; e.hp = 100; SG.turn(g, p); ok(e.hp === 92, 'Russia: and on any land of theirs (100 -> ' + e.hp + ')'); e.hp = 12; SG.turn(g, p); ok(e.hp === 10, 'but never below 10 HP'); }
 { const { g, p, cap } = fresh('vietnam', 'trung'); G.addBuilding(g, cap, 'walls'); const [a, b] = onOff(g, p, 'hanTribute', () => y(g, cap).food); ok(a >= b + 1, 'Trung Trac: free of the Han tribute (' + b.toFixed(1) + ' -> ' + a.toFixed(1) + ' Food)'); }
+{ const { g, p, cap } = fresh('arabia', 'harun'); const t = g.tiles[G.neighbors(g, g.tiles[cap.tile]).find(i => !G.isWater(g.tiles[i]))]; t.terrain = 'desert'; t.hills = false; t.feature = null; t.road = true; G.claimTile(g, cap, t.i); t.worked = true;
+  const [a, b] = onOff(g, p, 'caravanWells', () => y(g, cap).food); ok(a >= b + 1, 'Arabia: the wells of the caravan roads (' + b.toFixed(1) + ' -> ' + a.toFixed(1) + ' Food)'); }
+{ const { g, p, cap } = fresh('mali', 'mansa'); const t = g.tiles[G.neighbors(g, g.tiles[cap.tile]).find(i => !G.isWater(g.tiles[i]))]; t.terrain = 'desert'; t.hills = false; t.feature = null; G.claimTile(g, cap, t.i); t.worked = true;
+  const [a, b] = onOff(g, p, 'saltMines', () => y(g, cap).production); ok(a > b, 'Mali: the salt of Taghaza (' + b.toFixed(1) + ' -> ' + a.toFixed(1) + ' Production)'); }
 console.log(fails ? fails + ' FAILED' : 'uniqueness OK'); process.exit(fails ? 1 : 0);

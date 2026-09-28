@@ -44,6 +44,8 @@
     if (fx.windmills && (G.hasBuilding(s, 'market') || G.hasBuilding(s, 'workshop'))) { y.production += fx.windmills; y.food += 1; } // Dutch windmills
     if (fx.cothon && s.isCity && G.isCoastal(g, s)) y.production += fx.cothon; // the Cothon of Carthage
     if (fx.hanTribute && G.hasBuilding(s, 'walls')) { y.food += fx.hanTribute; y.production += fx.hanTribute; } // free of the Han tribute
+    if (fx.caravanWells) y.food += worked(g, s, function (x) { return x.terrain === 'desert' && (x.feature === 'oasis' || x.river || x.road || G.neighbors(g, x).some(function (n) { return g.tiles[n].feature === 'oasis'; })); }) * fx.caravanWells; // the wells of the caravan roads
+    if (fx.saltMines) y.production += worked(g, s, function (x) { return x.terrain === 'desert'; }) * fx.saltMines; // the salt of Taghaza
     if (fx.moai) { if (G.hasBuilding(s, 'monument')) { y.production += fx.moai; y.food += fx.moai; } y.production += 2 * fx.moai * s.buildings.filter(function (b) { return AU.WONDERS[b]; }).length; } // the moai quarries
   };
   // settlement defense (added in G.settlementStrength)
