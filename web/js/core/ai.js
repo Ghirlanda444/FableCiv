@@ -6,6 +6,7 @@
   AI.takeTurn = function (g, civ) {
     try {
       AI.diplomacy(g, civ);
+      AI.campaign(g, civ);
       AI.chooseResearch(g, civ);
       AI.chooseGovernment(g, civ);
       AI.choosePolicies(g, civ);
@@ -53,6 +54,34 @@
       if (myS > theirS * (1.6 - tr.aggression * 0.5) && G.rng(g) < p) G.declareWar(g, civ.idx, o.idx);
     });
   };
+  // ---------- Campaigns ----------
+  // From the Easel Age a conqueror (a leader who leans to Conquest) marches on a rival's original capital and does not sign a
+  // peace until it has taken it or is losing. A Colony Ship in flight makes its launcher the first target of every conqueror.
+  AI.CAMPAIGN_ERA = 3;
+  AI.conqueror = function (g, civ) { return !civ.minor && AU.leaningOf(G.leaderData(civ)) === 'domination'; };
+  AI.reachable = function (g, civ, s) {
+    var t = g.tiles[s.tile]; if (G.civSettlements(g, civ.idx).some(function (o) { return g.tiles[o.tile].continent === t.continent; })) return true;
+    return U.canEmbark(g, civ, G.civFx(g, civ));
+  };
+  AI.campaign = function (g, civ) {
+    if (!AI.conqueror(g, civ) || G.era(civ) < AI.CAMPAIGN_ERA || !civ.capital) return;
+    if (g.civs.some(function (o) { return o.alive && !o.minor && civ.rel[o.idx] && civ.rel[o.idx].campaign && civ.rel[o.idx].war; })) return;
+    var myS = G.militaryStrength(g, civ.idx), home = g.tiles[g.settlements[civ.capital].tile], best = null, bv = -1e9;
+    g.civs.forEach(function (o) {
+      if (o === civ || !o.alive || o.minor || !civ.met[o.idx] || !AU.Diplo || !(civ.rel[o.idx].war || AU.Diplo.canDeclareWar(g, civ.idx, o.idx))) return;
+      var cap = g.settlements[o.originalCapital]; if (!cap || cap.civ !== o.idx || !AI.reachable(g, civ, cap)) return;
+      var ratio = myS / Math.max(1, G.militaryStrength(g, o.idx)), ship = !!o.voyage;
+      if (ratio < (ship ? 0.8 : 1.25)) return;
+      var v = ratio * 10 - G.dist(home, g.tiles[cap.tile]) * 0.5 + (ship ? 40 : 0) + (o.projects && o.projects.moon_landing ? 8 : 0);
+      if (v > bv) { bv = v; best = o; }
+    });
+    if (!best) return;
+    var r = civ.rel[best.idx];
+    if (r.war) { r.campaign = true; return; }
+    if (G.rng(g) < (best.voyage ? 0.5 : 0.04)) { G.declareWar(g, civ.idx, best.idx); r.campaign = true; G.log(g, G.civData(civ).name + ' marches on ' + G.civData(best).name + '.', civ.idx); }
+  };
+  // the campaign ends when the rival's original capital is ours (or the rival is gone)
+  AI.campaignGoal = function (g, civ, oIdx) { var o = g.civs[oIdx], r = civ.rel[oIdx]; if (!r || !r.campaign || !r.war) return null; var cap = o && o.alive ? g.settlements[o.originalCapital] : null; if (!cap || cap.civ === civ.idx) { r.campaign = false; return null; } return cap; };
   AI.borderTension = function (g, a, b) {
     var as = G.civSettlements(g, a.idx), bs = G.civSettlements(g, b.idx);
     for (var i = 0; i < as.length; i++) for (var j = 0; j < bs.length; j++) if (G.dist(g.tiles[as[i].tile], g.tiles[bs[j].tile]) <= 6) return true;
@@ -127,6 +156,8 @@
     var mil = G.civUnits(g, civ.idx).filter(G.isMilitary).length;
     var atWar = g.civs.some(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
     var want = sets.length * (1 + tr.aggression) + (atWar ? sets.length * 1.5 + 2 : 0) + g.turn / 50;
+    if (AI.conqueror(g, civ) && G.era(civ) >= AI.CAMPAIGN_ERA) want += sets.length + 4; // a conqueror arms for the march on a capital
+    if (civ.voyage) want += sets.length * 2 + 4; // mission control must hold until the Colony Ship lands
     // the neighbours' armies set a floor: a scholar who ignores the warlord next door is a scholar who dies at turn 50
     var rival = 0, foe = 0; g.civs.forEach(function (o) { if (!o.alive || o.minor || o.idx === civ.idx || !civ.met[o.idx]) return; var m = G.civUnits(g, o.idx).filter(G.isMilitary).length; if (m > rival) rival = m; if (civ.rel[o.idx].war && m > foe) foe = m; });
     want = Math.max(want, Math.min(rival * 0.6, sets.length * 3 + 6), sets.length + 2);
@@ -329,6 +360,7 @@
   AI.warTarget = function (g, civ) {
     if (civ._warTarget && civ._warTargetTurn === g.turn) return civ._warTarget;
     var enemies = g.civs.filter(function (o) { return o.alive && o.idx !== civ.idx && civ.rel[o.idx].war; });
+    for (var ci = 0; ci < enemies.length; ci++) { var goal = AI.campaignGoal(g, civ, enemies[ci].idx); if (goal) { civ._warTarget = goal; civ._warTargetTurn = g.turn; return goal; } } // a siege: the capital, nothing else
     var best = null, bd = 1e9, cap = civ.capital ? g.tiles[g.settlements[civ.capital].tile] : null;
     enemies.forEach(function (o) { var sets = G.civSettlements(g, o.idx); sets.forEach(function (s) { var d = cap ? G.dist(cap, g.tiles[s.tile]) : 0; d -= (s.hp < 50 ? 5 : 0); if (d < bd) { bd = d; best = s; } }); });
     civ._warTarget = best; civ._warTargetTurn = g.turn;

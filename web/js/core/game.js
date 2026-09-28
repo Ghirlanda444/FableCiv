@@ -730,7 +730,7 @@
       G.log(g, G.civData(civ).name + ' completed ' + AU.PROJECTS[id].name + '.', civ.idx);
       g.civs.forEach(function (c) { G.notify(g, c, { kind: 'project', text: (c === civ ? _('You') : G.civData(civ).name) + ' completed ' + AU.PROJECTS[id].name + '!', tile: s.tile }); });
       if (id === 'launch_satellite') { for (var i = 0; i < civ.explored.length; i++) civ.explored[i] = 1; }
-      if (id === 'colony_ship' && !g.victory) g.victory = { type: 'science', civ: civ.idx, turn: g.turn }; // the first Colony Ship wins; a later one does not steal it
+      if (id === 'colony_ship') G.launchVoyage(g, civ, s);
     }
     return true;
   };
@@ -1003,6 +1003,7 @@
     if (ai.minor && g.turn - rel.warSince >= 5) return true;
     if (g.turn - rel.warSince < 8) return false;
     var mine = G.militaryStrength(g, ai.idx), theirs = G.militaryStrength(g, other);
+    if (AU.AI && AU.AI.campaignGoal(g, ai, other) && theirs < mine * 1.5 && g.turn - rel.warSince < 60) return false; // a conqueror on campaign wants the capital, not a treaty
     var losing = theirs > mine * 1.2 || (rel.lostThisWar || 0) > 0;
     if ((rel.capturedThisWar || 0) >= 2) return true; // satiated: two settlements taken is a war won
     return losing || rel.attitude > -10 || g.turn - rel.warSince > 30;
@@ -1030,12 +1031,50 @@
     return Math.round(t * 10) / 10;
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
-  G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / 100); };
+  G.DOMESTIC_PER = 200; // Culture per domestic tourist
+  G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / G.DOMESTIC_PER); };
   // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Modern era or later).
   G.cultureProgress = function (g, civ) {
     var v = G.visitors(g, civ), need = 0;
     g.civs.forEach(function (o) { if (o.alive && !o.minor && o.idx !== civ.idx) need = Math.max(need, G.domesticTourists(g, o)); });
     return { visitors: v, need: need + 1, ready: civ.era >= 5 && v > need }; // from the Modern era on
+  };
+
+  // ---------- Star Voyage ----------
+  // The Colony Ship does not win on launch: it flies for VOYAGE_TURNS while the launch city keeps contact. Lose that city and the
+  // ship is lost with it (the project must be built again); the first ship to arrive wins.
+  G.VOYAGE_TURNS = 15;
+  G.launchVoyage = function (g, civ, s) {
+    civ.voyage = { launched: g.turn, arrives: g.turn + G.VOYAGE_TURNS, from: s.id };
+    G.log(g, G.civData(civ).name + ' launched a Colony Ship from ' + s.name + '.', civ.idx);
+    g.civs.forEach(function (c) { if (c.alive && !c.minor) G.notify(g, c, { big: true, kind: 'project', text: '🚀 ' + (c === civ ? _('Your Colony Ship is on its way') : G.civData(civ).name + ' ' + _('launched a Colony Ship')) + ': ' + _('it arrives in') + ' ' + G.VOYAGE_TURNS + ' ' + _('turns unless') + ' ' + s.name + ' ' + _('falls') + '.', tile: s.tile }); });
+  };
+  G.voyageTurnsLeft = function (g, civ) { return civ.voyage ? Math.max(0, civ.voyage.arrives - g.turn) : null; };
+  G.voyageTurn = function (g) {
+    var won = null;
+    g.civs.forEach(function (c) {
+      var v = c.voyage; if (!v) return;
+      var home = g.settlements[v.from];
+      if (!c.alive || !home || home.civ !== c.idx) {
+        c.voyage = null; if (c.projects) delete c.projects.colony_ship;
+        G.log(g, G.civData(c).name + ' lost contact with its Colony Ship.', c.idx);
+        g.civs.forEach(function (o) { if (o.alive && !o.minor) G.notify(g, o, { big: o === c, kind: 'project', text: '🛰️ ' + (o === c ? _('Mission control has fallen: your Colony Ship is lost. Build it again.') : G.civData(c).name + ' ' + _('lost its Colony Ship when its launch city fell.')) }); });
+        return;
+      }
+      if (g.turn >= v.arrives && (!won || v.arrives < won.voyage.arrives)) won = c;
+    });
+    return won;
+  };
+
+  // ---------- Conquest ----------
+  // Hold every original capital to win at once, or hold the original capitals of most empires (your own among them) for
+  // CONQUEST_TURNS turns in a row: the rest of the world has that long to take one back.
+  G.CONQUEST_SHARE = 0.6; G.CONQUEST_TURNS = 10;
+  G.capitalsHeld = function (g, civ) { var n = 0; g.civs.forEach(function (o) { if (o.minor) return; var oc = g.settlements[o.originalCapital]; if (oc && oc.civ === civ.idx) n++; }); return n; };
+  G.conquestNeed = function (g) { var majors = g.civs.filter(function (c) { return !c.minor; }).length; return Math.max(2, Math.ceil(majors * G.CONQUEST_SHARE)); };
+  G.conquestProgress = function (g, civ) {
+    var held = G.capitalsHeld(g, civ), need = G.conquestNeed(g), k = civ.conquestHold;
+    return { held: held, need: need, total: g.civs.filter(function (c) { return !c.minor; }).length, turns: held >= need && k ? g.turn - k + 1 : 0, of: G.CONQUEST_TURNS };
   };
 
   // ---------- Score & victory ----------
@@ -1052,12 +1091,17 @@
     if (g.victory) return g.victory;
     var alive = g.civs.filter(function (c) { return c.alive && !c.minor; });
     if (alive.length === 1) { g.victory = { type: 'domination', civ: alive[0].idx, turn: g.turn }; return g.victory; }
-    // domination: hold every original capital
+    // domination: hold every original capital, or most of them for CONQUEST_TURNS in a row
+    var majors = g.civs.filter(function (c) { return !c.minor; }).length, need = G.conquestNeed(g);
     for (var i = 0; i < alive.length; i++) {
-      var c = alive[i], all = true;
-      for (var j = 0; j < g.civs.length; j++) { if (g.civs[j].minor) continue; var oc = g.settlements[g.civs[j].originalCapital]; if (!oc || oc.civ !== c.idx) { all = false; break; } }
-      if (all) { g.victory = { type: 'domination', civ: c.idx, turn: g.turn }; return g.victory; }
+      var c = alive[i], held = G.capitalsHeld(g, c);
+      if (held >= majors) { g.victory = { type: 'domination', civ: c.idx, turn: g.turn }; return g.victory; }
+      if (held >= need) {
+        if (!c.conquestHold) { c.conquestHold = g.turn; g.civs.forEach(function (o) { if (o.alive && !o.minor) G.notify(g, o, { big: true, kind: 'war', text: '⚔️ ' + (o === c ? _('You hold') : G.civData(c).name + ' ' + _('holds')) + ' ' + held + ' ' + _('original capitals') + ': ' + _('Conquest in') + ' ' + G.CONQUEST_TURNS + ' ' + _('turns unless one is retaken') + '.', panel: 'rankings' }); }); }
+        if (g.turn - c.conquestHold + 1 >= G.CONQUEST_TURNS) { g.victory = { type: 'domination', civ: c.idx, turn: g.turn }; return g.victory; }
+      } else c.conquestHold = null;
     }
+    var ship = G.voyageTurn(g); if (ship) { g.victory = { type: 'science', civ: ship.idx, turn: g.turn }; return g.victory; }
     if (AU.Religion) { var rv = AU.Religion.checkVictory(g); if (rv) { g.victory = rv; return rv; } }
     for (var k = 0; k < alive.length; k++) { if (alive.length > 1 && G.cultureProgress(g, alive[k]).ready) { g.victory = { type: 'culture', civ: alive[k].idx, turn: g.turn }; return g.victory; } }
     if (g.turn >= g.maxTurns) {
