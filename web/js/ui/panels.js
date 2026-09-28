@@ -497,11 +497,11 @@
     function name(c) { return G.civData(c).name + (c.isPlayer ? ' (you)' : ''); }
     var V = AU.VICTORIES;
     // conquest: original capitals held
-    var caps = civs.map(function (c) { var n = 0; all.forEach(function (o) { var oc = g.settlements[o.originalCapital]; if (oc && oc.civ === c.idx) n++; }); return { c: c, n: n }; }).sort(function (a, b) { return b.n - a.n; });
-    html += '<div class="row"><div class="grow"><b>' + V.domination.icon + ' ' + V.domination.name + '</b><small>' + V.domination.desc + '</small><small>' + caps.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.n + '/' + all.length + ' capitals'; }).join(' · ') + '</small></div></div>';
+    var caps = civs.map(function (c) { return { c: c, p: G.conquestProgress(g, c) }; }).sort(function (a, b) { return b.p.held - a.p.held; });
+    html += '<div class="row"><div class="grow"><b>' + V.domination.icon + ' ' + V.domination.name + '</b><small>' + V.domination.desc + '</small><small>' + caps.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.p.held + '/' + r.p.total + ' ' + _('capitals') + (r.p.turns ? ' (' + _('held') + ' ' + r.p.turns + '/' + r.p.of + ' ' + _('turns') + ')' : ' (' + _('needs') + ' ' + r.p.need + ')'); }).join(' · ') + '</small></div></div>';
     // star voyage: projects done
     var PR = Object.keys(AU.PROJECTS), sp = civs.map(function (c) { var n = PR.filter(function (k) { return c.projects && c.projects[k]; }).length; return { c: c, n: n, t: c.techs.spaceflight ? 1 : 0 }; }).sort(function (a, b) { return b.n - a.n || b.t - a.t; });
-    html += '<div class="row"><div class="grow"><b>' + V.science.icon + ' ' + V.science.name + '</b><small>' + V.science.desc + '</small><small>' + sp.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.n + '/' + PR.length + ' projects' + (r.t ? ' (' + _('Space Travel known)') : ''); }).join(' · ') + '</small></div></div>';
+    html += '<div class="row"><div class="grow"><b>' + V.science.icon + ' ' + V.science.name + '</b><small>' + V.science.desc + '</small><small>' + sp.slice(0, 3).map(function (r) { return name(r.c) + ': ' + (r.c.voyage ? '🚀 ' + _('lands in') + ' ' + G.voyageTurnsLeft(g, r.c) + ' ' + _('turns') : r.n + '/' + PR.length + ' projects' + (r.t ? ' (' + _('Space Travel known)') : '')); }).join(' · ') + '</small></div></div>';
     // renown: visitors vs need
     var cu = civs.map(function (c) { var cp = G.cultureProgress(g, c); return { c: c, v: cp.visitors, need: cp.need, pct: cp.need > 0 ? Math.round(cp.visitors / cp.need * 100) : 0 }; }).sort(function (a, b) { return b.pct - a.pct; });
     html += '<div class="row"><div class="grow"><b>' + V.culture.icon + ' ' + V.culture.name + '</b><small>' + V.culture.desc + '</small><small>' + cu.slice(0, 3).map(function (r) { return name(r.c) + ': ' + r.v + '/' + r.need + ' visitors (' + Math.min(100, r.pct) + '%)'; }).join(' · ') + '</small></div></div>';
@@ -637,7 +637,7 @@
       sec(_('Claims and Influence'), _('Each time a settlement grows it claims a tile, which improves itself without builders. The first three claims are free; after that each costs Influence 🎯 and needs a Boundary Marker. River tiles are free for a river settlement.')) +
       sec(_('Command and war'), _('Command 🎖️ is how many orders you can give each turn; far units cost more. Up to three fighters and a Bandleader form a Warband that attacks as one. Unbridged rivers slow armies; your roads build themselves and become bridges. Conquered settlements suffer unrest.')) +
       sec(_('Spirits and faith'), _('Every settlement has the spirit of its land. Give it what it likes and it gives a gift and Devotion; choke it with Smoke and it turns angry. Enough Devotion brings a Revelation: your own faith, with tenets you choose. Faith spreads along roads and rivers and with Pilgrims.')) +
-      sec(_('Winning'), _('Conquest: hold every rival\'s original capital. Star Voyage: complete the space projects. Renown: out-draw every rival with visitors. Devotion: your faith rules the world. Legacy: the best score at the turn limit.')) +
+      sec(_('Winning'), _('Conquest: hold every original capital, or 60% of them for 10 turns. Star Voyage: complete the space projects and keep the launch city until the Colony Ship lands. Renown: out-draw every rival with visitors. Devotion: your faith rules the world. Legacy: the best score at the turn limit.')) +
       sec(_('Controls'), _('Drag to pan, pinch or scroll to zoom. Tap the yields at the top to open panels. Mouse: left click selects, right click moves or attacks. Enter') + ' = ' + _('end turn, N') + ' = ' + _('next unit, F') + ' = ' + _('fortify, Space') + ' = ' + _('skip. The game autosaves every turn.')) + '</div>';
     return { title: _('How to play'), html: html };
   };

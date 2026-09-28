@@ -81,7 +81,7 @@
       { id: 'go_dark', name: 'Go Dark', fx: { homeDefenseBonus: 4 } },
       { id: 'be_normal', name: 'Just Be Normal', fx: { attitudeBonus: 10 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point: the finale decision ----
   var TP = { name: 'The Stars Are Coming', branches: [
       { id: 'reach_stars', name: 'Reach For The Stars', fx: { sciencePerSettlement: 2 } },

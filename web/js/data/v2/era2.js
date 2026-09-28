@@ -80,7 +80,7 @@
       { id: 'guard_columns', name: 'Guard The Columns Closely', fx: { homeDefenseBonus: 5 } },
       { id: 'sell_columns', name: 'Sell Them The Blueprints', fx: { goldPerSettlement: 1, influencePerTurn: 1 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point into the next era ----
   var TP = { name: 'The Turret Age Is Coming', branches: [
       { id: 'engineers', name: "The Engineers' Way", fx: { buildingCostMult: 0.9 } },

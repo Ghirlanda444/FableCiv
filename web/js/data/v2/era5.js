@@ -80,7 +80,7 @@
       { id: 'ignore', name: 'We Do Not Comment', fx: { homeDefenseBonus: 5 } },
       { id: 'brag', name: 'We Print Our Own Good News', fx: { culturePerSettlement: 1 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point into the next era ----
   var TP = { name: 'The Glowbit Age Is Coming', branches: [
       { id: 'engineers', name: "The Engineers' Way", fx: { buildingCostMult: 0.9 } },

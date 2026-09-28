@@ -347,15 +347,16 @@
 
   // ---------- Devotion victory ----------
   // From the Puffstack Age (the Industrial era in classic rules): 60% of the world's settlements follow your faith and every other
-  // living empire holds it as state faith, for 10 turns in a row.
-  R.VICTORY_TURNS = 10;
+  // living empire holds it as state faith, for 10 turns in a row; or 85% of the world's settlements follow it, for 10 turns.
+  R.VICTORY_TURNS = 10; R.VICTORY_SHARE = 0.6; R.VICTORY_WORLD = 0.85; // or 85% of the world's settlements, whatever their rulers declare
   R.victoryEra = function (g, civ) { return g.v2 && AU.MasteryWeb ? AU.MasteryWeb.state(civ).era >= 4 : (civ.era || 0) >= 4; };
   R.victoryState = function (g, id) {
     var rel = R.rel(g, id); if (!rel) return null;
     var others = g.civs.filter(function (c) { return c.alive && !c.minor && c.idx !== rel.founder; });
     var allS = 0, folS = 0; for (var sid in g.settlements) { var s = g.settlements[sid]; if (!g.civs[s.civ] || g.civs[s.civ].minor) continue; allS++; if (s.religion === id) folS++; }
     var state = others.filter(function (c) { return c.religion === id; }).length, needState = others.length;
-    return { share: allS ? folS / allS : 0, followers: folS, total: allS, state: state, needState: needState, others: others.length, ok: others.length > 0 && folS >= allS * 0.6 && state >= needState };
+    var share = allS ? folS / allS : 0;
+    return { share: share, followers: folS, total: allS, state: state, needState: needState, others: others.length, ok: others.length > 0 && ((share >= R.VICTORY_SHARE && state >= needState) || share >= R.VICTORY_WORLD) };
   };
   R.checkVictory = function (g) {
     if (!g.religions) return null;

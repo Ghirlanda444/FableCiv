@@ -80,7 +80,7 @@
       { id: 'guard_secrets', name: 'Guard The Secrets', fx: { defenseBonus: 2 } },
       { id: 'sell_tickets', name: 'Sell Tickets, Basically', fx: { goldPerWonder: 2 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point into the next era ----
   var TP = { name: 'The Easel Age Is Coming', branches: [
       { id: 'masons', name: "The Masons' Way", fx: { buildingCostMult: 0.9 } },
