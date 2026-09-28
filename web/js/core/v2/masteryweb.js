@@ -145,9 +145,10 @@
   MW.GREAT_SLOT = { elder: 'scientist' };
   MW.greatSlots = function (civ) { var s = civ.v2, out = []; if (!s) return out; for (var id in s.unlocked) { var n = AU.V2.NODE_BY_ID[id]; if (n && n.fx && n.fx.greatSlot) out.push(MW.GREAT_SLOT[n.fx.greatSlot] || n.fx.greatSlot); } return out; };
   MW.foundationCount = function (civ, era) { var s = st(civ), c = 0; AU.V2.NODES.forEach(function (n) { if (n.era === era && n.pool === 'foundation' && s.unlocked[n.id]) c++; }); return c; };
-  // The age clock: an age lasts at least 36 turns (scaled by speed), and every foundation Spark lit beyond the Turning Point threshold
-  // shaves 2 turns off, every lane mastered in the age 3 more, down to 22. Lighting Sparks is how you move through history faster.
-  MW.MIN_ERA_TURNS = 36; MW.FLOOR_ERA_TURNS = 22; MW.SPARK_SHAVE = 2; MW.LANE_SHAVE = 3;
+  // The age clock: an age lasts at least 70 turns (scaled by speed), and every foundation Spark lit beyond the Turning Point threshold
+  // shaves 4 turns off, every lane mastered in the age 5 more, down to 45. Lighting Sparks is how you move through history faster.
+  // (Ages of 22-36 turns ended every standard game in a space race near turn 190 of 500; at 45-70 it lands near turn 315.)
+  MW.MIN_ERA_TURNS = 70; MW.FLOOR_ERA_TURNS = 45; MW.SPARK_SHAVE = 4; MW.LANE_SHAVE = 5;
   MW.ageTurnsNeeded = function (g, civ) {
     var s = st(civ), era = AU.V2.ERAS[s.era] || {}, extra = Math.max(0, MW.foundationCount(civ, s.era) - (era.advance || 99)), lanes = 0;
     for (var k in (s.lanes || {})) if (+k.split(':')[0] === s.era) lanes++;
