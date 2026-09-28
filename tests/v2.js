@@ -22,4 +22,15 @@ const ids = {}; AU.V2.NODES.forEach(n => { if (ids[n.id]) throw new Error('dupli
 AU.V2.HUBS.forEach(h => { if (!h.branches || !h.branches.length) throw new Error('hub without branches ' + h.id); });
 if (!alive.every(c => MW.state(c).era >= 1)) throw new Error('a surviving empire never left the first age in ' + TURNS + ' turns');
 if (!majors.some(c => MW.state(c).era >= 3)) throw new Error('no empire reached the fourth age in ' + TURNS + ' turns');
+// Insights belong to their age: the first skirmish of the Pebble Age raises one decision, not the combat Insight of every age
+{ const g2 = G.newGame({ playerCiv: 'rome', playerLeader: 'trajan', mapSize: 'small', numCivs: 2, numStates: 0, seed: 4, v2: true }), p2 = G.player(g2), s2 = MW.state(p2);
+  AU.U.foundCity(g2, G.civUnits(g2, p2.idx).find(u => u.type === 'settler'));
+  p2.flags['ev:combat'] = g2.turn; MW.turn(g2, p2);
+  const fired = Object.keys(s2.hubsFired).filter(h => AU.V2.HUB_BY_ID[h].when && AU.V2.HUB_BY_ID[h].when[1] === 'combat');
+  if (fired.join() !== 'fought') throw new Error('a Pebble Age fight fired ' + fired.join(', '));
+  s2.era = 1; s2.eraSince = g2.turn + 1; g2.turn += 2; MW.turn(g2, p2);
+  if (s2.hubsFired.m_hub_legion) throw new Error('an old fight fired the Marble Age combat Insight');
+  p2.flags['ev:combat'] = g2.turn; MW.turn(g2, p2);
+  if (!s2.hubsFired.m_hub_legion || s2.hubsFired.t_hub_siege || s2.hubsFired.p_hub_rifles) throw new Error('a Marble Age fight should fire the Legion Insight only');
+}
 console.log('v2 smoke OK');

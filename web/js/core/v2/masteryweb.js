@@ -109,6 +109,13 @@
     MW.checkEraAdvance(g, civ);
     return true;
   };
+  // An event Insight fires only in its own age (a Pebble Age skirmish is not the Rifle Age's war), and a fight must happen in that age
+  MW.hubDue = function (g, civ, h) {
+    var s = st(civ); if (!h.when || s.hubsFired[h.id] || h.when[0] === 'node' || h.turning !== undefined) return false;
+    if (h.era !== undefined && h.era !== s.era) return false;
+    if (h.when[0] === 'event' && h.when[1] === 'combat' && h.era > 0 && (civ.flags['ev:combat'] || -1) < (s.eraSince || 0)) return false;
+    return MW.cond(g, civ, h.when);
+  };
   MW.lockPermanent = function (g, civ, id) { // the partner and everything downstream of it
     var s = st(civ); if (s.locked[id] || s.unlocked[id]) return; s.locked[id] = g.turn;
     AU.V2.NODES.forEach(function (n) { if ((n.requires || []).indexOf(id) >= 0) MW.lockPermanent(g, civ, n.id); });
@@ -221,7 +228,7 @@
     var s = st(civ), y = G.civYields(g, civ); s.study += Math.round((y.science || 0) * 10) / 10; s.heritage = (s.heritage || 0) + Math.round((y.culture || 0) * 10) / 10;
     var nodes = MW.openNodes(s.era), eraNodes = MW.nodesOfEra(s.era);
     nodes.forEach(function (n) { if (s.unlocked[n.id] || s.locked[n.id]) return; if (MW.triggerMet(g, civ, n)) MW.unlock(g, civ, n.id); });
-    AU.V2.HUBS.forEach(function (h) { if (!h.when || s.hubsFired[h.id] || h.when[0] === 'node') return; if (MW.cond(g, civ, h.when)) MW.fireHub(g, civ, h.id); });
+    AU.V2.HUBS.forEach(function (h) { if (MW.hubDue(g, civ, h)) MW.fireHub(g, civ, h.id); });
     if (!civ.isPlayer) { var aiPick = MW.aiStudyPick(g, civ); if (aiPick) MW.study(g, civ, aiPick.id); }
     if (!eraNodes.length && s.era < AU.V2.ERAS.length - 1 && s.study >= MW.provisionalEraCost(g, civ)) { s.study -= MW.provisionalEraCost(g, civ); s.hubsFired['turning:' + s.era] = g.turn; s.era += 1; civ._fx = null; G.notify(g, civ, { big: true, kind: 'wonder', text: '🌅 ' + _('Turning Point') + ': ' + AU.V2.ERAS[s.era].name + ' — “' + AU.V2.ERAS[s.era].joke + '”', panel: 'web' }); }
     MW.checkEraAdvance(g, civ); // the age may have lasted long enough now

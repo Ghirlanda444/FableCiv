@@ -105,7 +105,7 @@
       { id: 'builders', name: "The Builders' Way", fx: { buildingCostMult: 0.9 } },
       { id: 'warriors', name: "The Warriors' Way", fx: { unitCostMult: 0.9, combatBonus: 1 } },
       { id: 'traders', name: "The Traders' Way", fx: { goldPerSettlement: 1 } }] } };
-  V2.HUB_BY_ID = {}; V2.HUBS.forEach(function (h) { V2.HUB_BY_ID[h.id] = h; });
+  V2.HUB_BY_ID = {}; V2.HUBS.forEach(function (h) { h.era = 0; V2.HUB_BY_ID[h.id] = h; }); // an Insight belongs to its age: it can only fire while the empire lives in it
   for (var te in V2.TURNING) { var th = V2.TURNING[te]; th.id = 'turning:' + te; th.turning = +te; V2.HUBS.push(th); V2.HUB_BY_ID[th.id] = th; }
   // ---- Era 1 unit roster (the legible name is the game's unit name; the joke name shows on unlock) ----
   V2.UNITS = { settler: { joke: 'Homesteader' }, scout: { joke: 'Sniffer' }, migrant: { joke: 'Wanderer', note: 'new unit: joins a settlement for +1 population' }, warrior: { joke: 'Pointy Stick Guy' }, slinger: { joke: 'Rock Chucker' }, archer: { joke: 'Twangbow' }, caravan: { joke: 'Cart Guy' }, galley: { joke: 'Float Guy', note: 'doubles as the trade ship in era 1' }, commander: { joke: 'Big Chief', note: 'new unit: carries up to 3 units as a Warband and buffs them' } };

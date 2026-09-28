@@ -80,7 +80,7 @@
       { id: 'g_wire_culture', name: 'Wire It To The Theater', fx: { culturePerSettlement: 1 } },
       { id: 'g_wire_gold', name: 'Wire It To The Bank', fx: { goldPerSettlement: 1 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point into the next era ----
   var TP = { name: 'The Pixel Age Is Coming', branches: [
       { id: 'g_wired_way', name: "The Wired Way", fx: { yieldMult: { science: 1.1 } } },

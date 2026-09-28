@@ -80,7 +80,7 @@
       { id: 'build_ours', name: 'We Build Our Own, Thanks', fx: { wonderCostMult: 0.9 } },
       { id: 'charge_tourists', name: 'We Just Charge Tourists', fx: { tourismMult: 1.15 } }] }
   ];
-  HUBS.forEach(function (h) { V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
+  HUBS.forEach(function (h) { h.era = E; V2.HUBS.push(h); V2.HUB_BY_ID[h.id] = h; });
   // ---- Turning Point into the next era ----
   var TP = { name: 'The Puffstack Age Is Coming', branches: [
       { id: 'e_tp_industrious', name: "The Foundries' Way", fx: { buildingCostMult: 0.9 } },
