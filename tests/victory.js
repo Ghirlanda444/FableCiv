@@ -14,9 +14,9 @@ function give(g, s, civ) { s.civ = civ.idx; }
 { const g = world(17), [a, b] = majors(g), cap = g.settlements[a.capital];
   a.projects = { launch_satellite: 1, moon_landing: 2, colony_ship: g.turn };
   G.launchVoyage(g, a, cap);
-  ok(a.voyage && G.voyageTurnsLeft(g, a) === G.VOYAGE_TURNS, 'a launched Colony Ship lands in ' + G.VOYAGE_TURNS + ' turns');
+  ok(a.voyage && G.voyageTurnsLeft(g, a) === G.voyageTurns(g), 'a launched Colony Ship lands in ' + G.voyageTurns(g) + ' turns');
   G.checkVictory(g); ok(!g.victory, 'the launch itself wins nothing');
-  for (let k = 0; k < G.VOYAGE_TURNS - 1; k++) { g.turn++; G.checkVictory(g); }
+  for (let k = 0; k < G.voyageTurns(g) - 1; k++) { g.turn++; G.checkVictory(g); }
   ok(!g.victory, 'still in flight one turn before landing');
   g.turn++; G.checkVictory(g); ok(g.victory && g.victory.type === 'science' && g.victory.civ === a.idx, 'the ship lands: Star Voyage victory on turn ' + (g.victory && g.victory.turn));
 }
@@ -33,16 +33,22 @@ function give(g, s, civ) { s.civ = civ.idx; }
   M.slice(1, need).forEach(o => give(g, g.settlements[o.originalCapital], a));
   ok(G.capitalsHeld(g, a) === need, 'holding ' + need + ' capitals');
   G.checkVictory(g); ok(!g.victory && a.conquestHold === g.turn, 'the countdown starts');
-  for (let k = 1; k < G.CONQUEST_TURNS - 1; k++) { g.turn++; G.checkVictory(g); }
-  ok(!g.victory && G.conquestProgress(g, a).turns === G.CONQUEST_TURNS - 1, 'held ' + G.conquestProgress(g, a).turns + ' of ' + G.CONQUEST_TURNS + ' turns');
+  for (let k = 1; k < G.conquestTurns(g) - 1; k++) { g.turn++; G.checkVictory(g); }
+  ok(!g.victory && G.conquestProgress(g, a).turns === G.conquestTurns(g) - 1, 'held ' + G.conquestProgress(g, a).turns + ' of ' + G.conquestTurns(g) + ' turns');
   const lost = g.settlements[M[1].originalCapital]; give(g, lost, M[1]); g.turn++; G.checkVictory(g);
   ok(!g.victory && !a.conquestHold, 'one capital retaken: the countdown resets');
-  give(g, lost, a); for (let k = 0; k < G.CONQUEST_TURNS; k++) { g.turn++; G.checkVictory(g); }
-  ok(g.victory && g.victory.type === 'domination' && g.victory.civ === a.idx, 'held again for ' + G.CONQUEST_TURNS + ' turns: Conquest victory');
+  give(g, lost, a); for (let k = 0; k < G.conquestTurns(g); k++) { g.turn++; G.checkVictory(g); }
+  ok(g.victory && g.victory.type === 'domination' && g.victory.civ === a.idx, 'held again for ' + G.conquestTurns(g) + ' turns: Conquest victory');
 }
 { const g = world(19), M = majors(g), a = M[0];
   M.slice(1).forEach(o => give(g, g.settlements[o.originalCapital], a)); G.checkVictory(g);
   ok(g.victory && g.victory.type === 'domination', 'every original capital: Conquest at once');
+}
+
+// ---------- scaling ----------
+{ const need = n => G.conquestNeed({ civs: Array.from({ length: n }, () => ({ minor: false })) });
+  ok(need(4) === 3 && need(6) === 4 && need(10) === 5 && need(12) === 6, 'Conquest needs half the capitals, at least 4: 4 empires ' + need(4) + ', 6 ' + need(6) + ', 10 ' + need(10) + ', 12 ' + need(12));
+  ok(G.voyageTurns({ speed: 'quick' }) === G.voyageTurns({ speed: 'standard' }) && G.voyageTurns({ speed: 'epic' }) > 15 && G.conquestTurns({ speed: 'epic' }) > 10, 'the voyage and the Conquest countdown follow the game speed');
 }
 
 // ---------- Renown ----------

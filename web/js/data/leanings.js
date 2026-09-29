@@ -1,8 +1,8 @@
 // Victory types with their own names, and the victory each leader leans towards (shown on the pick screen, used by the AI).
 (function (AU) {
   AU.VICTORIES = {
-    domination: { name: 'Conquest', icon: '⚔️', desc: 'Hold every original capital, or most of them (60%, your own included) for 10 turns in a row.' },
-    science: { name: 'Star Voyage', icon: '🚀', desc: 'Complete the three space projects; your Colony Ship lands 15 turns after launch, unless its launch city falls first.' },
+    domination: { name: 'Conquest', icon: '⚔️', desc: 'Hold every original capital, or half of them (at least 4, your own included) for 10 turns in a row.' },
+    science: { name: 'Star Voyage', icon: '🚀', desc: 'Complete the three space projects; your Colony Ship lands 15 turns after launch (Standard speed), unless its launch city falls first.' },
     culture: { name: 'Renown', icon: '🎭', desc: 'From the Modern era on, your foreign visitors outnumber the domestic tourists of every rival.' },
     religion: { name: 'Devotion', icon: '🕊️', desc: 'From the Puffstack Age, your faith is followed by 60% of the world\'s settlements and is the state faith of every other empire, or by 85% of the world\'s settlements, for 10 turns in a row.' },
     score: { name: 'Legacy', icon: '🏆', desc: 'The highest score when the turn limit is reached.' }
