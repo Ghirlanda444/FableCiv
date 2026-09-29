@@ -381,8 +381,9 @@
     var garrisoned = {};
     units.forEach(function (u) { var s = G.settlementAt(g, u.tile); if (s && G.isMilitary(u) && s.civ === civ.idx) garrisoned[s.id] = (garrisoned[s.id] || 0) + 1; });
     var enemyNear = {}; units.forEach(function (u) { enemyNear[u.id] = G.isMilitary(u) ? AI.enemiesNear(g, civ, g.tiles[u.tile], 3).length : 0; });
+    AI.planInvasion(g, civ);
     var civPrio = function (u) { var d = AU.UNITS[u.type]; return d.religious || d.great ? 2 : 0; }; // Pilgrims and Great People are few and each order counts
-    units.sort(function (a, b) { var pa = (a.type === 'settler' ? 3 : 0) + (enemyNear[a.id] ? 2 : 0) + civPrio(a) + (a.path && a.path.length ? 1 : 0), pb = (b.type === 'settler' ? 3 : 0) + (enemyNear[b.id] ? 2 : 0) + civPrio(b) + (b.path && b.path.length ? 1 : 0); return pb - pa; }); // Command goes to what matters first
+    units.sort(function (a, b) { var pa = (a.type === 'settler' ? 3 : 0) + (enemyNear[a.id] ? 2 : 0) + civPrio(a) + (a.path && a.path.length ? 1 : 0) + (a.aiInv ? 3 : 0), pb = (b.type === 'settler' ? 3 : 0) + (enemyNear[b.id] ? 2 : 0) + civPrio(b) + (b.aiInv ? 3 : 0) + (b.path && b.path.length ? 1 : 0); return pb - pa; }); // Command goes to what matters first
     units.forEach(function (u) {
       if (!g.units[u.id]) return;
       if (!G.canOrder(g, u)) { if (G.isMilitary(u) && u.moves > 0) U.fortify(g, u); return; } // out of Command: hold
@@ -547,7 +548,11 @@
   AI.moveMilitary = function (g, civ, u, garrisoned, sets) {
     var t = g.tiles[u.tile];
     if (AI.tryAttack(g, civ, u)) return;
-    var near = AI.enemiesNear(g, civ, t, 4);
+    var inv = civ.aiInv, overseas = !!(inv && t.continent !== g.tiles[inv.landing].continent);
+    if (inv && AI.invader(u) && (overseas || U.isEmbarked(g, u)) && AI.invade(g, civ, u, inv, garrisoned)) return;
+    if (!overseas) u.aiInv = false;
+    if (U.isEmbarked(g, u) && !(inv && AI.invader(u)) && AI.ashore(g, u)) return;
+    var near = AI.enemiesNear(g, civ, t, 4).filter(function (e) { var et = g.tiles[e.tile]; return et.continent === t.continent || (G.isWater(et) && U.isRanged(u)); }); // no swimming at a foe across a strait
     if (u.hp < 45) {
       var home = AI.nearestOwnSettlement(g, civ, t);
       if (near.length && home && home.tile !== u.tile) { U.orderMove(g, u, home.tile); return; }
@@ -560,8 +565,8 @@
       var dest = AI.approachTile(g, u, e.tile);
       if (dest != null && U.orderMove(g, u, dest)) { if (g.units[u.id] && u.moves > 0) AI.tryAttack(g, civ, u); return; }
     }
-    // war: march on target
-    var target = AI.warTarget(g, civ);
+    // war: march on target (one across the water is reached by an invasion, never waded to)
+    var target = overseas ? null : AI.warTarget(g, civ); if (target && !U.isEmbarked(g, u) && g.tiles[target.tile].continent !== t.continent) target = null;
     if (target) {
       var d = G.dist(t, g.tiles[target.tile]);
       if (d > 1) { var ap = AI.approachTile(g, u, target.tile); if (ap != null && U.orderMove(g, u, ap)) { if (g.units[u.id] && u.moves > 0) AI.tryAttack(g, civ, u); return; } }
@@ -573,7 +578,7 @@
     // garrison duty
     var s = G.settlementAt(g, u.tile);
     if (s && s.civ === civ.idx && garrisoned[s.id] <= 1) { U.fortify(g, u); return; }
-    var ung = sets.filter(function (x) { return !garrisoned[x.id]; });
+    var ung = sets.filter(function (x) { return !garrisoned[x.id] && g.tiles[x.tile].continent === t.continent; }); // a colony overseas raises its own guard
     if (ung.length) { ung.sort(function (a, b) { return G.dist(t, g.tiles[a.tile]) - G.dist(t, g.tiles[b.tile]); }); garrisoned[ung[0].id] = 1; if (U.orderMove(g, u, ung[0].tile)) return; }
     U.fortify(g, u);
   };
@@ -582,7 +587,7 @@
     var WB = AU.Warbands, t = g.tiles[u.tile];
     if (WB.fighters(g, u.tile, civ.idx).length >= 2) { U.fortify(g, u); return; }
     var seen = {}, best = null, bv = -1e9;
-    G.civUnits(g, civ.idx).forEach(function (o) { if (!G.isMilitary(o) || WB.isCommander(o) || seen[o.tile]) return; seen[o.tile] = true; if (WB.commanderAt(g, o.tile, civ.idx)) return; var n = WB.fighters(g, o.tile, civ.idx).length, d = G.dist(t, g.tiles[o.tile]); var v = n * 4 - d; if (n >= 1 && d <= 10 && v > bv) { bv = v; best = o.tile; } });
+    G.civUnits(g, civ.idx).forEach(function (o) { if (!G.isMilitary(o) || WB.isCommander(o) || seen[o.tile] || g.tiles[o.tile].continent !== t.continent) return; seen[o.tile] = true; if (WB.commanderAt(g, o.tile, civ.idx)) return; var n = WB.fighters(g, o.tile, civ.idx).length, d = G.dist(t, g.tiles[o.tile]); var v = n * 4 - d; if (n >= 1 && d <= 10 && v > bv) { bv = v; best = o.tile; } });
     if (best != null && best !== u.tile) { if (U.orderMove(g, u, best)) return; }
     if (best === u.tile) { U.fortify(g, u); return; }
     var home = AI.nearestOwnSettlement(g, civ, t);
@@ -609,6 +614,82 @@
     }
     return best;
   };
+  // ---------- Sea invasions ----------
+  // A war target across the water is never waded to one soldier at a time (an embarked soldier is a sitting duck): the army
+  // gathers at the home port nearest the target, sails together once the force is ready, and lands beside the target as one wave.
+  // The force is sized to what the empire's Command can direct far out at sea (3 a soldier a turn).
+  AI.INV_MIN = 3; AI.INV_MAX = 6; AI.INV_WAIT = 15;
+  AI.invasionForce = function (g, civ) { return Math.max(AI.INV_MIN, Math.min(AI.INV_MAX, Math.floor(G.commandMax(g, civ) / 4))); };
+  AI.invader = function (u) { var d = AU.UNITS[u.type]; return G.isMilitary(u) && !U.isNaval(u) && !U.isAir(u) && !d.commander && !d.great && d.cls !== 'recon'; };
+  // A beach two tiles from the target, on its shore, free of foreigners: the nearer the target and our port, the better.
+  AI.landingTile = function (g, civ, target, from, u) {
+    var tt = g.tiles[target.tile], best = null, bv = 1e9;
+    Hex.spiral(tt.col, tt.row, 3, g.W, g.H).forEach(function (i) {
+      var t = g.tiles[i]; if (i === target.tile || G.isWater(t) || t.continent !== tt.continent || AU.TERRAIN[t.terrain].impassable || G.settlementAt(g, i)) return;
+      if (!G.neighbors(g, t).some(function (n) { return G.isWater(g.tiles[n]); })) return;
+      if (G.unitsAt(g, i).some(function (o) { return o.civ !== civ.idx; }) || (u && U.tileBlocked(g, u, i, true))) return;
+      var v = Math.abs(G.dist(t, tt) - 2) * 4 + G.dist(t, from) - (t.hills ? 1 : 0); // two tiles out: beyond the walls' reach while still afloat
+      if (v < bv) { bv = v; best = i; }
+    });
+    return best;
+  };
+  AI.staged = function (g, civ, inv) { var pt = g.tiles[g.settlements[inv.port].tile]; return G.civUnits(g, civ.idx).filter(function (u) { return AI.invader(u) && !U.isEmbarked(g, u) && G.dist(g.tiles[u.tile], pt) <= 1; }); };
+  AI.planInvasion = function (g, civ) {
+    var target = AI.warTarget(g, civ), inv = civ.aiInv;
+    if (!target || !U.canEmbark(g, civ, G.civFx(g, civ))) { civ.aiInv = null; return null; }
+    var tt = g.tiles[target.tile], mine = G.civSettlements(g, civ.idx);
+    var hold = mine.filter(function (s) { return g.tiles[s.tile].continent === tt.continent; }).sort(function (a, b) { return G.dist(g.tiles[a.tile], tt) - G.dist(g.tiles[b.tile], tt); })[0]; // a foothold on that shore: the safest landing
+    var ports = mine.filter(function (s) { return G.isCoastal(g, s); }); if (!ports.length) { civ.aiInv = null; return null; }
+    if (!hold) { // no foothold yet: storm the softest town on that shore first (a capital's walls come later, from the beachhead)
+      var keep = inv && g.settlements[inv.target], soft = keep && keep.civ === target.civ && g.tiles[keep.tile].continent === tt.continent && G.isCoastal(g, keep) ? keep : null;
+      if (!soft) { var sv = 1e9; G.civSettlements(g, target.civ).forEach(function (s) { var st = g.tiles[s.tile]; if (st.continent !== tt.continent || !G.isCoastal(g, s)) return; var near = 1e9; ports.forEach(function (p) { near = Math.min(near, G.dist(g.tiles[p.tile], st)); }); var v = (s.isCapital ? 25 : 0) + (s.hp || 0) / 10 + G.unitsAt(g, s.tile).filter(G.isMilitary).length * 8 + near; if (v < sv) { sv = v; soft = s; } }); }
+      if (soft) { target = soft; tt = g.tiles[soft.tile]; civ._warTarget = soft; civ._warTargetTurn = g.turn; }
+    }
+    if (!inv || inv.target !== target.id || !g.settlements[inv.port] || g.settlements[inv.port].civ !== civ.idx) {
+      ports = ports.filter(function (s) { return g.tiles[s.tile].continent !== tt.continent; }); if (!ports.length) { civ.aiInv = null; return null; }
+      ports.sort(function (a, b) { return G.dist(g.tiles[a.tile], tt) - G.dist(g.tiles[b.tile], tt); });
+      inv = civ.aiInv = { target: target.id, port: ports[0].id, since: g.turn, launched: 0, landing: null };
+    }
+    inv.landing = hold && G.isCoastal(g, hold) ? hold.tile : AI.landingTile(g, civ, target, g.tiles[g.settlements[inv.port].tile]);
+    if (inv.landing == null) { civ.aiInv = null; return null; }
+    var lc = g.tiles[inv.landing].continent;
+    inv.force = AI.invasionForce(g, civ); inv.afloat = G.civUnits(g, civ.idx).filter(function (u) { return u.aiInv && (U.isEmbarked(g, u) || g.tiles[u.tile].continent !== lc); }).length; // in transit: boarded and not yet ashore over there
+    if (inv.launched && g.turn > inv.launched && !inv.afloat) { inv.launched = 0; inv.since = g.turn; } // the wave is ashore (or lost): gather the next
+    if (!inv.launched) { var ready = AI.staged(g, civ, inv).length; if (ready >= AI.invasionForce(g, civ) || (ready >= AI.INV_MIN && g.turn - inv.since >= AI.INV_WAIT)) inv.launched = g.turn; }
+    return inv;
+  };
+  // One soldier's part: sail on if afloat, board with the wave, or walk to the port and wait. The last guard of a settlement stays.
+  AI.invade = function (g, civ, u, inv, garrisoned) {
+    var t = g.tiles[u.tile], pt = g.tiles[g.settlements[inv.port].tile];
+    if (U.isEmbarked(g, u)) return AI.sail(g, civ, u, inv);
+    var here = G.settlementAt(g, u.tile); if (here && here.civ === civ.idx && garrisoned[here.id] <= 1) { U.fortify(g, u); return true; }
+    if (G.dist(t, pt) <= 1) { if (inv.launched && inv.afloat < inv.force && AI.sail(g, civ, u, inv)) { inv.afloat++; if (here) garrisoned[here.id]--; return true; } U.fortify(g, u); return true; } // a wave no bigger than the Command can steer
+    if (t.continent !== pt.continent) return false; // a garrison on another shore holds its own ground
+    var dest = AI.approachTile(g, u, pt.i); if (dest != null && dest !== u.tile && U.orderMove(g, u, dest)) { if (here) garrisoned[here.id]--; return true; }
+    return false;
+  };
+  AI.SAIL_RANGE = 150;
+  // A beach holds three fighters: when the planned one is full, each soldier takes the next free beach by the target.
+  AI.sail = function (g, civ, u, inv) {
+    var dest = inv.landing, tg = g.settlements[inv.target];
+    if (U.tileBlocked(g, u, dest, true)) { dest = tg ? AI.landingTile(g, civ, tg, g.tiles[u.tile], u) : null; if (dest == null) return AI.ashore(g, u); }
+    var p = u.path;
+    if (!p || !p.length || p[p.length - 1] !== dest) {
+      var res = U.dijkstra(g, u, AI.SAIL_RANGE, dest); if (res.dist[dest] === undefined) return AI.ashore(g, u);
+      var path = [], cur = dest; while (cur !== u.tile) { path.push(cur); cur = res.prev[cur]; } u.path = path.reverse();
+    }
+    u.aiInv = true; u.sleep = false; u.fortify = 0;
+    var before = u.tile; U.followPath(g, u);
+    if (u.tile === before && g.units[u.id]) { u.path = null; if (!U.isEmbarked(g, u)) u.aiInv = false; return AI.ashore(g, u); } // could not set out: not part of the wave
+    return true;
+  };
+  // Never idle at sea: an embarked soldier with nowhere to go makes for the nearest free shore (its own settlements first).
+  AI.ashore = function (g, u) {
+    if (!U.isEmbarked(g, u)) return false;
+    var res = U.dijkstra(g, u, 12), best = null, bd = 1e9;
+    for (var k in res.dist) { var i = +k, t = g.tiles[i]; if (G.isWater(t) || U.tileBlocked(g, u, i, true)) continue; var s = G.settlementAt(g, i); if (s && s.civ !== u.civ) continue; var d = res.dist[i] - (s ? 2 : 0); if (d < bd) { bd = d; best = i; } }
+    return best != null && U.orderMove(g, u, best);
+  };
   AI.moveNaval = function (g, civ, u) {
     if (AI.tryAttack(g, civ, u)) return;
     var t = g.tiles[u.tile];
@@ -616,6 +697,7 @@
     if (near.length) { near.sort(function (a, b) { return a.d - b.d; }); var ap = AI.approachTile(g, u, near[0].tile); if (ap != null && U.orderMove(g, u, ap)) { AI.tryAttack(g, civ, u); return; } }
     // at war: sail for the nearest enemy settlement on a shore and strike it (ships level walls; soldiers do the taking)
     var target = null, td = 1e9; g.civs.forEach(function (o) { if (!o.alive || o.idx === civ.idx || !civ.rel[o.idx] || !civ.rel[o.idx].war) return; G.civSettlements(g, o.idx).forEach(function (s) { if (!G.isCoastal(g, s)) return; var d = G.dist(t, g.tiles[s.tile]); if (d < td) { td = d; target = s; } }); });
+    var inv = civ.aiInv, invT = inv && inv.launched ? g.settlements[inv.target] : null; if (invT && G.isCoastal(g, invT)) target = invT; // escort the invasion: clear the sea lanes and batter the walls it will storm
     if (target && u.hp >= 50) { var ap2 = AI.approachTile(g, u, target.tile); if (ap2 != null && ap2 !== u.tile && U.orderMove(g, u, ap2)) { AI.tryAttack(g, civ, u); return; } }
     if (u.hp < 50) { U.fortify(g, u); return; }
     // peace: chart the seas, then patrol
