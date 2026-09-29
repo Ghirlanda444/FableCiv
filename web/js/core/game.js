@@ -1044,7 +1044,7 @@
   // The Colony Ship does not win on launch: it flies for VOYAGE_TURNS while the launch city keeps contact. Lose that city and the
   // ship is lost with it (the project must be built again); the first ship to arrive wins.
   G.VOYAGE_TURNS = 15; // at Standard speed
-  G.voyageTurns = function (g) { return Math.max(5, Math.round(G.VOYAGE_TURNS * G.speed(g))); };
+  G.voyageTurns = function (g) { return Math.max(G.VOYAGE_TURNS, Math.round(G.VOYAGE_TURNS * G.speed(g))); }; // longer on slow speeds, never shorter than Standard (a 10-turn flight made Quick a space race)
   G.launchVoyage = function (g, civ, s) {
     civ.voyage = { launched: g.turn, arrives: g.turn + G.voyageTurns(g), from: s.id };
     G.log(g, G.civData(civ).name + ' launched a Colony Ship from ' + s.name + '.', civ.idx);

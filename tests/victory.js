@@ -48,7 +48,7 @@ function give(g, s, civ) { s.civ = civ.idx; }
 // ---------- scaling ----------
 { const need = n => G.conquestNeed({ civs: Array.from({ length: n }, () => ({ minor: false })) });
   ok(need(4) === 3 && need(6) === 4 && need(10) === 5 && need(12) === 6, 'Conquest needs half the capitals, at least 4: 4 empires ' + need(4) + ', 6 ' + need(6) + ', 10 ' + need(10) + ', 12 ' + need(12));
-  ok(G.voyageTurns({ speed: 'quick' }) < G.voyageTurns({ speed: 'standard' }) && G.voyageTurns({ speed: 'epic' }) > 15 && G.conquestTurns({ speed: 'epic' }) > 10, 'the voyage and the Conquest countdown follow the game speed');
+  ok(G.voyageTurns({ speed: 'quick' }) === G.voyageTurns({ speed: 'standard' }) && G.voyageTurns({ speed: 'epic' }) > 15 && G.conquestTurns({ speed: 'epic' }) > 10, 'the voyage and the Conquest countdown follow the game speed');
 }
 
 // ---------- Renown ----------
