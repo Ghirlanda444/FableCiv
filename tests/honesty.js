@@ -23,4 +23,13 @@ function fresh(civ, leader, seed) { const g = G.newGame({ playerCiv: civ, player
   MW.nodesOfEra(0).filter(n => n.pool === 'foundation').slice(0, 20).forEach(n => { s.unlocked[n.id] = 1; }); ok(MW.ageTurnsNeeded(g, p) === base, 'at the threshold the age lasts ' + base + ' turns');
   MW.nodesOfEra(0).filter(n => n.pool === 'foundation').slice(20, 25).forEach(n => { s.unlocked[n.id] = 1; }); ok(MW.ageTurnsNeeded(g, p) === Math.round((MW.MIN_ERA_TURNS - 5 * MW.SPARK_SHAVE) * G.speed(g)), 'five extra Sparks cut it by ' + 5 * MW.SPARK_SHAVE + ' turns (' + MW.ageTurnsNeeded(g, p) + ')');
   s.lanes = { '0:Sustenance': 1, '0:Craft': 1 }; ok(MW.ageTurnsNeeded(g, p) === Math.round(MW.FLOOR_ERA_TURNS * G.speed(g)), 'two lanes more reach the floor of ' + MW.FLOOR_ERA_TURNS); }
+// every yield an ability grants is spelled out in the text the player reads (Divergence wording included)
+{ const N = { food: 'Food', production: 'Production', gold: 'Gold', science: 'Knowledge', culture: 'Heritage', faith: 'Devotion', happiness: 'Happiness' }, bad = [];
+  const has = (d, v, y) => d.includes('+' + v + ' ' + N[y]) || d.includes('+' + v + ' extra ' + N[y]);
+  const check = (who, ab) => { if (!ab || !ab.fx) return; const d = G.abilityDesc(ab), fx = ab.fx;
+    for (const b in (fx.buildingBonus || {})) for (const y in fx.buildingBonus[b]) if (!has(d, fx.buildingBonus[b][y], y)) bad.push(who + ' ' + b + ' ' + y);
+    for (const y in (fx.coastalSettlementYields || {})) if (!has(d, fx.coastalSettlementYields[y], y)) bad.push(who + ' coastal ' + y);
+    if (fx.culturePerSettlement && !(has(d, fx.culturePerSettlement, 'culture') && d.includes('per settlement'))) bad.push(who + ' Heritage per settlement'); };
+  AU.CIVS.forEach(c => { check(c.id, c.ability); c.leaders.forEach(l => check(c.id + '/' + l.id, AU.LEADER_BY_ID[l.id].ability)); });
+  ok(!bad.length, 'every building, coastal and per-settlement yield is in the ability text' + (bad.length ? ': ' + bad.join(', ') : '')); }
 console.log(fails ? fails + ' FAILED' : 'honesty OK'); process.exit(fails ? 1 : 0);
