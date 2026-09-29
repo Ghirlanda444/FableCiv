@@ -1068,12 +1068,12 @@
   };
 
   // ---------- Conquest ----------
-  // Hold every original capital to win at once, or half of them (at least 4, your own among them) for
+  // Hold every original capital to win at once, or 75% of them (your own among them) for
   // CONQUEST_TURNS turns in a row (scaled by speed): the rest of the world has that long to take one back.
-  G.CONQUEST_SHARE = 0.5; G.CONQUEST_MIN = 4; G.CONQUEST_TURNS = 10; // at Standard speed
+  G.CONQUEST_SHARE = 0.75; G.CONQUEST_MIN = 4; G.CONQUEST_TURNS = 10; // at Standard speed
   G.conquestTurns = function (g) { return Math.max(4, Math.round(G.CONQUEST_TURNS * G.speed(g))); };
   G.capitalsHeld = function (g, civ) { var n = 0; g.civs.forEach(function (o) { if (o.minor) return; var oc = g.settlements[o.originalCapital]; if (oc && oc.civ === civ.idx) n++; }); return n; };
-  G.conquestNeed = function (g) { var majors = g.civs.filter(function (c) { return !c.minor; }).length; return Math.max(2, Math.min(G.CONQUEST_MIN, majors - 1), Math.ceil(majors * G.CONQUEST_SHARE)); }; // half of the capitals, at least 4 (one short of all in a smaller game)
+  G.conquestNeed = function (g) { var majors = g.civs.filter(function (c) { return !c.minor; }).length; return Math.max(2, Math.min(G.CONQUEST_MIN, majors - 1), Math.ceil(majors * G.CONQUEST_SHARE)); }; // three quarters of the capitals (one short of all in a smaller game)
   G.conquestProgress = function (g, civ) {
     var held = G.capitalsHeld(g, civ), need = G.conquestNeed(g), k = civ.conquestHold;
     return { held: held, need: need, total: g.civs.filter(function (c) { return !c.minor; }).length, turns: held >= need && k ? g.turn - k + 1 : 0, of: G.conquestTurns(g) };
@@ -1093,7 +1093,7 @@
     if (g.victory) return g.victory;
     var alive = g.civs.filter(function (c) { return c.alive && !c.minor; });
     if (alive.length === 1) { g.victory = { type: 'domination', civ: alive[0].idx, turn: g.turn }; return g.victory; }
-    // domination: hold every original capital, or half of them (at least 4) for CONQUEST_TURNS in a row
+    // domination: hold every original capital, or 75% of them for CONQUEST_TURNS in a row
     var majors = g.civs.filter(function (c) { return !c.minor; }).length, need = G.conquestNeed(g);
     for (var i = 0; i < alive.length; i++) {
       var c = alive[i], held = G.capitalsHeld(g, c);

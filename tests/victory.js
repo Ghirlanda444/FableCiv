@@ -29,7 +29,7 @@ function give(g, s, civ) { s.civ = civ.idx; }
 
 // ---------- Conquest ----------
 { const g = world(19), M = majors(g), a = M[0], need = G.conquestNeed(g);
-  ok(need === 4, '6 empires: Conquest needs 4 original capitals (own included), got ' + need);
+  ok(need === 5, '6 empires: Conquest needs 5 original capitals (own included), got ' + need);
   M.slice(1, need).forEach(o => give(g, g.settlements[o.originalCapital], a));
   ok(G.capitalsHeld(g, a) === need, 'holding ' + need + ' capitals');
   G.checkVictory(g); ok(!g.victory && a.conquestHold === g.turn, 'the countdown starts');
@@ -47,7 +47,7 @@ function give(g, s, civ) { s.civ = civ.idx; }
 
 // ---------- scaling ----------
 { const need = n => G.conquestNeed({ civs: Array.from({ length: n }, () => ({ minor: false })) });
-  ok(need(4) === 3 && need(6) === 4 && need(10) === 5 && need(12) === 6, 'Conquest needs half the capitals, at least 4: 4 empires ' + need(4) + ', 6 ' + need(6) + ', 10 ' + need(10) + ', 12 ' + need(12));
+  ok(need(4) === 3 && need(6) === 5 && need(10) === 8 && need(12) === 9, 'Conquest needs 75% of the capitals: 4 empires ' + need(4) + ', 6 ' + need(6) + ', 10 ' + need(10) + ', 12 ' + need(12));
   ok(G.voyageTurns({ speed: 'quick' }) === G.voyageTurns({ speed: 'standard' }) && G.voyageTurns({ speed: 'epic' }) > 15 && G.conquestTurns({ speed: 'epic' }) > 10, 'the voyage and the Conquest countdown follow the game speed');
 }
 
