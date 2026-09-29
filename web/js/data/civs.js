@@ -73,7 +73,7 @@
     { id: 'mongolia', name: 'Mongolia', adj: 'Mongol', difficulty: 'hard', bias: ['plains', 'grassland'], color: '#5b3a1e', color2: '#e8d5a3',
       ability: { name: 'Horde', desc: 'Cavalry +1 Movement. Mounted units cost 20% less.', fx: { cavalryMoves: 1, classCostMult: { cavalry: 0.8 } } },
       uu: { id: 'keshig', name: 'Keshig', replaces: 'knight', strength: 2, moves: 1, halfRetaliation: true, movesAfterAttack: true, costMult: 1.15, desc: '+2 Strength, +1 Movement, showers arrows before charging (half damage back) and can move after attacking, costs 15% more' },
-      ui: { id: 'ordu', name: 'Ordu', icon: '🐎', replaces: 'pasture', yields: { production: 1, gold: 1 }, desc: '+1 Production and +1 Gold on every pasture' },
+      ui: { id: 'ordu', name: 'Ordu', icon: '🐎', replaces: 'pasture', yields: { food: 1, production: 1, gold: 1 }, desc: '+1 Food, +1 Production and +1 Gold on every pasture' },
       cities: ['Karakorum', 'Beshbalik', 'Turfan', 'Hsia', 'Old Sarai', 'New Sarai', 'Tabriz', 'Tiflis', 'Otrar', 'Sanchu', 'Kazan', 'Almarikh', 'Khanbaliq', 'Shangdu', 'Avarga', 'Ulaanbaatar', 'Erdene Zuu', 'Bukhara', 'Samarkand', 'Urgench', 'Merv', 'Nishapur', 'Herat', 'Balkh', 'Kashgar', 'Khotan', 'Hami', 'Ningxia', 'Bolghar', 'Astrakhan', 'Azov', 'Uliastai', 'Khovd', 'Choibalsan', 'Dalanzadgad', 'Tsetserleg', 'Baruun-Urt', 'Ordos', 'Hohhot', 'Sükhbaatar'],
       leaders: [
         L('genghis', 'Genghis Khan', 'Great Khan', 'Terror of the Steppe', 'Cavalry +5 Strength. Capturing a settlement grants +100 Gold and heals your units nearby.', { cavalryBonus: 5, captureGold: 100, captureHeal: true }, { aggression: 0.95, expansion: 0.6, science: 0.3, culture: 0.2 }),
@@ -222,7 +222,7 @@
       cities: ['Moscow', 'St. Petersburg', 'Novgorod', 'Kiev', 'Kazan', 'Yekaterinburg', 'Vladimir', 'Smolensk', 'Rostov', 'Tver', 'Yaroslavl', 'Arkhangelsk', 'Pskov', 'Suzdal', 'Ryazan', 'Nizhny Novgorod', 'Kostroma', 'Vologda', 'Murom', 'Kolomna', 'Kaluga', 'Kursk', 'Voronezh', 'Samara', 'Saratov', 'Tsaritsyn', 'Orenburg', 'Perm', 'Chelyabinsk', 'Omsk', 'Tomsk', 'Novosibirsk', 'Krasnoyarsk', 'Irkutsk', 'Yakutsk', 'Vladivostok', 'Khabarovsk', 'Magadan', 'Murmansk', 'Tobolsk'],
       leaders: [
         L('peter', 'Peter the Great', 'Tsar', 'Window to the West', '+15 Knowledge whenever you learn a civic and +15 Heritage whenever you learn a technology. Naval units +1 Movement.', { civicScience: 15, techCulture: 15, navalMoves: 1 }, { aggression: 0.5, expansion: 0.7, science: 0.8, culture: 0.6 }),
-        L('catherine', 'Catherine the Great', 'Empress', 'Enlightened Court', '+2 Heritage per settlement. Amphitheaters and Museums +3 Heritage. Purchases cost 20% less.', { culturePerSettlement: 2, buildingBonus: { museum: { culture: 3 }, amphitheater: { culture: 3 } }, purchaseMult: 0.8 }, { aggression: 0.4, expansion: 0.7, science: 0.6, culture: 0.8 }),
+        L('catherine', 'Catherine the Great', 'Empress', 'Enlightened Court', '+3 Heritage per settlement. Amphitheaters and Museums +3 Heritage. Purchases cost 20% less.', { culturePerSettlement: 3, buildingBonus: { museum: { culture: 3 }, amphitheater: { culture: 3 } }, purchaseMult: 0.8 }, { aggression: 0.4, expansion: 0.7, science: 0.6, culture: 0.8 }),
         L('ivan', 'Ivan the Terrible', 'Tsar', 'Oprichnina', 'Units +6 Strength when defending inside your borders. Settlements +5 defense. +80 Gold per captured settlement.', { homeDefenseBonus: 6, cityDefense: 5, captureGold: 80 }, { aggression: 0.8, expansion: 0.7, science: 0.4, culture: 0.4 })
       ] },
 
@@ -247,7 +247,7 @@
       ] },
 
     { id: 'korea', name: 'Korea', adj: 'Korean', difficulty: 'medium', bias: ['coast', 'mountain'], color: '#2874a6', color2: '#f4f6f7',
-      ability: { name: 'Seowon', desc: 'Libraries and Universities yield +2 Knowledge. Urban Centers +3 Knowledge.', fx: { buildingBonus: { library: { science: 2 }, university: { science: 2 } }, specializationYields: { urban: { science: 3 } } } },
+      ability: { name: 'Seowon', desc: 'Libraries and Universities yield +2 Knowledge and +1 Heritage. Urban Centers +3 Knowledge.', fx: { buildingBonus: { library: { science: 2, culture: 1 }, university: { science: 2, culture: 1 } }, specializationYields: { urban: { science: 3 } } } },
       uu: { id: 'hwacha', name: 'Hwacha', replaces: 'field_cannon', ranged: 8, defense: 5, scienceOnKill: 20, costMult: 1.3, desc: '+8 Ranged Strength, +5 defending, +20 Knowledge per kill, costs 30% more' },
       ub: { id: 'jipgyeongjeon', name: 'Jiphyeonjeon', replaces: 'university', yields: { science: 3, culture: 1 }, desc: '+3 Knowledge, +1 Heritage' },
       cities: ['Seoul', 'Busan', 'Gyeongju', 'Pyongyang', 'Gaeseong', 'Daegu', 'Incheon', 'Jeonju', 'Gwangju', 'Suwon', 'Ulsan', 'Cheongju', 'Gongju', 'Buyeo', 'Wonju', 'Chuncheon', 'Gangneung', 'Andong', 'Sangju', 'Jinju', 'Mokpo', 'Yeosu', 'Suncheon', 'Namwon', 'Gimhae', 'Pohang', 'Gyeongsan', 'Chungju', 'Jeju', 'Hamhung', 'Wonsan', 'Sinuiju', 'Uiju', 'Kanggye', 'Hoeryong', 'Chongjin', 'Nampo', 'Haeju', 'Sariwon', 'Ganghwa'],
