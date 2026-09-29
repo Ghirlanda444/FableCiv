@@ -97,7 +97,7 @@
       ] },
 
     { id: 'kongo', name: 'Kongo', adj: 'Kongolese', difficulty: 'hard', bias: ['jungle', 'river'], color: '#f4a261', color2: '#264653',
-      ability: { name: 'Mbanza', desc: 'Worked Rainforest and Marsh tiles yield +1 Food and +1 Heritage. Settlements following your religion +1 Gold. Each worked Luxury yields +1 Heritage.', fx: { tileBonus: [{ when: 'jungle', yields: { food: 1, culture: 1 } }], goldPerFollowerSettlement: 1, luxuryCulture: 1 } },
+      ability: { name: 'Mbanza', desc: 'Worked Rainforest and Marsh tiles yield +1 Food and +1 Heritage. Settlements following your religion +2 Gold. Each worked Luxury yields +2 Heritage.', fx: { tileBonus: [{ when: 'jungle', yields: { food: 1, culture: 1 } }], goldPerFollowerSettlement: 2, luxuryCulture: 2 } },
       uu: { id: 'ngao_mbebe', name: 'Ngao Mbebe', replaces: 'spearman', strength: 2, defVsRanged: 6, terrainBonus: { jungle: 5 }, costMult: 1.05, desc: '+2 Strength, +6 defending against ranged attacks (great shield), +5 in jungle, costs 5% more' },
       ui: { id: 'raffia_grove', name: 'Raffia Grove', icon: '🌴', replaces: 'woodcutter', when: 'jungle', yields: { gold: 1, culture: 1 }, desc: 'jungle woodcutters also give +1 Gold and +1 Heritage' },
       cities: ['Mbanza Kongo', 'Mbanza Mbata', 'Mbanza Nsundi', 'Mbanza Mpangu', 'Mbanza Mpemba', 'Mbanza Soyo', 'Mbanza Wembo', 'Mbanza Mbamba', 'Kabasa', 'Matamba', 'Loango', 'Mpinda', 'Ngoyo', 'Kakongo', 'Cabinda', 'Nkusu', 'Wandu', 'Nkondo', 'Mbwila', 'Kinsundi', 'Bumbu', 'Ndembo', 'Zombo', 'Kibangu', 'Lemba', 'Mbula', 'Kongo dia Nlaza', 'Mbanza Nkanda', 'Vunda', 'Mpangala', 'Kinkanga', 'Mukondo', 'Noki', 'Boma', 'Matadi', 'Songololo', 'Kimpese', 'Mbanza-Ngungu', 'Malanza', 'Mpumbu'],

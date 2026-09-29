@@ -24,7 +24,7 @@
     if (fx.farScience && ct && !s.isCapital && G.dist(t, ct) >= 10) { y.science += fx.farScience; y.culture += 1; } // an Alexandria at the end of the world
     if (fx.riverCity && t.river) y.production += Math.floor(s.pop / 5) * fx.riverCity; // Babylon on the Euphrates
     if (fx.danube && (t.navigable || G.neighbors(g, t).some(function (i) { return g.tiles[i].navigable; }))) { y.gold += fx.danube; y.culture += 1; } // the Danube monarchy
-    if (fx.schooling) y.science += Math.floor(s.pop / 3) * fx.schooling; // Maria Theresa's compulsory schooling
+    if (fx.schooling) { y.science += Math.floor(s.pop / 3) * fx.schooling; y.culture += Math.floor(s.pop / 3) * fx.schooling; } // Maria Theresa's compulsory schooling
     if (fx.mitaLabor && !s.isCity) y.production += Math.floor(s.pop / 3) * fx.mitaLabor; // the Mit'a labour levy
     if (fx.delta) { var d = worked(g, s, function (x) { return SG.isDelta(g, x); }); y.food += d; y.production += d; } // the Mekong delta
     if (fx.rockChurches && t.hills && (G.hasBuilding(s, 'shrine') || G.hasBuilding(s, 'temple'))) y.faith += fx.rockChurches; // Lalibela

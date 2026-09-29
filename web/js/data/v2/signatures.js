@@ -40,7 +40,7 @@
       olav: { drop: ['captureCulture'], fx: { christening: true }, desc: 'Shrines +2 Heritage. Naval units +4 Strength. Settlements you capture convert to your state faith.' },
       nebuchadnezzar: { drop: ['growthMult'], fx: { riverCity: 1 }, desc: 'Wonders cost 15% less and each yields +1 Happiness. Babylon on the Euphrates: settlements on a river +5 defense and +1 Production per 5 population.' },
       franz_joseph: { drop: ['culturePerWonder'], fx: { capitalCulturePerBuilding: 1 }, desc: 'Buildings cost 10% less. +1 Happiness in every settlement. The Ringstraße: the capital yields +1 Heritage for every building in it.' },
-      maria_theresa: { drop: ['growthMult', 'xpMult'], fx: { schooling: 1 }, desc: 'Libraries +1 Knowledge. Compulsory schooling: every settlement +1 Knowledge per 3 population.' },
+      maria_theresa: { drop: ['growthMult', 'xpMult'], fx: { schooling: 1 }, desc: 'Libraries +1 Knowledge. Compulsory schooling: every settlement +1 Knowledge and +1 Heritage per 3 population.' },
       hannibal: { drop: [], fx: { forage: 15 }, desc: 'Units can cross Mountains. Cavalry +4 Strength. All units +4 Strength on any continent other than your capital\'s and heal +15 in foreign land: the army lives off the country.' },
       sobieski: { drop: ['nearHomeBonus'], fx: { reliefOfVienna: 5 }, desc: 'Cavalry +5 Strength. +5 Devotion per kill. The relief of Vienna: units +5 Strength within 3 tiles of your settlements or those of a friend or ally.' },
       ashurbanipal: { drop: ['captureScience'], fx: { captureLibrary: true }, desc: 'Captured settlements get a free Library. Libraries +2 Heritage. +10 Heritage whenever a Spark fires.' },
