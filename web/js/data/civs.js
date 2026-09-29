@@ -10,13 +10,13 @@
       ub: { id: 'forum', name: 'Forum', replaces: 'market', yields: { gold: 2, culture: 1 }, desc: '+2 Gold, +1 Heritage' },
       cities: ['Roma', 'Ostia', 'Antium', 'Cumae', 'Ravenna', 'Neapolis', 'Mediolanum', 'Aquileia', 'Brundisium', 'Capua', 'Verona', 'Tarentum', 'Arretium', 'Ariminum', 'Pisae', 'Florentia', 'Bononia', 'Genua', 'Placentia', 'Cremona', 'Patavium', 'Tergeste', 'Pompeii', 'Herculaneum', 'Beneventum', 'Syracusae', 'Messana', 'Panormus', 'Lilybaeum', 'Caralis', 'Narbo', 'Lugdunum', 'Massilia', 'Carthago Nova', 'Tarraco', 'Corduba', 'Hispalis', 'Londinium', 'Eboracum', 'Augusta Treverorum'],
       leaders: [
-        L('trajan', 'Trajan', 'Optimus Princeps', 'Column and Bridge', 'Alimenta: settlements of 5 population or fewer grow 25% faster. Trajan\'s Column: every settlement you capture adds +2 Heritage to your capital for the rest of the game. Trajan\'s Bridge: your units cross rivers as if bridged.', { smallGrowthMult: 1.25, capitalCulturePerCapture: 2, riverCrossing: true }, { aggression: 0.75, expansion: 0.7, science: 0.4, culture: 0.4 }),
+        L('trajan', 'Trajan', 'Optimus Princeps', 'Column and Bridge', 'Alimenta: settlements of 5 population or fewer grow 15% faster. Trajan\'s Column: every settlement you capture adds +2 Heritage to your capital for the rest of the game. Trajan\'s Bridge: your units cross rivers as if bridged.', { smallGrowthMult: 1.15, capitalCulturePerCapture: 2, riverCrossing: true }, { aggression: 0.75, expansion: 0.7, science: 0.4, culture: 0.4 }),
         L('augustus', 'Augustus', 'Princeps', 'Marble City', 'Wonders cost 20% less and each yields +2 Heritage. +1 Happiness in every settlement.', { wonderCostMult: 0.8, culturePerWonder: 2, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.6, science: 0.5, culture: 0.8 }),
         L('caesar', 'Julius Caesar', 'Dictator', 'Veni Vidi Vici', 'Land units +3 Strength. Every kill grants +25 Gold, and units gain experience 50% faster.', { landBonus: 3, goldPerKill: 25, xpMult: 1.5 }, { aggression: 0.9, expansion: 0.6, science: 0.3, culture: 0.3 })
       ] },
 
     { id: 'japan', name: 'Japan', adj: 'Japanese', difficulty: 'easy', bias: ['coast'], color: '#f2f2f2', color2: '#c0392b',
-      ability: { name: 'Bushido', desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +1 Production.', fx: { noDamagePenalty: true, coastalSettlementYields: { production: 1 } } },
+      ability: { name: 'Bushido', desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +1 Production and +1 Food.', fx: { noDamagePenalty: true, coastalSettlementYields: { production: 1, food: 1 } } },
       uu: { id: 'samurai', name: 'Samurai', replaces: 'pikeman', strength: 4, attack: 4, noDamagePenalty: true, costMult: 1.25, desc: '+4 Strength, +4 when attacking, never loses strength when wounded, costs 25% more' },
       ut: { id: 'jokamachi', name: 'Castle Town', icon: '🏯', minPop: 4, desc: 'A castle town: +5 defense, free Walls, units bought here cost 25% less, +2 Heritage and +2 Gold.', fx: { defense: 5, freeWalls: true, unitPurchaseMult: 0.75, flat: { culture: 2, gold: 2 } } },
       cities: ['Kyoto', 'Osaka', 'Edo', 'Nagoya', 'Kamakura', 'Nara', 'Sapporo', 'Kanazawa', 'Sendai', 'Hiroshima', 'Fukuoka', 'Nagasaki', 'Himeji', 'Matsumoto', 'Kumamoto', 'Okayama', 'Hikone', 'Matsue', 'Kochi', 'Takamatsu', 'Wakayama', 'Shizuoka', 'Odawara', 'Kagoshima', 'Sakai', 'Niigata', 'Nagano', 'Toyama', 'Fukui', 'Gifu', 'Tottori', 'Hagi', 'Aizu', 'Morioka', 'Akita', 'Hirosaki', 'Kofu', 'Utsunomiya', 'Mito', 'Matsuyama'],
@@ -108,7 +108,7 @@
       leaders: [
         L('cleopatra', 'Cleopatra', 'Pharaoh', 'Ptolemaic Court', '+15% Gold. Other leaders start friendlier toward you. Wars declared on you cause half the war weariness.', { yieldMult: { gold: 1.15 }, attitudeBonus: 15, warWearinessMult: 0.5 }, { aggression: 0.3, expansion: 0.5, science: 0.5, culture: 0.8 }),
         L('ramses', 'Ramses II', 'Pharaoh', 'Builder of Monuments', 'Wonders cost 25% less and each yields +1 Happiness, +2 Heritage and +2 Devotion.', { wonderCostMult: 0.75, happinessPerWonder: 1, culturePerWonder: 2, faithPerWonder: 2 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.9 }),
-        L('hatshepsut', 'Hatshepsut', 'Pharaoh', 'Expedition to Punt', 'Each worked Luxury resource yields +2 Gold. Naval units +1 Movement. Trade Outpost Towns +3 Gold.', { luxuryGold: 2, navalMoves: 1, specializationYields: { trade: { gold: 3 } } }, { aggression: 0.2, expansion: 0.6, science: 0.6, culture: 0.6 })
+        L('hatshepsut', 'Hatshepsut', 'Pharaoh', 'Expedition to Punt', 'Each worked Luxury resource yields +3 Gold. Naval units +1 Movement. Trade Outpost Towns +4 Gold.', { luxuryGold: 3, navalMoves: 1, specializationYields: { trade: { gold: 4 } } }, { aggression: 0.2, expansion: 0.6, science: 0.6, culture: 0.6 })
       ] },
 
     { id: 'celts', name: 'Celts', adj: 'Celtic', difficulty: 'medium', bias: ['forest'], color: '#1e6b3a', color2: '#e0e0e0',
@@ -137,7 +137,7 @@
       ub: { id: 'salon', name: 'Salon', replaces: 'museum', yields: { culture: 3, gold: 1 }, desc: '+3 Heritage, +1 Gold' },
       cities: ['Paris', 'Orléans', 'Lyon', 'Marseille', 'Bordeaux', 'Toulouse', 'Rouen', 'Reims', 'Nantes', 'Strasbourg', 'Lille', 'Dijon', 'Tours', 'Poitiers', 'Amiens', 'Caen', 'Rennes', 'Brest', 'Nancy', 'Metz', 'Besançon', 'Grenoble', 'Avignon', 'Nîmes', 'Montpellier', 'Toulon', 'Nice', 'Aix-en-Provence', 'Limoges', 'Clermont-Ferrand', 'Bourges', 'Chartres', 'Troyes', 'Angers', 'Le Mans', 'La Rochelle', 'Bayonne', 'Perpignan', 'Calais', 'Versailles'],
       leaders: [
-        L('napoleon', 'Napoleon Bonaparte', 'Emperor', 'Grande Armée', 'Land units +4 Strength and cost 15% less. Siege units +5 Strength against settlements.', { landBonus: 4, unitCostMult: 0.85, vsSettlements: 5 }, { aggression: 0.9, expansion: 0.6, science: 0.5, culture: 0.6 }),
+        L('napoleon', 'Napoleon Bonaparte', 'Emperor', 'Grande Armée', 'Land units +3 Strength and cost 15% less. Siege units +5 Strength against settlements.', { landBonus: 3, unitCostMult: 0.85, vsSettlements: 5 }, { aggression: 0.9, expansion: 0.6, science: 0.5, culture: 0.6 }),
         L('louis', 'Louis XIV', 'Sun King', 'Versailles', '+2 Heritage per settlement. Capital +20% Heritage and Gold. Under Monarchy or Theocracy +2 extra Happiness in every settlement.', { culturePerSettlement: 2, capitalMult: { culture: 1.2, gold: 1.2 }, monarchHappiness: 2 }, { aggression: 0.5, expansion: 0.5, science: 0.5, culture: 0.9 }),
         L('joan', 'Joan of Arc', 'Maid of Orléans', 'Divine Mission', 'Units +8 Strength when defending inside your borders. Units heal +10 inside your borders. +1 Happiness in every settlement.', { homeDefenseBonus: 8, healBonusHome: 10, happinessBonus: 1 }, { aggression: 0.3, expansion: 0.5, science: 0.5, culture: 0.7 })
       ] },
@@ -176,11 +176,11 @@
     { id: 'maya', name: 'Maya', adj: 'Mayan', difficulty: 'hard', bias: ['jungle'], color: '#117864', color2: '#fdfefe',
       ability: { name: 'Long Count', desc: 'Farms yield +1 Food. +1 Knowledge per 2 population in every settlement.', fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }], sciencePerPop: 0.5 } },
       ui: { id: 'milpa', name: 'Milpa', icon: '🌿', replaces: 'woodcutter', when: 'jungle', yields: { food: 2, science: 1 }, desc: 'jungle woodcutters also give +2 Food and +1 Knowledge' },
-      ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 2 }, desc: '+2 Knowledge' },
+      ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 3, production: 1 }, desc: '+3 Knowledge, +1 Production' },
       cities: ['Mutal', 'Yaxchilan', 'Calakmul', 'Uxmal', 'Chichen Itza', 'Copan', 'Palenque', 'Caracol', 'Coba', 'Tulum', 'Mayapan', 'Naranjo', 'Quirigua', 'Bonampak', 'Piedras Negras', 'Dos Pilas', 'Seibal', 'Altar de Sacrificios', 'El Mirador', 'Nakbe', 'Uaxactun', 'Rio Azul', 'Xunantunich', 'Lamanai', 'Altun Ha', 'Cerros', 'Edzna', 'Kabah', 'Sayil', 'Labna', 'Dzibilchaltun', 'Ek Balam', 'Izamal', 'Becan', 'Comalcalco', 'Tonina', 'Kaminaljuyu', 'Zaculeu', 'Iximche', 'Cancuen'],
       leaders: [
         L('sixsky', 'Lady Six Sky', 'Queen', 'Ix Mutal Ajaw', 'Settlements within 6 tiles of your capital yield +15%. Units within 6 tiles of your capital +5 Strength.', { capitalRadiusBonus: { radius: 6, mult: 1.15 }, capitalRadiusCombat: { radius: 6, bonus: 5 } }, { aggression: 0.4, expansion: 0.5, science: 0.8, culture: 0.5 }),
-        L('pakal', 'K\'inich Janaab\' Pakal', 'Ajaw', 'Temple of Inscriptions', 'Wonders cost 15% less. Each Wonder yields +3 Knowledge and +1 Happiness. The spirit of your capital is always pleased.', { wonderCostMult: 0.85, sciencePerWonder: 3, happinessPerWonder: 1, capitalBlessed: true }, { aggression: 0.3, expansion: 0.5, science: 0.8, culture: 0.7 })
+        L('pakal', 'K\'inich Janaab\' Pakal', 'Ajaw', 'Temple of Inscriptions', 'Wonders cost 25% less. Each Wonder yields +4 Knowledge and +1 Happiness. The spirit of your capital is always pleased.', { wonderCostMult: 0.75, sciencePerWonder: 4, happinessPerWonder: 1, capitalBlessed: true }, { aggression: 0.3, expansion: 0.5, science: 0.8, culture: 0.7 })
       ] },
 
     { id: 'shawnee', name: 'Shawnee', adj: 'Shawnee', difficulty: 'medium', bias: ['forest', 'river'], color: '#6e2c00', color2: '#7fb3d5',
@@ -190,7 +190,7 @@
       cities: ['Chalahgawtha', 'Piqua', 'Wapakoneta', 'Kispoko', 'Mekoche', 'Prophetstown', 'Lower Shawneetown', 'Tippecanoe', 'Blue Jacket\'s Town', 'Girty\'s Town', 'Cornstalk\'s Town', 'Hog Creek', 'Old Chillicothe', 'Standing Stone', 'Sonnontio', 'Logstown', 'Eskippakithiki', 'Pekowi', 'Thawikila', 'Hathawekela', 'Wakatomika', 'Mackachack', "Snake's Town", "Moluntha's Town", "Tecumseh's Town", "Black Hoof's Town", 'Lewistown', "Captain Johnny's Town", 'Blue Licks', 'Greenville', 'Cape Girardeau', 'Apple Creek', 'Grand Glaize', 'Willstown', 'Chartierstown', 'Sawcunk', 'Pequea', 'Paxtang', 'Kittanning', 'Salt Lick Town'],
       leaders: [
         L('tecumseh', 'Tecumseh', 'War Chief', 'Confederacy', 'Units +5 Strength against Inchibils and +3 inside your borders. Units heal +10 inside your borders.', { vsIndependents: 5, combatBonusHome: 3, healBonusHome: 10 }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.6 }),
-        L('cornstalk', 'Cornstalk', 'Chief', 'Council Fire', '+2 Heritage per settlement. Towns grow 20% faster. Farming Towns +2 Food.', { culturePerSettlement: 2, townGrowthMult: 1.2, specializationYields: { farming: { food: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.7 })
+        L('cornstalk', 'Cornstalk', 'Chief', 'Council Fire', '+3 Heritage per settlement. Towns grow 30% faster. Farming Towns +2 Food.', { culturePerSettlement: 3, townGrowthMult: 1.3, specializationYields: { farming: { food: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.7 })
       ] },
 
     { id: 'greece', name: 'Greece', adj: 'Greek', difficulty: 'easy', bias: ['coast', 'hills'], color: '#1a5276', color2: '#f4f6f7',
@@ -205,9 +205,9 @@
       ] },
 
     { id: 'germany', name: 'Germany', adj: 'German', difficulty: 'easy', bias: ['river', 'forest'], color: '#4d4d4d', color2: '#f1c40f',
-      ability: { name: 'Free Imperial Cities', desc: '+10% Production in Cities. Upgrading a Town into a City is 15% cheaper.', fx: { cityYieldMult: { production: 1.1 }, cityUpgradeCostMult: 0.85 } },
-      uu: { id: 'landsknecht', name: 'Landsknecht', replaces: 'pikeman', strength: 2, costMult: 0.6, vsCls: {melee: 6}, goldOnKill: 25, desc: '+2 Strength, 40% cheaper, +6 vs melee, +25 Gold per kill' },
-      ub: { id: 'hansa', name: 'Hansa', replaces: 'workshop', yields: { production: 2, gold: 2 }, desc: '+2 Production, +2 Gold' },
+      ability: { name: 'Free Imperial Cities', desc: '+5% Production in Cities. Upgrading a Town into a City is 15% cheaper.', fx: { cityYieldMult: { production: 1.05 }, cityUpgradeCostMult: 0.85 } },
+      uu: { id: 'landsknecht', name: 'Landsknecht', replaces: 'pikeman', strength: 2, costMult: 0.75, vsCls: {melee: 6}, goldOnKill: 15, desc: '+2 Strength, 25% cheaper, +6 vs melee, +15 Gold per kill' },
+      ub: { id: 'hansa', name: 'Hansa', replaces: 'workshop', yields: { production: 1, gold: 2 }, desc: '+1 Production, +2 Gold' },
       cities: ['Aachen', 'Cologne', 'Frankfurt', 'Magdeburg', 'Mainz', 'Heidelberg', 'Trier', 'Berlin', 'Hamburg', 'Munich', 'Nuremberg', 'Leipzig', 'Bremen', 'Lübeck', 'Regensburg', 'Augsburg', 'Würzburg', 'Bamberg', 'Erfurt', 'Dresden', 'Hanover', 'Brunswick', 'Münster', 'Dortmund', 'Essen', 'Düsseldorf', 'Stuttgart', 'Ulm', 'Freiburg', 'Speyer', 'Worms', 'Koblenz', 'Kassel', 'Göttingen', 'Rostock', 'Stralsund', 'Kiel', 'Potsdam', 'Weimar', 'Wittenberg'],
       leaders: [
         L('barbarossa', 'Frederick Barbarossa', 'Holy Roman Emperor', 'Imperial Diet', 'Towns +2 Gold. Cities +2 Production.', { townYields: { gold: 2 }, citySiteYields: { production: 2 } }, { aggression: 0.6, expansion: 0.7, science: 0.6, culture: 0.4 }),
@@ -222,7 +222,7 @@
       cities: ['Moscow', 'St. Petersburg', 'Novgorod', 'Kiev', 'Kazan', 'Yekaterinburg', 'Vladimir', 'Smolensk', 'Rostov', 'Tver', 'Yaroslavl', 'Arkhangelsk', 'Pskov', 'Suzdal', 'Ryazan', 'Nizhny Novgorod', 'Kostroma', 'Vologda', 'Murom', 'Kolomna', 'Kaluga', 'Kursk', 'Voronezh', 'Samara', 'Saratov', 'Tsaritsyn', 'Orenburg', 'Perm', 'Chelyabinsk', 'Omsk', 'Tomsk', 'Novosibirsk', 'Krasnoyarsk', 'Irkutsk', 'Yakutsk', 'Vladivostok', 'Khabarovsk', 'Magadan', 'Murmansk', 'Tobolsk'],
       leaders: [
         L('peter', 'Peter the Great', 'Tsar', 'Window to the West', '+15 Knowledge whenever you learn a civic and +15 Heritage whenever you learn a technology. Naval units +1 Movement.', { civicScience: 15, techCulture: 15, navalMoves: 1 }, { aggression: 0.5, expansion: 0.7, science: 0.8, culture: 0.6 }),
-        L('catherine', 'Catherine the Great', 'Empress', 'Enlightened Court', '+2 Heritage per settlement. Amphitheaters and Museums +2 Heritage. Purchases cost 10% less.', { culturePerSettlement: 2, buildingBonus: { museum: { culture: 2 }, amphitheater: { culture: 2 } }, purchaseMult: 0.9 }, { aggression: 0.4, expansion: 0.7, science: 0.6, culture: 0.8 }),
+        L('catherine', 'Catherine the Great', 'Empress', 'Enlightened Court', '+2 Heritage per settlement. Amphitheaters and Museums +3 Heritage. Purchases cost 20% less.', { culturePerSettlement: 2, buildingBonus: { museum: { culture: 3 }, amphitheater: { culture: 3 } }, purchaseMult: 0.8 }, { aggression: 0.4, expansion: 0.7, science: 0.6, culture: 0.8 }),
         L('ivan', 'Ivan the Terrible', 'Tsar', 'Oprichnina', 'Units +6 Strength when defending inside your borders. Settlements +5 defense. +80 Gold per captured settlement.', { homeDefenseBonus: 6, cityDefense: 5, captureGold: 80 }, { aggression: 0.8, expansion: 0.7, science: 0.4, culture: 0.4 })
       ] },
 
