@@ -37,4 +37,32 @@ function shore(g, s) { // a land tile next to water, and the water tile beside i
   assert(vs === base + Math.min(8, 2 * gap), 'hearth guard: +' + Math.min(8, 2 * gap) + ' at home against a wider empire (' + base + ' -> ' + vs + ')');
   assert(G.settlementStrength(g, cap, o.idx) === G.settlementStrength(g, cap) + Math.min(8, 2 * gap), 'walls hold better too');
   const away = sites[30]; G.setUnitTile(g, d, away.i); assert(U.strength(g, d, { attacking: false, vs: a }) === U.strength(g, d, { attacking: false }), 'no hearth guard abroad'); }
+// --- sea invasions: the army gathers at the port nearest the target, sails as one wave no bigger than its Command can steer, lands two tiles out ---
+{ let g, a, b, capA, capB;
+  for (let seed = 1; seed < 60 && !capB; seed++) {
+    g = G.newGame({ playerCiv: 'mongolia', playerLeader: 'genghis', mapSize: 'small', mapType: 'archipelago', numCivs: 2, numStates: 0, seed, difficulty: 'prince', v2: true });
+    g.civs.forEach(c => { if (c.minor || c.capital != null) return; const u = G.civUnits(g, c.idx).find(u => u.type === 'settler'); if (u) U.foundCity(g, u); });
+    [a, b] = g.civs.filter(c => !c.minor); capA = g.settlements[a.capital]; const cb = b && g.settlements[b.capital];
+    if (cb && capA && G.isCoastal(g, capA) && G.isCoastal(g, cb) && g.tiles[capA.tile].continent !== g.tiles[cb.tile].continent) capB = cb;
+  }
+  assert(capB, 'found two coastal capitals on different islands');
+  g.civs.forEach(c => { c.met = c.met || {}; g.civs.forEach(o => { c.met[o.idx] = true; }); });
+  AU.MasteryWeb.state(a).era = 3; a.era = 3; G.declareWar(g, a.idx, b.idx); a.command = 99;
+  const home = G.neighbors(g, g.tiles[capA.tile]).filter(i => !G.isWater(g.tiles[i]) && g.tiles[i].terrain !== 'mountain');
+  const inv = AI.planInvasion(g, a);
+  assert(inv && inv.port === capA.id, 'the invasion sails from the port nearest the target');
+  const land = g.tiles[inv.landing]; assert(land.continent === g.tiles[capB.tile].continent && !G.isWater(land), 'the landing is a beach on the target\'s shore');
+  assert(G.dist(land, g.tiles[capB.tile]) >= 2 || !G.neighbors(g, g.tiles[capB.tile]).some(i => G.dist(g.tiles[i], g.tiles[capB.tile]) === 2), 'landing two tiles out, beyond the walls\' reach');
+  const s1 = G.spawnUnit(g, a.idx, 'swordsman', capA.tile); AI.moveUnits(g, a);
+  assert(!U.isEmbarked(g, s1) && !inv.launched, 'one soldier does not wade in alone: it waits at the port');
+  const force = AI.invasionForce(g, a); const band = [s1];
+  for (let k = 0; band.length < force + 3; k++) band.push(G.spawnUnit(g, a.idx, 'swordsman', home[k % home.length]));
+  g.turn++; band.forEach(u => { u.moves = 2; }); a.command = 99; AI.moveUnits(g, a);
+  assert(inv.launched || a.aiInv.launched, 'a full force launches the invasion');
+  const afloat = G.civUnits(g, a.idx).filter(u => u.aiInv).length;
+  assert(afloat >= 1 && afloat <= force, 'the wave sets out (' + afloat + ' under way) and is no bigger than the Command can steer (' + force + ')');
+  g.turn++; band.forEach(u => { if (g.units[u.id]) u.moves = 2; }); a.command = 99; AI.moveUnits(g, a);
+  assert(G.civUnits(g, a.idx).filter(u => u.aiInv).length <= force, 'no second wave boards while the first is under way');
+  assert(G.civUnits(g, a.idx).some(u => G.settlementAt(g, u.tile) === capA && G.isMilitary(u)), 'the port keeps its guard');
+}
 console.log('naval tests OK');
