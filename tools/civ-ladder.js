@@ -19,6 +19,7 @@ if (process.argv[2] === '--summary') {
   const cfg = rows[0] && rows[0].map ? ', ' + rows[0].map.size + ' ' + rows[0].map.type + ' map, ' + rows[0].map.speed + ' speed, ' + rows[0].map.civs + ' empires' : '';
   console.log((md ? '## ' : '') + 'Civ ladder: ' + rows.length + ' games, ' + (rows[0] && rows[0].v2 ? 'Divergence' : 'classic') + ' rules' + cfg + ', ' + (rows[0] ? rows[0].turns : '?') + ' turns');
   console.log((md ? '\n' : '') + 'Games decided by: ' + Object.keys(vt).map(t => t + ' ' + vt[t]).join(', ') + (vturn.length ? ' · victory turn: earliest ' + vturn[0] + ', median ' + vturn[Math.floor(vturn.length / 2)] + ', latest ' + vturn[vturn.length - 1] : '') + '. "wins" = the victor, or the top score when nobody won.');
+  if (vturn.length) { const pct = q => vturn[Math.min(vturn.length - 1, Math.floor(vturn.length * q))]; console.log((md ? '\n' : '') + 'Victory turn percentiles: p10 ' + pct(0.1) + ', p25 ' + pct(0.25) + ', p50 ' + pct(0.5) + ', p75 ' + pct(0.75) + ', p85 ' + pct(0.85) + ', p90 ' + pct(0.9) + ', p95 ' + pct(0.95) + ' (a turn limit at pN leaves about ' + '(100-N)% of games to the score victory).'); }
   print('By civilization (' + minN + '+ games)', table(c => c.civ, minN)); print('By leader (' + minN + '+ games)', table(c => c.civ + '/' + c.leader, minN)); return;
 }
 const games = +process.argv[2] || 4, v2 = process.argv[4] === '1', seed0 = +(process.argv[5] || 100);
