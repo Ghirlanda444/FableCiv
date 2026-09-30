@@ -31,10 +31,10 @@
 
   // ---------- Game creation ----------
   AU.SPEEDS = {
-    quick:    { name: _('Quick'),    mult: 0.67, turns: 330 },
-    standard: { name: _('Standard'), mult: 1.0,  turns: 500 },
-    epic:     { name: _('Epic'),     mult: 1.5,  turns: 750 },
-    marathon: { name: _('Marathon'), mult: 3.0,  turns: 1500 }
+    quick:    { name: _('Quick'),    mult: 0.67, turns: 240 },
+    standard: { name: _('Standard'), mult: 1.0,  turns: 350 }, // near the end of the space race: a late Colony Ship loses to the Legacy count
+    epic:     { name: _('Epic'),     mult: 1.5,  turns: 525 },
+    marathon: { name: _('Marathon'), mult: 3.0,  turns: 1050 }
   };
   G.speed = function (g) { return (AU.SPEEDS[g.speed] || AU.SPEEDS.standard).mult; };
   G.newGame = function (opts) {
