@@ -118,7 +118,7 @@
       cities: ['Camulodunon', 'Bibracte', 'Alesia', 'Verlamion', 'Gergovia', 'Lugdunon', 'Eburacon', 'Tara', 'Dun Ollaigh', 'Isca', 'Namnetes', 'Durocornovium', 'Avaricum', 'Cenabum', 'Uxellodunum', 'Vesontio', 'Noviodunum', 'Manching', 'Heuneburg', 'Hallstatt', 'La Tène', 'Entremont', 'Numantia', 'Emain Macha', 'Cruachan', 'Dún Aonghasa', 'Cashel', 'Dunadd', 'Traprain Law', 'Maiden Castle', 'Danebury', 'Hengistbury', 'Ratae', 'Sorviodunum', 'Segontium', 'Caer Caradoc', 'Ynys Môn', "Tre'r Ceiri", 'Bagacum', 'Durocortorum'],
       leaders: [
         L('boudica', 'Boudica', 'Queen', 'Iceni Fury', 'Units +4 Strength in Forest and Rainforest. Melee units +2 Strength when attacking.', { combatBonusForest: 4, meleeAttackBonus: 2 }, { aggression: 0.8, expansion: 0.5, science: 0.3, culture: 0.5 }),
-        L('vercingetorix', 'Vercingetorix', 'Chieftain', 'Oppidum', 'Settlements on Hills +5 defense, +2 Production and +1 Heritage. Units in a Fort Town heal fully every turn.', { settlementSiteBonus: [{ when: 'hills', yields: { production: 2, culture: 1 } }], hillsDefense: 5, fortFullHeal: true }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.5 })
+        L('vercingetorix', 'Vercingetorix', 'Chieftain', 'Oppidum', 'Settlements on Hills +5 defense, +3 Production and +1 Heritage. Units in a Fort Town heal fully every turn.', { settlementSiteBonus: [{ when: 'hills', yields: { production: 3, culture: 1 } }], hillsDefense: 5, fortFullHeal: true }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.5 })
       ] },
 
     { id: 'arabia', name: 'Arabia', adj: 'Arabian', difficulty: 'medium', bias: ['desert'], color: '#1a7a4a', color2: '#f4f4f4',
@@ -176,7 +176,7 @@
     { id: 'maya', name: 'Maya', adj: 'Mayan', difficulty: 'hard', bias: ['jungle'], color: '#117864', color2: '#fdfefe',
       ability: { name: 'Long Count', desc: 'Farms yield +1 Food. +1 Knowledge per 2 population in every settlement. Settlements in or beside Rainforest +2 Production.', fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }], sciencePerPop: 0.5, settlementSiteBonus: [{ when: 'jungle', yields: { production: 2 } }] } },
       ui: { id: 'milpa', name: 'Milpa', icon: '🌿', replaces: 'woodcutter', when: 'jungle', yields: { food: 2, science: 1 }, desc: 'jungle woodcutters also give +2 Food and +1 Knowledge' },
-      ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 3, production: 1 }, desc: '+3 Knowledge, +1 Production' },
+      ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 3, production: 2 }, desc: '+3 Knowledge, +2 Production' },
       cities: ['Mutal', 'Yaxchilan', 'Calakmul', 'Uxmal', 'Chichen Itza', 'Copan', 'Palenque', 'Caracol', 'Coba', 'Tulum', 'Mayapan', 'Naranjo', 'Quirigua', 'Bonampak', 'Piedras Negras', 'Dos Pilas', 'Seibal', 'Altar de Sacrificios', 'El Mirador', 'Nakbe', 'Uaxactun', 'Rio Azul', 'Xunantunich', 'Lamanai', 'Altun Ha', 'Cerros', 'Edzna', 'Kabah', 'Sayil', 'Labna', 'Dzibilchaltun', 'Ek Balam', 'Izamal', 'Becan', 'Comalcalco', 'Tonina', 'Kaminaljuyu', 'Zaculeu', 'Iximche', 'Cancuen'],
       leaders: [
         L('sixsky', 'Lady Six Sky', 'Queen', 'Ix Mutal Ajaw', 'Settlements within 6 tiles of your capital yield +15%. Units within 6 tiles of your capital +5 Strength.', { capitalRadiusBonus: { radius: 6, mult: 1.15 }, capitalRadiusCombat: { radius: 6, bonus: 5 } }, { aggression: 0.4, expansion: 0.5, science: 0.8, culture: 0.5 }),
@@ -249,7 +249,7 @@
     { id: 'korea', name: 'Korea', adj: 'Korean', difficulty: 'medium', bias: ['coast', 'mountain'], color: '#2874a6', color2: '#f4f6f7',
       ability: { name: 'Seowon', desc: 'Libraries and Universities yield +2 Knowledge and +1 Heritage. Urban Centers +3 Knowledge.', fx: { buildingBonus: { library: { science: 2, culture: 1 }, university: { science: 2, culture: 1 } }, specializationYields: { urban: { science: 3 } } } },
       uu: { id: 'hwacha', name: 'Hwacha', replaces: 'field_cannon', ranged: 8, defense: 5, scienceOnKill: 20, costMult: 1.3, desc: '+8 Ranged Strength, +5 defending, +20 Knowledge per kill, costs 30% more' },
-      ub: { id: 'jipgyeongjeon', name: 'Jiphyeonjeon', replaces: 'university', yields: { science: 3, culture: 1 }, desc: '+3 Knowledge, +1 Heritage' },
+      ub: { id: 'jipgyeongjeon', name: 'Jiphyeonjeon', replaces: 'university', yields: { science: 3, culture: 1, production: 2 }, desc: '+3 Knowledge, +1 Heritage, +2 Production' },
       cities: ['Seoul', 'Busan', 'Gyeongju', 'Pyongyang', 'Gaeseong', 'Daegu', 'Incheon', 'Jeonju', 'Gwangju', 'Suwon', 'Ulsan', 'Cheongju', 'Gongju', 'Buyeo', 'Wonju', 'Chuncheon', 'Gangneung', 'Andong', 'Sangju', 'Jinju', 'Mokpo', 'Yeosu', 'Suncheon', 'Namwon', 'Gimhae', 'Pohang', 'Gyeongsan', 'Chungju', 'Jeju', 'Hamhung', 'Wonsan', 'Sinuiju', 'Uiju', 'Kanggye', 'Hoeryong', 'Chongjin', 'Nampo', 'Haeju', 'Sariwon', 'Ganghwa'],
       leaders: [
         L('sejong', 'Sejong', 'King', 'Hangul', 'Technologies cost 10% less. +1 Knowledge per settlement. +20 Heritage whenever you learn a technology.', { techCostMult: 0.9, sciencePerSettlement: 1, techCulture: 20 }, { aggression: 0.2, expansion: 0.5, science: 0.95, culture: 0.6 }),
@@ -282,7 +282,7 @@
       ub: { id: 'suguba', name: 'Suguba', replaces: 'market', yields: { gold: 5 }, desc: '+5 Gold' },
       cities: ['Niani', 'Timbuktu', 'Djenné', 'Gao', 'Walata', 'Kangaba', 'Ségou', 'Koumbi Saleh', 'Kita', 'Bamako', 'Mopti', 'Sikasso', 'Taghaza', 'Takedda', 'Tadmekka', 'Audaghost', 'Kayes', 'Nioro', 'Koulikoro', 'Bandiagara', 'Douentza', 'Bourem', 'Kabara', 'Diré', 'Goundam', 'Kong', 'Bobo-Dioulasso', 'Kankan', 'Siguiri', 'Kouroussa', 'Dinguiraye', 'Bouré', 'Bambouk', 'Sansanding', 'Djoliba', 'Hamdallahi', 'Macina', 'Tichitt', 'Araouane', 'Dioïla'],
       leaders: [
-        L('mansa', 'Mansa Musa', 'Mansa', 'Golden Pilgrimage', '+25% Gold. Trade Outpost Towns +4 Gold. +100 Gold whenever you found a settlement.', { yieldMult: { gold: 1.25 }, specializationYields: { trade: { gold: 4 } }, foundGold: 100 }, { aggression: 0.2, expansion: 0.7, science: 0.6, culture: 0.6 }),
+        L('mansa', 'Mansa Musa', 'Mansa', 'Golden Pilgrimage', '+20% Gold. Trade Outpost Towns +4 Gold. +100 Gold whenever you found a settlement.', { yieldMult: { gold: 1.2 }, specializationYields: { trade: { gold: 4 } }, foundGold: 100 }, { aggression: 0.2, expansion: 0.7, science: 0.6, culture: 0.6 }),
         L('sundiata', 'Sundiata Keita', 'Mansa', 'Lion King', 'Cavalry +5 Strength. Units heal +10 everywhere. +1 Happiness in every settlement.', { cavalryBonus: 5, healBonusAll: 10, happinessBonus: 1 }, { aggression: 0.6, expansion: 0.6, science: 0.4, culture: 0.5 })
       ] },
 

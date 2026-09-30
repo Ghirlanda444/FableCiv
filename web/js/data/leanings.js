@@ -12,7 +12,7 @@
     pericles: 'culture', meiji: 'science', augustus: 'culture', alexander: 'domination', shaka: 'domination', genghis: 'domination', kublai: 'domination',
     darius: 'score', ramses: 'culture', harun: 'science', louis: 'culture', pakal: 'science', frederick: 'science', peter: 'science', catherine: 'culture', philip: 'religion',
     hannibal: 'domination', dido: 'score', ashoka: 'religion', wu: 'culture', qin: 'domination', taizong: 'science', franklin: 'science', gitarja: 'score', vercingetorix: 'score',
-    cornstalk: 'score', mansa: 'score', suleiman: 'domination', sejong: 'science', menelik: 'religion', theodora: 'score', afonso: 'religion', justinian: 'culture', trung: 'score', cleopatra: 'culture'
+    cornstalk: 'culture', mansa: 'score', suleiman: 'domination', sejong: 'science', menelik: 'religion', theodora: 'score', afonso: 'religion', justinian: 'culture', trung: 'score', cleopatra: 'culture'
   };
   AU.leaningOf = function (leader) {
     if (!leader) return 'score';
