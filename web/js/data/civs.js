@@ -86,7 +86,7 @@
       ut: { id: 'ikhanda', name: 'Ikhanda', icon: '🛡️', minPop: 3, desc: 'A warrior town: units bought here cost 40% less, +6 defense, free Walls, and +1 Production per worked tile.', fx: { unitPurchaseMult: 0.6, defense: 6, freeWalls: true, tileYields: { when: 'all', yields: { production: 1 } } } },
       cities: ['Ulundi', 'uMgungundlovu', 'kwaBulawayo', 'kwaDukuza', 'Nobamba', 'Eshowe', 'Ondini', 'Isandlwana', 'Nongoma', 'Empangeni', 'Melmoth', 'Mthonjaneni', 'Babanango', 'Mahlabathini', "Rorke's Drift", 'Hlobane', 'Gingindlovu', 'Ntombe', 'Kambula', 'Vryheid', 'Nkandla', 'Mtubatuba', 'Hluhluwe', 'Pongola', 'Mkuze', 'Ingwavuma', 'Richards Bay', 'Mandeni', 'Greytown', 'Kranskop', 'Umlazi', 'Inanda', 'Pinetown', 'Ixopo', 'Estcourt', 'Ladysmith', 'Colenso', 'Weenen', 'Dundee', 'Nquthu'],
       leaders: [
-        L('shaka', 'Shaka', 'King', 'Horns of the Buffalo', 'Melee units +6 Strength when attacking. Every kill grants +10 Heritage.', { meleeAttackBonus: 6, culturePerKill: 10 }, { aggression: 0.95, expansion: 0.5, science: 0.2, culture: 0.3 }),
+        L('shaka', 'Shaka', 'King', 'Horns of the Buffalo', 'Melee units +4 Strength when attacking. Every kill grants +6 Heritage.', { meleeAttackBonus: 4, culturePerKill: 6 }, { aggression: 0.95, expansion: 0.5, science: 0.2, culture: 0.3 }),
         L('cetshwayo', 'Cetshwayo', 'King', 'Isandlwana', 'Units +8 Strength when defending inside your borders. Units heal +15 inside your borders.', { homeDefenseBonus: 8, healBonusHome: 15 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.4 })
       ] },
 
@@ -117,7 +117,7 @@
       ut: { id: 'oppidum', name: 'Oppidum', icon: '🛡️', minPop: 3, desc: 'A hill-fort town: +4 defense, free Walls, +2 Heritage, and worked Woodcutters +1 Production.', fx: { defense: 4, freeWalls: true, flat: { culture: 2 }, tileYields: { when: 'woodcutter', yields: { production: 1 } } } },
       cities: ['Camulodunon', 'Bibracte', 'Alesia', 'Verlamion', 'Gergovia', 'Lugdunon', 'Eburacon', 'Tara', 'Dun Ollaigh', 'Isca', 'Namnetes', 'Durocornovium', 'Avaricum', 'Cenabum', 'Uxellodunum', 'Vesontio', 'Noviodunum', 'Manching', 'Heuneburg', 'Hallstatt', 'La Tène', 'Entremont', 'Numantia', 'Emain Macha', 'Cruachan', 'Dún Aonghasa', 'Cashel', 'Dunadd', 'Traprain Law', 'Maiden Castle', 'Danebury', 'Hengistbury', 'Ratae', 'Sorviodunum', 'Segontium', 'Caer Caradoc', 'Ynys Môn', "Tre'r Ceiri", 'Bagacum', 'Durocortorum'],
       leaders: [
-        L('boudica', 'Boudica', 'Queen', 'Iceni Fury', 'Units +6 Strength in Forest and Rainforest. Melee units +3 Strength when attacking.', { combatBonusForest: 6, meleeAttackBonus: 3 }, { aggression: 0.8, expansion: 0.5, science: 0.3, culture: 0.5 }),
+        L('boudica', 'Boudica', 'Queen', 'Iceni Fury', 'Units +4 Strength in Forest and Rainforest. Melee units +2 Strength when attacking.', { combatBonusForest: 4, meleeAttackBonus: 2 }, { aggression: 0.8, expansion: 0.5, science: 0.3, culture: 0.5 }),
         L('vercingetorix', 'Vercingetorix', 'Chieftain', 'Oppidum', 'Settlements on Hills +5 defense, +1 Production and +1 Heritage. Units in a Fort Town heal fully every turn.', { settlementSiteBonus: [{ when: 'hills', yields: { production: 1, culture: 1 } }], hillsDefense: 5, fortFullHeal: true }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.5 })
       ] },
 

@@ -85,9 +85,9 @@
   };
 
   AU.PROJECTS = {
-    launch_satellite: { name: 'Launch Earth Satellite', cost: 800, tech: 'satellites', requiresBuilding: 'spaceport', desc: 'Step 1 of the Knowledge Victory. Reveals the whole map. Needs a Spaceport.' },
-    moon_landing:     { name: 'Moon Landing',           cost: 1200, tech: 'satellites', requiresProject: 'launch_satellite', desc: 'Step 2 of the Knowledge Victory.' },
-    colony_ship:      { name: 'Launch Colony Ship',     cost: 1800, tech: 'spaceflight', requiresProject: 'moon_landing', desc: 'Final step: the ship lands 15 turns after launch for a Star Voyage victory, unless its launch city falls first.' }
+    launch_satellite: { name: 'Launch Earth Satellite', cost: 3200, tech: 'satellites', requiresBuilding: 'spaceport', desc: 'Step 1 of the Knowledge Victory. Reveals the whole map. Needs a Spaceport.' },
+    moon_landing:     { name: 'Moon Landing',           cost: 4800, tech: 'satellites', requiresProject: 'launch_satellite', desc: 'Step 2 of the Knowledge Victory.' },
+    colony_ship:      { name: 'Launch Colony Ship',     cost: 7200, tech: 'spaceflight', requiresProject: 'moon_landing', desc: 'Final step: the ship lands 17 turns after launch for a Star Voyage victory, unless its launch city falls first.' }
   };
 
   // Town specializations. A specialized town stops growing and sends its surplus food to the nearest city.

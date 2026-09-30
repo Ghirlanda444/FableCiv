@@ -31,10 +31,10 @@
 
   // ---------- Game creation ----------
   AU.SPEEDS = {
-    quick:    { name: _('Quick'),    mult: 0.67, turns: 330 },
-    standard: { name: _('Standard'), mult: 1.0,  turns: 500 },
-    epic:     { name: _('Epic'),     mult: 1.5,  turns: 750 },
-    marathon: { name: _('Marathon'), mult: 3.0,  turns: 1500 }
+    quick:    { name: _('Quick'),    mult: 0.67, turns: 241 },
+    standard: { name: _('Standard'), mult: 1.0,  turns: 350 }, // near the end of the space race: a late Colony Ship loses to the Legacy count
+    epic:     { name: _('Epic'),     mult: 1.5,  turns: 525 },
+    marathon: { name: _('Marathon'), mult: 3.0,  turns: 1050 }
   };
   G.speed = function (g) { return (AU.SPEEDS[g.speed] || AU.SPEEDS.standard).mult; };
   G.newGame = function (opts) {
@@ -1031,7 +1031,7 @@
     return Math.round(t * 10) / 10;
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
-  G.DOMESTIC_PER = 175; // Culture per domestic tourist
+  G.DOMESTIC_PER = 140; // Culture per domestic tourist (was 175: Renown decided nearly half of all games)
   G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / G.DOMESTIC_PER); };
   // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Modern era or later).
   G.cultureProgress = function (g, civ) {
@@ -1043,7 +1043,7 @@
   // ---------- Star Voyage ----------
   // The Colony Ship does not win on launch: it flies for VOYAGE_TURNS while the launch city keeps contact. Lose that city and the
   // ship is lost with it (the project must be built again); the first ship to arrive wins.
-  G.VOYAGE_TURNS = 15; // at Standard speed
+  G.VOYAGE_TURNS = 17; // at Standard speed (17, not 15: a ship launched late now loses the photo finish to the Legacy count)
   G.voyageTurns = function (g) { return Math.max(G.VOYAGE_TURNS, Math.round(G.VOYAGE_TURNS * G.speed(g))); }; // longer on slow speeds, never shorter than Standard (a 10-turn flight made Quick a space race)
   G.launchVoyage = function (g, civ, s) {
     civ.voyage = { launched: g.turn, arrives: g.turn + G.voyageTurns(g), from: s.id };
