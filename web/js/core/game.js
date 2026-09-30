@@ -500,7 +500,7 @@
     var coastal = G.isCoastal(g, s);
     if (coastal && fx.coastalSettlementYields) add(y, fx.coastalSettlementYields);
     (fx.settlementSiteBonus || []).forEach(function (b) {
-      var ok = (b.when === 'river' && G.hasRiver(g, s)) || (b.when === 'hills' && center.hills) || (b.when === 'coast' && coastal) || (b.when === 'desert' && center.terrain === 'desert');
+      var ok = (b.when === 'river' && G.hasRiver(g, s)) || (b.when === 'hills' && center.hills) || (b.when === 'coast' && coastal) || (b.when === 'desert' && center.terrain === 'desert') || (b.when === 'jungle' && (center.feature === 'jungle' || G.neighbors(g, center).some(function (n) { return g.tiles[n].feature === 'jungle'; })));
       if (ok) add(y, b.yields);
     });
     if (s.isCity && fx.citySiteYields) add(y, fx.citySiteYields);

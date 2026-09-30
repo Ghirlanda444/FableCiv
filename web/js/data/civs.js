@@ -16,7 +16,7 @@
       ] },
 
     { id: 'japan', name: 'Japan', adj: 'Japanese', difficulty: 'easy', bias: ['coast'], color: '#f2f2f2', color2: '#c0392b',
-      ability: { name: 'Bushido', desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +1 Production and +1 Food.', fx: { noDamagePenalty: true, coastalSettlementYields: { production: 1, food: 1 } } },
+      ability: { name: 'Bushido', desc: 'Units fight at full strength no matter how damaged they are. Coastal settlements +2 Production and +1 Food.', fx: { noDamagePenalty: true, coastalSettlementYields: { production: 2, food: 1 } } },
       uu: { id: 'samurai', name: 'Samurai', replaces: 'pikeman', strength: 4, attack: 4, noDamagePenalty: true, costMult: 1.25, desc: '+4 Strength, +4 when attacking, never loses strength when wounded, costs 25% more' },
       ut: { id: 'jokamachi', name: 'Castle Town', icon: '🏯', minPop: 4, desc: 'A castle town: +5 defense, free Walls, units bought here cost 25% less, +2 Heritage and +2 Gold.', fx: { defense: 5, freeWalls: true, unitPurchaseMult: 0.75, flat: { culture: 2, gold: 2 } } },
       cities: ['Kyoto', 'Osaka', 'Edo', 'Nagoya', 'Kamakura', 'Nara', 'Sapporo', 'Kanazawa', 'Sendai', 'Hiroshima', 'Fukuoka', 'Nagasaki', 'Himeji', 'Matsumoto', 'Kumamoto', 'Okayama', 'Hikone', 'Matsue', 'Kochi', 'Takamatsu', 'Wakayama', 'Shizuoka', 'Odawara', 'Kagoshima', 'Sakai', 'Niigata', 'Nagano', 'Toyama', 'Fukui', 'Gifu', 'Tottori', 'Hagi', 'Aizu', 'Morioka', 'Akita', 'Hirosaki', 'Kofu', 'Utsunomiya', 'Mito', 'Matsuyama'],
@@ -86,7 +86,7 @@
       ut: { id: 'ikhanda', name: 'Ikhanda', icon: '🛡️', minPop: 3, desc: 'A warrior town: units bought here cost 40% less, +6 defense, free Walls, and +1 Production per worked tile.', fx: { unitPurchaseMult: 0.6, defense: 6, freeWalls: true, tileYields: { when: 'all', yields: { production: 1 } } } },
       cities: ['Ulundi', 'uMgungundlovu', 'kwaBulawayo', 'kwaDukuza', 'Nobamba', 'Eshowe', 'Ondini', 'Isandlwana', 'Nongoma', 'Empangeni', 'Melmoth', 'Mthonjaneni', 'Babanango', 'Mahlabathini', "Rorke's Drift", 'Hlobane', 'Gingindlovu', 'Ntombe', 'Kambula', 'Vryheid', 'Nkandla', 'Mtubatuba', 'Hluhluwe', 'Pongola', 'Mkuze', 'Ingwavuma', 'Richards Bay', 'Mandeni', 'Greytown', 'Kranskop', 'Umlazi', 'Inanda', 'Pinetown', 'Ixopo', 'Estcourt', 'Ladysmith', 'Colenso', 'Weenen', 'Dundee', 'Nquthu'],
       leaders: [
-        L('shaka', 'Shaka', 'King', 'Horns of the Buffalo', 'Melee units +4 Strength when attacking. Every kill grants +6 Heritage.', { meleeAttackBonus: 4, culturePerKill: 6 }, { aggression: 0.95, expansion: 0.5, science: 0.2, culture: 0.3 }),
+        L('shaka', 'Shaka', 'King', 'Horns of the Buffalo', 'Melee units +2 Strength when attacking. Every kill grants +6 Heritage.', { meleeAttackBonus: 2, culturePerKill: 6 }, { aggression: 0.95, expansion: 0.5, science: 0.2, culture: 0.3 }),
         L('cetshwayo', 'Cetshwayo', 'King', 'Isandlwana', 'Units +8 Strength when defending inside your borders. Units heal +15 inside your borders.', { homeDefenseBonus: 8, healBonusHome: 15 }, { aggression: 0.5, expansion: 0.5, science: 0.4, culture: 0.4 })
       ] },
 
@@ -118,7 +118,7 @@
       cities: ['Camulodunon', 'Bibracte', 'Alesia', 'Verlamion', 'Gergovia', 'Lugdunon', 'Eburacon', 'Tara', 'Dun Ollaigh', 'Isca', 'Namnetes', 'Durocornovium', 'Avaricum', 'Cenabum', 'Uxellodunum', 'Vesontio', 'Noviodunum', 'Manching', 'Heuneburg', 'Hallstatt', 'La Tène', 'Entremont', 'Numantia', 'Emain Macha', 'Cruachan', 'Dún Aonghasa', 'Cashel', 'Dunadd', 'Traprain Law', 'Maiden Castle', 'Danebury', 'Hengistbury', 'Ratae', 'Sorviodunum', 'Segontium', 'Caer Caradoc', 'Ynys Môn', "Tre'r Ceiri", 'Bagacum', 'Durocortorum'],
       leaders: [
         L('boudica', 'Boudica', 'Queen', 'Iceni Fury', 'Units +4 Strength in Forest and Rainforest. Melee units +2 Strength when attacking.', { combatBonusForest: 4, meleeAttackBonus: 2 }, { aggression: 0.8, expansion: 0.5, science: 0.3, culture: 0.5 }),
-        L('vercingetorix', 'Vercingetorix', 'Chieftain', 'Oppidum', 'Settlements on Hills +5 defense, +1 Production and +1 Heritage. Units in a Fort Town heal fully every turn.', { settlementSiteBonus: [{ when: 'hills', yields: { production: 1, culture: 1 } }], hillsDefense: 5, fortFullHeal: true }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.5 })
+        L('vercingetorix', 'Vercingetorix', 'Chieftain', 'Oppidum', 'Settlements on Hills +5 defense, +2 Production and +1 Heritage. Units in a Fort Town heal fully every turn.', { settlementSiteBonus: [{ when: 'hills', yields: { production: 2, culture: 1 } }], hillsDefense: 5, fortFullHeal: true }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.5 })
       ] },
 
     { id: 'arabia', name: 'Arabia', adj: 'Arabian', difficulty: 'medium', bias: ['desert'], color: '#1a7a4a', color2: '#f4f4f4',
@@ -174,7 +174,7 @@
       ] },
 
     { id: 'maya', name: 'Maya', adj: 'Mayan', difficulty: 'hard', bias: ['jungle'], color: '#117864', color2: '#fdfefe',
-      ability: { name: 'Long Count', desc: 'Farms yield +1 Food. +1 Knowledge per 2 population in every settlement.', fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }], sciencePerPop: 0.5 } },
+      ability: { name: 'Long Count', desc: 'Farms yield +1 Food. +1 Knowledge per 2 population in every settlement. Settlements in or beside Rainforest +2 Production.', fx: { tileBonus: [{ when: 'farm', yields: { food: 1 } }], sciencePerPop: 0.5, settlementSiteBonus: [{ when: 'jungle', yields: { production: 2 } }] } },
       ui: { id: 'milpa', name: 'Milpa', icon: '🌿', replaces: 'woodcutter', when: 'jungle', yields: { food: 2, science: 1 }, desc: 'jungle woodcutters also give +2 Food and +1 Knowledge' },
       ub: { id: 'observatory', name: 'Observatory', replaces: 'library', yields: { science: 3, production: 1 }, desc: '+3 Knowledge, +1 Production' },
       cities: ['Mutal', 'Yaxchilan', 'Calakmul', 'Uxmal', 'Chichen Itza', 'Copan', 'Palenque', 'Caracol', 'Coba', 'Tulum', 'Mayapan', 'Naranjo', 'Quirigua', 'Bonampak', 'Piedras Negras', 'Dos Pilas', 'Seibal', 'Altar de Sacrificios', 'El Mirador', 'Nakbe', 'Uaxactun', 'Rio Azul', 'Xunantunich', 'Lamanai', 'Altun Ha', 'Cerros', 'Edzna', 'Kabah', 'Sayil', 'Labna', 'Dzibilchaltun', 'Ek Balam', 'Izamal', 'Becan', 'Comalcalco', 'Tonina', 'Kaminaljuyu', 'Zaculeu', 'Iximche', 'Cancuen'],
@@ -190,7 +190,7 @@
       cities: ['Chalahgawtha', 'Piqua', 'Wapakoneta', 'Kispoko', 'Mekoche', 'Prophetstown', 'Lower Shawneetown', 'Tippecanoe', 'Blue Jacket\'s Town', 'Girty\'s Town', 'Cornstalk\'s Town', 'Hog Creek', 'Old Chillicothe', 'Standing Stone', 'Sonnontio', 'Logstown', 'Eskippakithiki', 'Pekowi', 'Thawikila', 'Hathawekela', 'Wakatomika', 'Mackachack', "Snake's Town", "Moluntha's Town", "Tecumseh's Town", "Black Hoof's Town", 'Lewistown', "Captain Johnny's Town", 'Blue Licks', 'Greenville', 'Cape Girardeau', 'Apple Creek', 'Grand Glaize', 'Willstown', 'Chartierstown', 'Sawcunk', 'Pequea', 'Paxtang', 'Kittanning', 'Salt Lick Town'],
       leaders: [
         L('tecumseh', 'Tecumseh', 'War Chief', 'Confederacy', 'Units +5 Strength against Inchibils and +3 inside your borders. Units heal +10 inside your borders.', { vsIndependents: 5, combatBonusHome: 3, healBonusHome: 10 }, { aggression: 0.5, expansion: 0.6, science: 0.4, culture: 0.6 }),
-        L('cornstalk', 'Cornstalk', 'Chief', 'Council Fire', '+3 Heritage per settlement. Towns grow 30% faster. Farming Towns +2 Food.', { culturePerSettlement: 3, townGrowthMult: 1.3, specializationYields: { farming: { food: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.7 })
+        L('cornstalk', 'Cornstalk', 'Chief', 'Council Fire', '+3 Heritage per settlement. Towns grow 30% faster. Farming Towns +2 Food and +2 Production.', { culturePerSettlement: 3, townGrowthMult: 1.3, specializationYields: { farming: { food: 2, production: 2 } } }, { aggression: 0.3, expansion: 0.7, science: 0.5, culture: 0.7 })
       ] },
 
     { id: 'greece', name: 'Greece', adj: 'Greek', difficulty: 'easy', bias: ['coast', 'hills'], color: '#1a5276', color2: '#f4f6f7',
