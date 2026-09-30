@@ -1031,7 +1031,7 @@
     return Math.round(t * 10) / 10;
   };
   G.visitors = function (g, civ) { return Math.floor((civ.tourismTotal || 0) / 150); };
-  G.DOMESTIC_PER = 175; // Culture per domestic tourist
+  G.DOMESTIC_PER = 140; // Culture per domestic tourist (was 175: Renown decided nearly half of all games)
   G.domesticTourists = function (g, civ) { return 5 + Math.floor((civ.cultureTotal || 0) / G.DOMESTIC_PER); };
   // Heritage victory: your foreign visitors exceed the domestic tourists of every other living empire (Modern era or later).
   G.cultureProgress = function (g, civ) {
