@@ -62,7 +62,7 @@
   SG.strength = function (g, u, ctx, civ, fx) {
     var n = 0, t = g.tiles[u.tile], vs = ctx && ctx.vs, vsUnit = vs && vs.hp !== undefined && vs.type ? vs : null, vsCiv = vs && vs.civ >= 0 ? g.civs[vs.civ] : null;
     var mine = function (tile) { return G.tileOwnerCiv(g, tile) === u.civ; };
-    if (fx.encircle && ctx && ctx.attacking && vsUnit) { var k = G.neighbors(g, g.tiles[vsUnit.tile]).filter(function (i) { return i !== u.tile && G.unitsAt(g, i).some(function (o) { return o.civ === u.civ && G.isMilitary(o); }); }).length; n += Math.min(3, k) * fx.encircle; } // the horns of the buffalo
+    if (fx.encircle && ctx && ctx.attacking && vsUnit) { var k = G.neighbors(g, g.tiles[vsUnit.tile]).filter(function (i) { return i !== u.tile && G.unitsAt(g, i).some(function (o) { return o.civ === u.civ && G.isMilitary(o); }); }).length; n += Math.min(2, k) * fx.encircle; } // the horns of the buffalo (up to two flanking units)
     if (fx.vsAdvanced && vsCiv && !vsCiv.minor && sparks(vsCiv) > sparks(civ)) n += fx.vsAdvanced; // Isandlwana
     if (fx.holyWar && g.religions) for (var rid in g.religions) { var hc = g.settlements[g.religions[rid].holyCity]; if (hc && G.dist(t, g.tiles[hc.tile]) <= 3) { n += fx.holyWar; break; } }
     if (fx.liberator && ctx && ctx.attacking && vsUnit && mine(g.tiles[vsUnit.tile])) n += fx.liberator; // Joan: drive them out

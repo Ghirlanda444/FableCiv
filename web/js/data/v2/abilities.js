@@ -16,7 +16,7 @@
     dewitt: '+10% Gold. +20 Gold whenever a Spark fires. Naval units cost 15% less.',
     qin: 'Wonders cost 20% less. Every settlement gets free Walls once the Stick Ring Spark fires.',
     trung: 'Units +8 Strength when defending inside your borders. Every settlement gets free Walls once the Stick Ring Spark fires.',
-    afonso: 'Your Pilgrims tell their story twice as strongly. Settlements following your state faith yield +1 Knowledge. Every settlement gets a free Shrine once your age allows Shrines.'
+    afonso: 'Your Pilgrims tell their story twice as strongly. Settlements following your state faith yield +2 Knowledge. Every settlement gets a free Shrine once your age allows Shrines.'
   };
   var C = {
     china: 'Studying Sparks costs 10% less. Settlements may expand into a fourth ring of tiles.',

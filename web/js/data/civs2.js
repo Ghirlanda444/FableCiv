@@ -103,7 +103,7 @@
       cities: ['Mbanza Kongo', 'Mbanza Mbata', 'Mbanza Nsundi', 'Mbanza Mpangu', 'Mbanza Mpemba', 'Mbanza Soyo', 'Mbanza Wembo', 'Mbanza Mbamba', 'Kabasa', 'Matamba', 'Loango', 'Mpinda', 'Ngoyo', 'Kakongo', 'Cabinda', 'Nkusu', 'Wandu', 'Nkondo', 'Mbwila', 'Kinsundi', 'Bumbu', 'Ndembo', 'Zombo', 'Kibangu', 'Lemba', 'Mbula', 'Kongo dia Nlaza', 'Mbanza Nkanda', 'Vunda', 'Mpangala', 'Kinkanga', 'Mukondo', 'Noki', 'Boma', 'Matadi', 'Songololo', 'Kimpese', 'Mbanza-Ngungu', 'Malanza', 'Mpumbu'],
       leaders: [
         L('nzinga', 'Nzinga Mbande', 'Ngola', 'Queen of Matamba', 'Units +5 Strength against units whose empire comes from another continent, and +4 in Rainforest and Marsh. Units heal +10 inside your borders.', { combatBonusVsInvaders: 5, combatBonusJungle: 4, healBonusHome: 10 }, { aggression: 0.6, expansion: 0.5, science: 0.4, culture: 0.5 }),
-        L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your Pilgrims tell their story twice as strongly. Settlements following your state faith yield +1 Knowledge. Every settlement gets a free Shrine once you know Mysticism.', { pilgrimStrength: 100, sciencePerFollowerSettlement: 1, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
+        L('afonso', 'Afonso I', 'Manikongo', 'Evangelist of Kongo', 'Your Pilgrims tell their story twice as strongly. Settlements following your state faith yield +2 Knowledge. Every settlement gets a free Shrine once you know Mysticism.', { pilgrimStrength: 100, sciencePerFollowerSettlement: 2, freeBuildingWithTech: { shrine: 'mysticism' } }, { aggression: 0.3, expansion: 0.6, science: 0.7, culture: 0.7 })
       ] },
 
   ];
