@@ -119,7 +119,7 @@ function palmTree() { // jungle palm: a leaning ringed trunk and drooping fronds
   return b;
 }
 function bush() { const b = batch(), d = rgb('#3a8a3a'), l = rgb('#a6dc62'); blob(b, 0, 0.08, 0, 0.12, 0.09, 0.12, d, l, 11); blob(b, 0.08, 0.06, 0.05, 0.08, 0.07, 0.08, d, l, 12); return b; }
-function rock() { const b = batch(); blob(b, 0, 0.05, 0, 0.16, 0.11, 0.14, rgb('#6c727c'), rgb('#b4b8be'), 5, 0.16); return b; } // big smooth grey boulder
+function rock() { const b = batch(); blob(b, 0, 0.04, 0, 0.13, 0.085, 0.11, rgb('#4f4a45'), rgb('#8e8780'), 5, 0.2); return b; } // smooth warm-grey stone
 function tuft() { // a few bright grass blades
   const b = batch(), base = rgb('#4f9a3a'), tip = rgb('#c3e872');
   for (let k = 0; k < 5; k++) {
