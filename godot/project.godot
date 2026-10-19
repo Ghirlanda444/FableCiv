@@ -1,0 +1,25 @@
+; Tiny Empires: Godot test build. Needs the GodotJS editor (Godot 4.6.1 + V8), see README.md.
+
+config_version=5
+
+[application]
+
+config/name="Tiny Empires"
+config/description="Godot test build of Tiny Empires: the web game's rules engine in a 3D hex world."
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+renderer/rendering_method.mobile="mobile"
+textures/vram_compression/import_etc2_astc=true
+anti_aliasing/quality/msaa_3d=1

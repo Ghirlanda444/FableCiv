@@ -1,0 +1,100 @@
+name: Godot build
+
+# Godot test build (godot/): runs the rules engine headless, takes a screenshot, exports Windows + Android,
+# and publishes them as the godot-latest pre-release. The web game and its builds are untouched.
+on:
+  push:
+    paths: ['godot/**', 'tools/godot/**', '.github/workflows/godot.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  GODOTJS_TAG: v1.1.0.beta1-4.6.1
+  GODOT_VER: 4.6.1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bundle the rules engine and check the map geometry
+        run: |
+          node tools/godot/bundle.js
+          node tools/godot/test-geo.js
+
+      - name: Download GodotJS (Godot ${{ env.GODOT_VER }} + V8) editor and export templates
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          mkdir -p ~/gjs && cd ~/gjs
+          for f in linux-editor windows-template_release android-template_release android-template_debug; do
+            gh release download "$GODOTJS_TAG" -R godotjs/GodotJS -p "$f-$GODOT_VER-v8.zip" || { gh release list -R godotjs/GodotJS -L 5; gh release view "$GODOTJS_TAG" -R godotjs/GodotJS --json assets --jq '.assets[].name'; exit 1; }
+            mkdir -p "$f" && unzip -q "$f-$GODOT_VER-v8.zip" -d "$f"
+          done
+          find ~/gjs -type f -not -name '*.zip' | sed "s|$HOME/gjs/||" | head -60
+          GODOT=$(find ~/gjs/linux-editor -type f \( -name '*linux*' -o -name '*godot*' \) -not -name '*.so' | head -1)
+          chmod +x "$GODOT"; echo "GODOT=$GODOT" >> "$GITHUB_ENV"
+          echo "WIN_TEMPLATE=$(find ~/gjs/windows-template_release -name '*.exe' -not -name '*console*' | head -1)" >> "$GITHUB_ENV"
+          echo "APK_RELEASE=$(find ~/gjs/android-template_release -name '*.apk' | head -1)" >> "$GITHUB_ENV"
+          echo "APK_DEBUG=$(find ~/gjs/android-template_debug -name '*.apk' | head -1)" >> "$GITHUB_ENV"
+
+      - name: Import the project
+        run: |
+          "$GODOT" --version
+          "$GODOT" --headless --path godot --import 2>&1 | tail -40 || true
+
+      - name: Smoke test (40 AI turns headless)
+        run: |
+          "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -40
+          grep -q "SMOKE OK" smoke.log
+
+      - name: Screenshot (software Vulkan)
+        continue-on-error: true
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers xvfb > /dev/null
+          mkdir -p build
+          timeout 300 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --resolution 1280x720 -- --shot 2>&1 | tail -20
+          cp "$HOME/.local/share/godot/app_userdata/Tiny Empires/shot.png" build/screenshot.png && ls -la build
+
+      - name: Export Windows
+        run: |
+          mkdir -p build
+          sed -i "s|@WIN_TEMPLATE@|$WIN_TEMPLATE|; s|@APK_DEBUG_TEMPLATE@|$APK_DEBUG|; s|@APK_RELEASE_TEMPLATE@|$APK_RELEASE|" godot/export_presets.cfg
+          "$GODOT" --headless --path godot --export-release "Windows Desktop" ../build/TinyEmpires.exe 2>&1 | tail -30
+          ls -la build/TinyEmpires.exe
+
+      - name: Export Android
+        run: |
+          keytool -genkeypair -v -keystore ~/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -validity 10000 -dname "CN=Android Debug,O=Android,C=US" > /dev/null 2>&1
+          mkdir -p ~/.config/godot
+          printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\nexport/android/debug_keystore = "%s"\nexport/android/debug_keystore_user = "androiddebugkey"\nexport/android/debug_keystore_pass = "android"\n' \
+            "$ANDROID_HOME" "$JAVA_HOME_17_X64" "$HOME/debug.keystore" > ~/.config/godot/editor_settings-4.6.tres
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$HOME/debug.keystore" GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android
+          "$GODOT" --headless --path godot --export-debug "Android" ../build/TinyEmpires.apk 2>&1 | tail -30
+          ls -la build/TinyEmpires.apk
+
+      - name: Recreate the release (stale hidden assets block uploads)
+        if: github.ref == 'refs/heads/v2-divergence' || github.ref == 'refs/heads/main'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: gh release delete godot-latest --cleanup-tag -y --repo "${{ github.repository }}" || true
+
+      - name: Publish the godot-latest pre-release
+        if: github.ref == 'refs/heads/v2-divergence' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: godot-latest
+          name: Tiny Empires 3D (Godot test build)
+          prerelease: true
+          target_commitish: ${{ github.sha }}
+          body: |
+            Godot test build of Tiny Empires: the same rules engine as the web game in a 3D hex world. All empires are AI-run: press End Turn (or Space) or Auto to watch.
+            Windows: download TinyEmpires.exe and run it. Android: install TinyEmpires.apk (allow installs from unknown sources).
+            Built from ${{ github.sha }}.
+          files: |
+            build/TinyEmpires.exe
+            build/TinyEmpires.apk
+            build/screenshot.png
+          fail_on_unmatched_files: false
