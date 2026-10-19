@@ -41,7 +41,7 @@ jobs:
           echo "APK_RELEASE=$(find ~/gjs/android-template_release -name '*.apk' | head -1)" >> "$GITHUB_ENV"
           echo "APK_DEBUG=$(find ~/gjs/android-template_debug -name '*.apk' | head -1)" >> "$GITHUB_ENV"
 
-      - name: Import the project (models need a real renderer: headless import crashes on the skinned characters)
+      - name: Import the project under a virtual display (headless import crashes on the skinned characters)
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers xvfb > /dev/null
           "$GODOT" --version
