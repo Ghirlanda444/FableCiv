@@ -31,7 +31,7 @@ class Art {
       this.mats = {};
       Object.keys(MODE).forEach(k => { const m = shaderMat(shaders.KAYKIT); m.set_shader_parameter('atlas', this.atlas); m.set_shader_parameter('mode', MODE[k]); this.mats[k] = m; });
       ['hex_grass', 'hex_water', 'hex_river_A', 'building_castle_blue'].forEach(m => { if (!this.mesh(m)) throw new Error('cannot load ' + m); });
-      ['Knight', 'Rogue', 'Rogue_Hooded', 'Barbarian', 'Mage'].forEach(c => { this.scenes[c] = ResourceLoader.load(CHARS + c + '.glb'); });
+      ['Knight', 'Rogue', 'Rogue_Hooded', 'Barbarian', 'Mage'].forEach(c => { this.scenes[c] = ResourceLoader.load(CHARS + c + '.gltf') || null; // a character that fails to load leaves its units as placeholders });
       return !!this.atlas;
     } catch (e) { console.log('[tiny-empires] KayKit art unavailable: ' + (e && e.message)); return false; }
   }

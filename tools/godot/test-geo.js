@@ -31,6 +31,6 @@ const lists = Object.assign({}, K.buildStatic(AU, g), K.buildTowns(AU, g));
 const missing = Object.keys(lists).filter(m => !fs.existsSync(path.join(__dirname, '../../godot/assets/kaykit/hex', m + '.gltf')));
 assert.deepStrictEqual(missing, [], 'models missing from godot/assets/kaykit/hex');
 const rd = K.riverDirs(AU, g); Object.keys(rd).forEach(i => { const d = Array.from(rd[i]); assert(K.riverFor(d.length === 1 ? [d[0], (d[0] + 3) % 6] : d), 'no river piece for tile ' + i + ' edges ' + d); });
-Object.values(K.LOADOUT).forEach(l => { assert(fs.existsSync(path.join(__dirname, '../../godot/assets/kaykit/chars', l.model + '.glb')), 'missing character ' + l.model); l.gear.forEach(x => assert(K.GEAR[l.model].includes(x), x + ' is not gear of ' + l.model)); });
+Object.values(K.LOADOUT).forEach(l => { assert(fs.existsSync(path.join(__dirname, '../../godot/assets/kaykit/chars', l.model + '.gltf')), 'missing character ' + l.model); l.gear.forEach(x => assert(K.GEAR[l.model].includes(x), x + ' is not gear of ' + l.model)); });
 console.log('kaykit  ', Object.keys(lists).length + ' models, ' + Object.keys(rd).length + ' river tiles, ' + K.unitSpots(AU, g).filter(s => s.load).length + ' character units');
 console.log('geo ok, turn ' + g.turn + ', ' + Object.keys(g.settlements).length + ' settlements, ' + Object.keys(g.units).length + ' units');
