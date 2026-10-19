@@ -159,9 +159,9 @@ class Main extends Node3D {
     sm.ground_horizon_color = new Color(0.1, 0.28, 0.5, 1); sm.ground_bottom_color = new Color(0.04, 0.16, 0.34, 1); // open sea past the map edge
     sky.sky_material = sm;
     env.background_mode = BG_SKY; env.sky = sky;
-    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.75; // soft, bright fill: shadows stay light and bluish
-    env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 1.05; // filmic keeps the painted palette saturated
-    env.adjustment_enabled = true; env.adjustment_saturation = 1.12; env.adjustment_contrast = 1.04;
+    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.6; // soft fill: shadows stay light and bluish
+    env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 0.9; // filmic keeps the painted palette saturated
+    env.adjustment_enabled = true; env.adjustment_saturation = 1.04; env.adjustment_contrast = 1.03;
     env.ssao_enabled = this.hiFx; env.ssao_radius = 0.8; env.ssao_intensity = 1.6; // Forward+ only
     env.glow_enabled = true; env.glow_intensity = 0.35; env.glow_bloom = 0.04;
     env.fog_enabled = true; env.fog_light_color = new Color(0.72, 0.8, 0.9, 1); env.fog_density = 0.004; env.fog_aerial_perspective = 0.35; env.fog_sky_affect = 0.2;
@@ -170,7 +170,7 @@ class Main extends Node3D {
 
     const sun = new DirectionalLight3D(); // a warm, fairly low sun for long, readable shadows
     sun.rotation_degrees = new Vector3(-46, -40, 0);
-    sun.light_energy = 1.35; sun.light_color = new Color(1, 0.95, 0.84, 1);
+    sun.light_energy = 1.15; sun.light_color = new Color(1, 0.95, 0.84, 1);
     sun.shadow_enabled = true; sun.shadow_blur = 1.5; sun.directional_shadow_max_distance = 60;
     this.sun = sun; this.add_child(sun);
 

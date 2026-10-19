@@ -165,12 +165,10 @@ const PAINTED_PROP = `
 shader_type spatial;
 render_mode cull_disabled;
 uniform float wind = 1.0;
-${NOISE}
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
-  VERTEX.x += sway; VERTEX.z += sway * 0.6;
-  COLOR *= INSTANCE_COLOR;
+  VERTEX.x += sway; VERTEX.z += sway * 0.6; // Godot multiplies the instance tint into COLOR by itself
 }
 void fragment() {
   ALBEDO = pow(COLOR.rgb, vec3(2.2));
@@ -222,8 +220,7 @@ varying float vary;
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
-  VERTEX.x += sway + sin(TIME * 3.1 + VERTEX.y * 20.0 + o.x) * 0.004; VERTEX.z += sway * 0.6;
-  COLOR *= INSTANCE_COLOR;
+  VERTEX.x += sway + sin(TIME * 3.1 + VERTEX.y * 20.0 + o.x) * 0.004; VERTEX.z += sway * 0.6; // instance tint is already in COLOR
   vary = fract(sin(dot(VERTEX.xz, vec2(12.9898, 78.233))) * 43758.5453);
 }
 float leaf(vec2 p, vec2 c, float a, vec2 r) {
