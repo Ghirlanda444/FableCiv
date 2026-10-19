@@ -286,7 +286,7 @@ class Main extends Node3D {
       let n = this.unitNodes[s.id];
       if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
       if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, true) };
-      n.node.position = new Vector3(s.x, s.y + 0.04, s.z);
+      n.node.position = new Vector3(s.x, s.y + 0.03, s.z); // feet on top of the base disc
       keepU[s.id] = true;
     });
     Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });

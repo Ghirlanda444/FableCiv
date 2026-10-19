@@ -15,6 +15,8 @@ function unitChain(AU, g, u) {
   if (artId !== type) out.push('units/' + artId + '.png');
   if (culture) out.push('units/' + culture + '/' + type + '.png');
   out.push('units/' + type + '.png');
+  const STAND_IN = { commander: 'great_general', migrant: 'settler', scarecrow: 'warrior' }; // no art of their own yet
+  if (STAND_IN[type]) out.push('units/' + STAND_IN[type] + '.png');
   return out;
 }
 function buildingChain(AU, id, culture) {
@@ -31,8 +33,8 @@ function unitSpots(AU, g, heightAt) {
     const t = g.tiles[ti], list = byTile[ti]; if (!t) return;
     const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
-      const spread = town || list.length > 1, a = Math.PI * (0.3 + 0.45 * k), d = spread ? 0.55 : 0;
-      const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (town ? 0.2 : 0), U = AU.UNITS[u.type] || {};
+      const a = Math.PI * (0.25 + 0.5 * k), d = town || list.length > 1 ? 0.5 : 0; // same spots as the bases in geo.buildPieces
+      const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (town ? 0.1 : 0), U = AU.UNITS[u.type] || {};
       const military = U.cls !== 'civilian';
       out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.82 : 0.68, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
@@ -60,7 +62,7 @@ function townSprites(AU, g, heightAt) {
       if (n >= slots.length) return;
       const isW = AU.WONDERS && AU.WONDERS[b], slot = isW ? order[Math.min(slots.length - 1, 6 + (n % 6))] : order[n];
       const p = slots[slot]; n++;
-      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.86 : 0.62, b);
+      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.95 : 0.78, b);
     });
   });
   return out;

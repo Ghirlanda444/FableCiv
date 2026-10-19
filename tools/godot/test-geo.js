@@ -30,7 +30,7 @@ check('rivers', R); check('borders', geo.buildBorders(AU, g, F)); check('pieces'
 const SP = require('../../godot/sprites.js'), fs = require('fs'), path = require('path');
 const exists = p => fs.existsSync(path.join(__dirname, '../../web/assets', p));
 const units = SP.unitSpots(AU, g, () => 0), towns = SP.townSprites(AU, g, () => 0);
-const NO_ART = new Set(['commander', 'migrant', 'scarecrow']);
+const NO_ART = new Set();
 units.forEach(s => assert(s.chain.some(exists) || NO_ART.has(s.unit.type), 'no picture for unit ' + s.unit.type + ': ' + s.chain.join(' | ')));
 const townMissing = towns.filter(s => !s.chain.some(exists)).map(s => s.chain[s.chain.length - 1]);
 assert(townMissing.every(p => /growth_hall/.test(p)), 'buildings without pictures: ' + townMissing.join(' '));
