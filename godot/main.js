@@ -6,7 +6,7 @@
 
 const godot = require('godot');
 const { Node3D, MeshInstance3D, MultiMeshInstance3D, MultiMesh, ArrayMesh, SurfaceTool, StandardMaterial3D, ShaderMaterial, Shader, Color, Vector2, Vector3,
-  Transform3D, Sprite3D, ResourceLoader, Camera3D, CameraAttributesPractical, DirectionalLight3D, WorldEnvironment, Environment, Sky, ProceduralSkyMaterial, PlaneMesh,
+  Transform3D, QuadMesh, ResourceLoader, Camera3D, CameraAttributesPractical, DirectionalLight3D, WorldEnvironment, Environment, Sky, ProceduralSkyMaterial, PlaneMesh,
   CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
   Callable, OS, Input, Time, ProjectSettings } = godot;
 const AU = require('res://engine/au_bundle.js'); // absolute ids: GodotJS 1.1 beta turns relative ids from res:// into res:/
@@ -18,7 +18,6 @@ const sprites = require('res://sprites.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
-const ALPHA_CUT_DISCARD = 1, FILTER_LINEAR_MIPMAP = 3;
 const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
@@ -142,7 +141,7 @@ class Main extends Node3D {
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
     // code-built placeholder pieces stand in (the game never waits on art)
-    this.textures = {}; this.unitNodes = {}; this.townNodes = {};
+    this.textures = {}; this.unitNodes = {}; this.townNodes = {}; this.standeeMats = {};
     this.spriteRoot = new Node3D(); this.add_child(this.spriteRoot);
     this.useArt = this.args.indexOf('--no-art') < 0 && !!this.texture(['units/warrior.png']);
     console.log('[tiny-empires] art: ' + (this.useArt ? 'painted pictures' : 'placeholders'));
@@ -268,14 +267,16 @@ class Main extends Node3D {
     }
     return null;
   }
-  // a painted picture standing upright on the ground and always facing the camera
-  standee(tex, x, y, z, height) {
-    const sp = new Sprite3D();
-    sp.texture = tex; sp.billboard = BILLBOARD_ENABLED; sp.shaded = false; sp.alpha_cut = ALPHA_CUT_DISCARD; sp.texture_filter = FILTER_LINEAR_MIPMAP;
-    sp.pixel_size = height / tex.get_height(); sp.cast_shadow = SHADOWS_OFF;
-    sp.position = new Vector3(x, y + height * 0.5, z);
-    this.spriteRoot.add_child(sp);
-    return sp;
+  // a painted picture as a 2.5D standee: a card pivoting at its base, lit by the scene (shaders.STANDEE)
+  standee(tex, x, y, z, height, isUnit) {
+    const w = height * tex.get_width() / tex.get_height(), key = tex.resource_path + (isUnit ? ':u' : ':b');
+    let mat = this.standeeMats[key];
+    if (!mat) { mat = this.standeeMats[key] = shaderMaterial(shaders.STANDEE); mat.set_shader_parameter('tex', tex); mat.set_shader_parameter('anim', isUnit ? 1.0 : 0.0); }
+    const quad = new QuadMesh(); quad.size = new Vector2(w, height); quad.center_offset = new Vector3(0, height * 0.5, 0);
+    const mi = new MeshInstance3D(); mi.mesh = quad; mi.material_override = mat;
+    mi.position = new Vector3(x, y, z);
+    this.spriteRoot.add_child(mi);
+    return mi;
   }
   // units and town buildings as painted standees, reused while they stay the same
   syncSprites(ground) {
@@ -284,8 +285,8 @@ class Main extends Node3D {
       const tex = this.texture(s.chain); if (!tex) return;
       let n = this.unitNodes[s.id];
       if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
-      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height) };
-      n.node.position = new Vector3(s.x, s.y + s.height * 0.5 + 0.04, s.z);
+      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, true) };
+      n.node.position = new Vector3(s.x, s.y + 0.04, s.z);
       keepU[s.id] = true;
     });
     Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });
@@ -293,8 +294,8 @@ class Main extends Node3D {
       const tex = this.texture(s.chain); if (!tex) return;
       let n = this.townNodes[s.key];
       if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
-      if (!n) n = this.townNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height) };
-      n.node.position = new Vector3(s.x, s.y + s.height * 0.5, s.z);
+      if (!n) n = this.townNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, false) };
+      n.node.position = new Vector3(s.x, s.y + 0.02, s.z);
       keepT[s.key] = true;
     });
     Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });

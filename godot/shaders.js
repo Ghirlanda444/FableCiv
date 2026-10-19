@@ -191,4 +191,52 @@ void fragment() {
 ${TOON_LIGHT}
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER };
+// 2.5D standees: the painted unit and building pictures as camera-facing cards that the scene lights like rounded objects.
+// The card pivots at its base (feet stay on the ground) and faces whatever is rendering it: the camera, or the sun in the
+// shadow pass, so each picture casts its own silhouette shadow. A "pillow" normal from the blurred silhouette rounds the
+// edges toward the light, the painted shading in the picture stays, and units breathe gently.
+const STANDEE = `
+shader_type spatial;
+render_mode skip_vertex_transform, cull_disabled;
+uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_disable;
+uniform float anim = 0.0;      // 1 for units: a gentle breathing sway
+uniform float roundness = 2.2; // how strongly the edges bend toward or away from the light
+varying float glow;
+void vertex() {
+  vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float sc = length(MODEL_MATRIX[1].xyz), phase = origin.x * 1.7 + origin.z * 2.3;
+  vec3 v = VERTEX;
+  v.y *= 1.0 + anim * 0.018 * sin(TIME * 2.2 + phase);
+  v.x += anim * 0.012 * sin(TIME * 1.3 + phase) * (v.y / 0.8);
+  vec3 right = normalize(INV_VIEW_MATRIX[0].xyz), up = normalize(INV_VIEW_MATRIX[1].xyz);
+  vec3 world = origin + (right * v.x + up * v.y) * sc;
+  VERTEX = (VIEW_MATRIX * vec4(world, 1.0)).xyz;
+  NORMAL = vec3(0.0, 0.0, 1.0); TANGENT = vec3(1.0, 0.0, 0.0); BINORMAL = vec3(0.0, 1.0, 0.0);
+}
+void fragment() {
+  vec4 c = texture(tex, UV);
+  ALPHA = c.a;
+  ALPHA_SCISSOR_THRESHOLD = 0.5;
+  // pillow normal: gradient of the silhouette blurred at two radii (edges lean outward, the middle faces the viewer)
+  vec2 px = vec2(0.045, 0.034);
+  float ax = 0.0, ay = 0.0;
+  for (int i = 1; i <= 2; i++) {
+    vec2 o = px * float(i);
+    ax += texture(tex, UV + vec2(o.x, 0.0)).a - texture(tex, UV - vec2(o.x, 0.0)).a;
+    ay += texture(tex, UV + vec2(0.0, o.y)).a - texture(tex, UV - vec2(0.0, o.y)).a;
+  }
+  NORMAL = normalize(vec3(-ax * roundness * 0.5, ay * roundness * 0.5, 1.0));
+  ALBEDO = c.rgb;
+  ROUGHNESS = 1.0;
+  SPECULAR = 0.0;
+}
+void light() {
+  // the picture already carries painted shading, so the scene light only nudges it: a soft lit side, a soft shade side,
+  // and the scene's shadows (a unit under a tree or behind a mountain darkens)
+  float ndl = dot(NORMAL, LIGHT);
+  float wrap = smoothstep(-0.45, 0.75, ndl);
+  DIFFUSE_LIGHT += LIGHT_COLOR / PI * mix(0.62, 1.12, wrap) * mix(0.55, 1.0, ATTENUATION);
+}
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, STANDEE };
