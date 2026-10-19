@@ -136,7 +136,7 @@ class Main extends Node3D {
     this.matProps = shaderMaterial(shaders.PAINTED_PROP);
     this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
     this.matBorders = material({ alpha: true, unshaded: true });
-    this.matRivers = material({ alpha: true, roughness: 0.08 });
+    this.matRivers = material({ alpha: true, unshaded: true }); // flat cartoon colour, like the sea
     // each nature kind is one or more instanced parts sharing the same placements: fluffy trees and bushes are a solid trunk
     // and core plus a leaf-card crown drawn by the leaf shader
     const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];

@@ -165,12 +165,15 @@ const PAINTED_PROP = `
 shader_type spatial;
 render_mode cull_disabled;
 uniform float wind = 1.0;
+varying vec3 vnorm; // the mesh's own normal in view space: double-sided faces seen from behind keep it instead of a flipped one
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
   VERTEX.x += sway; VERTEX.z += sway * 0.6; // Godot multiplies the instance tint into COLOR by itself
+  vnorm = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
 }
 void fragment() {
+  NORMAL = normalize(vnorm);
   ALBEDO = pow(COLOR.rgb, vec3(2.2));
   ROUGHNESS = 0.9;
   SPECULAR = 0.2;
@@ -215,11 +218,13 @@ shader_type spatial;
 render_mode cull_disabled;
 uniform float wind = 1.0;
 varying float vary;
+varying vec3 vnorm; // the crown's spherical normal in view space, kept even for cards seen from behind
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
   VERTEX.x += sway + sin(TIME * 3.1 + VERTEX.y * 20.0 + o.x) * 0.004; VERTEX.z += sway * 0.6; // instance tint is already in COLOR
   vary = fract(sin(dot(VERTEX.xz, vec2(12.9898, 78.233))) * 43758.5453);
+  vnorm = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
 }
 float leaf(vec2 p, vec2 c, float a, vec2 r) {
   vec2 d = p - c; float ca = cos(a), sa = sin(a);
@@ -235,6 +240,7 @@ void fragment() {
   }
   ALPHA = step(0.0, m);
   ALPHA_SCISSOR_THRESHOLD = 0.5;
+  NORMAL = normalize(vnorm);
   vec3 base = pow(COLOR.rgb, vec3(2.2));
   ALBEDO = base * (0.86 + 0.22 * shade + 0.08 * vary) * (0.88 + 0.2 * smoothstep(0.0, 0.6, m));
   ROUGHNESS = 0.9;
