@@ -48,11 +48,11 @@ function townSprites(AU, g, heightAt) {
   Object.keys(g.settlements).forEach(id => {
     const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
     const c = center(t.col, t.row), culture = cultureOfCiv(AU, civ), put = (chain, x, z, h, key) => out.push({ key: s.id + ':' + key, chain, x, y: Math.max(0, heightAt(x, z)), z, height: h, settlement: s.id });
-    if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.05, 0.78, 'centre');
-    else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.05, s.isCity ? 0.62 : 0.48, 'centre');
+    if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.05, 0.92, 'centre');
+    else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.05, s.isCity ? 0.72 : 0.55, 'centre');
     const slots = [];
-    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + Math.PI / 6; slots.push([Math.cos(a) * 0.48, Math.sin(a) * 0.48]); }
-    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; slots.push([Math.cos(a) * 0.78, Math.sin(a) * 0.78]); }
+    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + Math.PI / 6; slots.push([Math.cos(a) * 0.42, Math.sin(a) * 0.42 * 0.85]); }
+    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; slots.push([Math.cos(a) * 0.74, Math.sin(a) * 0.74 * 0.85]); }
     const order = slots.map((p, i) => i).sort((a, b) => hash1(s.id * 31 + a) - hash1(s.id * 31 + b)).sort((a, b) => (a < 6 ? 0 : 1) - (b < 6 ? 0 : 1));
     let n = 0;
     const blds = (s.buildings || []).filter(b => !SKIP[b]), wonders = blds.filter(b => AU.WONDERS && AU.WONDERS[b]), plain = blds.filter(b => !(AU.WONDERS && AU.WONDERS[b]));
@@ -60,7 +60,7 @@ function townSprites(AU, g, heightAt) {
       if (n >= slots.length) return;
       const isW = AU.WONDERS && AU.WONDERS[b], slot = isW ? order[Math.min(slots.length - 1, 6 + (n % 6))] : order[n];
       const p = slots[slot]; n++;
-      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.72 : 0.42, b);
+      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.82 : 0.56, b);
     });
   });
   return out;

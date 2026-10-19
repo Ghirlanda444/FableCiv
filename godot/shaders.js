@@ -131,7 +131,7 @@ void fragment() {
   // slow painted wave streaks: stretched, domain-warped noise in two soft tones
   vec2 warp = vec2(fbm(p * 0.25 + TIME * 0.02), fbm(p * 0.25 + 5.0 - TIME * 0.015));
   float streak = fbm(vec2(p.x * 0.45, p.y * 1.4) + warp * 2.5 + vec2(TIME * 0.05, 0.0));
-  col *= 1.0 + (smoothstep(0.52, 0.6, streak) * 0.09 - smoothstep(0.42, 0.34, streak) * 0.06) * smoothstep(0.1, 0.4, t);
+  col *= 1.0 + smoothstep(0.55, 0.62, streak) * 0.05 * smoothstep(0.1, 0.4, t) * detail; // light streaks only, and only when close enough to read
   // gentle wave normal for the glint and the horizon tint
   float waves = fbm(p * 0.8 + vec2(TIME * 0.06, TIME * 0.04)) * 0.6 + fbm(p * 1.7 - vec2(TIME * 0.05, -TIME * 0.07)) * 0.4;
   vec3 n = bump(NORMAL, VERTEX, waves, 0.06);

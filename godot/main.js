@@ -335,13 +335,13 @@ class Main extends Node3D {
       const st = g.settlements[id], t = g.tiles[st.tile], civ = g.civs[st.civ]; if (!t || !civ) return;
       let lb = this.labels[id];
       if (!lb) {
-        lb = new Label3D(); lb.billboard = BILLBOARD_ENABLED; lb.no_depth_test = true; lb.font_size = 56; lb.outline_size = 14; lb.pixel_size = 0.009;
+        lb = new Label3D(); lb.billboard = BILLBOARD_ENABLED; lb.no_depth_test = true; lb.font_size = 56; lb.outline_size = 14; lb.pixel_size = 0.0072;
         this.labelRoot.add_child(lb); this.labels[id] = lb;
       }
       const c = geo.center(t.col, t.row), col = geo.rgb(civ.color || '#ffffff');
       lb.text = st.name + '  ' + st.pop;
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
-      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? 1.2 : 1.15), c[1]);
+      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? 1.35 : 1.15), c[1] - 0.25);
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });
