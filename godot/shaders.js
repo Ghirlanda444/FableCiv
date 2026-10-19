@@ -108,6 +108,7 @@ uniform vec3 deep_col : source_color = vec3(0.02, 0.14, 0.32);
 uniform float grid_strength = 0.12;
 uniform float depth_k = 2.4;   // how fast water darkens with depth
 uniform float foam_band = 0.09; // shoreline foam width
+uniform vec2 alpha_range = vec2(0.5, 0.94); // opacity in the shallows and in deep water
 varying vec3 wpos;
 ${NOISE}
 void vertex() {
@@ -128,7 +129,7 @@ void fragment() {
   float e = hex_edge(p), aa = fwidth(e) * 1.5 + 0.002;
   col = mix(col, col * 0.7, (1.0 - smoothstep(0.01, 0.01 + aa, e)) * grid_strength);
   ALBEDO = mix(col, vec3(0.93, 0.96, 1.0), foam * 0.85);
-  ALPHA = clamp(mix(0.5, 0.94, t) + foam * 0.5, 0.0, 1.0);
+  ALPHA = clamp(mix(alpha_range.x, alpha_range.y, t) + foam * 0.5, 0.0, 1.0);
   ROUGHNESS = mix(0.03, 0.45, foam);
   SPECULAR = 0.55;
   NORMAL = bump(NORMAL, VERTEX, waves, 0.05);

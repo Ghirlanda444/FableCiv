@@ -228,7 +228,9 @@ class Main extends Node3D {
       this.art.clear();
       const n = this.art.buildStatic(AU, this.g);
       this.waterY = kaykit.WATER_Y;
-      this.matWater.set_shader_parameter('depth_k', 6.0); this.matWater.set_shader_parameter('foam_band', 0.03);
+      const W = this.matWater; // brighter, clearer water to match the KayKit palette
+      W.set_shader_parameter('depth_k', 5.0); W.set_shader_parameter('foam_band', 0.03); W.set_shader_parameter('alpha_range', new Vector2(0.3, 0.78));
+      W.set_shader_parameter('shallow_col', new Color(0.32, 0.8, 0.86, 1)); W.set_shader_parameter('deep_col', new Color(0.1, 0.42, 0.74, 1));
       console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': ' + n + ' KayKit tiles and props in ' + (Time.get_ticks_msec() - t0) + ' ms');
       return;
     }
@@ -324,8 +326,8 @@ class Main extends Node3D {
     this.cam.look_at_from_position(new Vector3(x, d * Math.sin(PITCH), z + d * Math.cos(PITCH)), new Vector3(x, 0, z), new Vector3(0, 1, 0));
     const a = this.camAttr; // tilt-shift: sharp around the point you look at, soft in the foreground and the distance
     a.dof_blur_far_enabled = this.hiFx; a.dof_blur_near_enabled = this.hiFx;
-    a.dof_blur_far_distance = d * 1.2; a.dof_blur_far_transition = d * 0.9;
-    a.dof_blur_near_distance = d * 0.72; a.dof_blur_near_transition = d * 0.35; a.dof_blur_amount = 0.07;
+    a.dof_blur_far_distance = d * 1.55; a.dof_blur_far_transition = d * 1.2;
+    a.dof_blur_near_distance = d * 0.5; a.dof_blur_near_transition = d * 0.25; a.dof_blur_amount = 0.025;
     this.sun.directional_shadow_max_distance = d * 2.6 + 12;
   }
   pan(dxPixels, dyPixels) { // screen drag → move the map with the finger

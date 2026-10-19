@@ -33,7 +33,7 @@ function riverFor(dirs) {
 }
 
 // grass recolour per terrain (sRGB): the pack only ships grassland, so other terrains reuse its tiles and decorations in their colours
-const GROUND = { grassland: '#93c23c', plains: '#c7bf4a', desert: '#e3c27f', tundra: '#a3a985', snow: '#eef3f6', mountain: '#a9a96c' };
+const GROUND = { grassland: '#7fc23a', plains: '#b8c04a', desert: '#ecd49c', tundra: '#a3a985', snow: '#eef3f6', mountain: '#a9a96c' };
 
 // which edges of a river tile carry the river: links between consecutive path tiles, plus the mouth into the sea at a path's end
 function riverDirs(AU, g) {

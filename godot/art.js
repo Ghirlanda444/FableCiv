@@ -9,7 +9,7 @@ const K = require('res://kaykit.js');
 const shaders = require('res://shaders.js');
 
 const HEX = 'res://assets/kaykit/hex/', CHARS = 'res://assets/kaykit/chars/';
-const TRANSFORM_3D = 1, LOOP_LINEAR = 1, CHAR_SCALE = 0.24;
+const TRANSFORM_3D = 1, LOOP_LINEAR = 1, CHAR_SCALE = 0.32;
 const MODE = { tile: 0, foliage: 1, team: 2 };
 const FOLIAGE = /^trees_|^tree_single/, TEAM = /_blue$/;
 

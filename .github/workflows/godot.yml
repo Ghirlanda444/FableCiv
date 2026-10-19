@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+concurrency: # a newer push replaces a running build, so an older build can never publish over a newer one
+  group: godot-build-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   GODOTJS_TAG: v1.1.0.beta1-4.6.1
   GODOT_VER: 4.6.1
