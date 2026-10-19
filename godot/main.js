@@ -150,7 +150,7 @@ class Main extends Node3D {
     this.buildHud();
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
-    if (this.shot) { for (let k = 0; k < 70 && !this.g.victory; k++) G.endTurn(this.g); this.refresh(); this.focusPlayer(); this.camDist = 13; this.updateCamera(); }
+    if (this.shot) { for (let k = 0; k < 70 && !this.g.victory; k++) G.endTurn(this.g); this.refresh(); this.focusPlayer(); this.camDist = 10; this.updateCamera(); }
   }
 
   buildWorld() {

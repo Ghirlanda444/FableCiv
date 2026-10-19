@@ -130,7 +130,7 @@ void fragment() {
   float warp = fbm(wpos.xz * 0.35 + 3.0);                                               // painted blotches: warped noise in crisp tones
   float blot = fbm(wpos.xz * 0.75 + warp * 1.6);
   float tone = smoothstep(0.44, 0.47, blot) * 0.5 + smoothstep(0.6, 0.63, blot) * 0.5;
-  vec3 col = base * mix(0.86, 1.1, tone) * (0.94 + 0.12 * stroke);
+  vec3 col = base * mix(vec3(0.74, 0.8, 0.82), vec3(1.12, 1.1, 0.95), tone) * (0.93 + 0.14 * stroke);
   col = mix(col, col * vec3(1.08, 1.06, 0.8), smoothstep(0.6, 0.63, blot) * 0.5 * meadow);   // sunny yellow-green highlights
   col = mix(col, col * vec3(0.9, 0.98, 1.06), smoothstep(0.5, 0.25, macro) * 0.4);
   vec3 wn = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
@@ -202,8 +202,6 @@ void fragment() {
   float lines = (1.0 - smoothstep(0.0, 0.004 + aa, abs(l1))) * 0.9 + (1.0 - smoothstep(0.0, 0.004 + aa, abs(l2))) * 0.55;  // wavy contour lines offshore
   float caust = pow(1.0 - abs(sin(fbm(p * 3.0 + TIME * 0.12) * 12.0)), 6.0) * (1.0 - smoothstep(0.05, 0.25, depth)) * 0.25; // soft caustics in the shallows
   float sparkle = step(0.988, vn(p * 6.0 + TIME * vec2(0.3, 0.2))) * smoothstep(0.15, 0.45, t);
-  float e = hex_edge(p), ea = fwidth(e) * 1.5 + 0.002;
-  col *= 1.0 - (1.0 - smoothstep(0.012, 0.012 + ea, e)) * 0.08;
   float foam = clamp(shore + lines + sparkle * 0.7, 0.0, 1.0);
   ALBEDO = mix(col + caust, vec3(1.0), foam);
   ALPHA = clamp(mix(0.35, 0.92, t) + shore + lines * 0.6, 0.0, 1.0);

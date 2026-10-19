@@ -62,20 +62,20 @@ function canopy(b, cx, cy, cz, rx, ry, rz, cards, size, c0, c1, seed) {
 }
 // fluffy deciduous tree in two parts: a solid trunk with a dark inner crown (no see-through holes) and the leaf cards
 function fluffyTree() {
-  const solid = batch(), leaves = batch(), dark = rgb('#2f7a34'), light = rgb('#a8dc66'), core = rgb('#2a6a2e');
+  const solid = batch(), leaves = batch(), dark = rgb('#4a9a3c'), light = rgb('#bfe87e'), core0 = rgb('#3d8636'), core1 = rgb('#8cc95a');
   cone(solid, 0, 0, 0, 0.05, 0.26, 0.032, 7, BARK, BARK_LIGHT);
   cone(solid, 0.02, 0.01, 0.16, 0.022, 0.3, 0.012, 5, BARK, BARK_LIGHT);
-  blob(solid, 0, 0.42, 0, 0.19, 0.16, 0.19, core, core, 21, 0.1);
-  blob(solid, 0.1, 0.36, 0.06, 0.12, 0.1, 0.12, core, core, 22, 0.1);
-  canopy(leaves, 0, 0.43, 0, 0.24, 0.2, 0.24, 46, 0.085, dark, light, 1);
-  canopy(leaves, 0.13, 0.36, 0.08, 0.15, 0.13, 0.15, 20, 0.07, dark, light, 2);
-  canopy(leaves, -0.1, 0.37, -0.07, 0.14, 0.12, 0.14, 18, 0.07, dark, light, 3);
+  blob(solid, 0, 0.42, 0, 0.18, 0.15, 0.18, core0, core1, 21, 0.1);
+  blob(solid, 0.1, 0.36, 0.06, 0.11, 0.09, 0.11, core0, core1, 22, 0.1);
+  canopy(leaves, 0, 0.44, 0, 0.23, 0.19, 0.23, 34, 0.15, dark, light, 1);
+  canopy(leaves, 0.13, 0.37, 0.08, 0.14, 0.12, 0.14, 14, 0.12, dark, light, 2);
+  canopy(leaves, -0.1, 0.38, -0.07, 0.13, 0.11, 0.13, 12, 0.12, dark, light, 3);
   return { solid, leaves };
 }
 function fluffyBush() {
-  const solid = batch(), leaves = batch(), dark = rgb('#3a8a3a'), light = rgb('#b4e070'), core = rgb('#2f7432');
-  blob(solid, 0, 0.07, 0, 0.11, 0.07, 0.11, core, core, 31, 0.1);
-  canopy(leaves, 0, 0.08, 0, 0.14, 0.1, 0.14, 22, 0.06, dark, light, 4);
+  const solid = batch(), leaves = batch(), dark = rgb('#4f9c40'), light = rgb('#c4ea82'), core0 = rgb('#428a38'), core1 = rgb('#93cc5e');
+  blob(solid, 0, 0.07, 0, 0.1, 0.065, 0.1, core0, core1, 31, 0.1);
+  canopy(leaves, 0, 0.08, 0, 0.13, 0.09, 0.13, 16, 0.1, dark, light, 4);
   return { solid, leaves };
 }
 
@@ -89,7 +89,7 @@ function roundTree() { // a chunky deciduous tree: short trunk, a cloud of leafy
   return b;
 }
 function pineTree() { // a soft stacked pine with a round tip
-  const b = batch(), dark = rgb('#1f6646'), light = rgb('#5fb874');
+  const b = batch(), dark = rgb('#2e7a3e'), light = rgb('#7cc46a');
   cone(b, 0, 0, 0, 0.035, 0.14, 0.03, 6, BARK, BARK_LIGHT);
   cone(b, 0, 0, 0.1, 0.2, 0.32, 0.05, 10, dark, light);
   cone(b, 0, 0, 0.24, 0.16, 0.45, 0.04, 10, dark, light);

@@ -56,7 +56,7 @@ function tileAttrs(AU, t) {
   else if (t.terrain === 'lake') { h = -0.26; amp = 0.05; col = rgb('#b8c48a'); }
   else {
     h = 0.26 + e * 0.1; amp = 0.05;
-    col = rgb({ grassland: '#6cbf45', plains: '#b4c84c', desert: '#f2d48a', tundra: '#a7b98e', snow: '#f2f6fb', mountain: '#8d93a3' }[t.terrain] || '#7fbf50');
+    col = rgb({ grassland: '#5ea845', plains: '#9fb852', desert: '#ecd08c', tundra: '#a3b48e', snow: '#f2f6fb', mountain: '#8d93a3' }[t.terrain] || '#6fae4c');
     if (t.terrain === 'grassland') meadow = 1;
     if (t.terrain === 'plains') meadow = 0.6;
     if (t.terrain === 'desert') sand = 1;
@@ -213,8 +213,12 @@ function buildRivers(F, g) {
     for (let i = 0; i + 1 < pts.length; i++) {
       const p = pts[i], q = pts[i + 1], dx = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dx, dz) || 1, ox = -dz / l * w, oz = dx / l * w;
       const yp = Math.max(F.heightAt(p[0], p[1]), -0.02) + 0.035, yq = Math.max(F.heightAt(q[0], q[1]), -0.02) + 0.035;
-      const quad = [[p[0] + ox, yp, p[1] + oz], [p[0] - ox, yp, p[1] - oz], [q[0] - ox, yq, q[1] - oz], [p[0] + ox, yp, p[1] + oz], [q[0] - ox, yq, q[1] - oz], [q[0] + ox, yq, q[1] + oz]];
-      quad.forEach(v => { pos.push(v[0], v[1], v[2]); nrm.push(0, 1, 0); col.push(0.36, 0.78, 0.9, 0.95); });
+      const strip = (a, b, c) => { // a band across the river from offset a to b (in units of the half-width), coloured c
+        const P = (k, y, q) => [q[0] + ox * k, y, q[1] + oz * k];
+        [[P(a, yp, p), P(b, yp, p), P(b, yq, q)], [P(a, yp, p), P(b, yq, q), P(a, yq, q)]].forEach(tri => tri.forEach(v => { pos.push(v[0], v[1], v[2]); nrm.push(0, 1, 0); col.push(c[0], c[1], c[2], c[3]); }));
+      };
+      strip(-0.8, 0.8, [0.3, 0.74, 0.84, 0.92]);
+      strip(0.8, 1.15, [1, 1, 1, 0.95]); strip(-1.15, -0.8, [1, 1, 1, 0.95]); // white banks, like the coast
     }
   });
   return { p: pos, n: nrm, c: col };
