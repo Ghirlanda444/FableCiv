@@ -124,3 +124,16 @@ jobs:
             build/screenshot-low.png
             build/screenshot-relief.png
           fail_on_unmatched_files: false
+
+      - name: Make sure the release is public (GitHub sometimes leaves it as a draft, and drafts cannot be downloaded)
+        if: github.ref == 'refs/heads/v2-divergence' || github.ref == 'refs/heads/main'
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          for try in 1 2 3 4 5; do
+            draft=$(gh release view godot-latest --repo "${{ github.repository }}" --json isDraft --jq .isDraft || echo missing)
+            echo "attempt $try: draft=$draft"
+            [ "$draft" = "false" ] && { gh release view godot-latest --repo "${{ github.repository }}" --json assets --jq '.assets[].name'; exit 0; }
+            gh release edit godot-latest --repo "${{ github.repository }}" --draft=false --prerelease || true
+            sleep 5
+          done
+          echo "::error::the godot-latest release is still not public"; exit 1
