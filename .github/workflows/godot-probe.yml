@@ -1,0 +1,18 @@
+name: Godot probe
+
+# One-off: list the Godot and GodotJS builds available to CI, so the Godot port picks versions that exist.
+on:
+  push:
+    branches: [v2-divergence]
+    paths: ['.github/workflows/godot-probe.yml']
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Godot releases
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          echo "== godotengine/godot (latest 3)"; gh api 'repos/godotengine/godot/releases?per_page=3' --jq '.[] | .tag_name + "  " + .published_at + "  assets:" + ([.assets[].name] | join(","))' | cut -c1-1500
+          echo "== godotjs/GodotJS (latest 6)"; gh api 'repos/godotjs/GodotJS/releases?per_page=6' --jq '.[] | .tag_name + "  " + .published_at + "  prerelease:" + (.prerelease|tostring) + "  assets:" + ([.assets[].name] | join(","))' | cut -c1-3000
+          echo "== GodotJS README excerpt"; gh api repos/godotjs/GodotJS/readme --jq .content | base64 -d | head -120
