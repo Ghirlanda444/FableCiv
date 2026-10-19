@@ -55,6 +55,7 @@ function toMesh(b) {
     if (nk !== ln) { st.set_normal(new Vector3(b.n[i * 3], b.n[i * 3 + 1], b.n[i * 3 + 2])); ln = nk; }
     const ck = b.c[i * 4] + ',' + b.c[i * 4 + 1] + ',' + b.c[i * 4 + 2] + ',' + b.c[i * 4 + 3];
     if (ck !== lc) { st.set_color(new Color(b.c[i * 4], b.c[i * 4 + 1], b.c[i * 4 + 2], b.c[i * 4 + 3])); lc = ck; }
+    if (b.uv) st.set_uv(new Vector2(b.uv[i * 2], b.uv[i * 2 + 1]));
     st.add_vertex(new Vector3(b.p[i * 3], b.p[i * 3 + 1], b.p[i * 3 + 2]));
   }
   return n ? st.commit() : null;
@@ -133,9 +134,14 @@ class Main extends Node3D {
     this.matWater = shaderMaterial(this.look === 'tiles' ? shaders.WATER : shaders.TOON_WATER);
     this.matPieces = material({ roughness: 0.7 });
     this.matProps = shaderMaterial(shaders.PAINTED_PROP);
+    this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
     this.matBorders = material({ alpha: true, unshaded: true });
     this.matRivers = material({ alpha: true, roughness: 0.08 });
-    this.propMeshes = { pine: toMesh(props.pineTree()), round: toMesh(props.roundTree()), palm: toMesh(props.palmTree()), bush: toMesh(props.bush()), tuft: toMesh(props.tuft()), rock: toMesh(props.rock()), reed: toMesh(props.reed()) };
+    // each nature kind is one or more instanced parts sharing the same placements: fluffy trees and bushes are a solid trunk
+    // and core plus a leaf-card crown drawn by the leaf shader
+    const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
+    this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
+      tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
     this.buildWorld();
     this.art = new Art(this);
     this.useArt = this.args.indexOf('--no-models') < 0 && this.art.load(); // KayKit models when they load, else the code-built placeholders
@@ -153,7 +159,7 @@ class Main extends Node3D {
     sm.ground_horizon_color = new Color(0.1, 0.28, 0.5, 1); sm.ground_bottom_color = new Color(0.04, 0.16, 0.34, 1); // open sea past the map edge
     sky.sky_material = sm;
     env.background_mode = BG_SKY; env.sky = sky;
-    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.55;
+    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.75; // soft, bright fill: shadows stay light and bluish
     env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 1.05; // filmic keeps the painted palette saturated
     env.adjustment_enabled = true; env.adjustment_saturation = 1.12; env.adjustment_contrast = 1.04;
     env.ssao_enabled = this.hiFx; env.ssao_radius = 0.8; env.ssao_intensity = 1.6; // Forward+ only
@@ -256,7 +262,10 @@ class Main extends Node3D {
   buildNature() {
     this.clearProps();
     const S = terrain.buildScatter(this.field, this.g, this.density);
-    this.propNodes = Object.keys(S).filter(k => S[k].length && this.propMeshes[k]).map(k => { const n = scatterNode(this.propMeshes[k], S[k], this.matProps); this.propRoot.add_child(n); return n; });
+    this.propNodes = [];
+    Object.keys(S).filter(k => S[k].length && this.propMeshes[k]).forEach(k => this.propMeshes[k].forEach(part => {
+      const n = scatterNode(part.mesh, S[k], part.mat); this.propRoot.add_child(n); this.propNodes.push(n);
+    }));
     this.natureKey = terrain.scatterKey(this.g);
     return S;
   }

@@ -4,7 +4,7 @@
 // bottom-to-top colour gradients; Godot instances them with MultiMesh (per-instance tint) and sways them in the wind.
 
 function batch() { return { p: [], n: [], c: [] }; }
-function vert(b, p, n, c) { b.p.push(p[0], p[1], p[2]); b.n.push(n[0], n[1], n[2]); b.c.push(c[0], c[1], c[2], 1); }
+function vert(b, p, n, c, uv) { b.p.push(p[0], p[1], p[2]); b.n.push(n[0], n[1], n[2]); b.c.push(c[0], c[1], c[2], 1); if (uv) (b.uv = b.uv || []).push(uv[0], uv[1]); }
 function norm(v) { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; }
 function hash1(i) { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; }
 function rgb(hex) { const v = parseInt(hex.slice(1), 16); return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255]; }
@@ -41,6 +41,43 @@ function cone(b, x, z, y0, r0, y1, r1, sides, c0, c1) {
 }
 
 const BARK = rgb('#7a4a2c'), BARK_LIGHT = rgb('#9a6238');
+
+// Fluffy foliage: many small leaf-cluster cards spread over a canopy ellipsoid. Every card takes the canopy's spherical normal,
+// so the light shades the whole crown like one soft ball while the leaf shapes (drawn by the leaf shader) give leafy edges.
+// Returns a card batch with UVs; c0/c1 colour the underside and the sunlit top.
+function canopy(b, cx, cy, cz, rx, ry, rz, cards, size, c0, c1, seed) {
+  for (let k = 0; k < cards; k++) {
+    const u = hash1(seed * 977 + k * 13), v = hash1(seed * 541 + k * 29), th = Math.acos(1 - 2 * u * 0.92), ph = 2 * Math.PI * v; // skip the very bottom
+    const d = [Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph)], r = 0.82 + 0.25 * hash1(seed * 31 + k);
+    const P = [cx + d[0] * rx * r, cy + d[1] * ry * r, cz + d[2] * rz * r], n = norm([d[0] / rx, d[1] / ry, d[2] / rz]);
+    const a = norm([hash1(k * 7 + seed) - 0.5, hash1(k * 11 + seed) - 0.5, hash1(k * 17 + seed) - 0.5]); // a random card plane
+    const t1 = norm([a[1] * n[2] - a[2] * n[1], a[2] * n[0] - a[0] * n[2], a[0] * n[1] - a[1] * n[0]]);
+    const t2 = [n[1] * t1[2] - n[2] * t1[1], n[2] * t1[0] - n[0] * t1[2], n[0] * t1[1] - n[1] * t1[0]];
+    const sz = size * (0.8 + 0.45 * hash1(seed * 3 + k)), col = lerp3(c0, c1, d[1] * 0.55 + 0.5 + (hash1(k + seed * 5) - 0.5) * 0.2);
+    const q = (s1, s2) => [P[0] + (t1[0] * s1 + t2[0] * s2) * sz, P[1] + (t1[1] * s1 + t2[1] * s2) * sz, P[2] + (t1[2] * s1 + t2[2] * s2) * sz];
+    const A = q(-1, -1), B = q(1, -1), C = q(1, 1), D = q(-1, 1);
+    vert(b, A, n, col, [0, 0]); vert(b, B, n, col, [1, 0]); vert(b, C, n, col, [1, 1]);
+    vert(b, A, n, col, [0, 0]); vert(b, C, n, col, [1, 1]); vert(b, D, n, col, [0, 1]);
+  }
+}
+// fluffy deciduous tree in two parts: a solid trunk with a dark inner crown (no see-through holes) and the leaf cards
+function fluffyTree() {
+  const solid = batch(), leaves = batch(), dark = rgb('#2f7a34'), light = rgb('#a8dc66'), core = rgb('#2a6a2e');
+  cone(solid, 0, 0, 0, 0.05, 0.26, 0.032, 7, BARK, BARK_LIGHT);
+  cone(solid, 0.02, 0.01, 0.16, 0.022, 0.3, 0.012, 5, BARK, BARK_LIGHT);
+  blob(solid, 0, 0.42, 0, 0.19, 0.16, 0.19, core, core, 21, 0.1);
+  blob(solid, 0.1, 0.36, 0.06, 0.12, 0.1, 0.12, core, core, 22, 0.1);
+  canopy(leaves, 0, 0.43, 0, 0.24, 0.2, 0.24, 46, 0.085, dark, light, 1);
+  canopy(leaves, 0.13, 0.36, 0.08, 0.15, 0.13, 0.15, 20, 0.07, dark, light, 2);
+  canopy(leaves, -0.1, 0.37, -0.07, 0.14, 0.12, 0.14, 18, 0.07, dark, light, 3);
+  return { solid, leaves };
+}
+function fluffyBush() {
+  const solid = batch(), leaves = batch(), dark = rgb('#3a8a3a'), light = rgb('#b4e070'), core = rgb('#2f7432');
+  blob(solid, 0, 0.07, 0, 0.11, 0.07, 0.11, core, core, 31, 0.1);
+  canopy(leaves, 0, 0.08, 0, 0.14, 0.1, 0.14, 22, 0.06, dark, light, 4);
+  return { solid, leaves };
+}
 
 function roundTree() { // a chunky deciduous tree: short trunk, a cloud of leafy blobs
   const b = batch(), dark = rgb('#2f7d32'), light = rgb('#9ad65a');
@@ -82,7 +119,7 @@ function palmTree() { // jungle palm: a leaning ringed trunk and drooping fronds
   return b;
 }
 function bush() { const b = batch(), d = rgb('#3a8a3a'), l = rgb('#a6dc62'); blob(b, 0, 0.08, 0, 0.12, 0.09, 0.12, d, l, 11); blob(b, 0.08, 0.06, 0.05, 0.08, 0.07, 0.08, d, l, 12); return b; }
-function rock() { const b = batch(); blob(b, 0, 0.03, 0, 0.14, 0.09, 0.12, rgb('#6f7684'), rgb('#b4bcc8'), 5, 0.45); return b; }
+function rock() { const b = batch(); blob(b, 0, 0.05, 0, 0.16, 0.11, 0.14, rgb('#8d939c'), rgb('#e2e4e6'), 5, 0.16); return b; } // big smooth pale boulder
 function tuft() { // a few bright grass blades
   const b = batch(), base = rgb('#4f9a3a'), tip = rgb('#c3e872');
   for (let k = 0; k < 5; k++) {
@@ -98,4 +135,4 @@ function reed() {
   return b;
 }
 
-module.exports = { roundTree, pineTree, palmTree, bush, rock, tuft, reed };
+module.exports = { roundTree, pineTree, palmTree, bush, rock, tuft, reed, fluffyTree, fluffyBush };

@@ -184,8 +184,8 @@ function buildScatter(F, g, density) {
     if (t.feature === 'jungle') { place(out.round, 7, 0.1, 0.9, 0.9, 1.35, [0.82, 0.95, 0.8], 0.12); place(out.palm, 5, 0.15, 0.9, 0.85, 1.25, [1, 1, 1], 0.1); place(out.bush, 4, 0.2, 0.9, 0.9, 1.3, [0.85, 0.95, 0.8], 0.1); }
     if (t.feature === 'marsh') { place(out.reed, 12, 0.1, 0.85, 0.7, 1.2, [1, 1, 1], 0.1); place(out.tuft, 4, 0.2, 0.85, 0.8, 1.2, [0.9, 0.95, 0.85], 0.1); }
     if (t.feature === 'oasis') { place(out.palm, 4, 0.2, 0.7, 0.9, 1.2, [1, 1, 1], 0.1); place(out.bush, 3, 0.2, 0.8, 0.8, 1.1, [1, 1, 1], 0.1); }
-    if (t.terrain === 'mountain') place(out.rock, 4, 0.5, 0.92, 0.9, 1.6, [1, 1, 1], 0.08);
-    if (t.hills && open) { place(out.rock, 2, 0.3, 0.85, 0.7, 1.2, [1, 1, 1], 0.1); place(out.bush, 2, 0.3, 0.9, 0.8, 1.1, [1, 1, 1], 0.12); }
+    if (t.terrain === 'mountain') place(out.rock, 4, 0.5, 0.92, 1.0, 1.8, [1, 1, 1], 0.08);
+    if (t.hills && open) { place(out.rock, 2, 0.3, 0.85, 1.0, 1.7, [1, 1, 1], 0.1); place(out.bush, 2, 0.3, 0.9, 0.8, 1.1, [1, 1, 1], 0.12); }
     if (open && (t.terrain === 'grassland' || t.terrain === 'plains')) {
       place(out.tuft, 7, 0.1, 0.92, 0.8, 1.3, t.terrain === 'plains' ? [1.1, 1.05, 0.75] : [1, 1, 1], 0.12);
       if (rnd(400) < 0.5) place(out.bush, 1 + Math.floor(rnd(401) * 2), 0.3, 0.9, 0.8, 1.2, [1, 1, 1], 0.12);

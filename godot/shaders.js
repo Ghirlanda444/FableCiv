@@ -103,8 +103,8 @@ void fragment() {
 const TOON_LIGHT = `
 void light() {
   float d = smoothstep(-0.1, 0.45, dot(NORMAL, LIGHT));
-  d = mix(d, floor(d * 3.0 + 0.5) / 3.0, 0.3);
-  float lit = d * mix(0.45, 1.0, ATTENUATION);
+  d = mix(d, floor(d * 3.0 + 0.5) / 3.0, 0.15);
+  float lit = d * mix(0.5, 1.0, ATTENUATION);
   float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0) * 0.3 * d;
   DIFFUSE_LIGHT += (lit + rim) * LIGHT_COLOR / PI;
 }
@@ -127,9 +127,12 @@ void fragment() {
   float macro = fbm(wpos.xz * 0.22), ang = fbm(wpos.xz * 0.15 + 7.0) * 6.2832;
   vec2 dir = vec2(cos(ang), sin(ang)), q = vec2(dot(wpos.xz, dir), dot(wpos.xz, vec2(-dir.y, dir.x)));
   float stroke = fbm(vec2(q.x * 1.3, q.y * 7.5)), fine = fbm(wpos.xz * 9.0);
-  vec3 col = base * (0.86 + 0.28 * stroke);
-  col = mix(col, col * vec3(1.08, 1.05, 0.84), smoothstep(0.45, 0.75, macro) * 0.6);
-  col = mix(col, col * vec3(0.88, 0.98, 1.07), smoothstep(0.5, 0.25, macro) * 0.5);
+  float warp = fbm(wpos.xz * 0.35 + 3.0);                                               // painted blotches: warped noise in crisp tones
+  float blot = fbm(wpos.xz * 0.75 + warp * 1.6);
+  float tone = smoothstep(0.44, 0.47, blot) * 0.5 + smoothstep(0.6, 0.63, blot) * 0.5;
+  vec3 col = base * mix(0.86, 1.1, tone) * (0.94 + 0.12 * stroke);
+  col = mix(col, col * vec3(1.08, 1.06, 0.8), smoothstep(0.6, 0.63, blot) * 0.5 * meadow);   // sunny yellow-green highlights
+  col = mix(col, col * vec3(0.9, 0.98, 1.06), smoothstep(0.5, 0.25, macro) * 0.4);
   vec3 wn = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
   float slope = 1.0 - wn.y;
   float rock_m = max(smoothstep(0.28, 0.46, slope + (stroke - 0.5) * 0.15), mats.x * smoothstep(0.35, 0.6, stroke + fine * 0.3));
@@ -137,9 +140,12 @@ void fragment() {
   col = mix(col, rock, clamp(rock_m, 0.0, 1.0) * step(-0.05, wpos.y));
   float snow = smoothstep(1.2, 1.4, wpos.y + (stroke - 0.5) * 0.3) * (1.0 - smoothstep(0.55, 0.85, slope));
   col = mix(col, srgb(vec3(0.95, 0.97, 1.0)), snow);
-  float beach = smoothstep(-0.15, -0.04, wpos.y) * (1.0 - smoothstep(0.05, 0.12, wpos.y + (fine - 0.5) * 0.05));
-  col = mix(col, srgb(vec3(0.97, 0.87, 0.6)) * (0.92 + 0.12 * fine), beach * (1.0 - mats.x) * 0.95);
-  col = mix(col, srgb(vec3(0.86, 0.83, 0.64)), smoothstep(-0.02, -0.3, wpos.y) * 0.4);    // sandy sea floor
+  float edge = wpos.y + (fbm(wpos.xz * 1.4 + 11.0) - 0.5) * 0.1;                         // wavy, irregular grass-to-sand edge
+  float beach = smoothstep(-0.15, -0.04, wpos.y) * (1.0 - smoothstep(0.07, 0.1, edge));
+  vec3 sand = srgb(vec3(0.97, 0.89, 0.68)) * (0.94 + 0.1 * fine);
+  sand = mix(sand, srgb(vec3(0.84, 0.72, 0.5)), (1.0 - smoothstep(0.0, 0.035, wpos.y)) * 0.7);   // wet sand at the waterline
+  col = mix(col, sand, beach * (1.0 - mats.x));
+  col = mix(col, srgb(vec3(0.9, 0.84, 0.62)), smoothstep(-0.01, -0.25, wpos.y) * 0.55);  // sandy sea floor, seen through clear water
   vec2 cell = floor(wpos.xz * 7.0), f = fract(wpos.xz * 7.0) - 0.5;                       // flowers in meadows
   float hh = h2(cell); vec2 off = vec2(h2(cell + 3.1), h2(cell + 7.7)) - 0.5;
   float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m);
@@ -187,20 +193,59 @@ void fragment() {
   float d = texture(depth_tex, SCREEN_UV).r;
   vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
   float depth = max(0.0, VERTEX.z - g.z) * 0.8, t = 1.0 - exp(-depth * 3.5);
-  vec3 sh = srgb(vec3(0.45, 0.88, 0.86)), md = srgb(vec3(0.16, 0.66, 0.82)), dp = srgb(vec3(0.07, 0.36, 0.66));
+  vec3 sh = srgb(vec3(0.56, 0.93, 0.88)), md = srgb(vec3(0.2, 0.76, 0.82)), dp = srgb(vec3(0.08, 0.46, 0.72));
   vec3 col = t < 0.5 ? mix(sh, md, t * 2.0) : mix(md, dp, t * 2.0 - 1.0);
   vec2 p = wpos.xz;
-  float w = fbm(p * 0.9 + vec2(TIME * 0.05, TIME * 0.03));
-  col *= 0.94 + 0.12 * w;
-  float rim = 1.0 - smoothstep(0.012, 0.03, depth + (w - 0.5) * 0.02);
-  float rings = step(0.8, fract(depth * 9.0 - TIME * 0.35 + w * 0.6)) * (1.0 - smoothstep(0.02, 0.16, depth));
-  float sparkle = step(0.985, vn(p * 6.0 + TIME * vec2(0.3, 0.2))) * smoothstep(0.1, 0.4, t);
-  float e = hex_edge(p), aa = fwidth(e) * 1.5 + 0.002;
-  col *= 1.0 - (1.0 - smoothstep(0.012, 0.012 + aa, e)) * 0.1;
-  float foam = clamp(rim + rings * 0.85 + sparkle * 0.8, 0.0, 1.0);
-  ALBEDO = mix(col, vec3(1.0), foam);
-  ALPHA = clamp(mix(0.55, 0.95, t) + rim + rings * 0.5, 0.0, 1.0);
+  float w = fbm(p * 0.9 + vec2(TIME * 0.05, TIME * 0.03)), wob = (fbm(p * 2.2 + TIME * 0.1) - 0.5) * 0.012;
+  col *= 0.95 + 0.1 * w;
+  float aa = fwidth(depth) * 1.2 + 0.0015;
+  float shore = 1.0 - smoothstep(0.006, 0.006 + aa, depth + wob);                               // thin white line where water meets land
+  float l1 = depth - (0.035 + 0.01 * sin(TIME * 0.8)) + wob, l2 = depth - (0.075 + 0.015 * sin(TIME * 0.6 + 1.7)) + wob;
+  float lines = (1.0 - smoothstep(0.0, 0.004 + aa, abs(l1))) * 0.9 + (1.0 - smoothstep(0.0, 0.004 + aa, abs(l2))) * 0.55;  // wavy contour lines offshore
+  float caust = pow(1.0 - abs(sin(fbm(p * 3.0 + TIME * 0.12) * 12.0)), 6.0) * (1.0 - smoothstep(0.05, 0.25, depth)) * 0.25; // soft caustics in the shallows
+  float sparkle = step(0.988, vn(p * 6.0 + TIME * vec2(0.3, 0.2))) * smoothstep(0.15, 0.45, t);
+  float e = hex_edge(p), ea = fwidth(e) * 1.5 + 0.002;
+  col *= 1.0 - (1.0 - smoothstep(0.012, 0.012 + ea, e)) * 0.08;
+  float foam = clamp(shore + lines + sparkle * 0.7, 0.0, 1.0);
+  ALBEDO = mix(col + caust, vec3(1.0), foam);
+  ALPHA = clamp(mix(0.35, 0.92, t) + shore + lines * 0.6, 0.0, 1.0);
 }
+`;
+
+// leaf-cluster cards: five leaves drawn per card (no texture), cut out with alpha scissor, shaded as one soft crown by the
+// spherical normals from props.js, swaying with the tree
+const PAINTED_LEAF = `
+shader_type spatial;
+render_mode cull_disabled;
+uniform float wind = 1.0;
+varying float vary;
+void vertex() {
+  vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
+  VERTEX.x += sway + sin(TIME * 3.1 + VERTEX.y * 20.0 + o.x) * 0.004; VERTEX.z += sway * 0.6;
+  COLOR *= INSTANCE_COLOR;
+  vary = fract(sin(dot(VERTEX.xz, vec2(12.9898, 78.233))) * 43758.5453);
+}
+float leaf(vec2 p, vec2 c, float a, vec2 r) {
+  vec2 d = p - c; float ca = cos(a), sa = sin(a);
+  d = vec2(ca * d.x + sa * d.y, -sa * d.x + ca * d.y) / r;
+  return 1.0 - length(d);
+}
+void fragment() {
+  vec2 p = UV * 2.0 - 1.0;
+  float m = 1.0 - length(p) / 0.42, shade = 0.5;
+  for (int i = 0; i < 5; i++) {
+    float a = float(i) * 1.2566 + 0.35, v = leaf(p, vec2(cos(a), sin(a)) * 0.46, a, vec2(0.5, 0.27));
+    if (v > m) { m = v; shade = float(i) / 4.0; }
+  }
+  ALPHA = step(0.0, m);
+  ALPHA_SCISSOR_THRESHOLD = 0.5;
+  vec3 base = pow(COLOR.rgb, vec3(2.2));
+  ALBEDO = base * (0.86 + 0.22 * shade + 0.08 * vary) * (0.88 + 0.2 * smoothstep(0.0, 0.6, m));
+  ROUGHNESS = 0.9;
+  SPECULAR = 0.15;
+}
+${TOON_LIGHT}
 `;
 
 const WATER = `
@@ -240,4 +285,4 @@ void fragment() {
 }
 `;
 
-module.exports = { TERRAIN, WATER, KAYKIT, CAPE, PAINTED_TERRAIN, PAINTED_PROP, TOON_WATER };
+module.exports = { TERRAIN, WATER, KAYKIT, CAPE, PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER };

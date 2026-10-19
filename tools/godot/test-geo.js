@@ -25,6 +25,7 @@ function check(name, b) {
 }
 check('rivers', R); check('borders', geo.buildBorders(AU, g, F)); check('pieces', geo.buildPieces(AU, g, F));
 ['pineTree', 'roundTree', 'palmTree', 'bush', 'tuft', 'rock', 'reed'].forEach(k => check(k, props[k]()));
+['fluffyTree', 'fluffyBush'].forEach(k => { const f = props[k](); check(k + '.solid', f.solid); check(k + '.leaf', f.leaves); assert(f.leaves.uv && f.leaves.uv.length === f.leaves.p.length / 3 * 2, k + ' leaf cards need UVs'); });
 // KayKit layout: every model it asks for is in assets/kaykit, and every river tile finds a river piece
 const K = require('../../godot/kaykit.js'), fs = require('fs'), path = require('path');
 const lists = Object.assign({}, K.buildStatic(AU, g), K.buildTowns(AU, g));
