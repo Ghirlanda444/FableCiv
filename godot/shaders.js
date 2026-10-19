@@ -134,9 +134,10 @@ void fragment() {
   col *= 1.0 + smoothstep(0.55, 0.62, streak) * 0.05 * smoothstep(0.1, 0.4, t) * detail; // light streaks only, and only when close enough to read
   // gentle wave normal for the glint and the horizon tint
   float waves = fbm(p * 0.8 + vec2(TIME * 0.06, TIME * 0.04)) * 0.6 + fbm(p * 1.7 - vec2(TIME * 0.05, -TIME * 0.07)) * 0.4;
-  vec3 n = bump(NORMAL, VERTEX, waves, 0.06);
+  float near = 1.0 - smoothstep(0.04, 0.1, px);                                               // glint and ripples only up close
+  vec3 n = bump(NORMAL, VERTEX, waves, 0.04 * near);
   vec3 sunv = normalize((VIEW_MATRIX * vec4(sun_dir, 0.0)).xyz);
-  float glint = pow(max(dot(reflect(-VIEW, n), sunv), 0.0), 24.0) * 0.28 * smoothstep(0.2, 0.6, t);
+  float glint = pow(max(dot(reflect(-VIEW, n), sunv), 0.0), 24.0) * 0.18 * smoothstep(0.2, 0.6, t) * near;
   float fres = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 3.0);
   col = mix(col, srgb(vec3(0.72, 0.88, 0.96)), fres * 0.35) + glint;
   // shore foam: a white band broken by noise, kept steady at the silhouettes of objects in front of the water
