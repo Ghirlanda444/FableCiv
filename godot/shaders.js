@@ -105,7 +105,7 @@ void light() {
   float d = smoothstep(-0.1, 0.45, dot(NORMAL, LIGHT));
   d = mix(d, floor(d * 3.0 + 0.5) / 3.0, 0.15);
   float lit = d * mix(0.5, 1.0, ATTENUATION);
-  float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0) * 0.3 * d;
+  float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0) * 0.12 * d;
   DIFFUSE_LIGHT += (lit + rim) * LIGHT_COLOR / PI;
 }
 `;
@@ -149,14 +149,15 @@ void fragment() {
   col = mix(col, srgb(vec3(0.9, 0.84, 0.62)), smoothstep(-0.01, -0.25, wpos.y) * 0.55);  // sandy sea floor, seen through clear water
   vec2 cell = floor(wpos.xz * 7.0), f = fract(wpos.xz * 7.0) - 0.5;                       // flowers in meadows
   float hh = h2(cell); vec2 off = vec2(h2(cell + 3.1), h2(cell + 7.7)) - 0.5;
-  float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m);
-  vec3 fc = hh > 0.96 ? vec3(1.0, 0.96, 0.95) : (hh > 0.92 ? vec3(1.0, 0.84, 0.25) : vec3(0.96, 0.46, 0.62));
+  float near = 1.0 - smoothstep(0.08, 0.16, fwidth(wpos.x) * 7.0);                         // flowers only when they are several pixels wide
+  float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m) * near;
+  vec3 fc = hh > 0.95 ? vec3(0.95, 0.9, 0.82) : (hh > 0.92 ? vec3(0.98, 0.82, 0.3) : vec3(0.92, 0.5, 0.62));
   col = mix(col, srgb(fc), flower);
   float e = hex_edge(wpos.xz), aa = fwidth(e) * 1.5 + 0.002;
   col = mix(col, col * 0.72, (1.0 - smoothstep(0.012, 0.012 + aa, e)) * grid_strength * step(0.0, wpos.y));
   ALBEDO = col;
-  ROUGHNESS = 0.95;
-  SPECULAR = 0.15;
+  ROUGHNESS = 1.0;
+  SPECULAR = 0.0;
 }
 ${TOON_LIGHT}
 `;
@@ -176,13 +177,13 @@ void vertex() {
 void fragment() {
   NORMAL = normalize(vnorm);
   ALBEDO = pow(COLOR.rgb, vec3(2.2));
-  ROUGHNESS = 0.9;
-  SPECULAR = 0.2;
+  ROUGHNESS = 1.0;
+  SPECULAR = 0.0;
 }
 ${TOON_LIGHT}
 `;
 
-// cartoon water: turquoise shallows to deep blue, a crisp white shoreline with animated foam rings, gentle wave tones, sparkles
+// cartoon water: turquoise shallows to deep blue, a crisp white shoreline with wavy contour lines, gentle wave tones
 const TOON_WATER = `
 shader_type spatial;
 render_mode blend_mix, cull_disabled, depth_draw_opaque, unshaded;
@@ -200,15 +201,19 @@ void fragment() {
   vec2 p = wpos.xz;
   float w = fbm(p * 0.9 + vec2(TIME * 0.05, TIME * 0.03)), wob = (fbm(p * 2.2 + TIME * 0.1) - 0.5) * 0.012;
   col *= 0.95 + 0.1 * w;
-  float aa = fwidth(depth) * 1.2 + 0.0015;
-  float shore = 1.0 - smoothstep(0.006, 0.006 + aa, depth + wob);                               // thin white line where water meets land
-  float l1 = depth - (0.035 + 0.01 * sin(TIME * 0.8)) + wob, l2 = depth - (0.075 + 0.015 * sin(TIME * 0.6 + 1.7)) + wob;
-  float lines = (1.0 - smoothstep(0.0, 0.004 + aa, abs(l1))) * 0.9 + (1.0 - smoothstep(0.0, 0.004 + aa, abs(l2))) * 0.55;  // wavy contour lines offshore
-  float caust = pow(1.0 - abs(sin(fbm(p * 3.0 + TIME * 0.12) * 12.0)), 6.0) * (1.0 - smoothstep(0.05, 0.25, depth)) * 0.25; // soft caustics in the shallows
-  float sparkle = step(0.988, vn(p * 6.0 + TIME * vec2(0.3, 0.2))) * smoothstep(0.15, 0.45, t);
-  float foam = clamp(shore + lines + sparkle * 0.7, 0.0, 1.0);
-  ALBEDO = mix(col + caust, vec3(1.0), foam);
+  // Everything here is kept wider than a pixel, so nothing twinkles in motion: thin details fade out when the camera zooms out,
+  // and foam is suppressed where the depth jumps (the silhouettes of trees, units and buildings in front of the water).
+  float dd = fwidth(depth), px = fwidth(p.x);
+  float steady = 1.0 - smoothstep(0.015, 0.04, dd);
+  float aa = min(dd, 0.01) * 1.5 + 0.002;
+  float shore = (1.0 - smoothstep(0.008, 0.008 + aa, depth + wob)) * steady;                    // white line where water meets land
+  float detail = 1.0 - smoothstep(0.02, 0.045, px);                                              // offshore lines only when close enough to read
+  float l1 = depth - (0.04 + 0.01 * sin(TIME * 0.8)) + wob, l2 = depth - (0.085 + 0.015 * sin(TIME * 0.6 + 1.7)) + wob;
+  float lines = ((1.0 - smoothstep(0.0, 0.006 + aa, abs(l1))) * 0.7 + (1.0 - smoothstep(0.0, 0.006 + aa, abs(l2))) * 0.4) * steady * detail;
+  float foam = clamp(shore + lines, 0.0, 1.0);
+  ALBEDO = mix(col, vec3(0.97, 0.99, 1.0), foam);
   ALPHA = clamp(mix(0.35, 0.92, t) + shore + lines * 0.6, 0.0, 1.0);
+  SPECULAR = 0.0;
 }
 `;
 
@@ -244,8 +249,8 @@ void fragment() {
   NORMAL = normalize(vnorm);
   vec3 base = pow(COLOR.rgb, vec3(2.2));
   ALBEDO = base * (0.86 + 0.22 * shade + 0.08 * vary) * (0.88 + 0.2 * smoothstep(0.0, 0.6, m));
-  ROUGHNESS = 0.9;
-  SPECULAR = 0.15;
+  ROUGHNESS = 1.0;
+  SPECULAR = 0.0;
 }
 ${TOON_LIGHT}
 `;

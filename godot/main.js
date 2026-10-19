@@ -163,7 +163,7 @@ class Main extends Node3D {
     env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 0.9; // filmic keeps the painted palette saturated
     env.adjustment_enabled = true; env.adjustment_saturation = 1.04; env.adjustment_contrast = 1.03;
     env.ssao_enabled = this.hiFx; env.ssao_radius = 0.8; env.ssao_intensity = 1.6; // Forward+ only
-    env.glow_enabled = true; env.glow_intensity = 0.35; env.glow_bloom = 0.04;
+    env.glow_enabled = false; // the painted look needs no bloom, and bloom made small bright details flare into sparks
     env.fog_enabled = true; env.fog_light_color = new Color(0.72, 0.8, 0.9, 1); env.fog_density = 0.004; env.fog_aerial_perspective = 0.35; env.fog_sky_affect = 0.2;
     this.env = env;
     const we = new WorldEnvironment(); we.environment = env; this.add_child(we);
