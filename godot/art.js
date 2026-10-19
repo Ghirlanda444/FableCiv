@@ -72,12 +72,13 @@ class Art {
     return Object.keys(lists).reduce((s, k) => s + lists[k].length, 0);
   }
 
-  // per turn: rebuild the map only when settlements or worked tiles changed, then towns and units
-  refresh(AU, g) {
-    if (K.staticKey(g) !== this.staticKey) this.buildStatic(AU, g);
+  // per turn: towns and units, plus (tile look only) the map when settlements or worked tiles changed.
+  // heightAt: ground height when the painted terrain is drawn instead of the KayKit tiles
+  refresh(AU, g, heightAt) {
+    if (!heightAt && K.staticKey(g) !== this.staticKey) this.buildStatic(AU, g);
     this.townNodes.forEach(n => n.queue_free());
-    this.townNodes = this.instanced(this.townRoot, K.buildTowns(AU, g));
-    this.syncUnits(AU, g);
+    this.townNodes = this.instanced(this.townRoot, K.buildTowns(AU, g, heightAt));
+    this.syncUnits(AU, g, heightAt);
   }
 
   capeMat(model, mi) {
@@ -88,9 +89,9 @@ class Art {
   }
 
   // one animated character per unit (reused while the unit lives); naval and air units stay placeholders
-  syncUnits(AU, g) {
+  syncUnits(AU, g, heightAt) {
     const seen = {};
-    K.unitSpots(AU, g).forEach(s => {
+    K.unitSpots(AU, g, heightAt).forEach(s => {
       if (!s.load || !this.scenes[s.load.model]) return;
       const key = s.load.model + ':' + s.load.gear.join(',');
       let u = this.units[s.id];

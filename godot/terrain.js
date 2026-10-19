@@ -46,30 +46,29 @@ function makeNoise(seed) {
   return { value, fbm, ridge };
 }
 
-// per-tile targets: [height, noise amplitude, r, g, b, rock, sand, mountain]
-const NA = 8;
+// per-tile targets: [height, noise amplitude, r, g, b, rock, sand, mountain, meadow] in a hand-painted cartoon palette
+const NA = 9;
 function tileAttrs(AU, t) {
-  const T = (AU.TERRAIN && AU.TERRAIN[t.terrain]) || { color: '#888888' }, e = t.elev || 0, v = hash1(t.i * 31 + 7);
-  let h, amp, col, rock = 0, sand = 0, mtn = 0;
-  if (t.terrain === 'ocean') { h = -0.85; amp = 0.1; col = rgb('#4e6d5e'); }
-  else if (t.terrain === 'coast') { h = -0.24; amp = 0.06; col = rgb('#d6c494'); sand = 0.6; }
-  else if (t.terrain === 'lake') { h = -0.26; amp = 0.05; col = rgb('#8f9c6c'); }
+  const e = t.elev || 0, v = hash1(t.i * 31 + 7);
+  let h, amp, col, rock = 0, sand = 0, mtn = 0, meadow = 0;
+  if (t.terrain === 'ocean') { h = -0.85; amp = 0.1; col = rgb('#4f9fb0'); }
+  else if (t.terrain === 'coast') { h = -0.24; amp = 0.06; col = rgb('#e6d6a2'); sand = 0.6; }
+  else if (t.terrain === 'lake') { h = -0.26; amp = 0.05; col = rgb('#b8c48a'); }
   else {
-    h = 0.26 + e * 0.1; amp = 0.07; col = rgb(T.color);
-    if (t.terrain === 'grassland') col = mix3(col, rgb('#5d9a3c'), 0.35);
-    if (t.terrain === 'plains') col = mix3(col, rgb('#a9a24e'), 0.2);
-    if (t.terrain === 'desert') { sand = 1; col = mix3(col, rgb('#e6c88a'), 0.3); }
-    if (t.terrain === 'tundra') col = mix3(col, rgb('#8e9478'), 0.2);
-    if (t.terrain === 'snow') col = rgb('#eef3f6');
-    if (t.hills) { h += 0.32; amp = 0.2; rock = 0.18; }
-    if (t.terrain === 'mountain') { h = 1.05 + e * 0.15; amp = 0.3; rock = 1; mtn = 1; col = rgb('#6f6a63'); }
-    if (t.feature === 'forest') col = mix3(col, rgb('#36602a'), 0.45);
-    if (t.feature === 'jungle') col = mix3(col, rgb('#245a2c'), 0.55);
-    if (t.feature === 'marsh') { col = mix3(col, rgb('#5d7e5f'), 0.5); h -= 0.08; amp = 0.03; }
-    if (t.feature === 'oasis') col = mix3(col, rgb('#6aa84f'), 0.45);
-    col = mix3(col, [col[0] * 1.08, col[1] * 1.06, col[2] * 0.95], v - 0.5); // a touch of per-tile variety
+    h = 0.26 + e * 0.1; amp = 0.05;
+    col = rgb({ grassland: '#6cbf45', plains: '#b4c84c', desert: '#f2d48a', tundra: '#a7b98e', snow: '#f2f6fb', mountain: '#8d93a3' }[t.terrain] || '#7fbf50');
+    if (t.terrain === 'grassland') meadow = 1;
+    if (t.terrain === 'plains') meadow = 0.6;
+    if (t.terrain === 'desert') sand = 1;
+    if (t.hills) { h += 0.3; amp = 0.17; rock = 0.12; col = mix3(col, [col[0] * 0.9, col[1] * 0.92, col[2] * 0.85], 1); }
+    if (t.terrain === 'mountain') { h = 1.2 + e * 0.15; amp = 0.3; rock = 1; mtn = 1; meadow = 0; }
+    if (t.feature === 'forest') { col = mix3(col, rgb('#4f9a3a'), 0.5); meadow = 0.3; }
+    if (t.feature === 'jungle') { col = mix3(col, rgb('#3f8f3a'), 0.6); meadow = 0.2; }
+    if (t.feature === 'marsh') { col = mix3(col, rgb('#6aa37a'), 0.55); h -= 0.08; amp = 0.03; meadow = 0; }
+    if (t.feature === 'oasis') { col = mix3(col, rgb('#6cbf45'), 0.5); meadow = 0.8; }
+    col = mix3(col, [col[0] * 1.06, col[1] * 1.05, col[2] * 0.92], v - 0.5); // a touch of per-tile variety
   }
-  return [h, amp, col[0], col[1], col[2], rock, sand, mtn];
+  return [h, amp, col[0], col[1], col[2], rock, sand, mtn, meadow];
 }
 
 function smooth(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
@@ -109,7 +108,7 @@ function makeField(AU, g) {
   }
   function heightFrom(a, x, z) {
     const n = N.fbm(x * 0.55, z * 0.55, 4) * 2 - 1, fine = N.fbm(x * 2.3 + 40, z * 2.3 - 11, 2) * 2 - 1;
-    return a[0] + a[1] * (n + 0.35 * fine) + a[7] * (N.ridge(x * 0.7 + 5, z * 0.7 + 3) * 1.1 - 0.15) + a[7] * a[7] * a[7] * 0.75; // ridges, plus a peak toward the middle of mountain tiles
+    return a[0] + a[1] * (n + 0.35 * fine) + a[7] * (N.ridge(x * 0.7 + 5, z * 0.7 + 3) * 1.1 - 0.15) + a[7] * a[7] * a[7] * 1.1; // ridges, plus a peak toward the middle of mountain tiles
   }
   function tileAt(x, z, hint) { const i = pick(x, z, W, H); return i >= 0 ? i : hint; }
   function heightAt(x, z, hint) {
@@ -124,7 +123,7 @@ function makeField(AU, g) {
 }
 
 // The terrain mesh: per tile a ring-subdivided hex (shared edge vertices are recomputed identically, so tiles meet without cracks).
-// Returns flat arrays: pos (xyz), nrm (xyz), col (rgba), uv (rock, sand), idx (triangles).
+// Returns flat arrays: pos (xyz), nrm (xyz), col (rgb + meadow in alpha), uv (rock, sand), idx (triangles).
 function buildTerrainMesh(F) {
   const R = RINGS, perTile = 1 + 3 * R * (R + 1), nT = F.tiles.length;
   const pos = new Float32Array(nT * perTile * 3), nrm = new Float32Array(nT * perTile * 3), col = new Float32Array(nT * perTile * 4), uv = new Float32Array(nT * perTile * 2);
@@ -139,7 +138,7 @@ function buildTerrainMesh(F) {
       const hx = F.heightAt(x + e, z, t.i) - F.heightAt(x - e, z, t.i), hz = F.heightAt(x, z + e, t.i) - F.heightAt(x, z - e, t.i);
       let nx = -hx / (2 * e), ny = 1, nz = -hz / (2 * e); const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
       pos[v * 3] = x; pos[v * 3 + 1] = y; pos[v * 3 + 2] = z; nrm[v * 3] = nx; nrm[v * 3 + 1] = ny; nrm[v * 3 + 2] = nz;
-      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = 1; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6];
+      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = a[8]; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6];
       v++;
     };
     put(c[0], c[1]);
@@ -157,34 +156,52 @@ function buildTerrainMesh(F) {
   return { pos, nrm, col, uv, idx, vertices: v, triangles: ii / 3 };
 }
 
-// Scattered props (instanced in Godot): trees on forest and rainforest, rocks on hills, reeds in marshes.
-// Each entry: [x, y, z, yaw, scale, r, g, b] (r,g,b tints the instance).
-function buildScatter(F) {
-  const out = { pine: [], broadleaf: [], rock: [], reed: [] };
+// Scattered nature (instanced in Godot): dense forests of pines and round trees, jungle palms, bushes and grass tufts on open land,
+// rocks on hills and mountains, reeds in marshes. Settled tiles keep their centre clear for buildings.
+// Each entry: [x, y, z, yaw, scale, r, g, b] (r,g,b tints the instance). density < 1 thins everything (phones).
+function buildScatter(F, g, density) {
+  const out = { pine: [], round: [], palm: [], bush: [], tuft: [], rock: [], reed: [] }, D = density || 1;
   F.tiles.forEach(t => {
     const c = center(t.col, t.row), rnd = k => hash1(t.i * 977 + k * 131);
+    const settled = g && t.settlement !== undefined && t.settlement !== null && g.settlements[t.settlement];
+    let seq = 0;
     const place = (list, n, rMin, rMax, sMin, sMax, tint, var_) => {
-      for (let k = 0; k < n; k++) {
-        const ang = 2 * Math.PI * (k / n + rnd(k) * 0.35), d = rMin + (rMax - rMin) * Math.sqrt(rnd(k + 50));
-        const x = c[0] + Math.cos(ang) * d, z = c[1] + Math.sin(ang) * d * 0.9, y = F.heightAt(x, z, t.i);
-        if (y < 0.02) continue; // nothing grows in the sea
-        const sc = sMin + (sMax - sMin) * rnd(k + 90), j = 1 - var_ + 2 * var_ * rnd(k + 70);
-        list.push([x, y, z, rnd(k + 30) * Math.PI * 2, sc, tint[0] * j, tint[1] * j, tint[2] * (1 - var_ + 2 * var_ * rnd(k + 80))]);
+      n = Math.round(n * D); if (settled) rMin = Math.max(rMin, 0.62);
+      for (let k = 0; k < n; k++, seq++) {
+        const ang = 2 * Math.PI * (k / n + rnd(seq) * 0.4), d = rMin + (rMax - rMin) * Math.sqrt(rnd(seq + 50));
+        const x = c[0] + Math.cos(ang) * d, z = c[1] + Math.sin(ang) * d * 0.92, y = F.heightAt(x, z, t.i);
+        if (y < 0.03) continue; // nothing grows in the sea
+        const sc = sMin + (sMax - sMin) * rnd(seq + 90), j = 1 - var_ + 2 * var_ * rnd(seq + 70);
+        list.push([x, y, z, rnd(seq + 30) * Math.PI * 2, sc, tint[0] * j, tint[1] * j, tint[2] * (1 - var_ + 2 * var_ * rnd(seq + 80))]);
       }
     };
-    if (t.feature === 'forest') { place(out.pine, 9, 0.18, 0.86, 0.75, 1.25, [0.86, 1, 0.84], 0.12); }
-    if (t.feature === 'jungle') { place(out.broadleaf, 10, 0.15, 0.86, 0.8, 1.3, [0.8, 1, 0.78], 0.15); }
-    if (t.feature === 'marsh') place(out.reed, 12, 0.1, 0.85, 0.7, 1.2, [0.95, 1, 0.8], 0.1);
-    if (t.hills && t.terrain !== 'mountain' && !t.feature) place(out.rock, 2, 0.35, 0.8, 0.6, 1.1, [1, 1, 1], 0.1);
-    if (t.terrain === 'mountain') place(out.rock, 3, 0.55, 0.9, 0.9, 1.5, [0.95, 0.95, 0.95], 0.08);
-    if ((t.terrain === 'grassland' || t.terrain === 'plains') && !t.feature && !t.hills && rnd(400) < 0.35) place(out.broadleaf, 1, 0.3, 0.8, 0.6, 0.9, [0.9, 1, 0.8], 0.1);
+    const open = !t.feature && t.terrain !== 'mountain';
+    if (t.feature === 'forest') {
+      if (t.terrain === 'tundra' || t.terrain === 'snow' || t.hills) place(out.pine, 13, 0.1, 0.9, 0.8, 1.3, [1, 1, 1], 0.1);
+      else { place(out.pine, 7, 0.1, 0.9, 0.8, 1.25, [1, 1, 1], 0.1); place(out.round, 6, 0.15, 0.9, 0.8, 1.2, [1, 1, 1], 0.12); }
+      place(out.bush, 3, 0.3, 0.9, 0.8, 1.2, [1, 1, 1], 0.1);
+    }
+    if (t.feature === 'jungle') { place(out.round, 7, 0.1, 0.9, 0.9, 1.35, [0.82, 0.95, 0.8], 0.12); place(out.palm, 5, 0.15, 0.9, 0.85, 1.25, [1, 1, 1], 0.1); place(out.bush, 4, 0.2, 0.9, 0.9, 1.3, [0.85, 0.95, 0.8], 0.1); }
+    if (t.feature === 'marsh') { place(out.reed, 12, 0.1, 0.85, 0.7, 1.2, [1, 1, 1], 0.1); place(out.tuft, 4, 0.2, 0.85, 0.8, 1.2, [0.9, 0.95, 0.85], 0.1); }
+    if (t.feature === 'oasis') { place(out.palm, 4, 0.2, 0.7, 0.9, 1.2, [1, 1, 1], 0.1); place(out.bush, 3, 0.2, 0.8, 0.8, 1.1, [1, 1, 1], 0.1); }
+    if (t.terrain === 'mountain') place(out.rock, 4, 0.5, 0.92, 0.9, 1.6, [1, 1, 1], 0.08);
+    if (t.hills && open) { place(out.rock, 2, 0.3, 0.85, 0.7, 1.2, [1, 1, 1], 0.1); place(out.bush, 2, 0.3, 0.9, 0.8, 1.1, [1, 1, 1], 0.12); }
+    if (open && (t.terrain === 'grassland' || t.terrain === 'plains')) {
+      place(out.tuft, 7, 0.1, 0.92, 0.8, 1.3, t.terrain === 'plains' ? [1.1, 1.05, 0.75] : [1, 1, 1], 0.12);
+      if (rnd(400) < 0.5) place(out.bush, 1 + Math.floor(rnd(401) * 2), 0.3, 0.9, 0.8, 1.2, [1, 1, 1], 0.12);
+      if (rnd(402) < 0.3) place(out.round, 1, 0.35, 0.85, 0.8, 1.1, [1, 1, 1], 0.1);
+    }
+    if (open && t.terrain === 'tundra') { place(out.tuft, 4, 0.1, 0.9, 0.7, 1.0, [0.95, 0.92, 0.75], 0.1); if (rnd(403) < 0.4) place(out.pine, 1, 0.3, 0.85, 0.7, 1.0, [0.95, 1, 0.95], 0.1); }
+    if (open && t.terrain === 'desert' && rnd(404) < 0.4) place(out.rock, 1, 0.2, 0.85, 0.6, 1.0, [1.15, 1.05, 0.85], 0.1);
   });
   return out;
 }
+// a key that changes when settlements change, so the scatter can clear new town sites
+function scatterKey(g) { return Object.keys(g.settlements).map(id => g.settlements[id].tile).sort((a, b) => a - b).join(','); }
 
 // River ribbons draped over the terrain, following the engine's river paths (tile centre to tile centre).
 function buildRivers(F, g) {
-  const pos = [], nrm = [], col = [], STEPS = 8, w = 0.075;
+  const pos = [], nrm = [], col = [], STEPS = 8, w = 0.09;
   (g.rivers || []).forEach(path => {
     const pts = [];
     for (let k = 0; k + 1 < path.length; k++) {
@@ -197,10 +214,10 @@ function buildRivers(F, g) {
       const p = pts[i], q = pts[i + 1], dx = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dx, dz) || 1, ox = -dz / l * w, oz = dx / l * w;
       const yp = Math.max(F.heightAt(p[0], p[1]), -0.02) + 0.035, yq = Math.max(F.heightAt(q[0], q[1]), -0.02) + 0.035;
       const quad = [[p[0] + ox, yp, p[1] + oz], [p[0] - ox, yp, p[1] - oz], [q[0] - ox, yq, q[1] - oz], [p[0] + ox, yp, p[1] + oz], [q[0] - ox, yq, q[1] - oz], [q[0] + ox, yq, q[1] + oz]];
-      quad.forEach(v => { pos.push(v[0], v[1], v[2]); nrm.push(0, 1, 0); col.push(0.25, 0.55, 0.78, 0.9); });
+      quad.forEach(v => { pos.push(v[0], v[1], v[2]); nrm.push(0, 1, 0); col.push(0.36, 0.78, 0.9, 0.95); });
     }
   });
   return { p: pos, n: nrm, c: col };
 }
 
-module.exports = { SQRT3, RINGS, center, pick, corner, across, makeField, buildTerrainMesh, buildScatter, buildRivers };
+module.exports = { SQRT3, RINGS, center, pick, corner, across, makeField, buildTerrainMesh, buildScatter, scatterKey, buildRivers };

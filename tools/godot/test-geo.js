@@ -7,7 +7,7 @@ const pl = G.player(g); pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER
 g.tiles.forEach(t => { const c = T.center(t.col, t.row); assert.strictEqual(T.pick(c[0], c[1], g.W, g.H), t.i); assert.strictEqual(T.pick(c[0] + 0.5, c[1] - 0.4, g.W, g.H), t.i); });
 g.tiles.forEach(t => { const mine = new Set(G.neighbors(g, t)); for (let k = 0; k < 6; k++) { const n = T.across(g.W, g.H, t.col, t.row, k); if (n >= 0) assert(mine.has(n), 'edge ' + k + ' of tile ' + t.i + ' is not a neighbour'); } });
 let t0 = Date.now();
-const F = T.makeField(AU, g), M = T.buildTerrainMesh(F), S = T.buildScatter(F), R = T.buildRivers(F, g);
+const F = T.makeField(AU, g), M = T.buildTerrainMesh(F), S = T.buildScatter(F, g), R = T.buildRivers(F, g);
 console.log('terrain ', M.vertices + ' verts, ' + M.triangles + ' triangles, ' + (Date.now() - t0) + ' ms; props ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', '));
 assert(M.idx.every(i => i >= 0 && i < M.vertices) && M.pos.every(Number.isFinite) && M.nrm.every(Number.isFinite), 'terrain mesh malformed');
 let worst = 0; const a = new Float32Array(8);
@@ -24,7 +24,7 @@ function check(name, b) {
   console.log(name.padEnd(8), (v / 3) + ' triangles');
 }
 check('rivers', R); check('borders', geo.buildBorders(AU, g, F)); check('pieces', geo.buildPieces(AU, g, F));
-['pine', 'broadleaf', 'rock', 'reed'].forEach(k => check(k, props[k]()));
+['pineTree', 'roundTree', 'palmTree', 'bush', 'tuft', 'rock', 'reed'].forEach(k => check(k, props[k]()));
 // KayKit layout: every model it asks for is in assets/kaykit, and every river tile finds a river piece
 const K = require('../../godot/kaykit.js'), fs = require('fs'), path = require('path');
 const lists = Object.assign({}, K.buildStatic(AU, g), K.buildTowns(AU, g));

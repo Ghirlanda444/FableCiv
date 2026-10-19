@@ -19,7 +19,7 @@ const { Art } = require('res://art.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
-const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_AGX = 4, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
+const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
 const PITCH = 55 * Math.PI / 180;
@@ -125,17 +125,22 @@ class Main extends Node3D {
     this.camTarget = [0, 0]; this.camDist = 16; this.touches = {}; this.dragged = 0; this.selected = -1;
     this.labels = {};
     this.hiFx = OS.get_name() !== 'Android'; // ambient occlusion: on for desktop, off for phones (toggle in the HUD)
-    this.matTerrain = shaderMaterial(shaders.TERRAIN);
-    this.matWater = shaderMaterial(shaders.WATER);
+    // looks: 'painted' (default: hand-painted cartoon terrain and nature drawn in code) or 'tiles' (KayKit hex tiles, --look=tiles).
+    // Buildings and units are KayKit chibi models in both when they load (--no-models forces the code-built placeholders).
+    this.look = this.args.indexOf('--look=tiles') >= 0 ? 'tiles' : 'painted';
+    this.density = OS.get_name() === 'Android' ? 0.5 : 1; // phones get half the trees and grass
+    this.matTerrain = shaderMaterial(shaders.PAINTED_TERRAIN);
+    this.matWater = shaderMaterial(this.look === 'tiles' ? shaders.WATER : shaders.TOON_WATER);
     this.matPieces = material({ roughness: 0.7 });
-    this.matProps = material({ roughness: 0.85 });
+    this.matProps = shaderMaterial(shaders.PAINTED_PROP);
     this.matBorders = material({ alpha: true, unshaded: true });
     this.matRivers = material({ alpha: true, roughness: 0.08 });
-    this.propMeshes = { pine: toMesh(props.pine()), broadleaf: toMesh(props.broadleaf()), rock: toMesh(props.rock()), reed: toMesh(props.reed()) };
+    this.propMeshes = { pine: toMesh(props.pineTree()), round: toMesh(props.roundTree()), palm: toMesh(props.palmTree()), bush: toMesh(props.bush()), tuft: toMesh(props.tuft()), rock: toMesh(props.rock()), reed: toMesh(props.reed()) };
     this.buildWorld();
     this.art = new Art(this);
-    this.useArt = this.args.indexOf('--procedural') < 0 && this.art.load(); // KayKit models when they load, else the code-generated look
-    console.log('[tiny-empires] art: ' + (this.useArt ? 'KayKit models' : 'procedural'));
+    this.useArt = this.args.indexOf('--no-models') < 0 && this.art.load(); // KayKit models when they load, else the code-built placeholders
+    if (!this.useArt) this.look = 'painted';
+    console.log('[tiny-empires] art: ' + (this.useArt ? 'KayKit models' : 'placeholders') + ', look: ' + this.look);
     this.buildHud();
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
@@ -144,13 +149,13 @@ class Main extends Node3D {
 
   buildWorld() {
     const env = new Environment(), sky = new Sky(), sm = new ProceduralSkyMaterial();
-    sm.sky_top_color = new Color(0.3, 0.5, 0.8, 1); sm.sky_horizon_color = new Color(0.75, 0.82, 0.9, 1);
+    sm.sky_top_color = new Color(0.36, 0.6, 0.9, 1); sm.sky_horizon_color = new Color(0.8, 0.88, 0.95, 1);
     sm.ground_horizon_color = new Color(0.1, 0.28, 0.5, 1); sm.ground_bottom_color = new Color(0.04, 0.16, 0.34, 1); // open sea past the map edge
     sky.sky_material = sm;
     env.background_mode = BG_SKY; env.sky = sky;
     env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.55;
-    env.tonemap_mode = TONEMAP_AGX; env.tonemap_white = 6;
-    env.adjustment_enabled = true; env.adjustment_saturation = 1.18; env.adjustment_contrast = 1.06;
+    env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 1.05; // filmic keeps the painted palette saturated
+    env.adjustment_enabled = true; env.adjustment_saturation = 1.12; env.adjustment_contrast = 1.04;
     env.ssao_enabled = this.hiFx; env.ssao_radius = 0.8; env.ssao_intensity = 1.6; // Forward+ only
     env.glow_enabled = true; env.glow_intensity = 0.35; env.glow_bloom = 0.04;
     env.fog_enabled = true; env.fog_light_color = new Color(0.72, 0.8, 0.9, 1); env.fog_density = 0.004; env.fog_aerial_perspective = 0.35; env.fog_sky_affect = 0.2;
@@ -158,8 +163,8 @@ class Main extends Node3D {
     const we = new WorldEnvironment(); we.environment = env; this.add_child(we);
 
     const sun = new DirectionalLight3D(); // a warm, fairly low sun for long, readable shadows
-    sun.rotation_degrees = new Vector3(-40, -48, 0);
-    sun.light_energy = 1.5; sun.light_color = new Color(1, 0.93, 0.8, 1);
+    sun.rotation_degrees = new Vector3(-46, -40, 0);
+    sun.light_energy = 1.35; sun.light_color = new Color(1, 0.95, 0.84, 1);
     sun.shadow_enabled = true; sun.shadow_blur = 1.5; sun.directional_shadow_max_distance = 60;
     this.sun = sun; this.add_child(sun);
 
@@ -176,7 +181,7 @@ class Main extends Node3D {
     water.mesh = plane; water.material_override = this.matWater; water.cast_shadow = SHADOWS_OFF;
     this.water = water; this.add_child(water);
     const bed = new MeshInstance3D(), bedPlane = new PlaneMesh(), bedMat = new StandardMaterial3D(); // sea floor beyond the map
-    bedPlane.size = new Vector2(420, 420); bedMat.albedo_color = new Color(0.16, 0.24, 0.24, 1); bedMat.roughness = 1;
+    bedPlane.size = new Vector2(420, 420); bedMat.albedo_color = new Color(0.12, 0.3, 0.42, 1); bedMat.roughness = 1;
     bed.mesh = bedPlane; bed.material_override = bedMat; bed.cast_shadow = SHADOWS_OFF;
     this.seabed = bed; this.add_child(bed);
   }
@@ -218,13 +223,12 @@ class Main extends Node3D {
     this.refresh();
   }
 
-  // the static landscape for a new map: KayKit tiles and nature, or the sculpted procedural terrain with rivers and props
+  // the static landscape for a new map: the painted terrain with rivers and nature, or (tile look) KayKit hex tiles
   buildLand() {
     const t0 = Time.get_ticks_msec();
-    (this.propNodes || []).forEach(n => n.queue_free()); this.propNodes = []; // our own list: get_children() returns a Godot array, not a JS one
-    if (this.useArt) {
+    if (this.look === 'tiles') {
       this.field = kaykit.flatField(AU, this.g);
-      this.terrain.mesh = null; this.rivers.mesh = null;
+      this.terrain.mesh = null; this.rivers.mesh = null; this.clearProps();
       this.art.clear();
       const n = this.art.buildStatic(AU, this.g);
       this.waterY = kaykit.WATER_Y;
@@ -234,16 +238,27 @@ class Main extends Node3D {
       console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': ' + n + ' KayKit tiles and props in ' + (Time.get_ticks_msec() - t0) + ' ms');
       return;
     }
+    if (this.useArt) this.art.clear();
     this.field = terrain.makeField(AU, this.g);
     const M = terrain.buildTerrainMesh(this.field), t1 = Time.get_ticks_msec();
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
     const t2 = Time.get_ticks_msec();
     this.rivers.mesh = toMesh(terrain.buildRivers(this.field, this.g));
-    const S = terrain.buildScatter(this.field);
-    this.propNodes = Object.keys(S).filter(k => S[k].length).map(k => { const n = scatterNode(this.propMeshes[k], S[k], this.matProps); this.propRoot.add_child(n); return n; });
+    const S = this.buildNature();
     this.waterY = 0;
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': terrain ' + M.vertices + ' verts / ' + M.triangles + ' tris, built in ' + (t1 - t0) +
-      ' ms, uploaded via ' + up.path + ' in ' + (t2 - t1) + ' ms; props ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', ') + '; total ' + (Time.get_ticks_msec() - t0) + ' ms');
+      ' ms, uploaded via ' + up.path + ' in ' + (t2 - t1) + ' ms; nature ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', ') + '; total ' + (Time.get_ticks_msec() - t0) + ' ms');
+  }
+
+  clearProps() { (this.propNodes || []).forEach(n => n.queue_free()); this.propNodes = []; } // our own list: get_children() returns a Godot array, not a JS one
+
+  // trees, bushes, grass, rocks and reeds; rebuilt when a new settlement needs its site cleared
+  buildNature() {
+    this.clearProps();
+    const S = terrain.buildScatter(this.field, this.g, this.density);
+    this.propNodes = Object.keys(S).filter(k => S[k].length && this.propMeshes[k]).map(k => { const n = scatterNode(this.propMeshes[k], S[k], this.matProps); this.propRoot.add_child(n); return n; });
+    this.natureKey = terrain.scatterKey(this.g);
+    return S;
   }
 
   focusPlayer() { // centre on the followed empire's capital (it moves when a capital falls)
@@ -254,7 +269,9 @@ class Main extends Node3D {
   refresh() {
     const g = this.g;
     this.borders.mesh = toMesh(geo.buildBorders(AU, g, this.field));
-    if (this.useArt) this.art.refresh(AU, g);
+    const painted = this.look === 'painted';
+    if (painted && terrain.scatterKey(g) !== this.natureKey) this.buildNature();
+    if (this.useArt) this.art.refresh(AU, g, painted ? (x, z) => this.field.heightAt(x, z) : undefined);
     const hasArt = u => { const l = kaykit.loadoutFor(AU, u); return !!(l && this.art.scenes[l.model]); };
     this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field, this.useArt ? { art: true, hasArt } : null));
     const seen = {};

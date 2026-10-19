@@ -81,12 +81,13 @@ function staticKey(g) { const s = Object.keys(g.settlements).map(id => g.settlem
 
 // Settlements: a capital castle or a town centre, plus houses and trades that grow with population, all in the owner's colour.
 const TRADES = ['building_market_blue', 'building_tavern_blue', 'building_blacksmith_blue', 'building_church_blue', 'building_lumbermill_blue', 'building_barracks_blue'];
-function buildTowns(AU, g) {
+// heightAt (optional): ground height for the sculpted painted terrain; without it buildings sit on the flat KayKit tiles
+function buildTowns(AU, g, heightAt) {
   const out = {}, add = (m, e) => (out[m] = out[m] || []).push(e);
   Object.keys(g.settlements).forEach(id => {
     const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
     const c = center(t.col, t.row), team = lin(civ.color || '#cccccc', 1), rnd = k => hash1(s.id * 389 + k * 53);
-    const put = (m, x, z, yaw, sc) => add(m, [x, 0, z, yaw, sc, team[0], team[1], team[2], 1]);
+    const put = (m, x, z, yaw, sc) => add(m, [x, heightAt ? Math.max(0, heightAt(x, z)) - 0.04 : 0, z, yaw, sc, team[0], team[1], team[2], 1]);
     if (s.isCapital) put('building_castle_blue', c[0], c[1] - 0.05, 0, S * 0.5);
     else if (s.isCity) put('building_tower_A_blue', c[0], c[1], rnd(1) * 6.28, S * 0.6);
     else put('building_well_blue', c[0], c[1], rnd(1) * 6.28, S * 0.7);
@@ -124,7 +125,7 @@ function loadoutFor(AU, u) {
   if (cls === 'civilian') return /^great_|missionary/.test(u.type) ? LOADOUT.great : LOADOUT.civilian;
   return LOADOUT[cls] || null; // naval and air: no art yet, drawn as placeholders
 }
-function unitSpots(AU, g) {
+function unitSpots(AU, g, heightAt) {
   const byTile = {}, out = [];
   Object.keys(g.units).forEach(id => { const u = g.units[id]; (byTile[u.tile] = byTile[u.tile] || []).push(u); });
   Object.keys(byTile).forEach(ti => {
@@ -133,7 +134,7 @@ function unitSpots(AU, g) {
     list.slice(0, 4).forEach((u, k) => {
       const spread = town || list.length > 1, a = Math.PI * (0.3 + 0.45 * k), d = spread ? 0.52 : 0;
       const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (town ? 0.15 : 0);
-      const y = isWater(AU, t) ? WATER_Y : (t.hills && !town ? 0.3 : 0) + (t.terrain === 'mountain' ? 0.6 : 0);
+      const y = heightAt ? Math.max(0, heightAt(x, z)) : isWater(AU, t) ? WATER_Y : (t.hills && !town ? 0.3 : 0) + (t.terrain === 'mountain' ? 0.6 : 0);
       out.push({ id: u.id, unit: u, load: loadoutFor(AU, u), x, y, z, yaw: (hash1(u.id * 7) - 0.5) * 0.9, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
   });
