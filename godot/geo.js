@@ -130,7 +130,7 @@ function buildPieces(AU, g, F, opts) {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
       const a = Math.PI * (0.25 + 0.5 * k), d = hasTown || list.length > 1 ? 0.5 : 0, x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (hasTown ? 0.1 : 0);
       const y = Math.max(F.heightAt(x, z), 0) + 0.02;
-      if (art && opts.hasArt(u)) { prism(b, x, y - 0.04, z, 0.2, 0.06, 10, col, shade(col, 1.15)); return; } // team disc under the character
+      if (art && opts.hasArt(u)) { prism(b, x, y - 0.03, z, 0.16, 0.04, 16, shade(col, 0.8), mix(col, [1, 1, 1, 1], 0.25)); return; } // a slim base in the owner's colour
       prism(b, x, y - 0.06, z, 0.27, 0.12, 8, rgb('#f2efe6')); // base disc
       if (cls === 'civilian') prism(b, x, y + 0.06, z, 0.13, 0.3, 6, rgb('#e8d9a8'), col);
       else if (cls === 'naval') { box(b, x, y + 0.06, z, 0.56, 0.13, 0.24, shade(col, 0.8), col); prism(b, x, y + 0.19, z, 0.04, 0.4, 4, rgb('#f2efe6')); }
