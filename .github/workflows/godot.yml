@@ -71,7 +71,7 @@ jobs:
         run: |
           mkdir -p build
           sed -i "s|@WIN_TEMPLATE@|$WIN_TEMPLATE|; s|@APK_DEBUG_TEMPLATE@|$APK_DEBUG|; s|@APK_RELEASE_TEMPLATE@|$APK_RELEASE|" godot/export_presets.cfg
-          "$GODOT" --headless --path godot --export-release "Windows Desktop" ../build/TinyEmpires.exe 2>&1 | tail -30
+          xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --export-release "Windows Desktop" ../build/TinyEmpires.exe 2>&1 | grep -v "^ALSA\|LWS" | tail -30
           ls -la build/TinyEmpires.exe
 
       - name: Export Android
@@ -81,7 +81,7 @@ jobs:
           printf '[gd_resource type="EditorSettings" format=3]\n\n[resource]\nexport/android/android_sdk_path = "%s"\nexport/android/java_sdk_path = "%s"\nexport/android/debug_keystore = "%s"\nexport/android/debug_keystore_user = "androiddebugkey"\nexport/android/debug_keystore_pass = "android"\n' \
             "$ANDROID_HOME" "$JAVA_HOME_17_X64" "$HOME/debug.keystore" > ~/.config/godot/editor_settings-4.6.tres
           export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$HOME/debug.keystore" GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android
-          "$GODOT" --headless --path godot --export-debug "Android" ../build/TinyEmpires.apk 2>&1 | tail -30
+          xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --export-debug "Android" ../build/TinyEmpires.apk 2>&1 | grep -v "^ALSA\|LWS\|ADDING" | tail -30
           ls -la build/TinyEmpires.apk
 
       - name: Recreate the release (stale hidden assets block uploads)
