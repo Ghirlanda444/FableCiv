@@ -1,6 +1,6 @@
 # Tiny Empires: Godot test build
 
-A vertical slice of Tiny Empires in Godot: the web game's rules engine (`web/js`, unchanged) drives a 3D hex world: a sculpted, shader-textured landscape with animated water, forests, cinematic lighting and a tilt-shift focus effect (FX button), plus borders, settlements and units. The art is KayKit's CC0 Medieval Hexagon and Adventurers packs (see CREDITS.md), recoloured per terrain and per civ; if the models are missing the game falls back to a code-generated look (`--procedural` forces it). Every empire is AI-run; press **End Turn** (or Space) or **Auto** to watch the game play out. The web game is not affected by anything in this folder.
+A vertical slice of Tiny Empires in Godot: the web game's rules engine (`web/js`, unchanged) drives a 3D hex world: a sculpted, shader-textured landscape with animated water, forests, cinematic lighting (FX button toggles ambient occlusion), plus borders, settlements and units. The art is KayKit's CC0 Medieval Hexagon and Adventurers packs (see CREDITS.md), recoloured per terrain and per civ; if the models are missing the game falls back to a code-generated look (`--procedural` forces it). Every empire is AI-run; press **End Turn** (or Space) or **Auto** to watch the game play out. The web game is not affected by anything in this folder.
 
 ## Downloads
 

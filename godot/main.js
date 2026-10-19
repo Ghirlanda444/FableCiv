@@ -124,7 +124,7 @@ class Main extends Node3D {
     this.auto = false; this.acc = 0; this.frames = 0;
     this.camTarget = [0, 0]; this.camDist = 16; this.touches = {}; this.dragged = 0; this.selected = -1;
     this.labels = {};
-    this.hiFx = OS.get_name() !== 'Android'; // tilt-shift focus and ambient occlusion: on for desktop, off for phones (toggle in the HUD)
+    this.hiFx = OS.get_name() !== 'Android'; // ambient occlusion: on for desktop, off for phones (toggle in the HUD)
     this.matTerrain = shaderMaterial(shaders.TERRAIN);
     this.matWater = shaderMaterial(shaders.WATER);
     this.matPieces = material({ roughness: 0.7 });
@@ -324,8 +324,8 @@ class Main extends Node3D {
   updateCamera() {
     const d = this.camDist, x = this.camTarget[0], z = this.camTarget[1];
     this.cam.look_at_from_position(new Vector3(x, d * Math.sin(PITCH), z + d * Math.cos(PITCH)), new Vector3(x, 0, z), new Vector3(0, 1, 0));
-    const a = this.camAttr; // tilt-shift: sharp around the point you look at, soft in the foreground and the distance
-    a.dof_blur_far_enabled = this.hiFx; a.dof_blur_near_enabled = this.hiFx;
+    const a = this.camAttr; // tilt-shift focus, tuned but disabled (see below)
+    a.dof_blur_far_enabled = false; a.dof_blur_near_enabled = false; // off for now: in Godot 4.6.1 it softened the whole frame, and sharp footage matters more
     a.dof_blur_far_distance = d * 1.55; a.dof_blur_far_transition = d * 1.2;
     a.dof_blur_near_distance = d * 0.5; a.dof_blur_near_transition = d * 0.25; a.dof_blur_amount = 0.025;
     this.sun.directional_shadow_max_distance = d * 2.6 + 12;

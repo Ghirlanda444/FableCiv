@@ -102,7 +102,7 @@ jobs:
           prerelease: true
           target_commitish: ${{ github.sha }}
           body: |
-            Godot test build of Tiny Empires: the same rules engine as the web game in a 3D hex world. All empires are AI-run: press End Turn (or Space) or Auto to watch. FX toggles the tilt-shift focus and ambient occlusion.
+            Godot test build of Tiny Empires: the same rules engine as the web game in a 3D hex world. All empires are AI-run: press End Turn (or Space) or Auto to watch. FX toggles ambient occlusion.
             Windows: download TinyEmpires.exe and run it. Android: install TinyEmpires.apk (allow installs from unknown sources).
             Built from ${{ github.sha }}.
           files: |
