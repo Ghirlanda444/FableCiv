@@ -89,7 +89,7 @@ function roundTree() { // a chunky deciduous tree: short trunk, a cloud of leafy
   return b;
 }
 function pineTree() { // a soft stacked pine with a round tip
-  const b = batch(), dark = rgb('#2e7a3e'), light = rgb('#7cc46a');
+  const b = batch(), dark = rgb('#2f6a3c'), light = rgb('#6aa860');
   cone(b, 0, 0, 0, 0.035, 0.14, 0.03, 6, BARK, BARK_LIGHT);
   cone(b, 0, 0, 0.1, 0.2, 0.32, 0.05, 10, dark, light);
   cone(b, 0, 0, 0.24, 0.16, 0.45, 0.04, 10, dark, light);
@@ -119,7 +119,7 @@ function palmTree() { // jungle palm: a leaning ringed trunk and drooping fronds
   return b;
 }
 function bush() { const b = batch(), d = rgb('#3a8a3a'), l = rgb('#a6dc62'); blob(b, 0, 0.08, 0, 0.12, 0.09, 0.12, d, l, 11); blob(b, 0.08, 0.06, 0.05, 0.08, 0.07, 0.08, d, l, 12); return b; }
-function rock() { const b = batch(); blob(b, 0, 0.05, 0, 0.16, 0.11, 0.14, rgb('#8d939c'), rgb('#e2e4e6'), 5, 0.16); return b; } // big smooth pale boulder
+function rock() { const b = batch(); blob(b, 0, 0.05, 0, 0.16, 0.11, 0.14, rgb('#6c727c'), rgb('#b4b8be'), 5, 0.16); return b; } // big smooth grey boulder
 function tuft() { // a few bright grass blades
   const b = batch(), base = rgb('#4f9a3a'), tip = rgb('#c3e872');
   for (let k = 0; k < 5; k++) {

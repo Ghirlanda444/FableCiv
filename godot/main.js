@@ -187,7 +187,7 @@ class Main extends Node3D {
     water.mesh = plane; water.material_override = this.matWater; water.cast_shadow = SHADOWS_OFF;
     this.water = water; this.add_child(water);
     const bed = new MeshInstance3D(), bedPlane = new PlaneMesh(), bedMat = new StandardMaterial3D(); // sea floor beyond the map
-    bedPlane.size = new Vector2(420, 420); bedMat.albedo_color = new Color(0.12, 0.3, 0.42, 1); bedMat.roughness = 1;
+    bedPlane.size = new Vector2(420, 420); bedMat.albedo_color = new Color(0.36, 0.55, 0.55, 1); bedMat.roughness = 1;
     bed.mesh = bedPlane; bed.material_override = bedMat; bed.cast_shadow = SHADOWS_OFF;
     this.seabed = bed; this.add_child(bed);
   }
@@ -224,7 +224,7 @@ class Main extends Node3D {
     const focus = this.g.tiles[cap !== undefined ? this.g.settlements[cap].tile : (u ? u.tile : Math.floor(this.g.tiles.length / 2))];
     this.camTarget = geo.center(focus.col, focus.row); this.camDist = 16;
     const mid = new Vector3(geo.SQRT3 * this.g.W / 2, 0, 0.75 * this.g.H);
-    this.water.position = new Vector3(mid.x, this.waterY, mid.z); this.seabed.position = new Vector3(mid.x, -1.3, mid.z);
+    this.water.position = new Vector3(mid.x, this.waterY, mid.z); this.seabed.position = new Vector3(mid.x, -0.86, mid.z); // level with the ocean floor, so the map's edge does not show
     this.updateCamera();
     this.refresh();
   }
