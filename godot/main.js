@@ -221,9 +221,9 @@ class Main extends Node3D {
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
     const t2 = Time.get_ticks_msec();
     this.rivers.mesh = toMesh(terrain.buildRivers(this.field, this.g));
-    this.propRoot.get_children().forEach(n => n.queue_free());
+    (this.propNodes || []).forEach(n => n.queue_free()); // our own list: get_children() returns a Godot array, not a JS one
     const S = terrain.buildScatter(this.field);
-    Object.keys(S).forEach(k => { if (S[k].length) this.propRoot.add_child(scatterNode(this.propMeshes[k], S[k], this.matProps)); });
+    this.propNodes = Object.keys(S).filter(k => S[k].length).map(k => { const n = scatterNode(this.propMeshes[k], S[k], this.matProps); this.propRoot.add_child(n); return n; });
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': terrain ' + M.vertices + ' verts / ' + M.triangles + ' tris, built in ' + (t1 - t0) +
       ' ms, uploaded via ' + up.path + ' in ' + (t2 - t1) + ' ms; props ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', ') + '; total ' + (Time.get_ticks_msec() - t0) + ' ms');
   }
