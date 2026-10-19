@@ -31,11 +31,16 @@ jobs:
           node tools/godot/test-geo.js
 
       - name: Download GodotJS (Godot ${{ env.GODOT_VER }} + V8) editor and export templates
+        timeout-minutes: 12
         env: { GH_TOKEN: '${{ github.token }}' }
         run: |
           mkdir -p ~/gjs && cd ~/gjs
           for f in linux-editor windows-template_release android-template_release android-template_debug; do
-            gh release download "$GODOTJS_TAG" -R godotjs/GodotJS -p "$f-$GODOT_VER-v8.zip" || { gh release list -R godotjs/GodotJS -L 5; gh release view "$GODOTJS_TAG" -R godotjs/GodotJS --json assets --jq '.assets[].name'; exit 1; }
+            for try in 1 2 3; do # a stalled download is retried rather than hanging the build
+              rm -f "$f-$GODOT_VER-v8.zip"; timeout 180 gh release download "$GODOTJS_TAG" -R godotjs/GodotJS -p "$f-$GODOT_VER-v8.zip" && break
+              echo "download of $f failed or stalled (try $try)"; sleep 5
+            done
+            [ -f "$f-$GODOT_VER-v8.zip" ] || { gh release view "$GODOTJS_TAG" -R godotjs/GodotJS --json assets --jq '.assets[].name'; exit 1; }
             mkdir -p "$f" && unzip -q "$f-$GODOT_VER-v8.zip" -d "$f"
           done
           find ~/gjs -type f -not -name '*.zip' | sed "s|$HOME/gjs/||" | head -60
