@@ -7,8 +7,8 @@ const godot = require('godot');
 const { Node3D, MeshInstance3D, SurfaceTool, StandardMaterial3D, Color, Vector2, Vector3, Camera3D, DirectionalLight3D, WorldEnvironment,
   Environment, Sky, ProceduralSkyMaterial, CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
   Callable, OS, Input, Time, ProjectSettings } = godot;
-const AU = require('./engine/au_bundle');
-const geo = require('./geo');
+const AU = require('res://engine/au_bundle.js'); // absolute ids: GodotJS 1.1 beta turns relative ids from res:// into res:/
+const geo = require('res://geo.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
