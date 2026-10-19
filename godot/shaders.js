@@ -61,6 +61,44 @@ void fragment() {
 }
 `;
 
+// KayKit models share one colour atlas; per instance (MultiMesh custom data) we recolour the grass to the terrain (mode 0),
+// tint foliage (mode 1) or paint the blue team parts of buildings in the owner's colour (mode 2), keeping the atlas shading.
+const KAYKIT = `
+shader_type spatial;
+uniform sampler2D atlas : source_color, filter_linear_mipmap;
+uniform int mode = 0;
+varying vec4 tint;
+void vertex() { tint = INSTANCE_CUSTOM; }
+void fragment() {
+  vec3 c = texture(atlas, UV).rgb;
+  if (mode == 0) {
+    float grass = smoothstep(0.12, 0.2, min(c.r, c.g) - c.b) * (1.0 - smoothstep(0.06, 0.14, abs(c.r - c.g)));
+    c = mix(c, tint.rgb * (c.g / 0.56), grass * tint.a);
+  } else if (mode == 1) {
+    float leaf = smoothstep(0.06, 0.1, c.g - max(c.r, c.b));
+    c = mix(c, tint.rgb * (c.g / 0.18), leaf * tint.a);
+  } else {
+    float blue = smoothstep(0.08, 0.16, c.b - max(c.r, c.g));
+    c = mix(c, tint.rgb * (c.b / 0.5), blue * tint.a);
+  }
+  ALBEDO = c;
+  ROUGHNESS = 0.82;
+}
+`;
+
+// character capes in the owner's colour (per-node instance uniform), keeping the cloth shading from the texture
+const CAPE = `
+shader_type spatial;
+uniform sampler2D tex : source_color, filter_linear_mipmap;
+instance uniform vec4 team : source_color = vec4(1.0);
+void fragment() {
+  vec3 c = texture(tex, UV).rgb;
+  float lum = dot(c, vec3(0.3, 0.59, 0.11));
+  ALBEDO = team.rgb * clamp(0.35 + lum * 2.2, 0.0, 1.4);
+  ROUGHNESS = 0.8;
+}
+`;
+
 const WATER = `
 shader_type spatial;
 render_mode blend_mix, cull_disabled, depth_draw_opaque, specular_schlick_ggx;
@@ -68,6 +106,8 @@ uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
 uniform vec3 shallow_col : source_color = vec3(0.18, 0.68, 0.70);
 uniform vec3 deep_col : source_color = vec3(0.02, 0.14, 0.32);
 uniform float grid_strength = 0.12;
+uniform float depth_k = 2.4;   // how fast water darkens with depth
+uniform float foam_band = 0.09; // shoreline foam width
 varying vec3 wpos;
 ${NOISE}
 void vertex() {
@@ -78,11 +118,11 @@ void fragment() {
   float d = texture(depth_tex, SCREEN_UV).r;
   vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
   float depth = max(0.0, VERTEX.z - g.z) * 0.8;                                 // water thickness in front of the ground
-  float t = 1.0 - exp(-depth * 2.4);
+  float t = 1.0 - exp(-depth * depth_k);
   vec3 col = mix(shallow_col, deep_col, t);
   vec2 p = wpos.xz;
   float waves = fbm(p * 1.4 + vec2(TIME * 0.11, TIME * 0.06)) * 0.6 + fbm(p * 3.3 - vec2(TIME * 0.08, -TIME * 0.1)) * 0.4;
-  float band = 1.0 - smoothstep(0.0, 0.09, depth);
+  float band = 1.0 - smoothstep(0.0, foam_band, depth);
   float foam = band * (0.5 + 0.5 * sin(depth * 70.0 - TIME * 2.2 + waves * 4.0)) + band * smoothstep(0.5, 0.8, fbm(p * 7.0 + TIME * 0.25));
   foam = clamp(foam, 0.0, 1.0) * step(0.0005, depth);
   float e = hex_edge(p), aa = fwidth(e) * 1.5 + 0.002;
@@ -95,4 +135,4 @@ void fragment() {
 }
 `;
 
-module.exports = { TERRAIN, WATER };
+module.exports = { TERRAIN, WATER, KAYKIT, CAPE };

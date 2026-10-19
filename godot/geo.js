@@ -92,9 +92,11 @@ function prism(b, x, y, z, r, h, sides, col, capCol) {
 }
 
 // Per-turn pieces: settlements (houses in the owner's colours, a tower for capitals) and units (a token per unit).
-function buildPieces(AU, g, F) {
-  const b = batch(), walls = rgb('#d9cfbf');
-  Object.keys(g.settlements).forEach(id => {
+// opts.art: settlements and most units are drawn by the KayKit art, so only draw a disc in the owner's colour under each unit,
+// plus placeholders for units without art (opts.hasArt(u) false).
+function buildPieces(AU, g, F, opts) {
+  const b = batch(), walls = rgb('#d9cfbf'), art = opts && opts.art;
+  if (!art) Object.keys(g.settlements).forEach(id => {
     const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
     const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), n = Math.min(8, 3 + Math.floor((s.pop || 1) / 2));
     for (let k = 0; k < n; k++) {
@@ -118,6 +120,7 @@ function buildPieces(AU, g, F) {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
       const a = Math.PI * (0.25 + 0.5 * k), d = hasTown || list.length > 1 ? 0.5 : 0, x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (hasTown ? 0.1 : 0);
       const y = Math.max(F.heightAt(x, z), 0) + 0.02;
+      if (art && opts.hasArt(u)) { prism(b, x, y - 0.04, z, 0.2, 0.06, 10, col, shade(col, 1.15)); return; } // team disc under the character
       prism(b, x, y - 0.06, z, 0.27, 0.12, 8, rgb('#f2efe6')); // base disc
       if (cls === 'civilian') prism(b, x, y + 0.06, z, 0.13, 0.3, 6, rgb('#e8d9a8'), col);
       else if (cls === 'naval') { box(b, x, y + 0.06, z, 0.56, 0.13, 0.24, shade(col, 0.8), col); prism(b, x, y + 0.19, z, 0.04, 0.4, 4, rgb('#f2efe6')); }

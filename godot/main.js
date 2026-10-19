@@ -14,6 +14,8 @@ const geo = require('res://geo.js');
 const terrain = require('res://terrain.js');
 const props = require('res://props.js');
 const shaders = require('res://shaders.js');
+const kaykit = require('res://kaykit.js');
+const { Art } = require('res://art.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
@@ -131,6 +133,9 @@ class Main extends Node3D {
     this.matRivers = material({ alpha: true, roughness: 0.08 });
     this.propMeshes = { pine: toMesh(props.pine()), broadleaf: toMesh(props.broadleaf()), rock: toMesh(props.rock()), reed: toMesh(props.reed()) };
     this.buildWorld();
+    this.art = new Art(this);
+    this.useArt = this.args.indexOf('--procedural') < 0 && this.art.load(); // KayKit models when they load, else the code-generated look
+    console.log('[tiny-empires] art: ' + (this.useArt ? 'KayKit models' : 'procedural'));
     this.buildHud();
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
@@ -208,22 +213,33 @@ class Main extends Node3D {
     const focus = this.g.tiles[cap !== undefined ? this.g.settlements[cap].tile : (u ? u.tile : Math.floor(this.g.tiles.length / 2))];
     this.camTarget = geo.center(focus.col, focus.row); this.camDist = 16;
     const mid = new Vector3(geo.SQRT3 * this.g.W / 2, 0, 0.75 * this.g.H);
-    this.water.position = mid; this.seabed.position = new Vector3(mid.x, -1.1, mid.z);
+    this.water.position = new Vector3(mid.x, this.waterY, mid.z); this.seabed.position = new Vector3(mid.x, -1.3, mid.z);
     this.updateCamera();
     this.refresh();
   }
 
-  // the static landscape for a new map: sculpted terrain, rivers and instanced props
+  // the static landscape for a new map: KayKit tiles and nature, or the sculpted procedural terrain with rivers and props
   buildLand() {
     const t0 = Time.get_ticks_msec();
+    (this.propNodes || []).forEach(n => n.queue_free()); this.propNodes = []; // our own list: get_children() returns a Godot array, not a JS one
+    if (this.useArt) {
+      this.field = kaykit.flatField(AU, this.g);
+      this.terrain.mesh = null; this.rivers.mesh = null;
+      this.art.clear();
+      const n = this.art.buildStatic(AU, this.g);
+      this.waterY = kaykit.WATER_Y;
+      this.matWater.set_shader_parameter('depth_k', 6.0); this.matWater.set_shader_parameter('foam_band', 0.03);
+      console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': ' + n + ' KayKit tiles and props in ' + (Time.get_ticks_msec() - t0) + ' ms');
+      return;
+    }
     this.field = terrain.makeField(AU, this.g);
     const M = terrain.buildTerrainMesh(this.field), t1 = Time.get_ticks_msec();
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
     const t2 = Time.get_ticks_msec();
     this.rivers.mesh = toMesh(terrain.buildRivers(this.field, this.g));
-    (this.propNodes || []).forEach(n => n.queue_free()); // our own list: get_children() returns a Godot array, not a JS one
     const S = terrain.buildScatter(this.field);
     this.propNodes = Object.keys(S).filter(k => S[k].length).map(k => { const n = scatterNode(this.propMeshes[k], S[k], this.matProps); this.propRoot.add_child(n); return n; });
+    this.waterY = 0;
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': terrain ' + M.vertices + ' verts / ' + M.triangles + ' tris, built in ' + (t1 - t0) +
       ' ms, uploaded via ' + up.path + ' in ' + (t2 - t1) + ' ms; props ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', ') + '; total ' + (Time.get_ticks_msec() - t0) + ' ms');
   }
@@ -236,7 +252,9 @@ class Main extends Node3D {
   refresh() {
     const g = this.g;
     this.borders.mesh = toMesh(geo.buildBorders(AU, g, this.field));
-    this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field));
+    if (this.useArt) this.art.refresh(AU, g);
+    const hasArt = u => { const l = kaykit.loadoutFor(AU, u); return !!(l && this.art.scenes[l.model]); };
+    this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field, this.useArt ? { art: true, hasArt } : null));
     const seen = {};
     Object.keys(g.settlements).forEach(id => {
       const st = g.settlements[id], t = g.tiles[st.tile], civ = g.civs[st.civ]; if (!t || !civ) return;
@@ -248,7 +266,7 @@ class Main extends Node3D {
       const c = geo.center(t.col, t.row), col = geo.rgb(civ.color || '#ffffff');
       lb.text = st.name + '  ' + st.pop;
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
-      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + 1.15, c[1]);
+      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? (st.isCapital ? 2.0 : 1.3) : 1.15), c[1]);
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });

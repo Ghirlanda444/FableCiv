@@ -51,6 +51,7 @@ jobs:
         run: |
           timeout 240 "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -60 || true
           grep -q "SMOKE OK" smoke.log
+          grep -q "art: KayKit models" smoke.log || { echo "KayKit art failed to load (the build would fall back to the procedural look)"; exit 1; }
 
       - name: Screenshot (software Vulkan)
         continue-on-error: true
