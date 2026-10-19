@@ -60,7 +60,7 @@ function townSprites(AU, g, heightAt) {
       if (n >= slots.length) return;
       const isW = AU.WONDERS && AU.WONDERS[b], slot = isW ? order[Math.min(slots.length - 1, 6 + (n % 6))] : order[n];
       const p = slots[slot]; n++;
-      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.82 : 0.56, b);
+      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.86 : 0.62, b);
     });
   });
   return out;

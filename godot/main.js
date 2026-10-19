@@ -456,14 +456,15 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_wide.png', 120: 'shot_low.png', 200: 'shot_relief.png' }; // close-up, wide, low settings, then hills and mountains on another map
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 240: 'shot_relief.png' }; // default zoom, close-up, wide, low settings, then hills and mountains on another map
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
       console.log('[tiny-empires] screenshot saved to ' + path);
-      if (this.frames === 40) { this.camDist = 30; this.updateCamera(); }
-      else if (this.frames === 80) { this.camDist = 16; this.onFx(); }
-      else if (this.frames === 120) { this.onFx(); this.newGame(6); this.frameMountains(); }
+      if (this.frames === 40) { this.camDist = 5.5; this.updateCamera(); }
+      else if (this.frames === 80) { this.camDist = 30; this.updateCamera(); }
+      else if (this.frames === 120) { this.camDist = 16; this.onFx(); }
+      else if (this.frames === 160) { this.onFx(); this.newGame(6); this.frameMountains(); }
       else this.get_tree().quit(0);
       return;
     }

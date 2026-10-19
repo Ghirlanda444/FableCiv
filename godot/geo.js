@@ -99,8 +99,8 @@ function buildPieces(AU, g, F, opts) {
   const b = batch(), walls = rgb('#d9cfbf'), art = opts && opts.art;
   if (art) Object.keys(g.settlements).forEach(id => { // painted buildings stand on a plaza; cities with walls get a wall ring
     const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
-    const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), stone = rgb('#c9ad84'), y = F.heightAt(c[0], c[1]);
-    prism(b, c[0], y - 0.12, c[1], s.isCity ? 0.66 : 0.5, 0.14, 14, shade(stone, 0.85), mix(stone, roof, 0.08)); // a warm stone plaza
+    const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), stone = rgb('#a88f6c'), y = F.heightAt(c[0], c[1]);
+    prism(b, c[0], y - 0.12, c[1], s.isCity ? 0.5 : 0.38, 0.13, 14, shade(stone, 0.8), mix(stone, roof, 0.1)); // a small earthy plaza
     if ((s.buildings || []).indexOf('walls') >= 0 || (s.buildings || []).indexOf('castle') >= 0) for (let k = 0; k < 18; k++) {
       const a = 2 * Math.PI * k / 18, x = c[0] + Math.cos(a) * 0.96, z = c[1] + Math.sin(a) * 0.96;
       prism(b, x, F.heightAt(x, z) - 0.08, z, 0.1, k % 3 === 0 ? 0.3 : 0.22, 6, shade(stone, 0.82), k % 3 === 0 ? roof : shade(stone, 0.95));

@@ -200,7 +200,7 @@ shader_type spatial;
 render_mode skip_vertex_transform, cull_disabled;
 uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float anim = 0.0;      // 1 for units: a gentle breathing sway
-uniform float roundness = 2.2; // how strongly the edges bend toward or away from the light
+uniform float roundness = 3.6; // how strongly the edges bend toward or away from the light
 varying float glow;
 void vertex() {
   vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
@@ -235,7 +235,7 @@ void light() {
   // and the scene's shadows (a unit under a tree or behind a mountain darkens)
   float ndl = dot(NORMAL, LIGHT);
   float wrap = smoothstep(-0.45, 0.75, ndl);
-  DIFFUSE_LIGHT += LIGHT_COLOR / PI * mix(0.62, 1.12, wrap) * mix(0.55, 1.0, ATTENUATION);
+  DIFFUSE_LIGHT += LIGHT_COLOR / PI * mix(0.5, 1.2, wrap) * mix(0.5, 1.0, ATTENUATION);
 }
 `;
 
