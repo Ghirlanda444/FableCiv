@@ -44,11 +44,12 @@ jobs:
       - name: Import the project
         run: |
           "$GODOT" --version
-          "$GODOT" --headless --path godot --import 2>&1 | tail -40 || true
+          timeout 300 "$GODOT" --headless --path godot --import 2>&1 | tail -60 || true
+          ls -la godot godot/.godot 2>&1 | head -40
 
       - name: Smoke test (40 AI turns headless)
         run: |
-          "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -40
+          timeout 180 "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -60 || true
           grep -q "SMOKE OK" smoke.log
 
       - name: Screenshot (software Vulkan)

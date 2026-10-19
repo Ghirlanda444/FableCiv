@@ -61,7 +61,16 @@ function pickLeaderSeats(rng) {
 
 class Main extends Node3D {
   _ready() {
+    console.log('[tiny-empires] script started, engine ' + (AU && AU.G ? 'loaded' : 'MISSING'));
+    try { this.setup(); } catch (e) {
+      console.error('[tiny-empires] SETUP FAILED ' + (e && e.stack || e));
+      if (this.smoke || this.shot) this.get_tree().quit(1);
+    }
+  }
+
+  setup() {
     this.args = userArgs();
+    console.log('[tiny-empires] args ' + JSON.stringify(this.args));
     this.smoke = this.args.indexOf('--smoke') >= 0;
     this.shot = this.args.indexOf('--shot') >= 0;
     this.auto = false; this.acc = 0; this.frames = 0;
