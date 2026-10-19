@@ -41,12 +41,17 @@ jobs:
           echo "APK_RELEASE=$(find ~/gjs/android-template_release -name '*.apk' | head -1)" >> "$GITHUB_ENV"
           echo "APK_DEBUG=$(find ~/gjs/android-template_debug -name '*.apk' | head -1)" >> "$GITHUB_ENV"
 
-      - name: Import the project
+      - name: Import the project (models need a real renderer: headless import crashes on the skinned characters)
         run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers xvfb > /dev/null
           "$GODOT" --version
-          timeout 300 "$GODOT" --headless --path godot --import 2>&1 | tail -60 || true
-          ls -la godot godot/.godot 2>&1 | head -40
-
+          for attempt in 1 2 3; do
+            timeout 600 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --import 2>&1 | grep -v "^ALSA" | grep -iE "error|crash|signal|DONE.*import$" | tail -15 || true
+            missing=$(cd godot && for f in $(find assets -name '*.gltf' -o -name '*.glb'); do [ -f "$f.import" ] && grep -q '^path=' "$f.import" && [ -f "$(grep -m1 '^path=' "$f.import" | sed 's|path="res://||; s|"$||')" ] || echo "$f"; done)
+            [ -z "$missing" ] && { echo "all models imported (attempt $attempt)"; break; }
+            echo "attempt $attempt: $(echo "$missing" | wc -l) models not imported yet: $(echo $missing | head -c 300)"
+          done
+          ls godot/.godot/imported | grep -ciE "\.scn$" || true
       - name: Smoke test (40 AI turns headless)
         run: |
           timeout 240 "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -60 || true
@@ -56,7 +61,6 @@ jobs:
       - name: Screenshot (software Vulkan)
         continue-on-error: true
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers xvfb > /dev/null
           mkdir -p build
           timeout 400 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --resolution 1280x720 -- --shot 2>&1 | grep -v "^ALSA" | tail -40
           D="$HOME/.local/share/godot/app_userdata/Tiny Empires"
