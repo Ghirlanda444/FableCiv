@@ -14,7 +14,7 @@ let worst = 0; const a = new Float32Array(8);
 g.tiles.forEach(t => { const c = T.center(t.col, t.row); for (let k = 0; k < 6; k++) { const n = F.nb[t.i][k]; if (n < 0) continue;
   const p = T.corner(c[0], c[1], k, 1), q = T.corner(c[0], c[1], k + 1, 1);
   for (let s = 0; s <= T.RINGS; s++) { const x = p[0] + (q[0] - p[0]) * s / T.RINGS, z = p[1] + (q[1] - p[1]) * s / T.RINGS;
-    worst = Math.max(worst, Math.abs(F.heightFrom(F.attrs(t.i, x, z, a), x, z) - F.heightFrom(F.attrs(n, x, z, a), x, z))); } } });
+    worst = Math.max(worst, Math.abs(F.heightIn(t.i, x, z, a) - F.heightIn(n, x, z, a))); } } });
 assert(worst < 1e-4, 'tiles do not meet: gap ' + worst);
 console.log('seams    largest gap between neighbouring tiles ' + worst.toExponential(1));
 for (let k = 0; k < 40; k++) G.endTurn(g);

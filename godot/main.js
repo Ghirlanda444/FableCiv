@@ -270,6 +270,18 @@ class Main extends Node3D {
     return S;
   }
 
+  // centre the camera on the land with the most mountains and hills around it (for the relief screenshot)
+  frameMountains() {
+    const g = this.g; let best = null, bestScore = -1;
+    g.tiles.forEach(t => {
+      if (t.terrain !== 'mountain') return;
+      const c = geo.center(t.col, t.row);
+      const score = g.tiles.reduce((s, u) => { const d = Math.hypot(geo.center(u.col, u.row)[0] - c[0], geo.center(u.col, u.row)[1] - c[1]); return s + (d < 5 ? (u.terrain === 'mountain' ? 2 : u.hills ? 1 : 0) : 0); }, 0);
+      if (score > bestScore) { bestScore = score; best = c; }
+    });
+    if (best) { this.camTarget = best.slice(); this.camDist = 12; this.updateCamera(); }
+  }
+
   focusPlayer() { // centre on the followed empire's capital (it moves when a capital falls)
     const p = G.player(this.g), s = p && this.g.settlements[p.capital], t = s && this.g.tiles[s.tile];
     if (t) { this.camTarget = geo.center(t.col, t.row); this.updateCamera(); }
@@ -408,12 +420,14 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    if (this.shot && (this.frames === 40 || this.frames === 80 || this.frames === 120)) { // close-up, wide view, then a pass with the low settings
-      const name = this.frames === 40 ? 'shot.png' : this.frames === 80 ? 'shot_wide.png' : 'shot_low.png', path = ProjectSettings.globalize_path('user://' + name);
+    const SHOTS = { 40: 'shot.png', 80: 'shot_wide.png', 120: 'shot_low.png', 200: 'shot_relief.png' }; // close-up, wide, low settings, then hills and mountains on another map
+    if (this.shot && SHOTS[this.frames]) {
+      const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
       console.log('[tiny-empires] screenshot saved to ' + path);
       if (this.frames === 40) { this.camDist = 30; this.updateCamera(); }
       else if (this.frames === 80) { this.camDist = 16; this.onFx(); }
+      else if (this.frames === 120) { this.onFx(); this.newGame(6); this.frameMountains(); }
       else this.get_tree().quit(0);
       return;
     }

@@ -60,8 +60,8 @@ function tileAttrs(AU, t) {
     if (t.terrain === 'grassland') meadow = 1;
     if (t.terrain === 'plains') meadow = 0.6;
     if (t.terrain === 'desert') sand = 1;
-    if (t.hills) { h += 0.3; amp = 0.17; rock = 0.12; col = mix3(col, [col[0] * 0.9, col[1] * 0.92, col[2] * 0.85], 1); }
-    if (t.terrain === 'mountain') { h = 1.2 + e * 0.15; amp = 0.3; rock = 1; mtn = 1; meadow = 0; }
+    if (t.hills) { h += 0.1; amp = 0.08; rock = 0.12; col = mix3(col, [col[0] * 0.9, col[1] * 0.92, col[2] * 0.85], 1); }
+    if (t.terrain === 'mountain') { h = 0.5 + e * 0.1; amp = 0.12; rock = 1; mtn = 1; meadow = 0; }
     if (t.feature === 'forest') { col = mix3(col, rgb('#4f9a3a'), 0.5); meadow = 0.3; }
     if (t.feature === 'jungle') { col = mix3(col, rgb('#3f8f3a'), 0.6); meadow = 0.2; }
     if (t.feature === 'marsh') { col = mix3(col, rgb('#6aa37a'), 0.55); h -= 0.08; amp = 0.03; meadow = 0; }
@@ -89,6 +89,32 @@ function makeField(AU, g) {
       avg(edgeV, (t.i * 6 + k) * NA, pair);
     }
   });
+  // Distinct per-tile landforms that fade to nothing before the hex edge (so tiles still meet without cracks):
+  // hills get two or three rounded mounds, mountains a tall peak with sub-peaks (neighbouring mountains read as a range).
+  const shapes = g.tiles.map(t => {
+    const r = k => hash1(t.i * 7919 + k * 104729), out = [];
+    if (t.terrain === 'mountain') {
+      out.push([(r(1) - 0.5) * 0.25, (r(2) - 0.5) * 0.25, 0.95, 1.55 + r(3) * 0.35, 1]);                 // main peak
+      for (let k = 0; k < 2; k++) { const a = r(10 + k) * 6.283; out.push([Math.cos(a) * 0.42, Math.sin(a) * 0.42, 0.55, 0.75 + r(20 + k) * 0.35, 1]); }
+    } else if (t.hills) {
+      const n = 2 + (r(4) < 0.6 ? 1 : 0), a0 = r(5) * 6.283;
+      for (let k = 0; k < n; k++) { const a = a0 + k * 6.283 / n, d = n === 2 ? 0.27 : 0.32; out.push([Math.cos(a) * d, Math.sin(a) * d, 0.46 + r(30 + k) * 0.08, 0.46 + r(40 + k) * 0.14, 0]); }
+    }
+    return out;
+  });
+  function local(ti, x, z) {
+    const sh = shapes[ti]; if (!sh.length) return 0;
+    const t = g.tiles[ti], c = center(t.col, t.row), dx = x - c[0], dz = z - c[1];
+    const rho = Math.max(Math.abs(dx), Math.abs(0.5 * dx + HALF_SQRT3 * dz), Math.abs(-0.5 * dx + HALF_SQRT3 * dz)) / HALF_SQRT3;
+    if (rho >= 0.97) return 0;
+    let h = 0;
+    for (const s of sh) {
+      const d = Math.hypot(dx - s[0], dz - s[1]) / s[2];
+      if (s[4]) { if (d < 1) { const cone = Math.pow(1 - d, 1.35), rid = N.ridge(x * 1.6 + 9, z * 1.6 - 4); h = Math.max(h, s[3] * cone * (0.8 + 0.45 * rid)); } } // rocky peak: cone with ridged faces
+      else h += s[3] * Math.exp(-d * d * 2.2);                                                                                   // soft round mound
+    }
+    return h * smooth((0.97 - rho) / 0.3);
+  }
   const tmp = new Float32Array(NA);
   // blended attributes at world (x, z) inside tile ti: quadratic along the edge (corner, midpoint, corner), then eased toward the centre
   function attrs(ti, x, z, out) {
@@ -108,18 +134,20 @@ function makeField(AU, g) {
   }
   function heightFrom(a, x, z) {
     const n = N.fbm(x * 0.55, z * 0.55, 4) * 2 - 1, fine = N.fbm(x * 2.3 + 40, z * 2.3 - 11, 2) * 2 - 1;
-    return a[0] + a[1] * (n + 0.35 * fine) + a[7] * (N.ridge(x * 0.7 + 5, z * 0.7 + 3) * 1.1 - 0.15) + a[7] * a[7] * a[7] * 1.1; // ridges, plus a peak toward the middle of mountain tiles
+    return a[0] + a[1] * (n + 0.35 * fine) + a[7] * (N.ridge(x * 0.7 + 5, z * 0.7 + 3) * 0.35); // foothill ridges spill a little into neighbours
   }
+  // full height inside tile ti: blended ground plus that tile's own landform
+  function heightIn(ti, x, z, a) { return heightFrom(attrs(ti, x, z, a || tmp), x, z) + local(ti, x, z); }
   function tileAt(x, z, hint) { const i = pick(x, z, W, H); return i >= 0 ? i : hint; }
   function heightAt(x, z, hint) {
     const ti = tileAt(x, z, hint === undefined ? clampTile(x, z) : hint);
-    return heightFrom(attrs(ti, x, z, tmp), x, z);
+    return heightIn(ti, x, z, tmp);
   }
   function clampTile(x, z) {
     const row = Math.max(0, Math.min(H - 1, Math.round(z / 1.5))), col = Math.max(0, Math.min(W - 1, Math.round(x / SQRT3 - 0.5 * (row & 1))));
     return row * W + col;
   }
-  return { W, H, noise: N, attrs, heightFrom, heightAt, tileAt, nb, tiles: g.tiles };
+  return { W, H, noise: N, attrs, heightFrom, heightIn, heightAt, tileAt, nb, tiles: g.tiles };
 }
 
 // The terrain mesh: per tile a ring-subdivided hex (shared edge vertices are recomputed identically, so tiles meet without cracks).
@@ -133,8 +161,7 @@ function buildTerrainMesh(F) {
   F.tiles.forEach(t => {
     const c = center(t.col, t.row), base = v;
     const put = (x, z) => {
-      F.attrs(t.i, x, z, a);
-      const y = F.heightFrom(a, x, z);
+      const y = F.heightIn(t.i, x, z, a); // also fills a with the blended attributes
       const hx = F.heightAt(x + e, z, t.i) - F.heightAt(x - e, z, t.i), hz = F.heightAt(x, z + e, t.i) - F.heightAt(x, z - e, t.i);
       let nx = -hx / (2 * e), ny = 1, nz = -hz / (2 * e); const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
       pos[v * 3] = x; pos[v * 3 + 1] = y; pos[v * 3 + 2] = z; nrm[v * 3] = nx; nrm[v * 3 + 1] = ny; nrm[v * 3 + 2] = nz;

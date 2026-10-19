@@ -135,10 +135,11 @@ void fragment() {
   col = mix(col, col * vec3(0.9, 0.98, 1.06), smoothstep(0.5, 0.25, macro) * 0.4);
   vec3 wn = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
   float slope = 1.0 - wn.y;
-  float rock_m = max(smoothstep(0.28, 0.46, slope + (stroke - 0.5) * 0.15), mats.x * smoothstep(0.35, 0.6, stroke + fine * 0.3));
+  col *= mix(1.0, 0.78, smoothstep(0.08, 0.38, slope) * step(0.0, wpos.y));                 // painted shading on slopes, so hills read from above
+  float rock_m = max(smoothstep(0.45, 0.62, slope + (stroke - 0.5) * 0.15), mats.x * smoothstep(0.35, 0.6, stroke + fine * 0.3)); // rock only where it is mountain-steep
   vec3 rock = srgb(vec3(0.56, 0.58, 0.65)) * (0.8 + 0.35 * stroke) * mix(0.84, 1.06, smoothstep(0.4, 0.6, sin(wpos.y * 14.0 + stroke * 3.0) * 0.5 + 0.5));
   col = mix(col, rock, clamp(rock_m, 0.0, 1.0) * step(-0.05, wpos.y));
-  float snow = smoothstep(1.2, 1.4, wpos.y + (stroke - 0.5) * 0.3) * (1.0 - smoothstep(0.55, 0.85, slope));
+  float snow = smoothstep(1.45, 1.6, wpos.y + (stroke - 0.5) * 0.25) * (1.0 - smoothstep(0.7, 0.95, slope));
   col = mix(col, srgb(vec3(0.95, 0.97, 1.0)), snow);
   float edge = wpos.y + (fbm(wpos.xz * 1.4 + 11.0) - 0.5) * 0.1;                         // wavy, irregular grass-to-sand edge
   float beach = smoothstep(-0.15, -0.04, wpos.y) * (1.0 - smoothstep(0.07, 0.1, edge));
