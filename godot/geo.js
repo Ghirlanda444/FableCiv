@@ -182,12 +182,12 @@ function buildPieces(AU, g) {
     list.slice(0, 4).forEach((u, k) => {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
       const a = Math.PI * (0.25 + 0.5 * k), d = hasTown || list.length > 1 ? 0.5 : 0, x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (hasTown ? 0.1 : 0);
-      prism(b, x, y, z, 0.2, 0.05, 8, rgb('#f2efe6')); // base disc
-      if (cls === 'civilian') prism(b, x, y + 0.05, z, 0.1, 0.22, 6, rgb('#e8d9a8'), col);
-      else if (cls === 'naval') { box(b, x, y + 0.05, z, 0.42, 0.1, 0.18, shade(col, 0.8), col); prism(b, x, y + 0.15, z, 0.03, 0.3, 4, rgb('#f2efe6')); }
-      else if (cls === 'cavalry') { box(b, x, y + 0.05, z, 0.3, 0.16, 0.12, col); prism(b, x + 0.08, y + 0.21, z, 0.06, 0.16, 6, col); }
-      else if (cls === 'ranged' || cls === 'siege') prism(b, x, y + 0.05, z, 0.11, 0.34, 4, col, shade(col, 1.2));
-      else prism(b, x, y + 0.05, z, 0.12, 0.34, 6, col, shade(col, 1.2));
+      prism(b, x, y, z, 0.27, 0.06, 8, rgb('#f2efe6')); // base disc
+      if (cls === 'civilian') prism(b, x, y + 0.06, z, 0.13, 0.3, 6, rgb('#e8d9a8'), col);
+      else if (cls === 'naval') { box(b, x, y + 0.06, z, 0.56, 0.13, 0.24, shade(col, 0.8), col); prism(b, x, y + 0.19, z, 0.04, 0.4, 4, rgb('#f2efe6')); }
+      else if (cls === 'cavalry') { box(b, x, y + 0.06, z, 0.4, 0.2, 0.16, col); prism(b, x + 0.11, y + 0.26, z, 0.08, 0.22, 6, col); }
+      else if (cls === 'ranged' || cls === 'siege') prism(b, x, y + 0.06, z, 0.15, 0.46, 4, col, shade(col, 1.2));
+      else prism(b, x, y + 0.06, z, 0.16, 0.46, 6, col, shade(col, 1.2));
     });
   });
   return b;

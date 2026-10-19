@@ -5,7 +5,7 @@
 
 const godot = require('godot');
 const { Node3D, MeshInstance3D, SurfaceTool, StandardMaterial3D, Color, Vector2, Vector3, Camera3D, DirectionalLight3D, WorldEnvironment,
-  Environment, Sky, ProceduralSkyMaterial, CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
+  Environment, Sky, ProceduralSkyMaterial, PlaneMesh, CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
   Callable, OS, Input, Time, ProjectSettings } = godot;
 const AU = require('res://engine/au_bundle.js'); // absolute ids: GodotJS 1.1 beta turns relative ids from res:// into res:/
 const geo = require('res://geo.js');
@@ -83,16 +83,16 @@ class Main extends Node3D {
     this.buildHud();
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
-    if (this.shot) { for (let k = 0; k < 70 && !this.g.victory; k++) G.endTurn(this.g); this.refresh(); this.camDist = 22; this.updateCamera(); }
+    if (this.shot) { for (let k = 0; k < 70 && !this.g.victory; k++) G.endTurn(this.g); this.refresh(); this.focusPlayer(); this.camDist = 20; this.updateCamera(); }
   }
 
   buildWorld() {
     const env = new Environment(), sky = new Sky(), sm = new ProceduralSkyMaterial();
     sm.sky_top_color = new Color(0.32, 0.52, 0.82, 1); sm.sky_horizon_color = new Color(0.72, 0.8, 0.9, 1);
-    sm.ground_horizon_color = new Color(0.62, 0.66, 0.7, 1); sm.ground_bottom_color = new Color(0.2, 0.22, 0.26, 1);
+    sm.ground_horizon_color = new Color(0.1, 0.28, 0.5, 1); sm.ground_bottom_color = new Color(0.06, 0.2, 0.4, 1); // open sea past the map edge
     sky.sky_material = sm;
     env.background_mode = BG_SKY; env.sky = sky;
-    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.75;
+    env.ambient_light_source = AMBIENT_SKY; env.ambient_light_energy = 0.5;
     env.tonemap_mode = TONEMAP_ACES;
     env.ssao_enabled = true; // Forward+ only; the mobile renderer ignores it
     env.glow_enabled = true; env.glow_intensity = 0.25;
@@ -109,6 +109,10 @@ class Main extends Node3D {
     this.borders = new MeshInstance3D(); this.borders.material_override = this.matBorders; this.borders.cast_shadow = SHADOWS_OFF; this.add_child(this.borders);
     this.pieces = new MeshInstance3D(); this.pieces.material_override = this.matPieces; this.add_child(this.pieces);
     this.labelRoot = new Node3D(); this.add_child(this.labelRoot);
+    const sea = new MeshInstance3D(), plane = new PlaneMesh(), seaMat = new StandardMaterial3D(); // open ocean around the map
+    plane.size = new Vector2(1200, 1200); seaMat.albedo_color = new Color(0.07, 0.24, 0.45, 1); seaMat.roughness = 0.35;
+    sea.mesh = plane; sea.material_override = seaMat; sea.cast_shadow = SHADOWS_OFF; sea.position = new Vector3(0, -0.3, 0);
+    this.sea = sea; this.add_child(sea);
   }
 
   buildHud() {
@@ -138,12 +142,19 @@ class Main extends Node3D {
     this.terrain.mesh = toMesh(geo.buildTerrain(AU, this.g));
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + seed + ', terrain mesh in ' + (Time.get_ticks_msec() - t0) + ' ms');
     Object.keys(this.labels).forEach(id => this.labels[id].queue_free()); this.labels = {};
-    const cap = this.g.civs.map(c => c.capital).find(id => id !== undefined && id !== null && this.g.settlements[id]);
+    const capOf = c => (c && c.capital !== undefined && c.capital !== null && this.g.settlements[c.capital]) ? c.capital : undefined;
+    const cap = capOf(G.player(this.g)) !== undefined ? capOf(G.player(this.g)) : this.g.civs.filter(c => !c.minor).map(capOf).find(id => id !== undefined);
     const u = Object.keys(this.g.units).map(id => this.g.units[id]).find(x => x.civ === this.g.playerIdx);
     const focus = this.g.tiles[cap !== undefined ? this.g.settlements[cap].tile : (u ? u.tile : Math.floor(this.g.tiles.length / 2))];
     this.camTarget = geo.center(focus.col, focus.row); this.camDist = 16;
+    this.sea.position = new Vector3(geo.SQRT3 * this.g.W / 2, -0.3, 0.75 * this.g.H);
     this.updateCamera();
     this.refresh();
+  }
+
+  focusPlayer() { // centre on the followed empire's capital (it moves when a capital falls)
+    const p = G.player(this.g), s = p && this.g.settlements[p.capital], t = s && this.g.tiles[s.tile];
+    if (t) { this.camTarget = geo.center(t.col, t.row); this.updateCamera(); }
   }
 
   refresh() {
@@ -155,13 +166,13 @@ class Main extends Node3D {
       const st = g.settlements[id], t = g.tiles[st.tile], civ = g.civs[st.civ]; if (!t || !civ) return;
       let lb = this.labels[id];
       if (!lb) {
-        lb = new Label3D(); lb.billboard = BILLBOARD_ENABLED; lb.no_depth_test = true; lb.font_size = 44; lb.outline_size = 12; lb.pixel_size = 0.007;
+        lb = new Label3D(); lb.billboard = BILLBOARD_ENABLED; lb.no_depth_test = true; lb.font_size = 56; lb.outline_size = 14; lb.pixel_size = 0.009;
         this.labelRoot.add_child(lb); this.labels[id] = lb;
       }
       const c = geo.center(t.col, t.row), col = geo.rgb(civ.color || '#ffffff');
-      lb.text = st.name + '  ' + st.pop + (st.isCapital ? '  (capital)' : '');
+      lb.text = st.name + '  ' + st.pop;
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
-      lb.position = new Vector3(c[0], geo.tileTop(t) + 1.0, c[1]);
+      lb.position = new Vector3(c[0], geo.tileTop(t) + 1.1, c[1]);
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });
