@@ -1,5 +1,6 @@
 // Packs the rules engine (the same files tests/load.js runs, in the same order) into one CommonJS module for the Godot build.
-// Usage: node tools/godot/bundle.js  → godot/engine/au_bundle.js (generated, not committed)
+// Usage: node tools/godot/bundle.js  → godot/engine/au_bundle.js and godot/art/ (both generated, not committed)
+// godot/art gets the web game's painted unit, building, wonder and palace pictures, so both games share one set of art.
 const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..', '..');
 const files = (fs.readFileSync(path.join(root, 'tests', 'load.js'), 'utf8').match(/'[^']+\.js'/g) || []).map(s => s.slice(1, -1));
@@ -11,3 +12,17 @@ const dest = path.join(root, 'godot', 'engine', 'au_bundle.js');
 fs.mkdirSync(path.dirname(dest), { recursive: true });
 fs.writeFileSync(dest, out.join('\n'));
 console.log('bundled ' + files.length + ' engine files → ' + path.relative(root, dest) + ' (' + Math.round(fs.statSync(dest).size / 1024) + ' KB)');
+
+// the web game's painted pictures, copied (not moved) into the Godot project
+const ART = ['units', 'buildings', 'wonders', 'national', 'palace'], artDest = path.join(root, 'godot', 'art');
+fs.rmSync(artDest, { recursive: true, force: true });
+let copied = 0;
+ART.forEach(dir => (function copy(src, dst) {
+  fs.mkdirSync(dst, { recursive: true });
+  fs.readdirSync(src, { withFileTypes: true }).forEach(e => {
+    const s = path.join(src, e.name), d = path.join(dst, e.name);
+    if (e.isDirectory()) copy(s, d); else if (/\.png$/.test(e.name)) { fs.copyFileSync(s, d); copied++; }
+  });
+})(path.join(root, 'web', 'assets', dir), path.join(artDest, dir)));
+console.log('copied ' + copied + ' pictures from web/assets → godot/art');
+

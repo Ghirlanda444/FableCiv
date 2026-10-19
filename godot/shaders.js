@@ -25,80 +25,6 @@ vec3 bump(vec3 n, vec3 pos, float h, float k) {
 }
 `;
 
-const TERRAIN = `
-shader_type spatial;
-render_mode cull_disabled;
-uniform float grid_strength = 0.4;
-uniform float bump_strength = 0.9;
-varying vec3 wpos;
-varying vec2 mats; // x: rockiness, y: sand
-${NOISE}
-void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; mats = UV; }
-void fragment() {
-  vec3 base = pow(COLOR.rgb, vec3(2.2));
-  float macro = fbm(wpos.xz * 0.3), mid = fbm(wpos.xz * 2.4), fine = fbm(wpos.xz * 10.0);
-  vec3 wn = normalize((INV_VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz);
-  float slope = 1.0 - wn.y;
-  vec3 col = base * (0.8 + 0.4 * mid) * (0.9 + 0.2 * fine);
-  col *= mix(vec3(0.9, 0.97, 1.02), vec3(1.1, 1.03, 0.86), macro);           // warm and cool patches
-  float rip = sin(wpos.x * 9.0 + wpos.z * 4.0 + mid * 9.0) * 0.5 + 0.5;       // dune ripples on sand
-  col *= 1.0 + mats.y * (rip - 0.5) * 0.16 * step(0.05, wpos.y);
-  float rock_m = smoothstep(0.3, 0.55, slope + (mid - 0.5) * 0.3);
-  rock_m = max(rock_m, mats.x * smoothstep(0.3, 0.62, mid + (fine - 0.5) * 0.4));
-  vec3 rock = vec3(0.29, 0.27, 0.25) * (0.6 + 0.8 * fine) * (0.8 + 0.4 * mid);
-  col = mix(col, rock, clamp(rock_m, 0.0, 1.0) * step(-0.05, wpos.y));
-  float snow = smoothstep(1.2, 1.45, wpos.y + (mid - 0.5) * 0.4) * (1.0 - smoothstep(0.5, 0.8, slope));
-  col = mix(col, vec3(0.88, 0.91, 0.96), snow);
-  float beach = smoothstep(-0.14, -0.03, wpos.y) * (1.0 - smoothstep(0.04, 0.12, wpos.y + (fine - 0.5) * 0.06));
-  col = mix(col, vec3(0.76, 0.66, 0.46) * (0.85 + 0.3 * fine), beach * (1.0 - mats.x) * 0.9);
-  col *= mix(1.0, 0.62, smoothstep(0.0, -0.35, wpos.y));                       // wet, darker ground under water
-  float e = hex_edge(wpos.xz), aa = fwidth(e) * 1.5 + 0.002;
-  float line = 1.0 - smoothstep(0.01, 0.01 + aa, e);
-  col = mix(col, col * 0.5, line * grid_strength * step(0.0, wpos.y));
-  ALBEDO = col;
-  ROUGHNESS = mix(0.93, 0.5, snow);
-  NORMAL = bump(NORMAL, VERTEX, (mid * 0.5 + fine * 0.5) * (0.35 + rock_m), bump_strength * 0.12);
-}
-`;
-
-// KayKit models share one colour atlas; per instance (MultiMesh custom data) we recolour the grass to the terrain (mode 0),
-// tint foliage (mode 1) or paint the blue team parts of buildings in the owner's colour (mode 2), keeping the atlas shading.
-const KAYKIT = `
-shader_type spatial;
-uniform sampler2D atlas : source_color, filter_linear_mipmap;
-uniform int mode = 0;
-varying vec4 tint;
-void vertex() { tint = INSTANCE_CUSTOM; }
-void fragment() {
-  vec3 c = texture(atlas, UV).rgb;
-  if (mode == 0) {
-    float grass = smoothstep(0.12, 0.2, min(c.r, c.g) - c.b) * (1.0 - smoothstep(0.06, 0.14, abs(c.r - c.g)));
-    c = mix(c, tint.rgb * (c.g / 0.56), grass * tint.a);
-  } else if (mode == 1) {
-    float leaf = smoothstep(0.06, 0.1, c.g - max(c.r, c.b));
-    c = mix(c, tint.rgb * (c.g / 0.18), leaf * tint.a);
-  } else {
-    float blue = smoothstep(0.08, 0.16, c.b - max(c.r, c.g));
-    c = mix(c, tint.rgb * (c.b / 0.5), blue * tint.a);
-  }
-  ALBEDO = c;
-  ROUGHNESS = 0.82;
-}
-`;
-
-// character capes in the owner's colour (per-node instance uniform), keeping the cloth shading from the texture
-const CAPE = `
-shader_type spatial;
-uniform sampler2D tex : source_color, filter_linear_mipmap;
-instance uniform vec4 team : source_color = vec4(1.0);
-void fragment() {
-  vec3 c = texture(tex, UV).rgb;
-  float lum = dot(c, vec3(0.3, 0.59, 0.11));
-  ALBEDO = team.rgb * clamp(0.35 + lum * 2.2, 0.0, 1.4);
-  ROUGHNESS = 0.8;
-}
-`;
-
 // soft cel lighting shared by the painted look: a soft terminator with a hint of banding, luminous shadows and a warm rim
 const TOON_LIGHT = `
 void light() {
@@ -183,11 +109,13 @@ void fragment() {
 ${TOON_LIGHT}
 `;
 
-// cartoon water: turquoise shallows to deep blue, a crisp white shoreline with wavy contour lines, gentle wave tones
+// cartoon water: four-step depth colours from turquoise shallows to deep blue, slow painted wave streaks, a soft sun glint and
+// horizon brightening, and a broken foam band at the shore. Every detail is broad (several pixels at least), so nothing twinkles.
 const TOON_WATER = `
 shader_type spatial;
 render_mode blend_mix, cull_disabled, depth_draw_opaque, unshaded;
 uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
+uniform vec3 sun_dir = vec3(-0.447, 0.719, 0.532); // toward the sun, world space (main.js sets it from the light)
 varying vec3 wpos;
 ${NOISE}
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
@@ -195,25 +123,32 @@ void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; VERTEX.y += (sin(
 void fragment() {
   float d = texture(depth_tex, SCREEN_UV).r;
   vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
-  float depth = max(0.0, VERTEX.z - g.z) * 0.8, t = 1.0 - exp(-depth * 3.5);
-  vec3 sh = srgb(vec3(0.56, 0.93, 0.88)), md = srgb(vec3(0.2, 0.76, 0.82)), dp = srgb(vec3(0.08, 0.46, 0.72));
-  vec3 col = t < 0.5 ? mix(sh, md, t * 2.0) : mix(md, dp, t * 2.0 - 1.0);
+  float depth = max(0.0, VERTEX.z - g.z) * 0.8, t = 1.0 - exp(-depth * 2.8);
+  vec3 c0 = srgb(vec3(0.6, 0.94, 0.86)), c1 = srgb(vec3(0.2, 0.8, 0.84)), c2 = srgb(vec3(0.07, 0.55, 0.78)), c3 = srgb(vec3(0.05, 0.33, 0.62));
+  vec3 col = t < 0.33 ? mix(c0, c1, t / 0.33) : (t < 0.7 ? mix(c1, c2, (t - 0.33) / 0.37) : mix(c2, c3, (t - 0.7) / 0.3));
   vec2 p = wpos.xz;
-  float w = fbm(p * 0.9 + vec2(TIME * 0.05, TIME * 0.03)), wob = (fbm(p * 2.2 + TIME * 0.1) - 0.5) * 0.012;
-  col *= 0.95 + 0.1 * w;
-  // Everything here is kept wider than a pixel, so nothing twinkles in motion: thin details fade out when the camera zooms out,
-  // and foam is suppressed where the depth jumps (the silhouettes of trees, units and buildings in front of the water).
-  float dd = fwidth(depth), px = fwidth(p.x);
-  float steady = 1.0 - smoothstep(0.015, 0.04, dd);
-  float aa = min(dd, 0.01) * 1.5 + 0.002;
-  float shore = (1.0 - smoothstep(0.008, 0.008 + aa, depth + wob)) * steady;                    // white line where water meets land
-  float detail = 1.0 - smoothstep(0.02, 0.045, px);                                              // offshore lines only when close enough to read
-  float l1 = depth - (0.04 + 0.01 * sin(TIME * 0.8)) + wob, l2 = depth - (0.085 + 0.015 * sin(TIME * 0.6 + 1.7)) + wob;
-  float lines = ((1.0 - smoothstep(0.0, 0.006 + aa, abs(l1))) * 0.7 + (1.0 - smoothstep(0.0, 0.006 + aa, abs(l2))) * 0.4) * steady * detail;
-  float foam = clamp(shore + lines, 0.0, 1.0);
+  float px = fwidth(p.x), detail = 1.0 - smoothstep(0.03, 0.07, px);
+  // slow painted wave streaks: stretched, domain-warped noise in two soft tones
+  vec2 warp = vec2(fbm(p * 0.25 + TIME * 0.02), fbm(p * 0.25 + 5.0 - TIME * 0.015));
+  float streak = fbm(vec2(p.x * 0.45, p.y * 1.4) + warp * 2.5 + vec2(TIME * 0.05, 0.0));
+  col *= 1.0 + (smoothstep(0.52, 0.6, streak) * 0.09 - smoothstep(0.42, 0.34, streak) * 0.06) * smoothstep(0.1, 0.4, t);
+  // gentle wave normal for the glint and the horizon tint
+  float waves = fbm(p * 0.8 + vec2(TIME * 0.06, TIME * 0.04)) * 0.6 + fbm(p * 1.7 - vec2(TIME * 0.05, -TIME * 0.07)) * 0.4;
+  vec3 n = bump(NORMAL, VERTEX, waves, 0.06);
+  vec3 sunv = normalize((VIEW_MATRIX * vec4(sun_dir, 0.0)).xyz);
+  float glint = pow(max(dot(reflect(-VIEW, n), sunv), 0.0), 24.0) * 0.28 * smoothstep(0.2, 0.6, t);
+  float fres = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 3.0);
+  col = mix(col, srgb(vec3(0.72, 0.88, 0.96)), fres * 0.35) + glint;
+  // shore foam: a white band broken by noise, kept steady at the silhouettes of objects in front of the water
+  float dd = fwidth(depth), steady = 1.0 - smoothstep(0.015, 0.04, dd), aa = min(dd, 0.01) * 1.5 + 0.002;
+  float brk = fbm(p * 3.0 + vec2(TIME * 0.12, -TIME * 0.08));
+  float band = 1.0 - smoothstep(0.012 + brk * 0.02, 0.012 + brk * 0.02 + aa + 0.004, depth);
+  float edge = (1.0 - smoothstep(0.004, 0.004 + aa, depth));
+  float l1 = depth - (0.055 + 0.012 * sin(TIME * 0.7)) + (brk - 0.5) * 0.02;
+  float ring = (1.0 - smoothstep(0.0, 0.007 + aa, abs(l1))) * 0.55 * detail;
+  float foam = clamp(max(band * (0.65 + 0.35 * brk), edge) + ring, 0.0, 1.0) * steady;
   ALBEDO = mix(col, vec3(0.97, 0.99, 1.0), foam);
-  ALPHA = clamp(mix(0.35, 0.92, t) + shore + lines * 0.6, 0.0, 1.0);
-  SPECULAR = 0.0;
+  ALPHA = clamp(mix(0.38, 0.93, t) + foam * 0.8, 0.0, 1.0);
 }
 `;
 
@@ -255,41 +190,4 @@ void fragment() {
 ${TOON_LIGHT}
 `;
 
-const WATER = `
-shader_type spatial;
-render_mode blend_mix, cull_disabled, depth_draw_opaque, specular_schlick_ggx;
-uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
-uniform vec3 shallow_col : source_color = vec3(0.18, 0.68, 0.70);
-uniform vec3 deep_col : source_color = vec3(0.02, 0.14, 0.32);
-uniform float grid_strength = 0.12;
-uniform float depth_k = 2.4;   // how fast water darkens with depth
-uniform float foam_band = 0.09; // shoreline foam width
-uniform vec2 alpha_range = vec2(0.5, 0.94); // opacity in the shallows and in deep water
-varying vec3 wpos;
-${NOISE}
-void vertex() {
-  wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-  VERTEX.y += (sin(wpos.x * 1.1 + TIME * 0.9) + sin(wpos.z * 1.7 - TIME * 1.2)) * 0.006;
-}
-void fragment() {
-  float d = texture(depth_tex, SCREEN_UV).r;
-  vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
-  float depth = max(0.0, VERTEX.z - g.z) * 0.8;                                 // water thickness in front of the ground
-  float t = 1.0 - exp(-depth * depth_k);
-  vec3 col = mix(shallow_col, deep_col, t);
-  vec2 p = wpos.xz;
-  float waves = fbm(p * 1.4 + vec2(TIME * 0.11, TIME * 0.06)) * 0.6 + fbm(p * 3.3 - vec2(TIME * 0.08, -TIME * 0.1)) * 0.4;
-  float band = 1.0 - smoothstep(0.0, foam_band, depth);
-  float foam = band * (0.5 + 0.5 * sin(depth * 70.0 - TIME * 2.2 + waves * 4.0)) + band * smoothstep(0.5, 0.8, fbm(p * 7.0 + TIME * 0.25));
-  foam = clamp(foam, 0.0, 1.0) * step(0.0005, depth);
-  float e = hex_edge(p), aa = fwidth(e) * 1.5 + 0.002;
-  col = mix(col, col * 0.7, (1.0 - smoothstep(0.01, 0.01 + aa, e)) * grid_strength);
-  ALBEDO = mix(col, vec3(0.93, 0.96, 1.0), foam * 0.85);
-  ALPHA = clamp(mix(alpha_range.x, alpha_range.y, t) + foam * 0.5, 0.0, 1.0);
-  ROUGHNESS = mix(0.03, 0.45, foam);
-  SPECULAR = 0.55;
-  NORMAL = bump(NORMAL, VERTEX, waves, 0.05);
-}
-`;
-
-module.exports = { TERRAIN, WATER, KAYKIT, CAPE, PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER };
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER };

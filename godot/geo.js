@@ -22,6 +22,7 @@ function rgb(hex, a) {
   const v = parseInt(String(hex).replace('#', ''), 16);
   return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255, a === undefined ? 1 : a];
 }
+function mix(a, b, k) { return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k, a[3] + (b[3] - a[3]) * k]; }
 function shade(c, k) { return [c[0] * k, c[1] * k, c[2] * k, c[3]]; }
 function hash(i) { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; }
 
@@ -92,10 +93,19 @@ function prism(b, x, y, z, r, h, sides, col, capCol) {
 }
 
 // Per-turn pieces: settlements (houses in the owner's colours, a tower for capitals) and units (a token per unit).
-// opts.art: settlements and most units are drawn by the KayKit art, so only draw a disc in the owner's colour under each unit,
+// opts.art: settlements and most units are painted pictures, so only draw town plazas and walls, a disc in the owner's colour under each unit,
 // plus placeholders for units without art (opts.hasArt(u) false).
 function buildPieces(AU, g, F, opts) {
   const b = batch(), walls = rgb('#d9cfbf'), art = opts && opts.art;
+  if (art) Object.keys(g.settlements).forEach(id => { // painted buildings stand on a plaza; cities with walls get a wall ring
+    const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
+    const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), stone = rgb('#d8ccb4'), y = F.heightAt(c[0], c[1]);
+    prism(b, c[0], y - 0.12, c[1], s.isCity ? 0.95 : 0.7, 0.15, 12, mix(stone, roof, 0.12), mix(stone, roof, 0.18));
+    if ((s.buildings || []).indexOf('walls') >= 0 || (s.buildings || []).indexOf('castle') >= 0) for (let k = 0; k < 18; k++) {
+      const a = 2 * Math.PI * k / 18, x = c[0] + Math.cos(a) * 0.96, z = c[1] + Math.sin(a) * 0.96;
+      prism(b, x, F.heightAt(x, z) - 0.08, z, 0.1, k % 3 === 0 ? 0.3 : 0.22, 6, shade(stone, 0.82), k % 3 === 0 ? roof : shade(stone, 0.95));
+    }
+  });
   if (!art) Object.keys(g.settlements).forEach(id => {
     const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
     const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), n = Math.min(8, 3 + Math.floor((s.pop || 1) / 2));

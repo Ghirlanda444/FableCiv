@@ -26,12 +26,13 @@ function check(name, b) {
 check('rivers', R); check('borders', geo.buildBorders(AU, g, F)); check('pieces', geo.buildPieces(AU, g, F));
 ['pineTree', 'roundTree', 'palmTree', 'bush', 'tuft', 'rock', 'reed'].forEach(k => check(k, props[k]()));
 ['fluffyTree', 'fluffyBush'].forEach(k => { const f = props[k](); check(k + '.solid', f.solid); check(k + '.leaf', f.leaves); assert(f.leaves.uv && f.leaves.uv.length === f.leaves.p.length / 3 * 2, k + ' leaf cards need UVs'); });
-// KayKit layout: every model it asks for is in assets/kaykit, and every river tile finds a river piece
-const K = require('../../godot/kaykit.js'), fs = require('fs'), path = require('path');
-const lists = Object.assign({}, K.buildStatic(AU, g), K.buildTowns(AU, g));
-const missing = Object.keys(lists).filter(m => !fs.existsSync(path.join(__dirname, '../../godot/assets/kaykit/hex', m + '.gltf')));
-assert.deepStrictEqual(missing, [], 'models missing from godot/assets/kaykit/hex');
-const rd = K.riverDirs(AU, g); Object.keys(rd).forEach(i => { const d = Array.from(rd[i]); assert(K.riverFor(d.length === 1 ? [d[0], (d[0] + 3) % 6] : d), 'no river piece for tile ' + i + ' edges ' + d); });
-Object.values(K.LOADOUT).forEach(l => { assert(fs.existsSync(path.join(__dirname, '../../godot/assets/kaykit/chars', l.model + '.gltf')), 'missing character ' + l.model); l.gear.forEach(x => assert(K.GEAR[l.model].includes(x), x + ' is not gear of ' + l.model)); });
-console.log('kaykit  ', Object.keys(lists).length + ' models, ' + Object.keys(rd).length + ' river tiles, ' + K.unitSpots(AU, g).filter(s => s.load).length + ' character units');
+// painted pictures: every unit and building chain resolves to a picture in web/assets (except the few with no art yet)
+const SP = require('../../godot/sprites.js'), fs = require('fs'), path = require('path');
+const exists = p => fs.existsSync(path.join(__dirname, '../../web/assets', p));
+const units = SP.unitSpots(AU, g, () => 0), towns = SP.townSprites(AU, g, () => 0);
+const NO_ART = new Set(['commander', 'migrant', 'scarecrow']);
+units.forEach(s => assert(s.chain.some(exists) || NO_ART.has(s.unit.type), 'no picture for unit ' + s.unit.type + ': ' + s.chain.join(' | ')));
+const townMissing = towns.filter(s => !s.chain.some(exists)).map(s => s.chain[s.chain.length - 1]);
+assert(townMissing.every(p => /growth_hall/.test(p)), 'buildings without pictures: ' + townMissing.join(' '));
+console.log('pictures', units.length + ' unit standees, ' + towns.length + ' town pictures (' + townMissing.length + ' without art yet)');
 console.log('geo ok, turn ' + g.turn + ', ' + Object.keys(g.settlements).length + ' settlements, ' + Object.keys(g.units).length + ' units');

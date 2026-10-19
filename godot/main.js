@@ -6,7 +6,7 @@
 
 const godot = require('godot');
 const { Node3D, MeshInstance3D, MultiMeshInstance3D, MultiMesh, ArrayMesh, SurfaceTool, StandardMaterial3D, ShaderMaterial, Shader, Color, Vector2, Vector3,
-  Transform3D, Camera3D, CameraAttributesPractical, DirectionalLight3D, WorldEnvironment, Environment, Sky, ProceduralSkyMaterial, PlaneMesh,
+  Transform3D, Sprite3D, ResourceLoader, Camera3D, CameraAttributesPractical, DirectionalLight3D, WorldEnvironment, Environment, Sky, ProceduralSkyMaterial, PlaneMesh,
   CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
   Callable, OS, Input, Time, ProjectSettings } = godot;
 const AU = require('res://engine/au_bundle.js'); // absolute ids: GodotJS 1.1 beta turns relative ids from res:// into res:/
@@ -14,11 +14,11 @@ const geo = require('res://geo.js');
 const terrain = require('res://terrain.js');
 const props = require('res://props.js');
 const shaders = require('res://shaders.js');
-const kaykit = require('res://kaykit.js');
-const { Art } = require('res://art.js');
+const sprites = require('res://sprites.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
+const ALPHA_CUT_DISCARD = 1, FILTER_LINEAR_MIPMAP = 3;
 const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
@@ -126,12 +126,9 @@ class Main extends Node3D {
     this.camTarget = [0, 0]; this.camDist = 16; this.touches = {}; this.dragged = 0; this.selected = -1;
     this.labels = {};
     this.hiFx = OS.get_name() !== 'Android'; // ambient occlusion: on for desktop, off for phones (toggle in the HUD)
-    // looks: 'painted' (default: hand-painted cartoon terrain and nature drawn in code) or 'tiles' (KayKit hex tiles, --look=tiles).
-    // Buildings and units are KayKit chibi models in both when they load (--no-models forces the code-built placeholders).
-    this.look = this.args.indexOf('--look=tiles') >= 0 ? 'tiles' : 'painted';
     this.density = OS.get_name() === 'Android' ? 0.5 : 1; // phones get half the trees and grass
     this.matTerrain = shaderMaterial(shaders.PAINTED_TERRAIN);
-    this.matWater = shaderMaterial(this.look === 'tiles' ? shaders.WATER : shaders.TOON_WATER);
+    this.matWater = shaderMaterial(shaders.TOON_WATER);
     this.matPieces = material({ roughness: 0.7 });
     this.matProps = shaderMaterial(shaders.PAINTED_PROP);
     this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
@@ -143,10 +140,12 @@ class Main extends Node3D {
     this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
       tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
     this.buildWorld();
-    this.art = new Art(this);
-    this.useArt = this.args.indexOf('--no-models') < 0 && this.art.load(); // KayKit models when they load, else the code-built placeholders
-    if (!this.useArt) this.look = 'painted';
-    console.log('[tiny-empires] art: ' + (this.useArt ? 'KayKit models' : 'placeholders') + ', look: ' + this.look);
+    // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
+    // code-built placeholder pieces stand in (the game never waits on art)
+    this.textures = {}; this.unitNodes = {}; this.townNodes = {};
+    this.spriteRoot = new Node3D(); this.add_child(this.spriteRoot);
+    this.useArt = this.args.indexOf('--no-art') < 0 && !!this.texture(['units/warrior.png']);
+    console.log('[tiny-empires] art: ' + (this.useArt ? 'painted pictures' : 'placeholders'));
     this.buildHud();
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
@@ -173,6 +172,9 @@ class Main extends Node3D {
     sun.light_energy = 1.15; sun.light_color = new Color(1, 0.95, 0.84, 1);
     sun.shadow_enabled = true; sun.shadow_blur = 1.5; sun.directional_shadow_max_distance = 60;
     this.sun = sun; this.add_child(sun);
+    // the same angles as a direction toward the sun (Godot rotates Y then X), for the water's sun glint
+    const ax = -46 * Math.PI / 180, ay = -40 * Math.PI / 180, fx = Math.sin(ay) * -Math.cos(ax), fy = Math.sin(ax), fz = Math.cos(ay) * -Math.cos(ax);
+    this.matWater.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz));
 
     this.cam = new Camera3D(); this.cam.fov = 45; this.cam.far = 500; this.add_child(this.cam); this.cam.make_current();
     this.camAttr = new CameraAttributesPractical(); this.cam.attributes = this.camAttr;
@@ -229,22 +231,10 @@ class Main extends Node3D {
     this.refresh();
   }
 
-  // the static landscape for a new map: the painted terrain with rivers and nature, or (tile look) KayKit hex tiles
+  // the static landscape for a new map: the painted terrain with rivers and nature
   buildLand() {
     const t0 = Time.get_ticks_msec();
-    if (this.look === 'tiles') {
-      this.field = kaykit.flatField(AU, this.g);
-      this.terrain.mesh = null; this.rivers.mesh = null; this.clearProps();
-      this.art.clear();
-      const n = this.art.buildStatic(AU, this.g);
-      this.waterY = kaykit.WATER_Y;
-      const W = this.matWater; // brighter, clearer water to match the KayKit palette
-      W.set_shader_parameter('depth_k', 5.0); W.set_shader_parameter('foam_band', 0.03); W.set_shader_parameter('alpha_range', new Vector2(0.3, 0.78));
-      W.set_shader_parameter('shallow_col', new Color(0.32, 0.8, 0.86, 1)); W.set_shader_parameter('deep_col', new Color(0.1, 0.42, 0.74, 1));
-      console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': ' + n + ' KayKit tiles and props in ' + (Time.get_ticks_msec() - t0) + ' ms');
-      return;
-    }
-    if (this.useArt) this.art.clear();
+    this.clearSprites();
     this.field = terrain.makeField(AU, this.g);
     const M = terrain.buildTerrainMesh(this.field), t1 = Time.get_ticks_msec();
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
@@ -270,6 +260,51 @@ class Main extends Node3D {
     return S;
   }
 
+  // first picture of a preference chain that exists (cached; null when none does)
+  texture(chain) {
+    for (const p of chain) {
+      if (!(p in this.textures)) { const path = 'res://art/' + p; this.textures[p] = ResourceLoader.exists(path) ? ResourceLoader.load(path) : null; }
+      if (this.textures[p]) return this.textures[p];
+    }
+    return null;
+  }
+  // a painted picture standing upright on the ground and always facing the camera
+  standee(tex, x, y, z, height) {
+    const sp = new Sprite3D();
+    sp.texture = tex; sp.billboard = BILLBOARD_ENABLED; sp.shaded = false; sp.alpha_cut = ALPHA_CUT_DISCARD; sp.texture_filter = FILTER_LINEAR_MIPMAP;
+    sp.pixel_size = height / tex.get_height(); sp.cast_shadow = SHADOWS_OFF;
+    sp.position = new Vector3(x, y + height * 0.5, z);
+    this.spriteRoot.add_child(sp);
+    return sp;
+  }
+  // units and town buildings as painted standees, reused while they stay the same
+  syncSprites(ground) {
+    const g = this.g, keepU = {}, keepT = {};
+    sprites.unitSpots(AU, g, ground).forEach(s => {
+      const tex = this.texture(s.chain); if (!tex) return;
+      let n = this.unitNodes[s.id];
+      if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
+      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height) };
+      n.node.position = new Vector3(s.x, s.y + s.height * 0.5 + 0.04, s.z);
+      keepU[s.id] = true;
+    });
+    Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });
+    sprites.townSprites(AU, g, ground).forEach(s => {
+      const tex = this.texture(s.chain); if (!tex) return;
+      let n = this.townNodes[s.key];
+      if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
+      if (!n) n = this.townNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height) };
+      n.node.position = new Vector3(s.x, s.y + s.height * 0.5, s.z);
+      keepT[s.key] = true;
+    });
+    Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });
+  }
+  clearSprites() {
+    Object.keys(this.unitNodes || {}).forEach(id => this.unitNodes[id].node.queue_free());
+    Object.keys(this.townNodes || {}).forEach(k => this.townNodes[k].node.queue_free());
+    this.unitNodes = {}; this.townNodes = {};
+  }
+
   // centre the camera on the land with the most mountains and hills around it (for the relief screenshot)
   frameMountains() {
     const g = this.g; let best = null, bestScore = -1;
@@ -290,10 +325,10 @@ class Main extends Node3D {
   refresh() {
     const g = this.g;
     this.borders.mesh = toMesh(geo.buildBorders(AU, g, this.field));
-    const painted = this.look === 'painted';
-    if (painted && terrain.scatterKey(g) !== this.natureKey) this.buildNature();
-    if (this.useArt) this.art.refresh(AU, g, painted ? (x, z) => this.field.heightAt(x, z) : undefined);
-    const hasArt = u => { const l = kaykit.loadoutFor(AU, u); return !!(l && this.art.scenes[l.model]); };
+    if (terrain.scatterKey(g) !== this.natureKey) this.buildNature();
+    const ground = (x, z) => this.field.heightAt(x, z);
+    if (this.useArt) this.syncSprites(ground);
+    const hasArt = u => !!this.texture(sprites.unitChain(AU, g, u));
     this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field, this.useArt ? { art: true, hasArt } : null));
     const seen = {};
     Object.keys(g.settlements).forEach(id => {
@@ -306,7 +341,7 @@ class Main extends Node3D {
       const c = geo.center(t.col, t.row), col = geo.rgb(civ.color || '#ffffff');
       lb.text = st.name + '  ' + st.pop;
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
-      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? (st.isCapital ? 2.0 : 1.3) : 1.15), c[1]);
+      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? 1.2 : 1.15), c[1]);
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });

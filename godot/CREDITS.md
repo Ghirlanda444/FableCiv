@@ -1,8 +1,6 @@
 # Credits
 
-3D art: **KayKit** by Kay Lousberg (www.kaylousberg.com), licensed CC0 (public domain, free for commercial use):
+Unit, building, wonder and palace pictures: the web game's own art (`web/assets`), copied into `godot/art` by
+`tools/godot/bundle.js` so both versions of Tiny Empires share one set of pictures.
 
-- KayKit : Medieval Hexagon Pack 1.0 (hex tiles, rivers, nature, buildings)
-- KayKit : Character Pack Adventures 1.0 (Knight, Rogue, Rogue Hooded, Barbarian, Mage, with animations; converted from .glb to .gltf by tools/godot/glb-to-gltf.js)
-
-Licence texts: `assets/kaykit/LICENSE-*.txt`. Crediting is not required by CC0; we credit anyway.
+Terrain, water, trees and nature are drawn in code (`terrain.js`, `props.js`, `shaders.js`); no third-party assets.
