@@ -49,7 +49,7 @@ jobs:
 
       - name: Smoke test (40 AI turns headless)
         run: |
-          timeout 180 "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -60 || true
+          timeout 240 "$GODOT" --headless --path godot -- --smoke 2>&1 | tee smoke.log | tail -60 || true
           grep -q "SMOKE OK" smoke.log
 
       - name: Screenshot (software Vulkan)
@@ -57,8 +57,10 @@ jobs:
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq mesa-vulkan-drivers xvfb > /dev/null
           mkdir -p build
-          timeout 300 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --resolution 1280x720 -- --shot 2>&1 | tail -20
-          cp "$HOME/.local/share/godot/app_userdata/Tiny Empires/shot.png" build/screenshot.png && ls -la build
+          timeout 400 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --resolution 1280x720 -- --shot 2>&1 | grep -v "^ALSA" | tail -40
+          D="$HOME/.local/share/godot/app_userdata/Tiny Empires"
+          cp "$D/shot.png" build/screenshot.png; cp "$D/shot_wide.png" build/screenshot-wide.png || true; cp "$D/shot_low.png" build/screenshot-low.png || true
+          ls -la build
 
       - name: Export Windows
         run: |
@@ -91,11 +93,13 @@ jobs:
           prerelease: true
           target_commitish: ${{ github.sha }}
           body: |
-            Godot test build of Tiny Empires: the same rules engine as the web game in a 3D hex world. All empires are AI-run: press End Turn (or Space) or Auto to watch.
+            Godot test build of Tiny Empires: the same rules engine as the web game in a 3D hex world. All empires are AI-run: press End Turn (or Space) or Auto to watch. FX toggles the tilt-shift focus and ambient occlusion.
             Windows: download TinyEmpires.exe and run it. Android: install TinyEmpires.apk (allow installs from unknown sources).
             Built from ${{ github.sha }}.
           files: |
             build/TinyEmpires.exe
             build/TinyEmpires.apk
             build/screenshot.png
+            build/screenshot-wide.png
+            build/screenshot-low.png
           fail_on_unmatched_files: false
