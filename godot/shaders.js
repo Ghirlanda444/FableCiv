@@ -152,7 +152,7 @@ void fragment() {
   float ring = (1.0 - smoothstep(0.0, 0.007 + aa, abs(l1))) * 0.55 * detail;
   float foam = clamp(max(band * (0.65 + 0.35 * brk), edge) + ring, 0.0, 1.0) * steady;
   float e = hex_edge(p), pg = length(fwidth(p)) * 0.71, lw = max(pg * 1.1, 0.012), inside = step(map_rect.x, p.x) * step(map_rect.y, p.y) * step(p.x, map_rect.z) * step(p.y, map_rect.w);
-  col = mix(col, srgb(vec3(0.85, 0.95, 1.0)), (1.0 - smoothstep(lw, lw + pg * 1.2, e)) * grid_strength * 0.45 * inside); // light grid lines on sea tiles
+  col = mix(col, srgb(vec3(0.85, 0.95, 1.0)), (1.0 - smoothstep(lw, lw + pg * 1.2, e)) * grid_strength * 0.25 * inside * (1.0 - 0.5 * smoothstep(0.02, 0.06, pg))); // light grid lines on sea tiles, fainter zoomed out
   ALBEDO = mix(col, vec3(0.97, 0.99, 1.0), foam);
   ALPHA = clamp(mix(0.38, 0.93, t) + foam * 0.8, 0.0, 1.0);
 }

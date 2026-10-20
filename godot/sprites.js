@@ -42,27 +42,23 @@ function unitSpots(AU, g, heightAt) {
   return out;
 }
 
-// "Show city": one settlement's buildings as pictures on its plaza. The palace (capital) or a hall stands in the middle, the
-// buildings on three rings around it, wonders and national projects on the outer ring. Walls are drawn by city.js.
+// "Show city": one settlement's buildings as pictures on its square. The palace (capital) or a hall stands in the middle, the
+// buildings spread around it, wonders and national projects at the back. Walls are drawn by city.js.
 const SKIP = { palace: 1, walls: 1, castle: 1, boundary_marker: 1 };
-const RINGS = [[6, 0.33, 0.5], [9, 0.57, 0.2], [12, 0.8, 0.0]];
 function cityViewSprites(AU, g, s, heightAt) {
   const out = [], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return out;
   const c = center(t.col, t.row), culture = cultureOfCiv(AU, civ), put = (chain, x, z, h, key) => out.push({ key: s.id + ':' + key, chain, x, y: Math.max(0, heightAt(x, z)), z, height: h, settlement: s.id });
-  if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.05, 0.66, 'centre');
-  else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.05, s.isCity ? 0.56 : 0.46, 'centre');
-  const inner = [], outer = [];
-  RINGS.forEach(([n, r, off], ring) => { for (let k = 0; k < n; k++) { const a = off + 2 * Math.PI * k / n; (ring < 2 ? inner : outer).push([Math.cos(a) * r, Math.sin(a) * r * 0.88]); } });
   const big = b => (AU.WONDERS && AU.WONDERS[b]) || (AU.NATIONAL && AU.NATIONAL[b]);
-  const blds = (s.buildings || []).filter(b => !SKIP[b]), plain = blds.filter(b => !big(b)), wonders = blds.filter(big);
-  const spots = inner.concat(outer), wonderSpots = outer.slice().sort((p, q) => p[1] - q[1]); // wonders fill the back of the outer ring first
-  const used = {};
-  wonders.slice(0, outer.length).forEach((b, i) => { const p = wonderSpots[i]; used[p.join()] = 1; put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], 0.62, b); });
-  plain.reduce((n, b) => {
-    while (n < spots.length && used[spots[n].join()]) n++;
-    if (n < spots.length) put(buildingChain(AU, b, culture), c[0] + spots[n][0], c[1] + spots[n][1], 0.46, b);
-    return n + 1;
-  }, 0);
+  const blds = (s.buildings || []).filter(b => !SKIP[b]), n = blds.length;
+  // spots spread evenly over the square (a sunflower spiral around the centre piece); pictures shrink as the city fills up
+  const spacing = 0.78 * Math.sqrt(Math.PI / Math.max(1, n + 1)), h = Math.max(0.24, Math.min(0.46, spacing * 0.95));
+  const spots = [];
+  for (let i = 1; i <= n; i++) { const r = 0.8 * Math.sqrt((i + 0.5) / (n + 1)), a = i * 2.39996 + 0.6; spots.push([Math.cos(a) * r, Math.sin(a) * r * 0.88]); }
+  spots.sort((p, q) => p[1] - q[1]);                                        // back to front: wonders take the back
+  const order = blds.filter(big).concat(blds.filter(b => !big(b)));
+  order.forEach((b, i) => put(buildingChain(AU, b, culture), c[0] + spots[i][0], c[1] + spots[i][1], big(b) ? h * 1.3 : h, b));
+  if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.02, Math.max(0.4, h * 1.35), 'centre');
+  else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.02, Math.max(0.34, h * 1.15), 'centre');
   return out;
 }
 

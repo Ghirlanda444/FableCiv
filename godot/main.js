@@ -377,6 +377,7 @@ class Main extends Node3D {
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
       const cn = this.cityNodes[id];
       lb.position = new Vector3(c[0], (cn ? cn.top : Math.max(0, this.field.heightAt(c[0], c[1])) + 0.8) + 0.2, c[1] - 0.2);
+      lb.visible = String(this.viewCity) !== String(id); // the Show city view names the city in the menu instead
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });

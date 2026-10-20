@@ -1,6 +1,6 @@
 "use strict";
 // Settlements on the map, Civilization III style: every settlement is one small 3D town that looks the same for every settlement
-// of its size and culture, and grows in steps as its population grows (village, small city, city, large city, metropolis).
+// of its size and culture, and grows in steps as its population grows (town, small city, city, large city, metropolis).
 // Houses and the central landmark follow the culture's architecture (AU.PALACE_STYLES: wall, roof and trim colours, roof shape),
 // a flag flies the owner's colour (a bigger one with a gold finial on capitals), and walls or a castle add a ring of ramparts.
 // Individual buildings are not drawn here: they appear in the "Show city" view (sprites.cityViewSprites).
@@ -8,9 +8,9 @@
 const geo = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 const { rgb, mix, shade, hash, vert, tri, quad, box, prism, center } = geo;
 
-const TIER_NAMES = ['Village', 'Small city', 'City', 'Large city', 'Metropolis'];
+const TIER_NAMES = ['Town', 'Small city', 'City', 'Large city', 'Metropolis'];
 function tierOf(s) { if (!s.isCity) return 0; const p = s.pop || 1; return p < 8 ? 1 : p < 16 ? 2 : p < 30 ? 3 : 4; }
-const RADIUS = [0.34, 0.43, 0.53, 0.63, 0.72];    // footprint of each tier
+const RADIUS = [0.36, 0.46, 0.56, 0.66, 0.74];    // footprint of each tier
 const HOUSES = [3, 6, 10, 15, 22];              // houses around the landmark
 
 // fixed house spots on three rings, the same for every settlement (so a tier always looks the same); spots where the first two
@@ -18,7 +18,7 @@ const HOUSES = [3, 6, 10, 15, 22];              // houses around the landmark
 const UNIT_SPOTS = [geo.unitOffset(0, 1, true), geo.unitOffset(1, 2, true)];
 const SLOTS = (() => {
   const out = [];
-  [[6, 0.27, 0.35], [9, 0.45, 0.05], [12, 0.62, 0.3]].forEach(([n, r, off], ring) => {
+  [[6, 0.28, 0.35], [9, 0.47, 0.05], [12, 0.65, 0.3]].forEach(([n, r, off], ring) => {
     for (let k = 0; k < n; k++) {
       const a = off + 2 * Math.PI * k / n, i = out.length;
       const x = Math.cos(a) * r + (hash(i * 7 + 1) - 0.5) * 0.05, z = Math.sin(a) * r * 0.92 + (hash(i * 7 + 2) - 0.5) * 0.05;
@@ -217,22 +217,37 @@ function buildCity(AU, g, s, heightAt, opts) {
   const c = center(t.col, t.row), culture = civ && AU.cultureOf ? AU.cultureOf(civ) : null;
   const S = (AU.PALACE_STYLES && AU.PALACE_STYLES[culture]) || DEFAULT_STYLE, kind = HOUSE[culture] || HOUSE.mediterranean;
   const tier = tierOf(s), R = opts && opts.view ? 0.86 : RADIUS[tier], gy = (x, z) => Math.max(0, heightAt(x, z));
-  const wall = rgb(S.wall), roof = rgb(S.roof), trim = rgb(S.trim), hroof = kind.col ? rgb(kind.col) : roof, own = rgb(civ.color || '#cccccc');
-  const ground = rgb(s.isCity ? '#c9bfae' : '#b59f7a'), y0 = gy(c[0], c[1]);
-  prism(b, c[0], y0 - 0.14, c[1], R * 0.95, 0.15, 18, shade(ground, 0.8), ground);                        // plaza
+  const tame = col => { const l = 0.3 * col[0] + 0.59 * col[1] + 0.11 * col[2]; return l > 0.75 ? shade(col, 0.75 / l) : col; }; // pale walls glare in full sun
+  const wall = tame(rgb(S.wall)), roof = rgb(S.roof), trim = tame(rgb(S.trim)), hroof = kind.col ? rgb(kind.col) : roof, own = rgb(civ.color || '#cccccc');
+  const y0 = gy(c[0], c[1]);
+  plaza(b, c[0], c[1], R * 0.95, gy, rgb(s.isCity ? '#a8987c' : '#9c8460'));
   const blds = s.buildings || [], castle = blds.indexOf('castle') >= 0;
-  if (castle || blds.indexOf('walls') >= 0) ramparts(b, c[0], c[1], Math.min(0.92, R + 0.12), heightAt, castle, wall, roof);
+  if (castle || blds.indexOf('walls') >= 0) ramparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, wall, roof);
   if (opts && opts.view) return { batch: b, top: y0 + 0.8 };
   SLOTS.slice(0, HOUSES[tier]).forEach((p, i) => {
     const x = c[0] + p.x, z = c[1] + p.z, inner = p.ring === 0 && tier >= 3;
     const w = 0.15 + 0.05 * p.j + (inner ? 0.03 : 0), d = 0.13 + 0.04 * p.k + (inner ? 0.02 : 0);
     const h = 0.11 + 0.025 * tier + 0.04 * p.k + (inner ? 0.07 : 0) + (tier === 4 && p.ring === 1 ? 0.05 : 0);
     const wc = i % 3 === 0 ? mix(wall, [1, 1, 1, 1], 0.12) : i % 3 === 1 ? shade(wall, 0.9) : wall, rc = shade(hroof, 0.86 + 0.24 * p.j);
-    house(b, x, gy(x, z), z, w, d, h, kind, wc, rc, trim, p.along);
+    const from = b.p.length / 3, hy = gy(x, z);
+    house(b, x, hy, z, w, d, h, kind, wc, rc, trim, p.along); stretch(b, from, hy, TALL);
   });
-  const top = landmark(b, c[0], y0, c[1] - 0.03, tier, S, wall, roof, trim, kind);
+  const from = b.p.length / 3, top = y0 + (landmark(b, c[0], y0, c[1] - 0.03, tier, S, wall, roof, trim, kind) - y0) * TALL;
+  stretch(b, from, y0, TALL);
   flag(b, c[0] + 0.01, top, c[1] - 0.03, own, !!s.isCapital);
   return { batch: b, top: top + (s.isCapital ? 0.3 : 0.2) };
+}
+
+// stretch what was drawn since vertex `from` upward from its ground: the models read as chibi buildings next to the units
+const TALL = 1.4;
+function stretch(b, from, ground, k) { for (let i = from * 3 + 1; i < b.p.length; i += 3) b.p[i] = ground + (b.p[i] - ground) * k; }
+// a paved square draped over the ground (a flat drum would stand out of slopes)
+function plaza(b, cx, cz, R, gy, col) {
+  const n = 20, rings = [0, 0.4, 0.75, 1], P = rings.map(f => { const row = []; for (let k = 0; k < n; k++) { const a = 2 * Math.PI * k / n, x = cx + Math.cos(a) * R * f, z = cz + Math.sin(a) * R * f * 0.95; row.push([x, gy(x, z) + 0.015, z]); } return row; });
+  for (let r = 0; r < rings.length - 1; r++) for (let k = 0; k < n; k++) {
+    const a = P[r][k], b2 = P[r][(k + 1) % n], c = P[r + 1][(k + 1) % n], d = P[r + 1][k], cc = shade(col, 1 - 0.06 * r);
+    if (r === 0) tri(b, a, c, d, cc); else quad(b, a, b2, c, d, cc);
+  }
 }
 
 // what decides how an icon looks: it is rebuilt only when this changes
