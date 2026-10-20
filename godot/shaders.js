@@ -408,9 +408,11 @@ void fragment() {
 // The push grows with the distance, so the line keeps about the same width on screen (0.005 ≈ 4 px on a 720 px tall view
 // at the 45° field of view) whatever the zoom. Separate shells (helmets, shields, eyes) get their own line where they
 // cross the body, which is what makes them read as separate things.
+// Culling: Godot takes clockwise triangles as front faces and the Blender meshes are counter-clockwise, so the faces Godot
+// calls "back" are the models' real front faces; culling those leaves the real back faces, the inverted hull.
 const UNIT_OUTLINE = `
 shader_type spatial;
-render_mode unshaded, cull_front, shadows_disabled;
+render_mode unshaded, cull_back, shadows_disabled;
 uniform float width = 0.005;
 uniform vec3 ink : source_color = vec3(0.03, 0.025, 0.035);
 void vertex() {
