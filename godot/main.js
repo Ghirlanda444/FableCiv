@@ -7,7 +7,7 @@
 const godot = require('godot');
 const { Node3D, MeshInstance3D, MultiMeshInstance3D, MultiMesh, ArrayMesh, SurfaceTool, StandardMaterial3D, ShaderMaterial, Shader, Color, Vector2, Vector3,
   Transform3D, QuadMesh, ResourceLoader, Camera3D, CameraAttributesPractical, DirectionalLight3D, WorldEnvironment, Environment, Sky, ProceduralSkyMaterial, PlaneMesh,
-  CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
+  FileAccess, CanvasLayer, PanelContainer, VBoxContainer, HBoxContainer, Button, RichTextLabel, Label, Label3D,
   Callable, OS, Input, Time, ProjectSettings } = godot;
 const AU = require('res://engine/au_bundle.js'); // absolute ids: GodotJS 1.1 beta turns relative ids from res:// into res:/
 const geo = require('res://geo.js');
@@ -60,6 +60,23 @@ function toMesh(b) {
     st.add_vertex(new Vector3(b.p[i * 3], b.p[i * 3 + 1], b.p[i * 3 + 2]));
   }
   return n ? st.commit() : null;
+}
+
+// a model made in Blender (tools/blender/models.py → godot/models/<name>.json: { v: [x,y,z, nx,ny,nz, r,g,b,a ...], i: [...] });
+// null when the file is missing (the code-built model stands in)
+function loadModel(name) {
+  const path = 'res://models/' + name + '.json';
+  if (!FileAccess.file_exists(path)) return null;
+  try {
+    const m = JSON.parse(FileAccess.get_file_as_string(path)), v = m.v, st = new SurfaceTool();
+    st.begin(PRIMITIVE_TRIANGLES);
+    for (let k = 0; k < v.length; k += 10) {
+      st.set_normal(new Vector3(v[k + 3], v[k + 4], v[k + 5])); st.set_color(new Color(v[k + 6], v[k + 7], v[k + 8], v[k + 9]));
+      st.add_vertex(new Vector3(v[k], v[k + 1], v[k + 2]));
+    }
+    m.i.forEach(i => st.add_index(i));
+    return st.commit();
+  } catch (e) { console.log('[tiny-empires] model ' + name + ' failed: ' + (e && e.message)); return null; }
 }
 
 // indexed terrain mesh: bulk upload through packed arrays when this Godot build allows it, else SurfaceTool (slower, always works)
@@ -143,7 +160,11 @@ class Main extends Node3D {
     this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
       tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
     this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
-    Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k]; this.dressMeshes[k] = { mesh: toMesh(m[0]()), still: m[1] === 'still' }; });
+    let made = 0; // the Blender-made model when there is one, else the code-built one
+    Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0]()), still: m[1] === 'still' }; });
+    this.unitModels = {}; ['warrior', 'spearman', 'archer', 'horseman'].forEach(t => { const b = loadModel('unit_' + t); if (b) this.unitModels[t] = b; });
+    this.unitMats = {}; this.units3d = Object.keys(this.unitModels).length > 0 && this.args.indexOf('--painted-units') < 0;
+    console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + Object.keys(this.unitModels).join(', '));
     this.loadGroundTextures();
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
@@ -251,6 +272,7 @@ class Main extends Node3D {
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
     this.gridBtn = mk('Grid: On', this.onGrid);
+    if (Object.keys(this.unitModels).length) this.unitsBtn = mk(this.units3d ? 'Units: 3D' : 'Units: Painted', this.onUnits);
     if (this.hasGroundTex) this.lookBtn = mk(['Look: Painted+', 'Look: Detailed', 'Look: Painted'][this.look], this.onLook);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
     this.scores.custom_minimum_size = new Vector2(380, 0); this.scores.add_theme_font_size_override('normal_font_size', 16); box.add_child(this.scores);
@@ -369,10 +391,11 @@ class Main extends Node3D {
   syncSprites(ground) {
     const g = this.g, keepU = {}, keepT = {};
     sprites.unitSpots(AU, g, ground).forEach(s => {
-      const tex = this.texture(s.chain); if (!tex) return;
+      const model = this.units3d && this.unitModels[s.unit.type], tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
+      const look = model ? 'm:' + s.unit.type + ':' + s.color : tex;
       let n = this.unitNodes[s.id];
-      if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
-      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
+      if (n && n.tex !== look) { n.node.queue_free(); n = null; }
+      if (!n) n = this.unitNodes[s.id] = { tex: look, node: model ? this.unitModel(s.unit.type, s.color) : this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
       n.node.position = new Vector3(s.x, s.y + 0.01, s.z); // feet on the ground, in the owner's ring
       keepU[s.id] = true;
     });
@@ -415,6 +438,21 @@ class Main extends Node3D {
     Object.keys(this.cityNodes).forEach(id => { if (!keep[id]) { this.cityNodes[id].node.queue_free(); delete this.cityNodes[id]; } });
   }
   clearCities() { Object.keys(this.cityNodes || {}).forEach(id => this.cityNodes[id].node.queue_free()); this.cityNodes = {}; }
+  // a 3D unit (Blender model) in its owner's colour; horsemen turn three-quarters toward the camera
+  unitModel(type, color) {
+    let mat = this.unitMats[color];
+    if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1)); }
+    const mi = new MeshInstance3D(); mi.mesh = this.unitModels[type]; mi.material_override = mat;
+    if (type === 'horseman') mi.rotation = new Vector3(0, -0.6, 0);
+    this.spriteRoot.add_child(mi);
+    return mi;
+  }
+  onUnits() {
+    if (!Object.keys(this.unitModels).length) return;
+    this.units3d = !this.units3d; this.unitsBtn.text = this.units3d ? 'Units: 3D' : 'Units: Painted';
+    Object.keys(this.unitNodes).forEach(id => this.unitNodes[id].node.queue_free()); this.unitNodes = {};
+    this.refresh();
+  }
   clearSprites() {
     Object.keys(this.unitNodes || {}).forEach(id => this.unitNodes[id].node.queue_free());
     Object.keys(this.townNodes || {}).forEach(k => this.townNodes[k].node.queue_free());

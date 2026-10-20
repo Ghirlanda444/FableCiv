@@ -363,4 +363,22 @@ void fragment() {
 }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE };
+// 3D units (models from tools/blender/models.py): vertex colours with baked shading; parts with vertex alpha 0 take the
+// owner's colour (their rgb holds only the shading), soft toon light like the props
+const UNIT_3D = `
+shader_type spatial;
+render_mode cull_disabled;
+uniform vec3 team : source_color = vec3(0.8, 0.2, 0.2);
+varying vec3 vnorm;
+void vertex() { vnorm = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz; }
+void fragment() {
+  NORMAL = normalize(vnorm);
+  vec3 c = pow(COLOR.rgb, vec3(2.2));
+  ALBEDO = mix(team * COLOR.rgb, c, step(0.5, COLOR.a));
+  ROUGHNESS = 1.0;
+  SPECULAR = 0.0;
+}
+${TOON_LIGHT}
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D };
