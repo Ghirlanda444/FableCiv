@@ -92,18 +92,40 @@ function prism(b, x, y, z, r, h, sides, col, capCol) {
   }
 }
 
-// where the k-th unit on a tile stands: alone in the middle, else fanned out; in a settlement, in front of the town (the first
-// two left and right of the gate: city.js keeps those spots free of houses). sprites.unitSpots puts the pictures on the same spots.
-const TOWN_SPOTS = [[-0.4, 0.56], [0.4, 0.56], [-0.78, 0.12], [0.78, 0.12]];
-function unitOffset(k, n, town) {
-  if (town) return TOWN_SPOTS[k];
-  const a = Math.PI * (0.25 + 0.5 * k), d = n > 1 ? 0.5 : 0;
-  return [Math.cos(a) * d, Math.sin(a) * d];
+// where the k-th of n units on a tile stands (up to four are drawn). On open ground the group is centred on the tile: one in
+// the middle, two side by side, three in a triangle, four in a square. In a settlement they stand in front of the town, by the
+// gate (city.js keeps those spots free of houses). sprites.unitSpots and buildUnitMarks use the same spots.
+const SPOTS = [null, [[0, 0]], [[-0.3, 0.04], [0.3, 0.04]], [[-0.32, 0.2], [0.32, 0.2], [0, -0.24]], [[-0.32, 0.22], [0.32, 0.22], [-0.32, -0.26], [0.32, -0.26]]];
+const TOWN_SPOTS = [null, [[0, 0.64]], [[-0.36, 0.62], [0.36, 0.62]], [[-0.36, 0.62], [0.36, 0.62], [-0.74, 0.2]], [[-0.36, 0.62], [0.36, 0.62], [-0.74, 0.2], [0.74, 0.2]]];
+function unitOffset(k, n, town) { const m = Math.max(1, Math.min(4, n)); return (town ? TOWN_SPOTS : SPOTS)[m][Math.min(k, m - 1)]; }
+
+// Owner marks under the painted units: a thin ring in the owner's colour, draped on the ground with soft edges (drawn with
+// the borders' transparent material). hasArt(u) false: the unit is a code-built placeholder with its own base, so no ring.
+function buildUnitMarks(AU, g, F, hasArt) {
+  const b = batch(), byTile = {}, SEG = 28, BAND = [[0.155, 0], [0.18, 0.95], [0.205, 0.95], [0.24, 0]];
+  Object.keys(g.units).forEach(id => { const u = g.units[id]; (byTile[u.tile] = byTile[u.tile] || []).push(u); });
+  Object.keys(byTile).forEach(ti => {
+    const t = g.tiles[ti], list = byTile[ti]; if (!t) return;
+    const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
+    list.slice(0, 4).forEach((u, k) => {
+      if (hasArt && !hasArt(u)) return;
+      const civ = g.civs[u.civ], col = mix(rgb((civ && civ.color) || '#999999'), [1, 1, 1, 1], 0.15), o = unitOffset(k, list.length, town), x = c[0] + o[0], z = c[1] + o[1];
+      const P = (r, a) => { const px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r; return [px, Math.max(F.heightAt(px, pz), 0) + 0.025, pz]; };
+      for (let s = 0; s < SEG; s++) {
+        const a0 = 2 * Math.PI * s / SEG, a1 = 2 * Math.PI * (s + 1) / SEG;
+        for (let i = 0; i + 1 < BAND.length; i++) {
+          const c0 = [col[0], col[1], col[2], BAND[i][1]], c1 = [col[0], col[1], col[2], BAND[i + 1][1]], up = [0, 1, 0];
+          const A = P(BAND[i][0], a0), B = P(BAND[i][0], a1), C = P(BAND[i + 1][0], a1), D = P(BAND[i + 1][0], a0);
+          vert(b, A, up, c0); vert(b, B, up, c0); vert(b, C, up, c1); vert(b, A, up, c0); vert(b, C, up, c1); vert(b, D, up, c1);
+        }
+      }
+    });
+  });
+  return b;
 }
 
-// Per-turn pieces: a token or a base per unit (settlements are city.js).
-// opts.art: most units are painted pictures, so only draw a base in the owner's colours under each, plus placeholders for units
-// without art (opts.hasArt(u) false).
+// Per-turn pieces: a code-built token per unit (settlements are city.js).
+// opts.art: most units are painted pictures, so only units without art (opts.hasArt(u) false) get a placeholder here.
 function buildPieces(AU, g, F, opts) {
   const b = batch(), art = opts && opts.art;
   const byTile = {};
@@ -115,12 +137,7 @@ function buildPieces(AU, g, F, opts) {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
       const o = unitOffset(k, list.length, hasTown), x = c[0] + o[0], z = c[1] + o[1];
       const y = Math.max(F.heightAt(x, z), 0) + 0.02;
-      if (art && opts.hasArt(u)) { // a slim base in the owner's colours, like the web game's owner plates
-        const data = civ && AU.G.civData ? AU.G.civData(civ) : null, rim = rgb((data && data.color2) || '#f2efe6');
-        prism(b, x, y - 0.04, z, 0.19, 0.045, 18, shade(rim, 0.85), rim);
-        prism(b, x, y - 0.03, z, 0.155, 0.05, 18, shade(col, 0.8), mix(col, [1, 1, 1, 1], 0.2));
-        return;
-      }
+      if (art && opts.hasArt(u)) return; // painted units get a ring on the ground instead (buildUnitMarks)
       prism(b, x, y - 0.06, z, 0.27, 0.12, 8, rgb('#f2efe6')); // base disc
       if (cls === 'civilian') prism(b, x, y + 0.06, z, 0.13, 0.3, 6, rgb('#e8d9a8'), col);
       else if (cls === 'naval') { box(b, x, y + 0.06, z, 0.56, 0.13, 0.24, shade(col, 0.8), col); prism(b, x, y + 0.19, z, 0.04, 0.4, 4, rgb('#f2efe6')); }
@@ -132,4 +149,4 @@ function buildPieces(AU, g, F, opts) {
   return b;
 }
 
-module.exports = { SQRT3, center, pick, rgb, mix, shade, hash, batch, vert, tri, quad, box, prism, unitOffset, ownerCiv, buildBorders, buildPieces };
+module.exports = { SQRT3, center, pick, rgb, mix, shade, hash, batch, vert, tri, quad, box, prism, unitOffset, buildUnitMarks, ownerCiv, buildBorders, buildPieces };

@@ -35,8 +35,8 @@ function unitSpots(AU, g, heightAt) {
     const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
       const o = unitOffset(k, list.length, town), x = c[0] + o[0], z = c[1] + o[1], U = AU.UNITS[u.type] || {};
-      const military = U.cls !== 'civilian';
-      out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.82 : 0.68, color: (g.civs[u.civ] || {}).color || '#999999' });
+      const military = U.cls !== 'civilian'; // heights of the figure itself (main.js crops the pictures' empty margins)
+      out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.6 : 0.5, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
   });
   return out;
@@ -62,6 +62,19 @@ function cityViewSprites(AU, g, s, heightAt) {
   return out;
 }
 
+// Resources: the web game's painted resource picture at the back right of the tile, for resources the followed empire knows
+// about (strategic ones appear with the era that reveals them, as in the web game). Settlement tiles show none.
+function resourceSpots(AU, g, heightAt) {
+  const out = [], civ = AU.G.player ? AU.G.player(g) : null;
+  g.tiles.forEach(t => {
+    if (!t.resource || (t.settlement !== undefined && t.settlement !== null && g.settlements[t.settlement])) return;
+    const R = AU.RESOURCES && AU.RESOURCES[t.resource]; if (!R || (AU.G.resourceKnown && !AU.G.resourceKnown(g, civ, R))) return;
+    const c = center(t.col, t.row), x = c[0] + 0.48, z = c[1] - 0.36;
+    out.push({ key: 'res:' + t.i, tile: t.i, resource: t.resource, chain: ['resources/' + t.resource + '.png'], x, y: Math.max(0, heightAt(x, z)), z, height: 0.3 });
+  });
+  return out;
+}
+
 // the paths every chain may ask for, to check that the art is present (tools/godot/test-geo.js)
 function allChains(AU) {
   const out = [];
@@ -69,4 +82,4 @@ function allChains(AU) {
   return out;
 }
 
-module.exports = { unitChain, buildingChain, unitOffset, unitSpots, cityViewSprites, allChains };
+module.exports = { unitChain, buildingChain, unitOffset, unitSpots, cityViewSprites, resourceSpots, allChains };

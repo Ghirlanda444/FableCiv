@@ -183,7 +183,7 @@ function buildTerrainMesh(F) {
   return { pos, nrm, col, uv, idx, vertices: v, triangles: ii / 3 };
 }
 
-// Scattered nature (instanced in Godot): dense forests of pines and round trees, jungle palms, bushes and grass tufts on open land,
+// Scattered nature (instanced in Godot): dense forests of pines and round trees, jungle palms, grass tufts on open land,
 // rocks on hills and mountains, reeds in marshes. Settled tiles keep their centre clear for buildings.
 // Each entry: [x, y, z, yaw, scale, r, g, b] (r,g,b tints the instance). density < 1 thins everything (phones).
 function buildScatter(F, g, density) {
@@ -208,17 +208,14 @@ function buildScatter(F, g, density) {
       else { place(out.pine, 7, 0.1, 0.9, 0.8, 1.25, [1, 1, 1], 0.1); place(out.round, 6, 0.15, 0.9, 0.8, 1.2, [1, 1, 1], 0.12); }
       place(out.bush, 3, 0.3, 0.9, 0.8, 1.2, [1, 1, 1], 0.1);
     }
-    if (t.feature === 'jungle') { place(out.round, 7, 0.1, 0.9, 0.9, 1.35, [0.82, 0.95, 0.8], 0.12); place(out.palm, 5, 0.15, 0.9, 0.85, 1.25, [1, 1, 1], 0.1); place(out.bush, 4, 0.2, 0.9, 0.9, 1.3, [0.85, 0.95, 0.8], 0.1); }
+    if (t.feature === 'jungle') { place(out.round, 7, 0.1, 0.9, 0.9, 1.35, [1.0, 1.15, 0.92], 0.12); place(out.palm, 5, 0.15, 0.9, 0.85, 1.25, [1, 1, 1], 0.1); place(out.bush, 4, 0.2, 0.9, 0.9, 1.3, [1.0, 1.12, 0.92], 0.1); }
     if (t.feature === 'marsh') { place(out.reed, 12, 0.1, 0.85, 0.7, 1.2, [1, 1, 1], 0.1); place(out.tuft, 4, 0.2, 0.85, 0.8, 1.2, [0.9, 0.95, 0.85], 0.1); }
     if (t.feature === 'oasis') { place(out.palm, 4, 0.2, 0.7, 0.9, 1.2, [1, 1, 1], 0.1); place(out.bush, 3, 0.2, 0.8, 0.8, 1.1, [1, 1, 1], 0.1); }
     if (t.terrain === 'mountain') place(out.rock, 2, 0.6, 0.92, 0.7, 1.1, [1, 1, 1], 0.08);
-    if (t.hills && open) { if (rnd(405) < 0.5) place(out.rock, 1, 0.3, 0.85, 0.6, 1.0, [1, 1, 1], 0.1); place(out.bush, 2, 0.3, 0.9, 0.8, 1.1, [1, 1, 1], 0.12); }
-    if (open && (t.terrain === 'grassland' || t.terrain === 'plains')) {
-      place(out.tuft, 7, 0.1, 0.92, 0.8, 1.3, t.terrain === 'plains' ? [1.1, 1.05, 0.75] : [1, 1, 1], 0.12);
-      if (rnd(400) < 0.5) place(out.bush, 1 + Math.floor(rnd(401) * 2), 0.3, 0.9, 0.8, 1.2, [1, 1, 1], 0.12);
-      if (rnd(402) < 0.3) place(out.round, 1, 0.35, 0.85, 0.8, 1.1, [1, 1, 1], 0.1);
-    }
-    if (open && t.terrain === 'tundra') { place(out.tuft, 4, 0.1, 0.9, 0.7, 1.0, [0.95, 0.92, 0.75], 0.1); if (rnd(403) < 0.4) place(out.pine, 1, 0.3, 0.85, 0.7, 1.0, [0.95, 1, 0.95], 0.1); }
+    // open land carries no trees or bushes, so a tree always means a forest or jungle tile: only grass, and a stone on hills
+    if (t.hills && open && rnd(405) < 0.5) place(out.rock, 1, 0.3, 0.85, 0.6, 1.0, [1, 1, 1], 0.1);
+    if (open && (t.terrain === 'grassland' || t.terrain === 'plains')) place(out.tuft, 7, 0.1, 0.92, 0.8, 1.3, t.terrain === 'plains' ? [1.1, 1.05, 0.75] : [1, 1, 1], 0.12);
+    if (open && t.terrain === 'tundra') place(out.tuft, 4, 0.1, 0.9, 0.7, 1.0, [0.95, 0.92, 0.75], 0.1);
     if (open && t.terrain === 'desert' && rnd(404) < 0.4) place(out.rock, 1, 0.2, 0.85, 0.6, 1.0, [1.15, 1.05, 0.85], 0.1);
   });
   return out;

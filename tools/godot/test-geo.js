@@ -34,6 +34,11 @@ const NO_ART = new Set();
 units.forEach(s => assert(s.chain.some(exists) || NO_ART.has(s.unit.type), 'no picture for unit ' + s.unit.type + ': ' + s.chain.join(' | ')));
 const townMissing = towns.filter(s => !s.chain.some(exists)).map(s => s.chain[s.chain.length - 1]);
 assert(townMissing.every(p => /growth_hall/.test(p)), 'buildings without pictures: ' + townMissing.join(' '));
+const res = SP.resourceSpots(AU, g, () => 0);
+res.forEach(s => assert(s.chain.some(exists), 'no picture for resource ' + s.resource));
+check('marks', geo.buildUnitMarks(AU, g, F, () => true));
+for (let n = 1; n <= 4; n++) { let sx = 0; for (let k = 0; k < n; k++) sx += geo.unitOffset(k, n, false)[0]; assert(Math.abs(sx) < 1e-9, n + ' units are not centred'); }
+console.log('resources', res.length + ' resource pictures');
 console.log('pictures', units.length + ' unit standees, ' + towns.length + ' city-view pictures (' + townMissing.length + ' without art yet)');
 // settlement models: every culture and size tier builds a well-formed model, with and without walls, and in the Show city view
 const CT = require('../../godot/city.js'), sample = g.settlements[Object.keys(g.settlements)[0]];

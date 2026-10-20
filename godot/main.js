@@ -143,7 +143,7 @@ class Main extends Node3D {
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
     // code-built placeholder pieces stand in (the game never waits on art)
-    this.textures = {}; this.unitNodes = {}; this.townNodes = {}; this.cityNodes = {}; this.standeeMats = {};
+    this.textures = {}; this.unitNodes = {}; this.townNodes = {}; this.resNodes = {}; this.cityNodes = {}; this.standeeMats = {}; this.crops = {};
     this.cityRoot = new Node3D(); this.add_child(this.cityRoot);
     this.grid = true; this.viewCity = null;
     this.spriteRoot = new Node3D(); this.add_child(this.spriteRoot);
@@ -186,6 +186,7 @@ class Main extends Node3D {
     this.propRoot = new Node3D(); this.add_child(this.propRoot);
     this.borders = new MeshInstance3D(); this.borders.material_override = this.matBorders; this.borders.cast_shadow = SHADOWS_OFF; this.add_child(this.borders);
     this.pieces = new MeshInstance3D(); this.pieces.material_override = this.matPieces; this.add_child(this.pieces);
+    this.unitMarks = new MeshInstance3D(); this.unitMarks.material_override = this.matBorders; this.unitMarks.cast_shadow = SHADOWS_OFF; this.add_child(this.unitMarks);
     this.labelRoot = new Node3D(); this.add_child(this.labelRoot);
     const water = new MeshInstance3D(), plane = new PlaneMesh(); // one animated water surface at sea level, map and open sea alike
     plane.size = new Vector2(420, 420); plane.subdivide_width = 160; plane.subdivide_depth = 160;
@@ -281,11 +282,31 @@ class Main extends Node3D {
     }
     return null;
   }
-  // a painted picture as a 2.5D standee: a card pivoting at its base, lit by the scene (shaders.STANDEE)
-  standee(tex, x, y, z, height, isUnit) {
-    const w = height * tex.get_width() / tex.get_height(), key = tex.resource_path + (isUnit ? ':u' : ':b');
+  // the painted part of a picture as [u, v, width, height] in 0..1: the generated pictures have wide empty margins (a fifth of
+  // a warrior picture is blank under the feet), which left units floating and off-centre
+  crop(tex) {
+    const k = tex.resource_path;
+    if (!this.crops[k]) {
+      let r = [0, 0, 1, 1];
+      try {
+        const img = tex.get_image(); if (img.is_compressed()) img.decompress();
+        const u = img.get_used_rect(), W = img.get_width(), H = img.get_height();
+        if (u.size.x > 4 && u.size.y > 4) r = [u.position.x / W, u.position.y / H, u.size.x / W, u.size.y / H];
+      } catch (e) { console.log('[tiny-empires] no crop for ' + k + ': ' + (e && e.message)); }
+      this.crops[k] = r;
+    }
+    return this.crops[k];
+  }
+  // a painted picture as a 2.5D standee: a card pivoting at its base, lit by the scene (shaders.STANDEE). height is the painted
+  // figure's height; very wide pictures (horsemen, ships) are held to maxWidth.
+  standee(tex, x, y, z, height, isUnit, maxWidth) {
+    const r = this.crop(tex), aspect = (r[2] * tex.get_width()) / (r[3] * tex.get_height()), key = tex.resource_path + (isUnit ? ':u' : ':b');
+    let w = height * aspect; if (maxWidth && w > maxWidth) { w = maxWidth; height = w / aspect; }
     let mat = this.standeeMats[key];
-    if (!mat) { mat = this.standeeMats[key] = shaderMaterial(shaders.STANDEE); mat.set_shader_parameter('tex', tex); mat.set_shader_parameter('anim', isUnit ? 1.0 : 0.0); }
+    if (!mat) {
+      mat = this.standeeMats[key] = shaderMaterial(shaders.STANDEE); mat.set_shader_parameter('tex', tex); mat.set_shader_parameter('anim', isUnit ? 1.0 : 0.0);
+      mat.set_shader_parameter('uv_rect', new godot.Vector4(r[0], r[1], r[2], r[3]));
+    }
     const quad = new QuadMesh(); quad.size = new Vector2(w, height); quad.center_offset = new Vector3(0, height * 0.5, 0);
     const mi = new MeshInstance3D(); mi.mesh = quad; mi.material_override = mat;
     mi.position = new Vector3(x, y, z);
@@ -299,8 +320,8 @@ class Main extends Node3D {
       const tex = this.texture(s.chain); if (!tex) return;
       let n = this.unitNodes[s.id];
       if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
-      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, true) };
-      n.node.position = new Vector3(s.x, s.y + 0.03 - s.height * 0.07, s.z); // feet on the base: the pictures have a little empty space under the feet
+      if (!n) n = this.unitNodes[s.id] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
+      n.node.position = new Vector3(s.x, s.y + 0.01, s.z); // feet on the ground, in the owner's ring
       keepU[s.id] = true;
     });
     Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });
@@ -314,6 +335,16 @@ class Main extends Node3D {
       keepT[s.key] = true;
     });
     Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });
+    const keepR = {};
+    sprites.resourceSpots(AU, g, ground).forEach(s => { // resources: their painted pictures, small, at the back of the tile
+      const tex = this.texture(s.chain); if (!tex) return;
+      if (!this.resNodes[s.key] || this.resNodes[s.key].tex !== tex) {
+        if (this.resNodes[s.key]) this.resNodes[s.key].node.queue_free();
+        this.resNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y + 0.01, s.z, s.height, false, 0.38) };
+      }
+      keepR[s.key] = true;
+    });
+    Object.keys(this.resNodes).forEach(k => { if (!keepR[k]) { this.resNodes[k].node.queue_free(); delete this.resNodes[k]; } });
   }
   // settlements as Civ3-style town models (city.js), rebuilt only when their size tier, walls, capital or owner change
   syncCities(ground) {
@@ -334,7 +365,8 @@ class Main extends Node3D {
   clearSprites() {
     Object.keys(this.unitNodes || {}).forEach(id => this.unitNodes[id].node.queue_free());
     Object.keys(this.townNodes || {}).forEach(k => this.townNodes[k].node.queue_free());
-    this.unitNodes = {}; this.townNodes = {};
+    Object.keys(this.resNodes || {}).forEach(k => this.resNodes[k].node.queue_free());
+    this.unitNodes = {}; this.townNodes = {}; this.resNodes = {};
   }
 
   // centre the camera on the land with the most mountains and hills around it (for the relief screenshot)
@@ -364,6 +396,7 @@ class Main extends Node3D {
     if (this.useArt) this.syncSprites(ground);
     const hasArt = u => !!this.texture(sprites.unitChain(AU, g, u));
     this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field, this.useArt ? { art: true, hasArt } : null));
+    this.unitMarks.mesh = this.useArt ? toMesh(geo.buildUnitMarks(AU, g, this.field, hasArt)) : null;
     const seen = {};
     Object.keys(g.settlements).forEach(id => {
       const st = g.settlements[id], t = g.tiles[st.tile], civ = g.civs[st.civ]; if (!t || !civ) return;
@@ -415,6 +448,8 @@ class Main extends Node3D {
   describe(i) {
     const g = this.g, t = g.tiles[i], T = AU.TERRAIN[t.terrain] || { name: t.terrain };
     const parts = [(t.hills ? 'Hills, ' : '') + T.name + (t.feature && AU.FEATURES && AU.FEATURES[t.feature] ? ', ' + AU.FEATURES[t.feature].name : '') + (t.river ? ', river' : '')];
+    const R = t.resource && AU.RESOURCES[t.resource];
+    if (R && (!G.resourceKnown || G.resourceKnown(g, G.player(g), R))) parts.push('resource: ' + (R.name || t.resource));
     const oc = geo.ownerCiv(g, t); if (oc >= 0) parts.push('owned by ' + ((AU.CIV_BY_ID[g.civs[oc].civId] || {}).name || '?') + ' (' + g.settlements[t.owner].name + ')');
     const us = Object.keys(g.units).map(id => g.units[id]).filter(u => u.tile === i);
     if (us.length) parts.push('units: ' + us.map(u => (u.name || (AU.UNITS[u.type] || {}).name || u.type) + ' (' + ((AU.CIV_BY_ID[g.civs[u.civ].civId] || {}).name || '?') + ')').join(', '));

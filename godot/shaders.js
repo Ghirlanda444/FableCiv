@@ -206,8 +206,10 @@ render_mode skip_vertex_transform, cull_disabled;
 uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float anim = 0.0;      // 1 for units: a gentle breathing sway
 uniform float roundness = 3.6; // how strongly the edges bend toward or away from the light
+uniform vec4 uv_rect = vec4(0.0, 0.0, 1.0, 1.0); // the part of the picture with paint in it (main.js crops the empty margins)
 varying float glow;
 void vertex() {
+  UV = uv_rect.xy + UV * uv_rect.zw;
   vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float sc = length(MODEL_MATRIX[1].xyz), phase = origin.x * 1.7 + origin.z * 2.3;
   vec3 v = VERTEX;

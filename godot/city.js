@@ -14,8 +14,8 @@ const RADIUS = [0.36, 0.46, 0.56, 0.66, 0.74];    // footprint of each tier
 const HOUSES = [3, 6, 10, 15, 22];              // houses around the landmark
 
 // fixed house spots on three rings, the same for every settlement (so a tier always looks the same); spots where the first two
-// units of a garrison stand (front left and right, geo.unitOffset) stay free
-const UNIT_SPOTS = [geo.unitOffset(0, 1, true), geo.unitOffset(1, 2, true)];
+// units of a garrison stand (in front of the gate, geo.unitOffset) stay free
+const UNIT_SPOTS = [geo.unitOffset(0, 1, true), geo.unitOffset(0, 2, true), geo.unitOffset(1, 2, true)];
 const SLOTS = (() => {
   const out = [];
   [[6, 0.28, 0.35], [9, 0.47, 0.05], [12, 0.65, 0.3]].forEach(([n, r, off], ring) => {

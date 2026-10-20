@@ -1,6 +1,6 @@
 // Packs the rules engine (the same files tests/load.js runs, in the same order) into one CommonJS module for the Godot build.
 // Usage: node tools/godot/bundle.js  → godot/engine/au_bundle.js and godot/art/ (both generated, not committed)
-// godot/art gets the web game's painted unit, building, wonder and palace pictures, so both games share one set of art.
+// godot/art gets the web game's painted unit, building, wonder, palace and resource pictures, so both games share one set of art.
 const fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..', '..');
 const files = (fs.readFileSync(path.join(root, 'tests', 'load.js'), 'utf8').match(/'[^']+\.js'/g) || []).map(s => s.slice(1, -1));
@@ -14,7 +14,7 @@ fs.writeFileSync(dest, out.join('\n'));
 console.log('bundled ' + files.length + ' engine files → ' + path.relative(root, dest) + ' (' + Math.round(fs.statSync(dest).size / 1024) + ' KB)');
 
 // the web game's painted pictures, copied (not moved) into the Godot project
-const ART = ['units', 'buildings', 'wonders', 'national', 'palace'], artDest = path.join(root, 'godot', 'art');
+const ART = ['units', 'buildings', 'wonders', 'national', 'palace', 'resources'], artDest = path.join(root, 'godot', 'art');
 fs.rmSync(artDest, { recursive: true, force: true });
 let copied = 0;
 ART.forEach(dir => (function copy(src, dst) {
