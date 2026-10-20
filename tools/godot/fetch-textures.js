@@ -6,11 +6,12 @@
 const fs = require('fs'), path = require('path'), https = require('https');
 const dest = path.join(__dirname, '..', '..', 'godot', 'textures');
 const RES = process.env.TEX_RES || '1k';
-const SLOTS = {
-  grass: { ids: ['aerial_grass_rock', 'leafy_grass', 'sparse_grass', 'grass_path_2'], words: ['grass'] },
-  sand: { ids: ['coast_sand_01', 'aerial_beach_01', 'sand_01', 'coast_sand_02'], words: ['sand', 'beach'] },
-  rock: { ids: ['rocky_terrain_02', 'aerial_rocks_02', 'rock_face', 'aerial_rocks_04'], words: ['rock', 'cliff'] },
-  snow: { ids: ['snow_02', 'snow_field_aerial', 'snow_01', 'snow_03'], words: ['snow'] }
+const SLOTS = { // chosen from Poly Haven's catalogue (the build log lists every candidate); the first id that exists wins
+  grass: { ids: ['leafy_grass', 'sparse_grass', 'grass_path_2'], words: ['grass'] },
+  dry: { ids: ['withered_grass', 'sparse_grass'], words: ['withered', 'dry'] },
+  sand: { ids: ['aerial_sand', 'coast_sand_01', 'sand_01'], words: ['sand'] },
+  rock: { ids: ['aerial_rocks_02', 'aerial_rocks_01', 'rock_face', 'rocky_terrain'], words: ['rock'] },
+  snow: { ids: ['snow_field_aerial', 'snow_02', 'snow_01'], words: ['snow'] }
 };
 function get(url, asJson) {
   return new Promise((resolve, reject) => {
@@ -33,7 +34,7 @@ function mapUrl(files, names) { for (const n of names) { const m = files[n] && (
   fs.mkdirSync(dest, { recursive: true });
   const all = await retry(() => get('https://api.polyhaven.com/assets?t=textures', true), 4);
   const ids = Object.keys(all), credits = [];
-  ['grass', 'sand', 'rock', 'snow'].forEach(w => console.log('poly haven ' + w + ' textures: ' + ids.filter(i => i.includes(w)).join(' '))); // for choosing better ones
+  ['grass', 'sand', 'rock', 'snow', 'dry', 'withered'].forEach(w => console.log('poly haven ' + w + ' textures: ' + ids.filter(i => i.includes(w)).join(' '))); // for choosing better ones
   for (const slot of Object.keys(SLOTS)) {
     const S = SLOTS[slot], tries = S.ids.filter(id => all[id]).concat(ids.filter(id => S.words.some(w => id.includes(w)) && !S.ids.includes(id)));
     let done = false;

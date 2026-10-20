@@ -163,11 +163,11 @@ class Main extends Node3D {
   // detailed look: the CC0 ground textures fetched at build time (tools/godot/fetch-textures.js); without them only the
   // painted look exists
   loadGroundTextures() {
-    const has = {}, slots = ['grass', 'sand', 'rock', 'snow']; // plains are the grass, sun-dried in the shader
+    const has = {}, slots = ['grass', 'dry', 'sand', 'rock', 'snow']; // without dry grass, plains are the grass sun-dried in the shader
     slots.forEach(s => {
       ['diff', 'nor'].forEach(m => { const p = 'res://textures/' + s + '_' + m + '.jpg'; if (ResourceLoader.exists(p)) { this.matTerrain.set_shader_parameter(s + (m === 'diff' ? '_d' : '_n'), ResourceLoader.load(p)); if (m === 'diff') has[s] = 1; } });
     });
-    this.matTerrain.set_shader_parameter('has_tex', new godot.Vector4(has.grass ? 1 : 0, 0, has.sand ? 1 : 0, has.rock ? 1 : 0));
+    this.matTerrain.set_shader_parameter('has_tex', new godot.Vector4(has.grass ? 1 : 0, has.dry ? 1 : 0, has.sand ? 1 : 0, has.rock ? 1 : 0));
     this.matTerrain.set_shader_parameter('has_snow', has.snow ? 1.0 : 0.0);
     this.hasGroundTex = !!has.grass;
     this.detailed = this.hasGroundTex && this.args.indexOf('--painted') < 0;
