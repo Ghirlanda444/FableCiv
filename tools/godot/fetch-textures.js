@@ -1,6 +1,6 @@
 // Downloads the ground textures for the Godot build's detailed terrain from Poly Haven (CC0: free for any use, no
 // attribution required). Run by CI before the import (the sandbox that edits this repo cannot reach polyhaven.com).
-// Usage: node tools/godot/fetch-textures.js → godot/textures/<slot>_diff.jpg and <slot>_nor.jpg (generated, not committed)
+// Usage: node tools/godot/fetch-textures.js → godot/textures/<slot>_diff.jpg and <slot>_nor.jpg (grass, sand, rock, snow; generated, not committed)
 // Each slot tries a list of known Poly Haven textures, then any texture whose id holds one of the keywords. A slot that
 // cannot be fetched is left out; the game draws the painted look on any tile whose textures are missing.
 const fs = require('fs'), path = require('path'), https = require('https');
@@ -8,7 +8,6 @@ const dest = path.join(__dirname, '..', '..', 'godot', 'textures');
 const RES = process.env.TEX_RES || '1k';
 const SLOTS = {
   grass: { ids: ['aerial_grass_rock', 'leafy_grass', 'sparse_grass', 'grass_path_2'], words: ['grass'] },
-  dry: { ids: ['dry_ground_01', 'dry_ground_rocks', 'brown_mud_leaves_01', 'forrest_ground_01'], words: ['dry', 'ground', 'mud'] },
   sand: { ids: ['coast_sand_01', 'aerial_beach_01', 'sand_01', 'coast_sand_02'], words: ['sand', 'beach'] },
   rock: { ids: ['rocky_terrain_02', 'aerial_rocks_02', 'rock_face', 'aerial_rocks_04'], words: ['rock', 'cliff'] },
   snow: { ids: ['snow_02', 'snow_field_aerial', 'snow_01', 'snow_03'], words: ['snow'] }
@@ -34,6 +33,7 @@ function mapUrl(files, names) { for (const n of names) { const m = files[n] && (
   fs.mkdirSync(dest, { recursive: true });
   const all = await retry(() => get('https://api.polyhaven.com/assets?t=textures', true), 4);
   const ids = Object.keys(all), credits = [];
+  ['grass', 'sand', 'rock', 'snow'].forEach(w => console.log('poly haven ' + w + ' textures: ' + ids.filter(i => i.includes(w)).join(' '))); // for choosing better ones
   for (const slot of Object.keys(SLOTS)) {
     const S = SLOTS[slot], tries = S.ids.filter(id => all[id]).concat(ids.filter(id => S.words.some(w => id.includes(w)) && !S.ids.includes(id)));
     let done = false;

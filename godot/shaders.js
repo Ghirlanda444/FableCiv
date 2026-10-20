@@ -42,20 +42,18 @@ const PAINTED_TERRAIN = `
 shader_type spatial;
 render_mode cull_disabled;
 uniform float grid_strength = 0.6; // 0 hides the grid (HUD toggle)
-// detailed look: real ground textures (Poly Haven, CC0, fetched at build time) for grass, dry grass, sand, rock and snow,
+// detailed look: real ground textures (Poly Haven, CC0, fetched at build time) for grass, sand, rock and snow,
 // with their normal maps; has_* is 1 for each texture that was found (a missing one keeps the painted colour there)
 uniform float detailed = 0.0;
 uniform sampler2D grass_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
-uniform sampler2D dry_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D sand_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D snow_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D grass_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
-uniform sampler2D dry_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D sand_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D rock_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
 uniform sampler2D snow_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
-uniform vec4 has_tex = vec4(0.0);   // grass, dry, sand, rock
+uniform vec4 has_tex = vec4(0.0);   // grass, (unused), sand, rock
 uniform float has_snow = 0.0;
 uniform float tex_scale = 0.55;     // texture repeats per world unit (a tile is about 1.7 units across)
 varying vec3 wpos;
@@ -102,18 +100,21 @@ void fragment() {
   if (detailed > 0.0) {
     vec2 p = wpos.xz * tex_scale; float k = smoothstep(0.3, 0.7, fbm(wpos.xz * 0.12 + 5.0));
     float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
-    vec3 tg = ground(grass_d, p, k), td = ground(dry_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
+    vec3 tg = ground(grass_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
+    tg *= mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.55);          // grass takes the tile's own green (forests darker)
+    float lum = dot(tg, vec3(0.3, 0.59, 0.11));
+    vec3 td = mix(tg, vec3(lum) * vec3(1.45, 1.2, 0.62), 0.7);                                 // plains and tundra: the same grass, sun-dried golden
     vec3 an = abs(wn); an /= (an.x + an.y + an.z);                                           // rock: projected from three sides
     vec3 tr = texture(rock_d, wpos.zy * tex_scale).rgb * an.x + texture(rock_d, wpos.xz * tex_scale).rgb * an.y + texture(rock_d, wpos.xy * tex_scale).rgb * an.z;
-    float w_dry = smoothstep(0.25, 0.6, mats2.x + brk) * has_tex.y;
+    float w_dry = smoothstep(0.25, 0.6, mats2.x + brk);
     float w_sand = clamp(max(beach * (1.0 - mats.x), smoothstep(0.3, 0.7, mats.y + brk)) + smoothstep(-0.01, -0.2, wpos.y), 0.0, 1.0) * has_tex.z;
-    float w_rock = clamp(rock_m, 0.0, 1.0) * has_tex.w;
+    float w_rock = clamp(max(rock_m, smoothstep(0.45, 0.85, mats.x + brk * 0.5)), 0.0, 1.0) * has_tex.w; // mountain tiles are rock all over
     float w_snow = clamp(max(snow, smoothstep(0.4, 0.75, mats2.y + brk)), 0.0, 1.0) * has_snow;
-    vec3 dc = mix(col, tg * mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.25), has_tex.x); // grass keeps a hint of the tile's own green (forests darker)
+    vec3 dc = mix(col, tg, has_tex.x);
     dc = mix(dc, td, w_dry); dc = mix(dc, ts, w_sand); dc = mix(dc, tr, w_rock); dc = mix(dc, tw, w_snow);
     dc *= mix(1.0, 0.82, smoothstep(0.08, 0.38, slope) * step(0.0, wpos.y) * (1.0 - w_rock));    // slopes a shade darker, as in the painted look
     vec3 bn = nmap(grass_n, p) * has_tex.x;
-    bn = mix(bn, nmap(dry_n, p), w_dry); bn = mix(bn, nmap(sand_n, p * 1.3), w_sand); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
+bn = mix(bn, nmap(sand_n, p * 1.3), w_sand); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
     vec3 wn2 = normalize(wn + bn * 0.6 * detailed);
     NORMAL = normalize((VIEW_MATRIX * vec4(wn2, 0.0)).xyz);
     col = mix(col, dc, detailed);
