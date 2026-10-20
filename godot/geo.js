@@ -92,35 +92,20 @@ function prism(b, x, y, z, r, h, sides, col, capCol) {
   }
 }
 
-// Per-turn pieces: settlements (houses in the owner's colours, a tower for capitals) and units (a token per unit).
-// opts.art: settlements and most units are painted pictures, so only draw town plazas and walls, a disc in the owner's colour under each unit,
-// plus placeholders for units without art (opts.hasArt(u) false).
+// where the k-th unit on a tile stands: alone in the middle, else fanned out; in a settlement, in front of the town (the first
+// two left and right of the gate: city.js keeps those spots free of houses). sprites.unitSpots puts the pictures on the same spots.
+const TOWN_SPOTS = [[-0.4, 0.56], [0.4, 0.56], [-0.78, 0.12], [0.78, 0.12]];
+function unitOffset(k, n, town) {
+  if (town) return TOWN_SPOTS[k];
+  const a = Math.PI * (0.25 + 0.5 * k), d = n > 1 ? 0.5 : 0;
+  return [Math.cos(a) * d, Math.sin(a) * d];
+}
+
+// Per-turn pieces: a token or a base per unit (settlements are city.js).
+// opts.art: most units are painted pictures, so only draw a base in the owner's colours under each, plus placeholders for units
+// without art (opts.hasArt(u) false).
 function buildPieces(AU, g, F, opts) {
-  const b = batch(), walls = rgb('#d9cfbf'), art = opts && opts.art;
-  if (art) Object.keys(g.settlements).forEach(id => { // painted buildings stand on a plaza; cities with walls get a wall ring
-    const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
-    const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), stone = rgb('#a88f6c'), y = F.heightAt(c[0], c[1]);
-    prism(b, c[0], y - 0.12, c[1], s.isCity ? 0.42 : 0.32, 0.13, 14, shade(stone, 0.8), mix(stone, roof, 0.1)); // a small earthy plaza
-    if ((s.buildings || []).indexOf('walls') >= 0 || (s.buildings || []).indexOf('castle') >= 0) for (let k = 0; k < 18; k++) {
-      const a = 2 * Math.PI * k / 18, x = c[0] + Math.cos(a) * 0.96, z = c[1] + Math.sin(a) * 0.96;
-      prism(b, x, F.heightAt(x, z) - 0.08, z, 0.1, k % 3 === 0 ? 0.3 : 0.22, 6, shade(stone, 0.82), k % 3 === 0 ? roof : shade(stone, 0.95));
-    }
-  });
-  if (!art) Object.keys(g.settlements).forEach(id => {
-    const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
-    const c = center(t.col, t.row), roof = rgb(civ.color || '#cccccc'), n = Math.min(8, 3 + Math.floor((s.pop || 1) / 2));
-    for (let k = 0; k < n; k++) {
-      const a = 2 * Math.PI * k / n + hash(s.id) * 2, d = k === 0 ? 0 : 0.36 + hash(s.id * 3 + k) * 0.12, sz = 0.17 + hash(s.id * 9 + k) * 0.08;
-      const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d, y = F.heightAt(x, z);
-      box(b, x, y - 0.12, z, sz, 0.26 + hash(s.id * 5 + k) * 0.12, sz, walls, roof); // sunk a little so slopes never show a gap
-    }
-    const y = F.heightAt(c[0], c[1]);
-    if (s.isCapital) { prism(b, c[0], y - 0.1, c[1], 0.1, 0.78, 6, walls); prism(b, c[0], y + 0.68, c[1], 0.14, 0.12, 6, roof); }
-    if (s.isCity) for (let k = 0; k < 12; k++) { // a ring of wall segments
-      const a = 2 * Math.PI * k / 12, x = c[0] + Math.cos(a) * 0.68, z = c[1] + Math.sin(a) * 0.68;
-      prism(b, x, F.heightAt(x, z) - 0.08, z, 0.09, 0.2, 6, shade(walls, 0.85), shade(walls, 0.95));
-    }
-  });
+  const b = batch(), art = opts && opts.art;
   const byTile = {};
   Object.keys(g.units).forEach(id => { const u = g.units[id]; (byTile[u.tile] = byTile[u.tile] || []).push(u); });
   Object.keys(byTile).forEach(ti => {
@@ -128,9 +113,14 @@ function buildPieces(AU, g, F, opts) {
     const c = center(t.col, t.row), hasTown = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
-      const a = Math.PI * (0.25 + 0.5 * k), d = hasTown || list.length > 1 ? 0.5 : 0, x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (hasTown ? 0.1 : 0);
+      const o = unitOffset(k, list.length, hasTown), x = c[0] + o[0], z = c[1] + o[1];
       const y = Math.max(F.heightAt(x, z), 0) + 0.02;
-      if (art && opts.hasArt(u)) { prism(b, x, y - 0.03, z, 0.16, 0.04, 16, shade(col, 0.8), mix(col, [1, 1, 1, 1], 0.25)); return; } // a slim base in the owner's colour
+      if (art && opts.hasArt(u)) { // a slim base in the owner's colours, like the web game's owner plates
+        const data = civ && AU.G.civData ? AU.G.civData(civ) : null, rim = rgb((data && data.color2) || '#f2efe6');
+        prism(b, x, y - 0.04, z, 0.19, 0.045, 18, shade(rim, 0.85), rim);
+        prism(b, x, y - 0.03, z, 0.155, 0.05, 18, shade(col, 0.8), mix(col, [1, 1, 1, 1], 0.2));
+        return;
+      }
       prism(b, x, y - 0.06, z, 0.27, 0.12, 8, rgb('#f2efe6')); // base disc
       if (cls === 'civilian') prism(b, x, y + 0.06, z, 0.13, 0.3, 6, rgb('#e8d9a8'), col);
       else if (cls === 'naval') { box(b, x, y + 0.06, z, 0.56, 0.13, 0.24, shade(col, 0.8), col); prism(b, x, y + 0.19, z, 0.04, 0.4, 4, rgb('#f2efe6')); }
@@ -142,4 +132,4 @@ function buildPieces(AU, g, F, opts) {
   return b;
 }
 
-module.exports = { SQRT3, center, pick, rgb, ownerCiv, buildBorders, buildPieces };
+module.exports = { SQRT3, center, pick, rgb, mix, shade, hash, batch, vert, tri, quad, box, prism, unitOffset, ownerCiv, buildBorders, buildPieces };

@@ -73,7 +73,7 @@ jobs:
           mkdir -p build
           timeout 400 xvfb-run -a -s "-screen 0 1280x720x24" "$GODOT" --path godot --resolution 1280x720 -- --shot 2>&1 | grep -v "^ALSA" | tee shot.log | tail -40
           D="$HOME/.local/share/godot/app_userdata/Tiny Empires"
-          cp "$D/shot.png" build/screenshot.png; cp "$D/shot_wide.png" build/screenshot-wide.png || true; cp "$D/shot_close.png" build/screenshot-close.png || true; cp "$D/shot_low.png" build/screenshot-low.png || true; cp "$D/shot_relief.png" build/screenshot-relief.png || true
+          cp "$D/shot.png" build/screenshot.png; cp "$D/shot_wide.png" build/screenshot-wide.png || true; cp "$D/shot_close.png" build/screenshot-close.png || true; cp "$D/shot_low.png" build/screenshot-low.png || true; cp "$D/shot_relief.png" build/screenshot-relief.png || true; cp "$D/shot_city.png" build/screenshot-city.png || true
           ls -la build
 
       - name: Check that every shader compiled (a broken shader silently renders plain white)
@@ -124,6 +124,7 @@ jobs:
             build/screenshot-close.png
             build/screenshot-low.png
             build/screenshot-relief.png
+            build/screenshot-city.png
           fail_on_unmatched_files: false
 
       - name: Make sure the release is public (GitHub sometimes leaves it as a draft, and drafts cannot be downloaded)

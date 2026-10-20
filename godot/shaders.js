@@ -37,11 +37,11 @@ void light() {
 `;
 
 // Hand-painted cartoon terrain: palette colours from the tiles, brush strokes along slowly turning directions, warm and cool
-// patches, painted rock with strata on slopes, snow caps, bright beaches, flowers in meadows and a soft hex grid.
+// patches, painted rock with strata on slopes, snow caps, bright beaches, flowers in meadows and a crisp hex grid.
 const PAINTED_TERRAIN = `
 shader_type spatial;
 render_mode cull_disabled;
-uniform float grid_strength = 0.22;
+uniform float grid_strength = 0.6; // 0 hides the grid (HUD toggle)
 varying vec3 wpos;
 varying vec2 mats;   // x: rockiness, y: sand
 varying float meadow;
@@ -79,8 +79,9 @@ void fragment() {
   float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m) * near;
   vec3 fc = hh > 0.95 ? vec3(0.95, 0.9, 0.82) : (hh > 0.92 ? vec3(0.98, 0.82, 0.3) : vec3(0.92, 0.5, 0.62));
   col = mix(col, srgb(fc), flower);
-  float e = hex_edge(wpos.xz), aa = fwidth(e) * 1.5 + 0.002;
-  col = mix(col, col * 0.72, (1.0 - smoothstep(0.012, 0.012 + aa, e)) * grid_strength * step(0.0, wpos.y));
+  // hex grid: a dark line about two pixels wide at any zoom (never thinner than 0.012 world units up close)
+  float e = hex_edge(wpos.xz), px = length(fwidth(wpos.xz)) * 0.71, lw = max(px * 1.1, 0.012);
+  col = mix(col, col * 0.42, (1.0 - smoothstep(lw, lw + px * 1.2, e)) * grid_strength * step(0.0, wpos.y));
   ALBEDO = col;
   ROUGHNESS = 1.0;
   SPECULAR = 0.0;
@@ -116,6 +117,8 @@ shader_type spatial;
 render_mode blend_mix, cull_disabled, depth_draw_opaque, unshaded;
 uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
 uniform vec3 sun_dir = vec3(-0.447, 0.719, 0.532); // toward the sun, world space (main.js sets it from the light)
+uniform float grid_strength = 0.6;
+uniform vec4 map_rect = vec4(-1.0, -1.0, 1000.0, 1000.0); // x0, z0, x1, z1: the grid covers the map's sea tiles, not the open sea
 varying vec3 wpos;
 ${NOISE}
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
@@ -148,6 +151,8 @@ void fragment() {
   float l1 = depth - (0.055 + 0.012 * sin(TIME * 0.7)) + (brk - 0.5) * 0.02;
   float ring = (1.0 - smoothstep(0.0, 0.007 + aa, abs(l1))) * 0.55 * detail;
   float foam = clamp(max(band * (0.65 + 0.35 * brk), edge) + ring, 0.0, 1.0) * steady;
+  float e = hex_edge(p), pg = length(fwidth(p)) * 0.71, lw = max(pg * 1.1, 0.012), inside = step(map_rect.x, p.x) * step(map_rect.y, p.y) * step(p.x, map_rect.z) * step(p.y, map_rect.w);
+  col = mix(col, srgb(vec3(0.85, 0.95, 1.0)), (1.0 - smoothstep(lw, lw + pg * 1.2, e)) * grid_strength * 0.45 * inside); // light grid lines on sea tiles
   ALBEDO = mix(col, vec3(0.97, 0.99, 1.0), foam);
   ALPHA = clamp(mix(0.38, 0.93, t) + foam * 0.8, 0.0, 1.0);
 }

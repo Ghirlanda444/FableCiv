@@ -15,6 +15,7 @@ const terrain = require('res://terrain.js');
 const props = require('res://props.js');
 const shaders = require('res://shaders.js');
 const sprites = require('res://sprites.js');
+const city = require('res://city.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
@@ -131,6 +132,7 @@ class Main extends Node3D {
     this.matPieces = material({ roughness: 0.7 });
     this.matProps = shaderMaterial(shaders.PAINTED_PROP);
     this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
+    this.matCity = shaderMaterial(shaders.PAINTED_PROP); this.matCity.set_shader_parameter('wind', 0.0); // settlements: toon-lit, no sway
     this.matBorders = material({ alpha: true, unshaded: true });
     this.matRivers = material({ alpha: true, unshaded: true }); // flat cartoon colour, like the sea
     // each nature kind is one or more instanced parts sharing the same placements: fluffy trees and bushes are a solid trunk
@@ -141,7 +143,9 @@ class Main extends Node3D {
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
     // code-built placeholder pieces stand in (the game never waits on art)
-    this.textures = {}; this.unitNodes = {}; this.townNodes = {}; this.standeeMats = {};
+    this.textures = {}; this.unitNodes = {}; this.townNodes = {}; this.cityNodes = {}; this.standeeMats = {};
+    this.cityRoot = new Node3D(); this.add_child(this.cityRoot);
+    this.grid = true; this.viewCity = null;
     this.spriteRoot = new Node3D(); this.add_child(this.spriteRoot);
     this.useArt = this.args.indexOf('--no-art') < 0 && !!this.texture(['units/warrior.png']);
     console.log('[tiny-empires] art: ' + (this.useArt ? 'painted pictures' : 'placeholders'));
@@ -205,10 +209,19 @@ class Main extends Node3D {
     this.autoBtn = mk('Auto', this.onAuto);
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
+    this.gridBtn = mk('Grid: On', this.onGrid);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
     this.scores.custom_minimum_size = new Vector2(380, 0); this.scores.add_theme_font_size_override('normal_font_size', 16); box.add_child(this.scores);
     this.info = new Label(); this.info.add_theme_font_size_override('font_size', 15); this.info.custom_minimum_size = new Vector2(380, 0);
     this.info.autowrap_mode = 3; box.add_child(this.info);
+    // city menu: shown when a settlement is selected; "Show city" opens the close-up with its buildings
+    this.cityBox = new VBoxContainer(); box.add_child(this.cityBox);
+    this.cityTitle = new Label(); this.cityTitle.add_theme_font_size_override('font_size', 18); this.cityBox.add_child(this.cityTitle);
+    this.cityText = new Label(); this.cityText.add_theme_font_size_override('font_size', 14); this.cityText.custom_minimum_size = new Vector2(380, 0);
+    this.cityText.autowrap_mode = 3; this.cityBox.add_child(this.cityText);
+    this.showBtn = new Button(); this.showBtn.text = 'Show city'; this.showBtn.custom_minimum_size = new Vector2(160, 44); this.showBtn.add_theme_font_size_override('font_size', 18);
+    this.showBtn.pressed.connect(Callable.create(this, this.onShowCity), 0); this.cityBox.add_child(this.showBtn);
+    this.cityBox.visible = false;
   }
 
   newGame(seed) {
@@ -216,7 +229,7 @@ class Main extends Node3D {
     const seat = pickLeaderSeats(rng);
     this.g = G.newGame({ playerCiv: seat[0], playerLeader: seat[1], mapSize: 'small', mapType: 'continents', numCivs: 5, numStates: 3, seed: seed, difficulty: 'prince', v2: true });
     const pl = G.player(this.g); pl.isPlayer = false; pl.ai = Object.assign({}, AU.LEADER_BY_ID[pl.leaderId].ai); // spectator: every empire is AI-run
-    this.seed = seed; this.selected = -1;
+    this.seed = seed; this.selected = -1; this.viewCity = null;
     this.buildLand();
     Object.keys(this.labels).forEach(id => this.labels[id].queue_free()); this.labels = {};
     const capOf = c => (c && c.capital !== undefined && c.capital !== null && this.g.settlements[c.capital]) ? c.capital : undefined;
@@ -225,6 +238,7 @@ class Main extends Node3D {
     const focus = this.g.tiles[cap !== undefined ? this.g.settlements[cap].tile : (u ? u.tile : Math.floor(this.g.tiles.length / 2))];
     this.camTarget = geo.center(focus.col, focus.row); this.camDist = 16;
     const mid = new Vector3(geo.SQRT3 * this.g.W / 2, 0, 0.75 * this.g.H);
+    this.matWater.set_shader_parameter('map_rect', new godot.Vector4(-geo.SQRT3 / 2, -1, geo.SQRT3 * (this.g.W + 0.5), 1.5 * (this.g.H - 1) + 1));
     this.water.position = new Vector3(mid.x, this.waterY, mid.z); this.seabed.position = new Vector3(mid.x, -0.86, mid.z); // level with the ocean floor, so the map's edge does not show
     this.updateCamera();
     this.refresh();
@@ -233,7 +247,7 @@ class Main extends Node3D {
   // the static landscape for a new map: the painted terrain with rivers and nature
   buildLand() {
     const t0 = Time.get_ticks_msec();
-    this.clearSprites();
+    this.clearSprites(); this.clearCities();
     this.field = terrain.makeField(AU, this.g);
     const M = terrain.buildTerrainMesh(this.field), t1 = Time.get_ticks_msec();
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
@@ -290,7 +304,8 @@ class Main extends Node3D {
       keepU[s.id] = true;
     });
     Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });
-    sprites.townSprites(AU, g, ground).forEach(s => {
+    const vs = this.viewCity !== null && g.settlements[this.viewCity];
+    (vs ? sprites.cityViewSprites(AU, g, vs, ground) : []).forEach(s => { // the "Show city" close-up: the settlement's buildings as pictures
       const tex = this.texture(s.chain); if (!tex) return;
       let n = this.townNodes[s.key];
       if (n && n.tex !== tex) { n.node.queue_free(); n = null; }
@@ -300,6 +315,22 @@ class Main extends Node3D {
     });
     Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });
   }
+  // settlements as Civ3-style town models (city.js), rebuilt only when their size tier, walls, capital or owner change
+  syncCities(ground) {
+    const g = this.g, keep = {};
+    Object.keys(g.settlements).forEach(id => {
+      const s = g.settlements[id], view = String(this.viewCity) === String(id), key = city.cityKey(AU, g, s, view);
+      let n = this.cityNodes[id];
+      if (!n || n.key !== key) {
+        const built = city.buildCity(AU, g, s, ground, { view });
+        if (!n) { n = this.cityNodes[id] = { node: new MeshInstance3D() }; n.node.material_override = this.matCity; this.cityRoot.add_child(n.node); }
+        n.node.mesh = toMesh(built.batch); n.key = key; n.top = built.top;
+      }
+      keep[id] = true;
+    });
+    Object.keys(this.cityNodes).forEach(id => { if (!keep[id]) { this.cityNodes[id].node.queue_free(); delete this.cityNodes[id]; } });
+  }
+  clearCities() { Object.keys(this.cityNodes || {}).forEach(id => this.cityNodes[id].node.queue_free()); this.cityNodes = {}; }
   clearSprites() {
     Object.keys(this.unitNodes || {}).forEach(id => this.unitNodes[id].node.queue_free());
     Object.keys(this.townNodes || {}).forEach(k => this.townNodes[k].node.queue_free());
@@ -328,6 +359,8 @@ class Main extends Node3D {
     this.borders.mesh = toMesh(geo.buildBorders(AU, g, this.field));
     if (terrain.scatterKey(g) !== this.natureKey) this.buildNature();
     const ground = (x, z) => this.field.heightAt(x, z);
+    if (this.viewCity !== null && !g.settlements[this.viewCity]) this.closeCity(); // razed or gone
+    this.syncCities(ground);
     if (this.useArt) this.syncSprites(ground);
     const hasArt = u => !!this.texture(sprites.unitChain(AU, g, u));
     this.pieces.mesh = toMesh(geo.buildPieces(AU, g, this.field, this.useArt ? { art: true, hasArt } : null));
@@ -340,9 +373,10 @@ class Main extends Node3D {
         this.labelRoot.add_child(lb); this.labels[id] = lb;
       }
       const c = geo.center(t.col, t.row), col = geo.rgb(civ.color || '#ffffff');
-      lb.text = st.name + '  ' + st.pop;
+      lb.text = (st.isCapital ? '★ ' : '') + st.name + '  ' + st.pop;
       lb.modulate = new Color(Math.min(1, col[0] * 0.5 + 0.55), Math.min(1, col[1] * 0.5 + 0.55), Math.min(1, col[2] * 0.5 + 0.55), 1);
-      lb.position = new Vector3(c[0], Math.max(0, this.field.heightAt(c[0], c[1])) + (this.useArt ? 1.35 : 1.15), c[1] - 0.25);
+      const cn = this.cityNodes[id];
+      lb.position = new Vector3(c[0], (cn ? cn.top : Math.max(0, this.field.heightAt(c[0], c[1])) + 0.8) + 0.2, c[1] - 0.2);
       seen[id] = true;
     });
     Object.keys(this.labels).forEach(id => { if (!seen[id]) { this.labels[id].queue_free(); delete this.labels[id]; } });
@@ -360,6 +394,21 @@ class Main extends Node3D {
     if (g.victory && g.civs[g.victory.civ]) { const w = g.civs[g.victory.civ]; lines.unshift('[b]' + ((AU.CIV_BY_ID[w.civId] || {}).name || w.civId) + ' wins a ' + g.victory.type + ' victory on turn ' + g.victory.turn + '[/b]'); }
     this.scores.text = lines.join('\n');
     this.info.text = this.selected >= 0 ? this.describe(this.selected) : 'Drag to pan, wheel or pinch to zoom, tap a tile for details. Space = End Turn.';
+    this.updateCityMenu();
+  }
+
+  // the city menu for the selected settlement (or the one being shown)
+  updateCityMenu() {
+    const g = this.g, t = this.selected >= 0 ? g.tiles[this.selected] : null;
+    let s = this.viewCity !== null ? g.settlements[this.viewCity] : null;
+    if (!s && t && t.settlement !== undefined && t.settlement !== null) s = g.settlements[t.settlement];
+    this.cityBox.visible = !!s;
+    if (!s) return;
+    const civ = g.civs[s.civ], cname = (AU.CIV_BY_ID[civ.civId] || AU.CITY_STATE_BY_ID && AU.CITY_STATE_BY_ID[civ.civId] || { name: civ.civId }).name;
+    this.cityTitle.text = (s.isCapital ? '★ ' : '') + s.name + '  ·  ' + city.TIER_NAMES[city.tierOf(s)] + ', population ' + s.pop + '  ·  ' + cname;
+    const names = (s.buildings || []).map(b => { const d = G.buildingDef ? G.buildingDef(g, civ, b) : null; return (AU.WONDERS && AU.WONDERS[b] ? '✦ ' : '') + (d && d.name || b); });
+    this.cityText.text = names.length ? 'Buildings: ' + names.join(', ') : 'No buildings yet.';
+    this.showBtn.text = String(this.viewCity) === String(s.id) ? 'Back to map' : 'Show city';
   }
 
   describe(i) {
@@ -379,6 +428,28 @@ class Main extends Node3D {
   onEndTurn() { this.endTurn(); }
   onAuto() { this.auto = !this.auto; this.autoBtn.text = this.auto ? 'Pause' : 'Auto'; }
   onFx() { this.hiFx = !this.hiFx; this.fxBtn.text = this.hiFx ? 'FX: High' : 'FX: Low'; this.env.ssao_enabled = this.hiFx; this.updateCamera(); }
+  onGrid() {
+    this.grid = !this.grid; this.gridBtn.text = this.grid ? 'Grid: On' : 'Grid: Off';
+    this.matTerrain.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0); this.matWater.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0);
+  }
+  onShowCity() {
+    const g = this.g, t = this.selected >= 0 ? g.tiles[this.selected] : null;
+    if (this.viewCity !== null) { this.closeCity(); this.refresh(); return; }
+    if (t && t.settlement !== undefined && t.settlement !== null && g.settlements[t.settlement]) this.openCity(t.settlement);
+  }
+  // "Show city": zoom in on the settlement, hide its houses and show its buildings as pictures
+  openCity(id) {
+    const s = this.g.settlements[id], t = this.g.tiles[s.tile];
+    this.viewCity = id; this.savedDist = this.camDist;
+    this.camTarget = geo.center(t.col, t.row); this.camTarget[1] += 0.25; this.camDist = 4.2; this.updateCamera();
+    this.refresh();
+  }
+  showBiggestCity() { // for the screenshot: the followed empire's largest settlement (else any)
+    const all = Object.keys(this.g.settlements).map(id => this.g.settlements[id]), mine = all.filter(s => s.civ === this.g.playerIdx);
+    const best = (mine.length ? mine : all).sort((a, b) => (b.buildings || []).length - (a.buildings || []).length)[0];
+    if (best) { this.selected = best.tile; this.openCity(best.id); }
+  }
+  closeCity() { if (this.viewCity === null) return; this.viewCity = null; if (this.savedDist) { this.camDist = this.savedDist; this.updateCamera(); } }
   onNewMap() { this.auto = false; this.autoBtn.text = 'Auto'; this.newGame((Time.get_ticks_usec() % 100000) + 1); }
 
   runSmoke() {
@@ -409,7 +480,7 @@ class Main extends Node3D {
     this.camTarget = [this.camTarget[0] - dxPixels * k, this.camTarget[1] - dyPixels * k / Math.sin(PITCH)];
     this.clampCamera();
   }
-  zoom(f) { this.camDist = Math.max(5, Math.min(60, this.camDist * f)); this.clampCamera(); }
+  zoom(f) { this.camDist = Math.max(this.viewCity !== null ? 3 : 5, Math.min(60, this.camDist * f)); this.clampCamera(); }
   clampCamera() {
     const g = this.g; if (!g) return;
     this.camTarget = [Math.max(0, Math.min(geo.SQRT3 * g.W, this.camTarget[0])), Math.max(0, Math.min(1.5 * g.H, this.camTarget[1]))];
@@ -456,7 +527,7 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 240: 'shot_relief.png' }; // default zoom, close-up, wide, low settings, then hills and mountains on another map
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
@@ -464,7 +535,8 @@ class Main extends Node3D {
       if (this.frames === 40) { this.camDist = 5.5; this.updateCamera(); }
       else if (this.frames === 80) { this.camDist = 30; this.updateCamera(); }
       else if (this.frames === 120) { this.camDist = 16; this.onFx(); }
-      else if (this.frames === 160) { this.onFx(); this.newGame(6); this.frameMountains(); }
+      else if (this.frames === 160) { this.onFx(); this.showBiggestCity(); }
+      else if (this.frames === 200) { this.closeCity(); this.newGame(6); this.frameMountains(); }
       else this.get_tree().quit(0);
       return;
     }

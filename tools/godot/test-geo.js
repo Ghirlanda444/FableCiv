@@ -29,10 +29,22 @@ check('rivers', R); check('borders', geo.buildBorders(AU, g, F)); check('pieces'
 // painted pictures: every unit and building chain resolves to a picture in web/assets (except the few with no art yet)
 const SP = require('../../godot/sprites.js'), fs = require('fs'), path = require('path');
 const exists = p => fs.existsSync(path.join(__dirname, '../../web/assets', p));
-const units = SP.unitSpots(AU, g, () => 0), towns = SP.townSprites(AU, g, () => 0);
+const units = SP.unitSpots(AU, g, () => 0), towns = [].concat(...Object.keys(g.settlements).map(id => SP.cityViewSprites(AU, g, g.settlements[id], () => 0)));
 const NO_ART = new Set();
 units.forEach(s => assert(s.chain.some(exists) || NO_ART.has(s.unit.type), 'no picture for unit ' + s.unit.type + ': ' + s.chain.join(' | ')));
 const townMissing = towns.filter(s => !s.chain.some(exists)).map(s => s.chain[s.chain.length - 1]);
 assert(townMissing.every(p => /growth_hall/.test(p)), 'buildings without pictures: ' + townMissing.join(' '));
-console.log('pictures', units.length + ' unit standees, ' + towns.length + ' town pictures (' + townMissing.length + ' without art yet)');
+console.log('pictures', units.length + ' unit standees, ' + towns.length + ' city-view pictures (' + townMissing.length + ' without art yet)');
+// settlement models: every culture and size tier builds a well-formed model, with and without walls, and in the Show city view
+const CT = require('../../godot/city.js'), sample = g.settlements[Object.keys(g.settlements)[0]];
+let cityTris = 0;
+Object.keys(AU.PALACE_STYLES).forEach(cu => [0, 1, 2, 3, 4].forEach(tier => [false, true].forEach(walls => {
+  const AX = Object.assign({}, AU, { cultureOf: () => cu }), s = Object.assign({}, sample, { isCity: tier > 0, pop: [3, 5, 10, 20, 40][tier], isCapital: tier === 4, buildings: walls ? ['walls'] : [] });
+  assert.strictEqual(CT.tierOf(s), tier);
+  const r = CT.buildCity(AX, g, s, (x, z) => F.heightAt(x, z), {}), v = r.batch.p.length / 3;
+  assert(v > 0 && v % 3 === 0 && r.batch.c.length === v * 4 && r.batch.p.every(Number.isFinite) && r.batch.n.every(Number.isFinite) && Number.isFinite(r.top), cu + ' tier ' + tier + ' malformed');
+  cityTris += v / 3;
+})));
+Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
+console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');
 console.log('geo ok, turn ' + g.turn + ', ' + Object.keys(g.settlements).length + ' settlements, ' + Object.keys(g.units).length + ' units');

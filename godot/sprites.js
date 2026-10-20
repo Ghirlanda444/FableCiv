@@ -4,6 +4,7 @@
 // and follow the web game's rules: unique-unit art, then the culture's version, then the shared picture.
 // Every list of paths is a preference chain, relative to the art folder; main.js shows the first one that exists.
 
+const { unitOffset } = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 const SQRT3 = Math.sqrt(3);
 function center(col, row) { return [SQRT3 * (col + 0.5 * (row & 1)), 1.5 * row]; }
 function hash1(i) { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; }
@@ -33,8 +34,7 @@ function unitSpots(AU, g, heightAt) {
     const t = g.tiles[ti], list = byTile[ti]; if (!t) return;
     const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
-      const a = Math.PI * (0.25 + 0.5 * k), d = town || list.length > 1 ? 0.5 : 0; // same spots as the bases in geo.buildPieces
-      const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d + (town ? 0.1 : 0), U = AU.UNITS[u.type] || {};
+      const o = unitOffset(k, list.length, town), x = c[0] + o[0], z = c[1] + o[1], U = AU.UNITS[u.type] || {};
       const military = U.cls !== 'civilian';
       out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.82 : 0.68, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
@@ -42,29 +42,27 @@ function unitSpots(AU, g, heightAt) {
   return out;
 }
 
-// Settlements: the palace (capital) or a hall (city, town) at the centre, then the buildings the settlement has built in two
-// rings, wonders on the outer ring. Walls and boundary markers are drawn as geometry, not pictures.
+// "Show city": one settlement's buildings as pictures on its plaza. The palace (capital) or a hall stands in the middle, the
+// buildings on three rings around it, wonders and national projects on the outer ring. Walls are drawn by city.js.
 const SKIP = { palace: 1, walls: 1, castle: 1, boundary_marker: 1 };
-function townSprites(AU, g, heightAt) {
-  const out = [];
-  Object.keys(g.settlements).forEach(id => {
-    const s = g.settlements[id], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return;
-    const c = center(t.col, t.row), culture = cultureOfCiv(AU, civ), put = (chain, x, z, h, key) => out.push({ key: s.id + ':' + key, chain, x, y: Math.max(0, heightAt(x, z)), z, height: h, settlement: s.id });
-    if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.05, 0.92, 'centre');
-    else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.05, s.isCity ? 0.72 : 0.55, 'centre');
-    const slots = [];
-    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3 + Math.PI / 6; slots.push([Math.cos(a) * 0.42, Math.sin(a) * 0.42 * 0.85]); }
-    for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; slots.push([Math.cos(a) * 0.74, Math.sin(a) * 0.74 * 0.85]); }
-    const order = slots.map((p, i) => i).sort((a, b) => hash1(s.id * 31 + a) - hash1(s.id * 31 + b)).sort((a, b) => (a < 6 ? 0 : 1) - (b < 6 ? 0 : 1));
-    let n = 0;
-    const blds = (s.buildings || []).filter(b => !SKIP[b]), wonders = blds.filter(b => AU.WONDERS && AU.WONDERS[b]), plain = blds.filter(b => !(AU.WONDERS && AU.WONDERS[b]));
-    plain.concat(wonders).forEach(b => {
-      if (n >= slots.length) return;
-      const isW = AU.WONDERS && AU.WONDERS[b], slot = isW ? order[Math.min(slots.length - 1, 6 + (n % 6))] : order[n];
-      const p = slots[slot]; n++;
-      put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], isW ? 0.95 : 0.78, b);
-    });
-  });
+const RINGS = [[6, 0.33, 0.5], [9, 0.57, 0.2], [12, 0.8, 0.0]];
+function cityViewSprites(AU, g, s, heightAt) {
+  const out = [], t = g.tiles[s.tile], civ = g.civs[s.civ]; if (!t || !civ) return out;
+  const c = center(t.col, t.row), culture = cultureOfCiv(AU, civ), put = (chain, x, z, h, key) => out.push({ key: s.id + ':' + key, chain, x, y: Math.max(0, heightAt(x, z)), z, height: h, settlement: s.id });
+  if (s.isCapital) put(buildingChain(AU, 'palace', culture), c[0], c[1] - 0.05, 0.66, 'centre');
+  else put((culture ? ['palace/' + culture + '/hall.png'] : []).concat(buildingChain(AU, 'monument', culture)), c[0], c[1] - 0.05, s.isCity ? 0.56 : 0.46, 'centre');
+  const inner = [], outer = [];
+  RINGS.forEach(([n, r, off], ring) => { for (let k = 0; k < n; k++) { const a = off + 2 * Math.PI * k / n; (ring < 2 ? inner : outer).push([Math.cos(a) * r, Math.sin(a) * r * 0.88]); } });
+  const big = b => (AU.WONDERS && AU.WONDERS[b]) || (AU.NATIONAL && AU.NATIONAL[b]);
+  const blds = (s.buildings || []).filter(b => !SKIP[b]), plain = blds.filter(b => !big(b)), wonders = blds.filter(big);
+  const spots = inner.concat(outer), wonderSpots = outer.slice().sort((p, q) => p[1] - q[1]); // wonders fill the back of the outer ring first
+  const used = {};
+  wonders.slice(0, outer.length).forEach((b, i) => { const p = wonderSpots[i]; used[p.join()] = 1; put(buildingChain(AU, b, culture), c[0] + p[0], c[1] + p[1], 0.62, b); });
+  plain.reduce((n, b) => {
+    while (n < spots.length && used[spots[n].join()]) n++;
+    if (n < spots.length) put(buildingChain(AU, b, culture), c[0] + spots[n][0], c[1] + spots[n][1], 0.46, b);
+    return n + 1;
+  }, 0);
   return out;
 }
 
@@ -75,4 +73,4 @@ function allChains(AU) {
   return out;
 }
 
-module.exports = { unitChain, buildingChain, unitSpots, townSprites, allChains };
+module.exports = { unitChain, buildingChain, unitOffset, unitSpots, cityViewSprites, allChains };
