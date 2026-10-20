@@ -173,7 +173,7 @@ class Main extends Node3D {
     Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0]()), still: m[1] === 'still' }; });
     this.unitModels = {}; ['warrior', 'spearman', 'archer', 'horseman'].forEach(t => { const b = loadModel('unit_' + t); if (b) this.unitModels[t] = b; });
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
-    this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.36, 0.065);
+    this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
     this.unitMats = {}; this.units3d = Object.keys(this.unitModels).length > 0 && this.args.indexOf('--painted-units') < 0;
     console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + Object.keys(this.unitModels).join(', '));
     this.loadGroundTextures();
@@ -457,7 +457,9 @@ class Main extends Node3D {
   // a 3D unit (Blender model) in its owner's colour; horsemen turn three-quarters toward the camera
   unitModel(type, color) {
     let mat = this.unitMats[color];
-    if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1)); }
+    if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1));
+      if (!this.matOutline) this.matOutline = shaderMaterial(shaders.UNIT_OUTLINE);
+      mat.next_pass = this.matOutline; } // black ink outline
     const mi = new MeshInstance3D(); mi.mesh = this.unitModels[type]; mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
     if (type === 'horseman') mi.rotation = new Vector3(0, -0.6, 0);
     this.spriteRoot.add_child(mi);

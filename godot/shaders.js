@@ -393,12 +393,33 @@ void vertex() {
   VERTEX = (VIEW_MATRIX * vec4(o + right * VERTEX.x + up * VERTEX.y, 1.0)).xyz;
 }
 void fragment() {
+  // a thick black outline, then a frame in the owner's colour, then the health fill (the quad is 4:1, so x thicknesses are /4)
   vec2 uv = UV; float hp = team.a;
-  float frame = max(max(step(uv.x, 0.035), step(0.965, uv.x)), max(step(uv.y, 0.2), step(0.8, uv.y)));
-  vec3 fill = hp > 0.5 ? vec3(0.32, 0.8, 0.3) : (hp > 0.25 ? vec3(0.95, 0.72, 0.15) : vec3(0.9, 0.28, 0.25));
-  vec3 col = mix(vec3(0.06, 0.07, 0.09), fill, step(uv.x, 0.035 + 0.93 * hp));
-  ALBEDO = mix(col, team.rgb, frame);
+  vec2 e = min(uv, 1.0 - uv) * vec2(4.0, 1.0);   // distance to the nearest edge, in bar heights
+  float edge = min(e.x, e.y);
+  float f = (uv.x - 0.08) / 0.84;                   // position along the fill
+  vec3 fill = hp > 0.5 ? vec3(0.2, 0.85, 0.2) : (hp > 0.25 ? vec3(1.0, 0.75, 0.1) : vec3(0.95, 0.2, 0.15));
+  vec3 col = edge < 0.18 ? vec3(0.0) : edge < 0.32 ? team.rgb : (f < hp ? fill : vec3(0.05, 0.05, 0.06));
+  ALBEDO = col;
 }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, HEALTH_BAR };
+// ink outline for the 3D units (a second pass, Material.next_pass): the back faces pushed out along the normals, drawn black.
+// The push grows with the distance, so the line keeps about the same width on screen (0.005 ≈ 4 px on a 720 px tall view
+// at the 45° field of view) whatever the zoom. Separate shells (helmets, shields, eyes) get their own line where they
+// cross the body, which is what makes them read as separate things.
+const UNIT_OUTLINE = `
+shader_type spatial;
+render_mode unshaded, cull_front, shadows_disabled;
+uniform float width = 0.005;
+uniform vec3 ink : source_color = vec3(0.03, 0.025, 0.035);
+void vertex() {
+  vec4 v = MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+  vec3 n = normalize(mat3(MODELVIEW_MATRIX) * NORMAL);
+  v.xyz += n * width * max(-v.z, 0.1);
+  POSITION = PROJECTION_MATRIX * v;
+}
+void fragment() { ALBEDO = ink; }
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, HEALTH_BAR };
