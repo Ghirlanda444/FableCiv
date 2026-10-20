@@ -36,7 +36,7 @@ function unitSpots(AU, g, heightAt) {
     list.slice(0, 4).forEach((u, k) => {
       const o = unitOffset(k, list.length, town, showsResource(AU, g, t)), x = c[0] + o[0], z = c[1] + o[1], U = AU.UNITS[u.type] || {};
       const military = U.cls !== 'civilian'; // heights of the figure itself (main.js crops the pictures' empty margins)
-      out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.6 : 0.5, color: (g.civs[u.civ] || {}).color || '#999999' });
+      out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.78 : 0.64, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
   });
   return out;

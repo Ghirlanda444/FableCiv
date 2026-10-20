@@ -24,6 +24,7 @@ const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, TONEMAP_AGX = 4, SHADOWS_
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
 const PITCH = 55 * Math.PI / 180;
+const UNIT_3D_SCALE = 1.3, UNIT_3D_HEIGHT = 0.62 * UNIT_3D_SCALE; // 3D units (models are 0.62 tall), about as tall as the painted ones
 
 function userArgs() {
   const a = OS.get_cmdline_user_args(), out = [];
@@ -159,10 +160,13 @@ class Main extends Node3D {
     const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
     this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
       tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
+    ['pine', 'round', 'palm', 'bush', 'rock'].forEach(k => { const b = loadModel('tree_' + k); if (b) this.propMeshes[k] = [{ mesh: b, mat: this.matProps }]; }); // Blender trees when present
     this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
     let made = 0; // the Blender-made model when there is one, else the code-built one
     Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0]()), still: m[1] === 'still' }; });
     this.unitModels = {}; ['warrior', 'spearman', 'archer', 'horseman'].forEach(t => { const b = loadModel('unit_' + t); if (b) this.unitModels[t] = b; });
+    this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
+    this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.36, 0.065);
     this.unitMats = {}; this.units3d = Object.keys(this.unitModels).length > 0 && this.args.indexOf('--painted-units') < 0;
     console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + Object.keys(this.unitModels).join(', '));
     this.loadGroundTextures();
@@ -394,12 +398,17 @@ class Main extends Node3D {
       const model = this.units3d && this.unitModels[s.unit.type], tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
       const look = model ? 'm:' + s.unit.type + ':' + s.color : tex;
       let n = this.unitNodes[s.id];
-      if (n && n.tex !== look) { n.node.queue_free(); n = null; }
+      if (n && n.tex !== look) { n.node.queue_free(); if (n.bar) n.bar.queue_free(); n = null; }
       if (!n) n = this.unitNodes[s.id] = { tex: look, node: model ? this.unitModel(s.unit.type, s.color) : this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
       n.node.position = new Vector3(s.x, s.y + 0.01, s.z); // feet on the ground, in the owner's ring
+      if (!n.bar) { n.bar = new MeshInstance3D(); n.bar.mesh = this.barQuad; n.bar.material_override = this.matBar; n.bar.cast_shadow = SHADOWS_OFF; this.spriteRoot.add_child(n.bar); }
+      const c = geo.rgb(s.color), top = model ? UNIT_3D_HEIGHT : s.height;
+      n.bar.position = new Vector3(s.x, s.y + top + 0.12, s.z);
+      n.bar.set_instance_shader_parameter('hp', Math.max(0, Math.min(1, (s.unit.hp === undefined ? 100 : s.unit.hp) / 100)));
+      n.bar.set_instance_shader_parameter('team', new Color(c[0], c[1], c[2], 1));
       keepU[s.id] = true;
     });
-    Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); delete this.unitNodes[id]; } });
+    Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); if (this.unitNodes[id].bar) this.unitNodes[id].bar.queue_free(); delete this.unitNodes[id]; } });
     const vs = this.viewCity !== null && g.settlements[this.viewCity];
     (vs ? sprites.cityViewSprites(AU, g, vs, ground) : []).forEach(s => { // the "Show city" close-up: the settlement's buildings as pictures
       const tex = this.texture(s.chain); if (!tex) return;
@@ -442,7 +451,7 @@ class Main extends Node3D {
   unitModel(type, color) {
     let mat = this.unitMats[color];
     if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1)); }
-    const mi = new MeshInstance3D(); mi.mesh = this.unitModels[type]; mi.material_override = mat;
+    const mi = new MeshInstance3D(); mi.mesh = this.unitModels[type]; mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
     if (type === 'horseman') mi.rotation = new Vector3(0, -0.6, 0);
     this.spriteRoot.add_child(mi);
     return mi;
@@ -450,11 +459,11 @@ class Main extends Node3D {
   onUnits() {
     if (!Object.keys(this.unitModels).length) return;
     this.units3d = !this.units3d; this.unitsBtn.text = this.units3d ? 'Units: 3D' : 'Units: Painted';
-    Object.keys(this.unitNodes).forEach(id => this.unitNodes[id].node.queue_free()); this.unitNodes = {};
+    Object.keys(this.unitNodes).forEach(id => { this.unitNodes[id].node.queue_free(); if (this.unitNodes[id].bar) this.unitNodes[id].bar.queue_free(); }); this.unitNodes = {};
     this.refresh();
   }
   clearSprites() {
-    Object.keys(this.unitNodes || {}).forEach(id => this.unitNodes[id].node.queue_free());
+    Object.keys(this.unitNodes || {}).forEach(id => { this.unitNodes[id].node.queue_free(); if (this.unitNodes[id].bar) this.unitNodes[id].bar.queue_free(); });
     Object.keys(this.townNodes || {}).forEach(k => this.townNodes[k].node.queue_free());
     Object.keys(this.resNodes || {}).forEach(k => this.resNodes[k].node.queue_free());
     this.unitNodes = {}; this.townNodes = {}; this.resNodes = {};

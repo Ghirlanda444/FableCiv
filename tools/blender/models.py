@@ -438,6 +438,47 @@ def pearl(name='pearl'):
     m.solid(prim_sphere((0, -0.02, 0.17), 0.12, (1, 1, 1), 12), rgb('#fbf8fc'))
     return m
 
+# ---------------------------------------------------------------- trees (thousands stand on the map: a few hundred triangles each)
+BARK = rgb('#7a4a2c')
+def pine(name='tree_pine'):
+    m = Model(name)
+    m.solid(prim_cylinder((0, 0, 0), (0, 0, 0.5), 0.09, 0.06, 7), BARK)
+    tiers = [(0.25, 0.62, 0.55, '#2c6e30'), (0.55, 0.5, 0.48, '#357a36'), (0.85, 0.38, 0.42, '#3f8a3c'), (1.12, 0.26, 0.36, '#4e9a44')]
+    for z, r, h, c in tiers:  # stacked tiers, each with a slight skirt so they read as layered boughs
+        m.solid(prim_cylinder((0, 0, z), (0, 0, z + h), r, 0.0, 9), rgb(c))
+        m.solid(prim_cylinder((0, 0, z - 0.05), (0, 0, z + 0.02), r * 0.82, r, 9), rgb(c))
+    return m
+
+def round_tree(name='tree_round'):
+    m = Model(name); rnd = random.Random(21); g1, g2 = rgb('#3e8a38'), rgb('#62a846')
+    m.capsule((0, 0, 0), (0.02, 0, 0.55), 0.08, BARK); m.capsule((0.02, 0, 0.4), (0.2, 0.05, 0.62), 0.05, BARK)
+    for k, (x, y, z, r) in enumerate([(0, 0, 0.82, 0.36), (0.24, 0.05, 0.7, 0.26), (-0.22, 0.08, 0.72, 0.26), (0.05, -0.2, 0.7, 0.25), (0.02, 0.22, 0.74, 0.24), (0.05, 0.0, 1.05, 0.24)]):
+        m.ball((x, y, z), r, g2 if z > 0.9 or k % 2 else g1)
+    return m
+
+def palm(name='tree_palm'):
+    m = Model(name); leaf, leaf2 = rgb('#4e9e36'), rgb('#6ab446')
+    pts = [Vector((0.006 * k * k, 0, 0.13 * k)) for k in range(9)]  # a gently leaning trunk
+    for k in range(8): m.capsule(pts[k], pts[k + 1], 0.065 - 0.003 * k, rgb('#8a6a40') if k % 2 else rgb('#a07a48'))
+    top = pts[-1]
+    for k in range(7):
+        a = k * 2 * math.pi / 7; d = Vector((math.cos(a), math.sin(a), 0))
+        m.ball(top + d * 0.32 + Vector((0, 0, 0.0)), 0.2, leaf if k % 2 else leaf2, scale=(1.9, 0.5, 0.18), rot=qz(math.degrees(a)) @ qy(22), kind='ELLIPSOID')
+    for k in range(3): m.ball(top + Vector((math.cos(k * 2.1) * 0.08, math.sin(k * 2.1) * 0.08, -0.08)), 0.06, rgb('#6a4a2a'))
+    return m
+
+def shrub(name='tree_bush'):
+    m = Model(name); g1, g2 = rgb('#3e8a38'), rgb('#62a846')
+    for k, (x, y, z, r) in enumerate([(0, 0, 0.22, 0.24), (0.2, 0.05, 0.16, 0.18), (-0.18, 0.06, 0.16, 0.18), (0.02, -0.16, 0.15, 0.17), (0.0, 0.0, 0.36, 0.15)]):
+        m.ball((x, y, z), r, g2 if k % 2 else g1)
+    return m
+
+def boulder(name='tree_rock'):
+    m = Model(name); c = rgb('#8a8278')
+    for k, (x, y, z, r) in enumerate([(0, 0, 0.16, 0.26), (0.2, 0.08, 0.1, 0.16), (-0.14, -0.1, 0.09, 0.14)]):
+        m.ball((x, y, z), r, c if k else rgb('#9a9288'), scale=(1.1, 0.9, 0.8), rot=qz(k * 40), kind='ELLIPSOID')
+    return m
+
 # ---------------------------------------------------------------- chibi units (face -y, toward the game camera)
 def chibi(name, headgear='hair', tunic=TEAM, z=0.0, sitting=False):
     m = Model(name)
@@ -448,7 +489,8 @@ def chibi(name, headgear='hair', tunic=TEAM, z=0.0, sitting=False):
         m.ball((0, 0.06, hz + 0.2), 0.5, HAIR, scale=(1.06, 1.02, 0.78), kind='ELLIPSOID')
         for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05), 0.15, HAIR)  # fringe
     elif headgear == 'helmet':
-        m.ball((0, 0.05, hz + 0.17), 0.49, METAL, scale=(1.08, 1.05, 0.78), kind='ELLIPSOID')
+        m.ball((0, 0.06, hz + 0.2), 0.47, METAL, scale=(1.05, 1.02, 0.68), kind='ELLIPSOID')
+        for k in range(4): m.ball((0, 0.18 - k * 0.14, hz + 0.52 - abs(k - 1.5) * 0.04), 0.11, TEAM)  # crest in the owner's colour
         m.solid(prim_cylinder((0, -0.5, hz + 0.25), (0, -0.53, hz - 0.02), 0.035, 0.03, 6), METAL)  # nose guard
     elif headgear == 'hood': m.ball((0, 0.12, hz + 0.08), 0.53, rgb('#3e6a3a'), scale=(1.05, 1.0, 0.95), kind='ELLIPSOID')
     eyes_c = Vector((0.17, -0.45, hz - 0.02))
@@ -506,13 +548,14 @@ def archer():
     for i in range(3): m.solid(prim_cylinder((0.2 + i * 0.04, 0.34, 1.2), (0.22 + i * 0.05, 0.36, 1.45), 0.012, 0.012, 4), rgb('#e8dcc0'))
     return m
 
-def turn(m, q, offset=(0, 0, 0)):
-    """rotate a model's parts about the origin, then move them"""
+def turn(m, q, offset=(0, 0, 0), scale=1.0):
+    """rotate (and scale) a model's parts about the origin, then move them"""
     off = Vector(offset)
     for b in m.balls:
-        b['co'] = q @ b['co'] + off
+        b['co'] = q @ b['co'] * scale + off; b['r'] *= scale
+        if 'half' in b: b['half'] *= scale
         b['rot'] = q @ b['rot'] if b['rot'] is not None else (q if b['kind'] != 'BALL' else None)
-    M = Matrix.Translation(off) @ q.to_matrix().to_4x4()
+    M = Matrix.Translation(off) @ q.to_matrix().to_4x4() @ Matrix.Scale(scale, 4)
     for o, c in m.solids: o.matrix_world = M @ o.matrix_world
     return m
 
@@ -522,15 +565,15 @@ def horseman():
     arm(r, 1, (0.45, -0.3, 0.75)); arm(r, -1, (-0.4, -0.3, 0.85))
     r.solid(prim_cylinder((0.47, -0.32, 0.15), (0.5, -0.36, 2.0), 0.035, 0.035, 8), WOOD)
     r.solid(prim_cylinder((0.5, -0.36, 2.0), (0.5, -0.36, 2.25), 0.07, 0.0, 8), METAL)
-    turn(r, qz(90), (0.05, 0, 1.25))  # face along the horse, seated on its back, legs down its flanks
+    turn(r, qz(90), (0.0, 0, 1.38), 0.72)  # face along the horse, seated on its back, legs down its flanks, rider to horse scale
     m.balls += r.balls; m.solids += r.solids
-    m.ball((-0.05, 0, 1.62), 0.45, TEAM, scale=(1.2, 1.15, 0.22), kind='ELLIPSOID')  # saddle cloth in the owner's colour
+    m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')  # saddle cloth in the owner's colour
     return m
 
 # triangle caps for the whole model (body, eyes and props): many instances of these stand on the map
-CAPS = {'whale': 900, 'fish': 400, 'crab': 600, 'pearl': 500, 'wheat': 2000, 'vines': 1800, 'cotton': 900, 'spices': 900, 'dyes': 900,
+CAPS = {'tree_pine': 220, 'tree_round': 300, 'tree_palm': 300, 'tree_bush': 150, 'tree_rock': 80, 'whale': 900, 'fish': 400, 'crab': 600, 'pearl': 500, 'wheat': 2000, 'vines': 1800, 'cotton': 900, 'spices': 900, 'dyes': 900,
         'silk': 900, 'incense': 900, 'rubber': 900, 'banana': 900, 'rice': 1400, 'unit_warrior': 3500, 'unit_spearman': 3500, 'unit_archer': 3500, 'unit_horseman': 4200}
-FACETED = {'iron', 'gems', 'gems2', 'copper', 'coal', 'niter', 'aluminum', 'uranium'}  # rocks: few large flat faces, like cut stone
+FACETED = {'tree_rock', 'iron', 'gems', 'gems2', 'copper', 'coal', 'niter', 'aluminum', 'uranium'}  # rocks: few large flat faces, like cut stone
 G, G2 = rgb('#3e7a32'), rgb('#5e9e44')
 # name: (builder, size in game units (largest dimension), metaball resolution, triangle budget)
 MODELS = {
@@ -552,6 +595,8 @@ MODELS = {
     'fish': (fish, 0.18, 0.025, 600), 'crab': (crab, 0.1, 0.02, 700), 'whale': (whale, 0.36, 0.03, 900), 'pearl': (pearl, 0.1, 0.02, 600),
     'unit_warrior': (warrior, 0.62, 0.02, 2500), 'unit_spearman': (spearman, 0.62, 0.02, 2500), 'unit_archer': (archer, 0.62, 0.02, 2500),
     'unit_horseman': (horseman, 0.7, 0.025, 2800),
+    'tree_pine': (pine, 0.62, 0.03, 200), 'tree_round': (round_tree, 0.7, 0.04, 220), 'tree_palm': (palm, 0.6, 0.035, 220),
+    'tree_bush': (shrub, 0.42, 0.035, 120), 'tree_rock': (boulder, 0.25, 0.04, 60),
 }
 
 # ---------------------------------------------------------------- preview render
