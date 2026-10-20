@@ -63,13 +63,20 @@ function toMesh(b) {
   return n ? st.commit() : null;
 }
 
-// a model made in Blender (tools/blender/models.py → godot/models/<name>.json: { v: [x,y,z, nx,ny,nz, r,g,b,a ...], i: [...] });
-// null when the file is missing (the code-built model stands in)
+// a model made in Blender (tools/blender/models.py and buildings.py → godot/models/<name>.json: { v: [x,y,z, nx,ny,nz, r,g,b,a ...],
+// i: [...] }), read once; null when the file is missing (the code-built model stands in). loadModel turns it into a mesh.
+const modelCache = {};
+function modelData(name) {
+  if (name in modelCache) return modelCache[name];
+  const path = 'res://models/' + name + '.json'; let m = null;
+  try { if (FileAccess.file_exists(path)) m = JSON.parse(FileAccess.get_file_as_string(path)); }
+  catch (e) { console.log('[tiny-empires] model ' + name + ' unreadable: ' + (e && e.message)); }
+  return (modelCache[name] = m);
+}
 function loadModel(name) {
-  const path = 'res://models/' + name + '.json';
-  if (!FileAccess.file_exists(path)) return null;
+  const m = modelData(name); if (!m) return null;
   try {
-    const m = JSON.parse(FileAccess.get_file_as_string(path)), v = m.v, st = new SurfaceTool();
+    const v = m.v, st = new SurfaceTool();
     st.begin(PRIMITIVE_TRIANGLES);
     for (let k = 0; k < v.length; k += 10) {
       st.set_normal(new Vector3(v[k + 3], v[k + 4], v[k + 5])); st.set_color(new Color(v[k + 6], v[k + 7], v[k + 8], v[k + 9]));
@@ -438,7 +445,7 @@ class Main extends Node3D {
       const s = g.settlements[id], view = String(this.viewCity) === String(id), key = city.cityKey(AU, g, s, view);
       let n = this.cityNodes[id];
       if (!n || n.key !== key) {
-        const built = city.buildCity(AU, g, s, ground, { view, river: this.field.river });
+        const built = city.buildCity(AU, g, s, ground, { view, river: this.field.river, models: modelData });
         if (!n) { n = this.cityNodes[id] = { node: new MeshInstance3D() }; n.node.material_override = this.matCity; this.cityRoot.add_child(n.node); }
         n.node.mesh = toMesh(built.batch); n.key = key; n.top = built.top;
       }

@@ -149,16 +149,18 @@ def bake_ao(obj, rays=24, dist=0.6):
     for li, l in enumerate(me.loops):
         c = attr.data[li].color; k = occ[l.vertex_index]
         # team-colour corners keep only the shading (grey), which the game multiplies by the owner's colour
-        attr.data[li].color = (k, k, k, 0.0) if c[3] < 0.5 else (c[0] * k, c[1] * k, c[2] * k, c[3])
+        # (buildings: alpha 0.2/0.4/0.6 likewise mark the culture's wall, roof and trim colours, see buildings.py)
+        attr.data[li].color = (k, k, k, c[3]) if c[3] < 0.95 else (c[0] * k, c[1] * k, c[2] * k, c[3])
 
 def export(obj, path, size):
-    """indexed triangles in game units (y up, scaled so the largest dimension is `size`): { v: [x,y,z, nx,ny,nz, r,g,b,a ...],
+    """indexed triangles in game units (y up, scaled so the largest dimension is `size`, or as modelled if None): { v: [x,y,z, nx,ny,nz, r,g,b,a ...],
     i: [triangle indices] }. Corners sharing position, normal and colour share a vertex."""
     me = obj.data; bm = bmesh.new(); bm.from_mesh(me); bmesh.ops.triangulate(bm, faces=bm.faces)
     tmp = bpy.data.meshes.new('tri'); bm.to_mesh(tmp); bm.free()
     xs = [v.co for v in tmp.vertices]; lo = Vector((min(v.x for v in xs), min(v.y for v in xs), min(v.z for v in xs)))
     hi = Vector((max(v.x for v in xs), max(v.y for v in xs), max(v.z for v in xs)))
-    k = size / max(hi.x - lo.x, hi.y - lo.y, hi.z - lo.z); cx, cy = (lo.x + hi.x) / 2, (lo.y + hi.y) / 2
+    if size is None: k, cx, cy, lo.z = 1.0, 0.0, 0.0, 0.0  # modelled in game units about its own origin (buildings)
+    else: k = size / max(hi.x - lo.x, hi.y - lo.y, hi.z - lo.z); cx, cy = (lo.x + hi.x) / 2, (lo.y + hi.y) / 2
     attr = tmp.color_attributes['Col']; V, I, seen = [], [], {}
     for poly in tmp.polygons:
         for li in poly.loop_indices:
@@ -493,10 +495,10 @@ def chibi(name, headgear='hair', tunic=TEAM, z=0.0, sitting=False):
         for k in range(4): m.ball((0, 0.18 - k * 0.14, hz + 0.52 - abs(k - 1.5) * 0.04), 0.11, TEAM)  # crest in the owner's colour
         m.solid(prim_cylinder((0, -0.5, hz + 0.25), (0, -0.53, hz - 0.02), 0.035, 0.03, 6), METAL)  # nose guard
     elif headgear == 'hood': m.ball((0, 0.12, hz + 0.08), 0.53, rgb('#3e6a3a'), scale=(1.05, 1.0, 0.95), kind='ELLIPSOID')
-    eyes_c = Vector((0.17, -0.45, hz - 0.02))
-    for s in (-1, 1):
-        m.solid(prim_sphere(Vector((s * 0.17, -0.45, hz - 0.02)), 0.07, (0.85, 0.5, 1.3), 10), EYE)
-        m.solid(prim_sphere(Vector((s * 0.15, -0.49, hz + 0.04)), 0.022, (1, 1, 1), 6), WHITE)
+    for s in (-1, 1):  # big chibi eyes: white, a large dark iris low in it, a highlight
+        m.solid(prim_sphere(Vector((s * 0.185, -0.44, hz - 0.02)), 0.11, (0.85, 0.45, 1.2), 12), WHITE)
+        m.solid(prim_sphere(Vector((s * 0.18, -0.475, hz - 0.04)), 0.075, (0.85, 0.4, 1.15), 12), EYE)
+        m.solid(prim_sphere(Vector((s * 0.155, -0.51, hz + 0.0)), 0.026, (1, 0.6, 1), 6), WHITE)
     m.ball((0, -0.5, hz - 0.12), 0.06, rgb('#e8a888'))  # nose
     look_up(m, nb, ns, Vector((0, 0, hz)), 24)  # the game camera looks down at 55°: tip the face up to meet it
     m.ball((0, 0, z + 0.78), 0.36, tunic, scale=(1.0, 0.85, 1.05), kind='ELLIPSOID')

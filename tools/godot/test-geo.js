@@ -54,6 +54,21 @@ Object.keys(AU.PALACE_STYLES).forEach(cu => [0, 1, 2, 3, 4].forEach(tier => [fal
   assert(v > 0 && v % 3 === 0 && r.batch.c.length === v * 4 && r.batch.p.every(Number.isFinite) && r.batch.n.every(Number.isFinite) && Number.isFinite(r.top), cu + ' tier ' + tier + ' malformed');
   cityTris += v / 3;
 })));
+// the same with the Blender buildings (godot/models): every culture has its houses and landmarks, walls and castles merge cleanly
+const MD = {};
+const models = n => (n in MD ? MD[n] : (MD[n] = fs.existsSync(path.join(__dirname, '../../godot/models', n + '.json')) ? JSON.parse(fs.readFileSync(path.join(__dirname, '../../godot/models', n + '.json'), 'utf8')) : null));
+let modelTris = 0;
+Object.keys(AU.PALACE_STYLES).forEach(cu => {
+  [0, 1, 2].forEach(v => assert(models('house_' + cu + '_' + v), 'no Blender house ' + cu + ' ' + v));
+  [0, 1, 2, 3, 4].forEach(tier => {
+    assert(models('landmark_' + cu + '_' + tier), 'no Blender landmark ' + cu + ' ' + tier);
+    const AX = Object.assign({}, AU, { cultureOf: () => cu }), s = Object.assign({}, sample, { isCity: tier > 0, pop: [3, 5, 10, 20, 40][tier], isCapital: tier === 4, buildings: tier > 2 ? ['castle'] : ['walls'] });
+    const r = CT.buildCity(AX, g, s, (x, z) => F.heightAt(x, z), { models }), v = r.batch.p.length / 3;
+    assert(v > 0 && v % 3 === 0 && r.batch.c.length === v * 4 && r.batch.p.every(Number.isFinite) && r.batch.n.every(Number.isFinite) && r.batch.c.every(Number.isFinite) && Number.isFinite(r.top), cu + ' tier ' + tier + ' (models) malformed');
+    modelTris = Math.max(modelTris, v / 3);
+  });
+});
+console.log('cities  ', 'Blender buildings for every culture; the biggest walled metropolis ' + modelTris + ' triangles');
 Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
 console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');
 console.log('geo ok, turn ' + g.turn + ', ' + Object.keys(g.settlements).length + ' settlements, ' + Object.keys(g.units).length + ' units');

@@ -4,6 +4,8 @@
 // Houses and the central landmark follow the culture's architecture (AU.PALACE_STYLES: wall, roof and trim colours, roof shape),
 // a flag flies the owner's colour (a bigger one with a gold finial on capitals), and walls or a castle add a ring of ramparts.
 // Individual buildings are not drawn here: they appear in the "Show city" view (sprites.cityViewSprites).
+// The houses, landmarks and ramparts are Blender models (tools/blender/buildings.py, godot/models) when opts.models provides
+// them, merged into the batch in the culture's colours; the code-built ones below stay as the fallback.
 // Plain JS geometry batches, so Node can test it (tools/godot/test-geo.js).
 const geo = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 const { rgb, mix, shade, hash, vert, tri, quad, box, prism, center } = geo;
@@ -23,7 +25,7 @@ const SLOTS = (() => {
       const a = off + 2 * Math.PI * k / n, i = out.length;
       const x = Math.cos(a) * r + (hash(i * 7 + 1) - 0.5) * 0.05, z = Math.sin(a) * r * 0.92 + (hash(i * 7 + 2) - 0.5) * 0.05;
       if (UNIT_SPOTS.some(p => Math.hypot(p[0] - x, p[1] - z) < 0.2)) continue;
-      out.push({ x, z, ring, j: hash(i * 7 + 3), k: hash(i * 7 + 4), along: hash(i * 7 + 5) < 0.35 });
+      out.push({ x, z, ring, j: hash(i * 7 + 3), k: hash(i * 7 + 4), along: hash(i * 7 + 5) < 0.35, v: Math.floor(hash(i * 7 + 6) * 3) });
     }
   });
   return out;
@@ -210,6 +212,44 @@ function ramparts(b, cx, cz, R, heightAt, castle, wall, roof) {
   });
 }
 
+// Append a Blender model ({ v: [x,y,z, nx,ny,nz, r,g,b,a ...], i: [...] }) to the batch. Vertex alpha gives the part's colour:
+// 0 the owner's, 0.2 / 0.4 / 0.6 the wall, roof and trim of `pal` (rgb then holds the baked shading), 1 the model's own.
+// P(x, y, z) and N(nx, ny, nz) carry model space to the map.
+function merge(b, M, pal, P, N) {
+  const v = M.v, idx = M.i, cache = new Array(v.length / 10);
+  const at = k => {
+    if (cache[k]) return cache[k];
+    const o = k * 10, a = v[o + 9], base = a < 0.1 ? pal.own : a < 0.3 ? pal.wall : a < 0.5 ? pal.roof : a < 0.7 ? pal.trim : null;
+    const c = base ? [base[0] * v[o + 6], base[1] * v[o + 7], base[2] * v[o + 8], 1] : [v[o + 6], v[o + 7], v[o + 8], 1];
+    return (cache[k] = [P(v[o], v[o + 1], v[o + 2]), N(v[o + 3], v[o + 4], v[o + 5]), c]);
+  };
+  for (let t = 0; t < idx.length; t++) { const q = at(idx[t]); vert(b, q[0], q[1], q[2]); }
+}
+// a model stood at (x, y, z), turned by yaw (its front, +z, toward (sin yaw, cos yaw)) and scaled (sx across, sy up)
+function place(b, M, pal, x, y, z, yaw, sx, sy) {
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  merge(b, M, pal, (px, py, pz) => { px *= sx; pz *= sx; return [x + px * c + pz * s, y + py * sy, z - px * s + pz * c]; },
+    (nx, ny, nz) => { nx /= sx; nz /= sx; ny /= sy; const l = Math.hypot(nx, ny, nz) || 1; return [(nx * c + nz * s) / l, ny / l, (-nx * s + nz * c) / l]; });
+}
+function modelTop(M) { if (M.top === undefined) { let t = 0; for (let k = 1; k < M.v.length; k += 10) t = Math.max(t, M.v[k]); M.top = t; } return M.top; }
+
+// ramparts from the Blender models: a wall stretched between round corner towers (following the ground), a gatehouse facing
+// the camera; a castle's are taller and thicker
+function modelRamparts(b, cx, cz, R, heightAt, castle, pal, mdl) {
+  const n = 8, P = [], k = castle ? 1.3 : 1, seg = mdl('wall_seg');
+  for (let i = 0; i < n; i++) { const a = Math.PI / n + 2 * Math.PI * i / n, x = cx + Math.cos(a) * R, z = cz + Math.sin(a) * R * 0.92; P.push([x, Math.max(0, heightAt(x, z)), z]); }
+  for (let i = 0; i < n; i++) {
+    let A = P[i], B = P[(i + 1) % n];
+    const mx = (A[0] + B[0]) / 2 - cx, mz = (A[2] + B[2]) / 2 - cz;
+    if (-(B[2] - A[2]) * mx + (B[0] - A[0]) * mz < 0) { const t = A; A = B; B = t; } // run so that the model's front faces outward
+    const dx = B[0] - A[0], dz = B[2] - A[2], l = Math.hypot(dx, dz), ux = dx / l, uz = dz / l, ox = -uz, oz = ux;
+    merge(b, seg, pal, (px, py, pz) => { const t = px + 0.5; pz *= k; return [A[0] + dx * t + ox * pz, A[1] + (B[1] - A[1]) * t + py * k, A[2] + dz * t + oz * pz]; },
+      (nx, ny, nz) => [ux * nx + ox * nz, ny, uz * nx + oz * nz]);
+    if (i === 1) { const gx = (A[0] + B[0]) / 2, gz = (A[2] + B[2]) / 2; place(b, mdl('wall_gate'), pal, gx, Math.min(A[1], B[1]), gz, Math.atan2(ox, oz), k, k); }
+  }
+  P.forEach(p => place(b, mdl('wall_tower'), pal, p[0], p[1], p[2], 0, castle ? 1.25 : 1, castle ? 1.25 : 1));
+}
+
 // One settlement's icon. opts.view: the "Show city" stage, with only the ground and the walls (the buildings are pictures then).
 // Returns { batch, top } (top: height of the landmark, for the name label).
 function buildCity(AU, g, s, heightAt, opts) {
@@ -222,7 +262,11 @@ function buildCity(AU, g, s, heightAt, opts) {
   const y0 = gy(c[0], c[1]);
   plaza(b, c[0], c[1], R * 0.95, gy, rgb(s.isCity ? '#a8987c' : '#9c8460'));
   const blds = s.buildings || [], castle = blds.indexOf('castle') >= 0;
-  if (castle || blds.indexOf('walls') >= 0) ramparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, wall, roof);
+  const mdl = name => (opts && opts.models && opts.models(name)) || null;
+  if (castle || blds.indexOf('walls') >= 0) {
+    if (mdl('wall_seg') && mdl('wall_tower') && mdl('wall_gate')) modelRamparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, { wall: mix(wall, rgb('#b9b2a6'), 0.6), roof, trim, own }, mdl);
+    else ramparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, wall, roof);
+  }
   if (opts && opts.view) return { batch: b, top: y0 + 0.8 };
   SLOTS.slice(0, HOUSES[tier]).forEach((p, i) => {
     const x = c[0] + p.x, z = c[1] + p.z, inner = p.ring === 0 && tier >= 3;
@@ -230,11 +274,18 @@ function buildCity(AU, g, s, heightAt, opts) {
     const h = 0.11 + 0.025 * tier + 0.04 * p.k + (inner ? 0.07 : 0) + (tier === 4 && p.ring === 1 ? 0.05 : 0);
     const wc = i % 3 === 0 ? mix(wall, [1, 1, 1, 1], 0.12) : i % 3 === 1 ? shade(wall, 0.9) : wall, rc = shade(hroof, 0.86 + 0.24 * p.j);
     const rv = opts && opts.river && opts.river(x, z); if (rv && rv.d < rv.hw + 0.12) return; // the river runs through town: no house in it
-    const from = b.p.length / 3, hy = gy(x, z);
+    const from = b.p.length / 3, hy = gy(x, z), M = mdl('house_' + (culture || 'mediterranean') + '_' + p.v);
+    if (M) { // a little bigger and taller as the city grows; turned a little, doors still toward the camera
+      const sx = 0.9 + 0.25 * p.j + (inner ? 0.1 : 0), sy = 0.85 + 0.05 * tier + 0.2 * p.k + (p.ring === 0 ? -0.1 : p.ring === 1 && tier === 4 ? 0.15 : 0); // the landmark stays the tallest
+      place(b, M, { wall: wc, roof: rc, trim, own }, x, hy, z, (p.k - 0.5) * 0.7, sx, sy);
+      return;
+    }
     house(b, x, hy, z, w, d, h, kind, wc, rc, trim, p.along); stretch(b, from, hy, TALL);
   });
-  const from = b.p.length / 3, top = y0 + (landmark(b, c[0], y0, c[1] - 0.03, tier, S, wall, roof, trim, kind) - y0) * TALL;
-  stretch(b, from, y0, TALL);
+  const LM = mdl('landmark_' + (culture || 'mediterranean') + '_' + tier);
+  let top;
+  if (LM) { place(b, LM, { wall, roof, trim, own }, c[0], y0, c[1] - 0.03, 0, 1, 1); top = y0 + modelTop(LM); }
+  else { const from = b.p.length / 3; top = y0 + (landmark(b, c[0], y0, c[1] - 0.03, tier, S, wall, roof, trim, kind) - y0) * TALL; stretch(b, from, y0, TALL); }
   flag(b, c[0] + 0.01, top, c[1] - 0.03, own, !!s.isCapital);
   return { batch: b, top: top + (s.isCapital ? 0.3 : 0.2) };
 }
@@ -257,4 +308,4 @@ function cityKey(AU, g, s, view) {
   return [s.tile, s.civ, tierOf(s), !!s.isCapital, blds.indexOf('walls') >= 0, blds.indexOf('castle') >= 0, !!view].join(':');
 }
 
-module.exports = { TIER_NAMES, tierOf, buildCity, cityKey, SLOTS };
+module.exports = { TIER_NAMES, tierOf, buildCity, cityKey, SLOTS, merge, place };
