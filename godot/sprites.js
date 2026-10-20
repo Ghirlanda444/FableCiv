@@ -62,14 +62,15 @@ function cityViewSprites(AU, g, s, heightAt) {
   return out;
 }
 
-// Resources: the web game's painted resource picture in the centre of the tile (geo.showsResource decides which show; units on
-// the tile line up in front of it)
+// Resource icons, Civ 6 style: the web game's painted resource picture on a small round badge floating over the centre of the
+// tile (geo.showsResource decides which show; units on the tile line up in front of it). dressing.js spreads the resource
+// itself over the tile.
 function resourceSpots(AU, g, heightAt) {
   const out = [];
   g.tiles.forEach(t => {
     if (!showsResource(AU, g, t)) return;
     const c = center(t.col, t.row), x = c[0], z = c[1] - 0.05;
-    out.push({ key: 'res:' + t.i, tile: t.i, resource: t.resource, chain: ['resources/' + t.resource + '.png'], x, y: Math.max(0, heightAt(x, z)), z, height: 0.34 });
+    out.push({ key: 'res:' + t.i, tile: t.i, resource: t.resource, chain: ['resources/' + t.resource + '.png'], x, y: Math.max(0, heightAt(x, z)) + 0.1, z, height: 0.26 });
   });
   return out;
 }

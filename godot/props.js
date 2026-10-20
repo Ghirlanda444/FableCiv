@@ -135,4 +135,4 @@ function reed() {
   return b;
 }
 
-module.exports = { roundTree, pineTree, palmTree, bush, rock, tuft, reed, fluffyTree, fluffyBush };
+module.exports = { roundTree, pineTree, palmTree, bush, rock, tuft, reed, fluffyTree, fluffyBush, batch, blob, cone, rgb, hash1 };

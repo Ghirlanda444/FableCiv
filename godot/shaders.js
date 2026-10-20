@@ -207,9 +207,10 @@ uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float anim = 0.0;      // 1 for units: a gentle breathing sway
 uniform float roundness = 3.6; // how strongly the edges bend toward or away from the light
 uniform vec4 uv_rect = vec4(0.0, 0.0, 1.0, 1.0); // the part of the picture with paint in it (main.js crops the empty margins)
+uniform float badge = 0.0; // 1: draw the picture as an icon on a round dark badge with a cream rim (resource icons)
 varying float glow;
 void vertex() {
-  UV = uv_rect.xy + UV * uv_rect.zw;
+  if (badge < 0.5) UV = uv_rect.xy + UV * uv_rect.zw;
   vec3 origin = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   float sc = length(MODEL_MATRIX[1].xyz), phase = origin.x * 1.7 + origin.z * 2.3;
   vec3 v = VERTEX;
@@ -221,9 +222,21 @@ void vertex() {
   NORMAL = vec3(0.0, 0.0, 1.0); TANGENT = vec3(1.0, 0.0, 0.0); BINORMAL = vec3(0.0, 1.0, 0.0);
 }
 void fragment() {
+  ALPHA_SCISSOR_THRESHOLD = 0.5;
+  if (badge > 0.5) {
+    vec2 p = UV - 0.5; float d = length(p);
+    vec2 iu = p / 0.7 + 0.5;
+    vec4 ic = (iu.x >= 0.0 && iu.x <= 1.0 && iu.y >= 0.0 && iu.y <= 1.0) ? texture(tex, uv_rect.xy + iu * uv_rect.zw) : vec4(0.0);
+    vec3 bg = mix(vec3(0.03, 0.035, 0.07), vec3(0.08, 0.1, 0.18), smoothstep(0.45, 0.0, d));
+    float rim = smoothstep(0.405, 0.42, d);
+    vec3 col = mix(mix(bg, vec3(0.92, 0.82, 0.56), rim), ic.rgb, ic.a * (1.0 - rim));
+    ALPHA = 1.0 - smoothstep(0.47, 0.48, d);
+    ALBEDO = col * 0.75; EMISSION = col * 0.35; // mostly self-lit, so icons read the same in sun and shade
+    NORMAL = vec3(0.0, 0.0, 1.0);
+    ROUGHNESS = 1.0; SPECULAR = 0.0;
+  } else {
   vec4 c = texture(tex, UV);
   ALPHA = c.a;
-  ALPHA_SCISSOR_THRESHOLD = 0.5;
   // pillow normal: gradient of the silhouette blurred at two radii (edges lean outward, the middle faces the viewer)
   vec2 px = vec2(0.045, 0.034);
   float ax = 0.0, ay = 0.0;
@@ -236,6 +249,7 @@ void fragment() {
   ALBEDO = c.rgb;
   ROUGHNESS = 1.0;
   SPECULAR = 0.0;
+  }
 }
 void light() {
   // the picture already carries painted shading, so the scene light only nudges it: a soft lit side, a soft shade side,

@@ -38,7 +38,11 @@ const res = SP.resourceSpots(AU, g, () => 0);
 res.forEach(s => assert(s.chain.some(exists), 'no picture for resource ' + s.resource));
 check('marks', geo.buildUnitMarks(AU, g, F, () => true));
 for (let n = 1; n <= 4; n++) { let sx = 0; for (let k = 0; k < n; k++) sx += geo.unitOffset(k, n, false)[0]; assert(Math.abs(sx) < 1e-9, n + ' units are not centred'); }
-console.log('resources', res.length + ' resource pictures');
+const DR = require('../../godot/dressing.js');
+assert(Object.keys(AU.RESOURCES).every(r => DR.DRESS[r] && DR.DRESS[r].every(([m]) => DR.MODELS[m])), 'a resource has no scenery');
+Object.keys(DR.MODELS).forEach(k => check('dress ' + k, DR.MODELS[k][0]()));
+const dressed = DR.buildDressing(F, g, t => geo.showsResource(AU, g, t));
+console.log('resources', res.length + ' resource icons, scenery ' + Object.keys(dressed).map(k => k + ' ' + dressed[k].length).join(', '));
 console.log('pictures', units.length + ' unit standees, ' + towns.length + ' city-view pictures (' + townMissing.length + ' without art yet)');
 // settlement models: every culture and size tier builds a well-formed model, with and without walls, and in the Show city view
 const CT = require('../../godot/city.js'), sample = g.settlements[Object.keys(g.settlements)[0]];

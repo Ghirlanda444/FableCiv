@@ -16,6 +16,7 @@ const props = require('res://props.js');
 const shaders = require('res://shaders.js');
 const sprites = require('res://sprites.js');
 const city = require('res://city.js');
+const dressing = require('res://dressing.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
@@ -140,6 +141,8 @@ class Main extends Node3D {
     const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
     this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
       tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
+    this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
+    Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k]; this.dressMeshes[k] = { mesh: toMesh(m[0]()), still: m[1] === 'still' }; });
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
     // code-built placeholder pieces stand in (the game never waits on art)
@@ -254,7 +257,7 @@ class Main extends Node3D {
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
     const t2 = Time.get_ticks_msec();
     this.rivers.mesh = toMesh(terrain.buildRivers(this.field, this.g));
-    const S = this.buildNature();
+    const S = this.buildNature(); this.dressKey = null;
     this.waterY = 0;
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': terrain ' + M.vertices + ' verts / ' + M.triangles + ' tris, built in ' + (t1 - t0) +
       ' ms, uploaded via ' + up.path + ' in ' + (t2 - t1) + ' ms; nature ' + Object.keys(S).map(k => k + ' ' + S[k].length).join(', ') + '; total ' + (Time.get_ticks_msec() - t0) + ' ms');
@@ -272,6 +275,15 @@ class Main extends Node3D {
     }));
     this.natureKey = terrain.scatterKey(this.g);
     return S;
+  }
+
+  // resource scenery (dressing.js): rebuilt when the set of shown resources changes (a new era reveals strategic ones)
+  buildDressing() {
+    (this.dressNodes || []).forEach(n => n.queue_free()); this.dressNodes = [];
+    const shows = t => geo.showsResource(AU, this.g, t), D = dressing.buildDressing(this.field, this.g, shows);
+    Object.keys(D).forEach(k => { const m = this.dressMeshes[k]; if (!m || !D[k].length) return;
+      const n = scatterNode(m.mesh, D[k], m.still ? this.matCity : this.matProps); this.propRoot.add_child(n); this.dressNodes.push(n); });
+    this.dressKey = dressing.dressingKey(this.g, shows);
   }
 
   // first picture of a preference chain that exists (cached; null when none does)
@@ -299,13 +311,15 @@ class Main extends Node3D {
   }
   // a painted picture as a 2.5D standee: a card pivoting at its base, lit by the scene (shaders.STANDEE). height is the painted
   // figure's height; very wide pictures (horsemen, ships) are held to maxWidth.
-  standee(tex, x, y, z, height, isUnit, maxWidth) {
-    const r = this.crop(tex), aspect = (r[2] * tex.get_width()) / (r[3] * tex.get_height()), key = tex.resource_path + (isUnit ? ':u' : ':b');
+  // badge: a square icon on a round plate (resources), height is then its diameter
+  standee(tex, x, y, z, height, isUnit, maxWidth, badge) {
+    const r = this.crop(tex), aspect = badge ? 1 : (r[2] * tex.get_width()) / (r[3] * tex.get_height()), key = tex.resource_path + (badge ? ':badge' : isUnit ? ':u' : ':b');
     let w = height * aspect; if (maxWidth && w > maxWidth) { w = maxWidth; height = w / aspect; }
     let mat = this.standeeMats[key];
     if (!mat) {
       mat = this.standeeMats[key] = shaderMaterial(shaders.STANDEE); mat.set_shader_parameter('tex', tex); mat.set_shader_parameter('anim', isUnit ? 1.0 : 0.0);
-      mat.set_shader_parameter('uv_rect', new godot.Vector4(r[0], r[1], r[2], r[3]));
+      const side = Math.max(r[2] * tex.get_width(), r[3] * tex.get_height()), sq = badge ? [r[0] + r[2] / 2 - side / tex.get_width() / 2, r[1] + r[3] / 2 - side / tex.get_height() / 2, side / tex.get_width(), side / tex.get_height()] : r;
+      mat.set_shader_parameter('uv_rect', new godot.Vector4(sq[0], sq[1], sq[2], sq[3])); mat.set_shader_parameter('badge', badge ? 1.0 : 0.0);
     }
     const quad = new QuadMesh(); quad.size = new Vector2(w, height); quad.center_offset = new Vector3(0, height * 0.5, 0);
     const mi = new MeshInstance3D(); mi.mesh = quad; mi.material_override = mat;
@@ -336,11 +350,12 @@ class Main extends Node3D {
     });
     Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });
     const keepR = {};
-    sprites.resourceSpots(AU, g, ground).forEach(s => { // resources: their painted pictures in the middle of the tile
+    sprites.resourceSpots(AU, g, ground).forEach(s => { // resource icons: painted pictures on round badges over the tile centre
       const tex = this.texture(s.chain); if (!tex) return;
       if (!this.resNodes[s.key] || this.resNodes[s.key].tex !== tex) {
         if (this.resNodes[s.key]) this.resNodes[s.key].node.queue_free();
-        this.resNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y + 0.01, s.z, s.height, false, 0.42) };
+        this.resNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y, s.z, s.height, false, 0, true) };
+        this.resNodes[s.key].node.cast_shadow = SHADOWS_OFF;
       }
       keepR[s.key] = true;
     });
@@ -390,6 +405,7 @@ class Main extends Node3D {
     const g = this.g;
     this.borders.mesh = toMesh(geo.buildBorders(AU, g, this.field));
     if (terrain.scatterKey(g) !== this.natureKey) this.buildNature();
+    if (dressing.dressingKey(g, t => geo.showsResource(AU, g, t)) !== this.dressKey) this.buildDressing();
     const ground = (x, z) => this.field.heightAt(x, z);
     if (this.viewCity !== null && !g.settlements[this.viewCity]) this.closeCity(); // razed or gone
     this.syncCities(ground);
