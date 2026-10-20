@@ -46,13 +46,31 @@ function material(opts) {
   return m;
 }
 
-// geo batch → ArrayMesh, setting normal and colour only when they change (most runs of vertices share both)
-function toMesh(b) {
+// ink outlines (shaders.INK) push each vertex out along the surface's smooth normal, the average of every normal at that
+// position, so the corners of hard-edged shapes stay closed. It rides in UV2, octahedron-encoded; NO_INK marks vertices
+// that get no outline (a city's paved square).
+const NO_INK = 2.0;
+function octNormal(x, y, z) {
+  const s = Math.abs(x) + Math.abs(y) + Math.abs(z) || 1; let u = x / s, v = z / s;
+  if (y < 0) { const u0 = u; u = (1 - Math.abs(v)) * (u0 < 0 ? -1 : 1); v = (1 - Math.abs(u0)) * (v < 0 ? -1 : 1); }
+  return [u, v];
+}
+// P[i*stride..] positions, N[i*stride + nOff..] normals → (vertex index → encoded smooth normal)
+function smoothNormals(P, N, count, stride, nOff) {
+  const acc = new Map(), key = i => Math.round(P[i * stride] * 2000) + ',' + Math.round(P[i * stride + 1] * 2000) + ',' + Math.round(P[i * stride + 2] * 2000);
+  for (let i = 0; i < count; i++) { const k = key(i), a = acc.get(k) || [0, 0, 0], o = i * stride + nOff; a[0] += N[o]; a[1] += N[o + 1]; a[2] += N[o + 2]; acc.set(k, a); }
+  return i => { const a = acc.get(key(i)); return octNormal(a[0], a[1], a[2]); };
+}
+
+// geo batch → ArrayMesh, setting normal and colour only when they change (most runs of vertices share both); ink: give it
+// outline normals (UV2)
+function toMesh(b, ink) {
   const st = new SurfaceTool();
   st.begin(PRIMITIVE_TRIANGLES);
-  const n = b.p.length / 3;
+  const n = b.p.length / 3, sn = ink ? smoothNormals(b.p, b.n, n, 3, 0) : null, skip = (ink && b.noInk) || [];
   let ln = '', lc = '';
   for (let i = 0; i < n; i++) {
+    if (sn) { const e = skip.some(r => i >= r[0] && i < r[1]) ? [NO_INK, NO_INK] : sn(i); st.set_uv2(new Vector2(e[0], e[1])); }
     const nk = b.n[i * 3] + ',' + b.n[i * 3 + 1] + ',' + b.n[i * 3 + 2];
     if (nk !== ln) { st.set_normal(new Vector3(b.n[i * 3], b.n[i * 3 + 1], b.n[i * 3 + 2])); ln = nk; }
     const ck = b.c[i * 4] + ',' + b.c[i * 4 + 1] + ',' + b.c[i * 4 + 2] + ',' + b.c[i * 4 + 3];
@@ -76,9 +94,10 @@ function modelData(name) {
 function loadModel(name) {
   const m = modelData(name); if (!m) return null;
   try {
-    const v = m.v, st = new SurfaceTool();
+    const v = m.v, st = new SurfaceTool(), sn = smoothNormals(v, v, v.length / 10, 10, 3);
     st.begin(PRIMITIVE_TRIANGLES);
     for (let k = 0; k < v.length; k += 10) {
+      const e = sn(k / 10); st.set_uv2(new Vector2(e[0], e[1]));
       st.set_normal(new Vector3(v[k + 3], v[k + 4], v[k + 5])); st.set_color(new Color(v[k + 6], v[k + 7], v[k + 8], v[k + 9]));
       st.add_vertex(new Vector3(v[k], v[k + 1], v[k + 2]));
     }
@@ -157,20 +176,24 @@ class Main extends Node3D {
     this.matTerrain = shaderMaterial(shaders.PAINTED_TERRAIN);
     this.matWater = shaderMaterial(shaders.TOON_WATER);
     this.matPieces = material({ roughness: 0.7 });
-    this.matProps = shaderMaterial(shaders.PAINTED_PROP);
+    this.matProps = shaderMaterial(shaders.PAINTED_PROP);  // grass tufts and reeds: no outline
     this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
-    this.matCity = shaderMaterial(shaders.PAINTED_PROP); this.matCity.set_shader_parameter('wind', 0.0); // settlements: toon-lit, no sway
+    this.matInked = shaderMaterial(shaders.PAINTED_PROP);  // trees, rocks and swaying resource plants, with an ink outline
+    this.matCity = shaderMaterial(shaders.PAINTED_PROP); this.matCity.set_shader_parameter('wind', 0.0); // settlements and still resource models: toon-lit, no sway
+    this.inkSway = shaderMaterial(shaders.INK); this.inkSway.set_shader_parameter('width', 0.0035);
+    this.inkStill = shaderMaterial(shaders.INK); this.inkStill.set_shader_parameter('wind', 0.0); this.inkStill.set_shader_parameter('width', 0.004);
+    this.setInk(this.hiFx);
     this.matBorders = material({ alpha: true, unshaded: true });
     this.matRivers = shaderMaterial(shaders.RIVER_WATER); // flowing water in a carved channel (terrain.js, shaders.RIVER_WATER)
     // each nature kind is one or more instanced parts sharing the same placements: fluffy trees and bushes are a solid trunk
     // and core plus a leaf-card crown drawn by the leaf shader
-    const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
+    const solid = (b, mat) => [{ mesh: toMesh(b, true), mat: mat || this.matInked }], fluffy = f => [{ mesh: toMesh(f.solid, true), mat: this.matInked }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
     this.propMeshes = { pine: solid(props.pineTree()), round: fluffy(props.fluffyTree()), palm: solid(props.palmTree()), bush: fluffy(props.fluffyBush()),
-      tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
-    ['pine', 'round', 'palm', 'bush', 'rock'].forEach(k => { const b = loadModel('tree_' + k); if (b) this.propMeshes[k] = [{ mesh: b, mat: this.matProps }]; }); // Blender trees when present
+      tuft: solid(props.tuft(), this.matProps), rock: solid(props.rock()), reed: solid(props.reed(), this.matProps) };
+    ['pine', 'round', 'palm', 'bush', 'rock'].forEach(k => { const b = loadModel('tree_' + k); if (b) this.propMeshes[k] = [{ mesh: b, mat: this.matInked }]; }); // Blender trees when present
     this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
     let made = 0; // the Blender-made model when there is one, else the code-built one
-    Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0]()), still: m[1] === 'still' }; });
+    Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0](), true), still: m[1] === 'still' }; });
     this.unitModels = {}; ['warrior', 'spearman', 'archer', 'horseman'].forEach(t => { const b = loadModel('unit_' + t); if (b) this.unitModels[t] = b; });
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
     this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
@@ -353,7 +376,7 @@ class Main extends Node3D {
     (this.dressNodes || []).forEach(n => n.queue_free()); this.dressNodes = [];
     const shows = t => geo.showsResource(AU, this.g, t), D = dressing.buildDressing(this.field, this.g, shows);
     Object.keys(D).forEach(k => { const m = this.dressMeshes[k]; if (!m || !D[k].length) return;
-      const n = scatterNode(m.mesh, D[k], m.still ? this.matCity : this.matProps); this.propRoot.add_child(n); this.dressNodes.push(n); });
+      const n = scatterNode(m.mesh, D[k], m.still ? this.matCity : this.matInked); this.propRoot.add_child(n); this.dressNodes.push(n); });
     this.dressKey = dressing.dressingKey(this.g, shows);
   }
 
@@ -447,7 +470,7 @@ class Main extends Node3D {
       if (!n || n.key !== key) {
         const built = city.buildCity(AU, g, s, ground, { view, river: this.field.river, models: modelData });
         if (!n) { n = this.cityNodes[id] = { node: new MeshInstance3D() }; n.node.material_override = this.matCity; this.cityRoot.add_child(n.node); }
-        n.node.mesh = toMesh(built.batch); n.key = key; n.top = built.top;
+        n.node.mesh = toMesh(built.batch, true); n.key = key; n.top = built.top;
       }
       keep[id] = true;
     });
@@ -573,7 +596,10 @@ class Main extends Node3D {
   }
   onEndTurn() { this.endTurn(); }
   onAuto() { this.auto = !this.auto; this.autoBtn.text = this.auto ? 'Pause' : 'Auto'; }
-  onFx() { this.hiFx = !this.hiFx; this.fxBtn.text = this.hiFx ? 'FX: High' : 'FX: Low'; this.env.ssao_enabled = this.hiFx; this.updateCamera(); }
+  onFx() { this.hiFx = !this.hiFx; this.fxBtn.text = this.hiFx ? 'FX: High' : 'FX: Low'; this.env.ssao_enabled = this.hiFx; this.setInk(this.hiFx); this.updateCamera(); }
+  // ink outlines on scenery (cities, trees, resources) cost a second pass over thousands of models: FX Low drops them for
+  // phones (units keep theirs)
+  setInk(on) { this.matInked.next_pass = on ? this.inkSway : null; this.matCity.next_pass = on ? this.inkStill : null; }
   onGrid() {
     this.grid = !this.grid; this.gridBtn.text = this.grid ? 'Grid: On' : 'Grid: Off';
     this.matTerrain.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0); this.matWater.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0);

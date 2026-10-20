@@ -269,7 +269,7 @@ uniform sampler2D tex : source_color, filter_linear_mipmap, repeat_disable;
 uniform float anim = 0.0;      // 1 for units: a gentle breathing sway
 uniform float roundness = 3.6; // how strongly the edges bend toward or away from the light
 uniform vec4 uv_rect = vec4(0.0, 0.0, 1.0, 1.0); // the part of the picture with paint in it (main.js crops the empty margins)
-uniform float badge = 0.0; // 1: draw the picture as an icon on a round dark badge with a cream rim (resource icons)
+uniform float badge = 0.0; // 1: draw the picture as an icon on a round dark badge with a cream rim and a black ring (resource icons)
 varying float glow;
 void vertex() {
   if (badge < 0.5) UV = uv_rect.xy + UV * uv_rect.zw;
@@ -290,9 +290,9 @@ void fragment() {
     vec2 iu = p / 0.7 + 0.5;
     vec4 ic = (iu.x >= 0.0 && iu.x <= 1.0 && iu.y >= 0.0 && iu.y <= 1.0) ? texture(tex, uv_rect.xy + iu * uv_rect.zw) : vec4(0.0);
     vec3 bg = mix(vec3(0.03, 0.035, 0.07), vec3(0.08, 0.1, 0.18), smoothstep(0.45, 0.0, d));
-    float rim = smoothstep(0.405, 0.42, d);
-    vec3 col = mix(mix(bg, vec3(0.92, 0.82, 0.56), rim), ic.rgb, ic.a * (1.0 - rim));
-    ALPHA = 1.0 - smoothstep(0.47, 0.48, d);
+    float rim = smoothstep(0.385, 0.4, d), inkr = smoothstep(0.435, 0.445, d); // cream rim, then a black ink ring like the 3D outlines
+    vec3 col = mix(mix(mix(bg, vec3(0.92, 0.82, 0.56), rim), vec3(0.02), inkr), ic.rgb, ic.a * (1.0 - rim));
+    ALPHA = 1.0 - smoothstep(0.49, 0.5, d);
     ALBEDO = col * 0.75; EMISSION = col * 0.35; // mostly self-lit, so icons read the same in sun and shade
     NORMAL = vec3(0.0, 0.0, 1.0);
     ROUGHNESS = 1.0; SPECULAR = 0.0;
@@ -424,4 +424,30 @@ void vertex() {
 void fragment() { ALBEDO = ink; }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, HEALTH_BAR };
+// ink outline for scenery (cities, trees, resource models; Material.next_pass): pushed out along the smooth normal in UV2
+// (main.js toMesh / loadModel), then back away from the camera by more than that, so it hides behind the model and shows
+// only around it. That works whichever way the triangles wind, which the code-built geometry does not keep consistent.
+// Sways like PAINTED_PROP (wind 0 for the still ones).
+const INK = `
+shader_type spatial;
+render_mode unshaded, cull_disabled, shadows_disabled;
+uniform float width = 0.0035;
+uniform float wind = 1.0;
+uniform vec3 ink : source_color = vec3(0.03, 0.025, 0.035);
+void vertex() {
+  vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  float h = max(VERTEX.y, 0.0), sway = (sin(TIME * 1.6 + o.x * 0.7 + o.z * 0.5) * 0.04 + sin(TIME * 2.7 + o.z * 1.3) * 0.015) * wind * h * h * 4.0;
+  VERTEX.x += sway; VERTEX.z += sway * 0.6;
+  float on = step(UV2.x, 1.5);                                   // UV2 = (2, 2): no outline here
+  vec3 n = vec3(UV2.x, 1.0 - abs(UV2.x) - abs(UV2.y), UV2.y);   // octahedron-decoded smooth normal
+  if (n.y < 0.0) n.xz = (1.0 - abs(n.zx)) * vec2(n.x >= 0.0 ? 1.0 : -1.0, n.z >= 0.0 ? 1.0 : -1.0);
+  vec4 v = MODELVIEW_MATRIX * vec4(VERTEX, 1.0);
+  float d = max(-v.z, 0.1);
+  v.xyz += normalize(mat3(MODELVIEW_MATRIX) * normalize(n)) * width * d * on;
+  v.xyz += normalize(v.xyz) * width * d * 1.6;
+  POSITION = PROJECTION_MATRIX * v;
+}
+void fragment() { ALBEDO = ink; }
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, INK, HEALTH_BAR };

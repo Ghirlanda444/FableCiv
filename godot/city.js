@@ -295,11 +295,13 @@ const TALL = 1.4;
 function stretch(b, from, ground, k) { for (let i = from * 3 + 1; i < b.p.length; i += 3) b.p[i] = ground + (b.p[i] - ground) * k; }
 // a paved square draped over the ground (a flat drum would stand out of slopes)
 function plaza(b, cx, cz, R, gy, col) {
+  const from = b.p.length / 3;
   const n = 20, rings = [0, 0.4, 0.75, 1], P = rings.map(f => { const row = []; for (let k = 0; k < n; k++) { const a = 2 * Math.PI * k / n, x = cx + Math.cos(a) * R * f, z = cz + Math.sin(a) * R * f * 0.95; row.push([x, gy(x, z) + 0.015, z]); } return row; });
   for (let r = 0; r < rings.length - 1; r++) for (let k = 0; k < n; k++) {
     const a = P[r][k], b2 = P[r][(k + 1) % n], c = P[r + 1][(k + 1) % n], d = P[r + 1][k], cc = shade(col, 1 - 0.06 * r);
     if (r === 0) tri(b, a, c, d, cc); else quad(b, a, b2, c, d, cc);
   }
+  (b.noInk = b.noInk || []).push([from, b.p.length / 3]); // no ink outline on the paving
 }
 
 // what decides how an icon looks: it is rebuilt only when this changes
