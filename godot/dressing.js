@@ -164,13 +164,13 @@ const MODELS = {
 };
 // what dresses each resource's tile: [model, count, scale]
 const DRESS = {
-  horses: [['horse', 3, 1], ['horse2', 2, 1]], cattle: [['cattle', 3, 1], ['cattle2', 2, 1]], sheep: [['sheep', 5, 1]], deer: [['deer', 4, 1]],
-  ivory: [['elephant', 3, 1]], furs: [['fox', 4, 1]], wheat: [['wheat', 5, 1]], rice: [['rice', 5, 1]], bananas: [['banana', 6, 1]],
-  wine: [['vines', 5, 1]], cotton: [['cotton', 7, 1]], spices: [['spices', 7, 1]], dyes: [['dyes', 7, 1]], silk: [['silk', 6, 1]],
-  incense: [['incense', 6, 1]], rubber: [['rubber', 6, 1]], iron: [['iron', 4, 1]], copper: [['copper', 4, 1]], coal: [['coal', 4, 1]],
-  niter: [['niter', 4, 1]], aluminum: [['aluminum', 4, 1]], uranium: [['uranium', 4, 1]], gems: [['gems', 2, 1], ['gems2', 2, 1]],
-  stone: [['stone', 4, 1]], salt: [['salt', 4, 1]], oil: [['oil', 3, 1]], fish: [['fish', 4, 1]], crabs: [['crab', 6, 1]],
-  whales: [['whale', 2, 1]], pearls: [['pearl', 5, 1]]
+  horses: [['horse', 2, 1.5], ['horse2', 2, 1.5]], cattle: [['cattle', 2, 1.5], ['cattle2', 2, 1.5]], sheep: [['sheep', 4, 1.6]], deer: [['deer', 3, 1.6]],
+  ivory: [['elephant', 2, 1.4]], furs: [['fox', 4, 1.7]], wheat: [['wheat', 4, 1.4]], rice: [['rice', 4, 1.4]], bananas: [['banana', 5, 1.5]],
+  wine: [['vines', 4, 1.5]], cotton: [['cotton', 6, 1.5]], spices: [['spices', 6, 1.5]], dyes: [['dyes', 6, 1.5]], silk: [['silk', 5, 1.5]],
+  incense: [['incense', 5, 1.5]], rubber: [['rubber', 5, 1.5]], iron: [['iron', 4, 1.4]], copper: [['copper', 4, 1.4]], coal: [['coal', 4, 1.4]],
+  niter: [['niter', 4, 1.4]], aluminum: [['aluminum', 4, 1.4]], uranium: [['uranium', 4, 1.4]], gems: [['gems', 2, 1.4], ['gems2', 2, 1.4]],
+  stone: [['stone', 4, 1.4]], salt: [['salt', 4, 1.4]], oil: [['oil', 3, 1.4]], fish: [['fish', 4, 1.6]], crabs: [['crab', 5, 1.7]],
+  whales: [['whale', 2, 1.4]], pearls: [['pearl', 4, 1.7]]
 };
 const WATER = { fish: 1, crabs: 1, whales: 1, pearls: 1 };
 
