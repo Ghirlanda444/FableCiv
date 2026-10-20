@@ -103,9 +103,10 @@ void fragment() {
     vec2 p = wpos.xz * tex_scale; float k = smoothstep(0.3, 0.7, fbm(wpos.xz * 0.12 + 5.0));
     float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
     vec3 tg = ground(grass_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
-    tg *= mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.55);          // grass takes the tile's own green (forests darker)
     float lum = dot(tg, vec3(0.3, 0.59, 0.11));
-    vec3 td = mix(tg, vec3(lum) * vec3(1.45, 1.2, 0.62), 0.7);                                 // plains and tundra: the same grass, sun-dried golden
+    vec3 td = mix(tg, vec3(lum) * vec3(1.35, 1.22, 0.7), 0.45);                                // plains and tundra: the same grass, sun-dried golden
+    tg = vec3(lum) * vec3(0.78, 1.25, 0.6) * mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.6); // grass: the texture's detail in the tile's own green (forests darker)
+    tg = mix(tg, ground(grass_d, p, k), 0.25);
     vec3 an = abs(wn); an /= (an.x + an.y + an.z);                                           // rock: projected from three sides
     vec3 tr = texture(rock_d, wpos.zy * tex_scale).rgb * an.x + texture(rock_d, wpos.xz * tex_scale).rgb * an.y + texture(rock_d, wpos.xy * tex_scale).rgb * an.z;
     float w_dry = smoothstep(0.25, 0.6, mats2.x + brk);
@@ -321,10 +322,10 @@ void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; fuv = UV; }
 void fragment() {
   float d = texture(depth_tex, SCREEN_UV).r;
   vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
-  float depth = max(0.0, VERTEX.z - g.z), t = 1.0 - exp(-depth * 14.0);
-  vec3 shallow = mix(srgb(vec3(0.5, 0.86, 0.82)), srgb(vec3(0.4, 0.55, 0.45)), detailed);
-  vec3 mid = mix(srgb(vec3(0.18, 0.66, 0.78)), srgb(vec3(0.16, 0.38, 0.4)), detailed);
-  vec3 deep = mix(srgb(vec3(0.08, 0.42, 0.62)), srgb(vec3(0.06, 0.2, 0.25)), detailed);
+  float depth = max(0.0, VERTEX.z - g.z), t = 1.0 - exp(-depth * 22.0);
+  vec3 shallow = mix(srgb(vec3(0.5, 0.86, 0.82)), srgb(vec3(0.42, 0.72, 0.66)), detailed);
+  vec3 mid = mix(srgb(vec3(0.18, 0.66, 0.78)), srgb(vec3(0.13, 0.5, 0.6)), detailed);
+  vec3 deep = mix(srgb(vec3(0.08, 0.42, 0.62)), srgb(vec3(0.05, 0.3, 0.45)), detailed);
   vec3 col = t < 0.5 ? mix(shallow, mid, t / 0.5) : mix(mid, deep, (t - 0.5) / 0.5);
   float px = length(fwidth(wpos.xz)), near = 1.0 - smoothstep(0.03, 0.08, px);
   vec2 f = vec2(fuv.x * 1.2, fuv.y * 1.6 - TIME * 0.35);                                  // flowing downstream
@@ -340,7 +341,8 @@ void fragment() {
   float brk = fbm(vec2(fuv.x * 4.0, fuv.y * 5.0 - TIME * 0.6));
   float foam = (1.0 - smoothstep(0.004 + brk * 0.012, 0.01 + brk * 0.02 + aa, depth)) * steady * (0.55 + 0.45 * brk);
   ALBEDO = mix(col, vec3(0.94, 0.97, 0.98), foam * mix(0.85, 0.6, detailed));
-  ALPHA = clamp(mix(0.45, 0.9, t) + foam * 0.6, 0.0, 1.0);
+  float shore = 1.0 - smoothstep(0.9, 1.3, abs(fuv.x) + (fbm(vec2(fuv.y * 2.3, fuv.x * 3.0)) - 0.5) * 0.35); // ragged edges, not a ribbon
+  ALPHA = clamp(mix(0.5, 0.92, t) + foam * 0.6, 0.0, 1.0) * shore;
 }
 `;
 
