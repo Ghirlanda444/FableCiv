@@ -194,6 +194,7 @@ function buildScatter(F, g, density) {
     let seq = 0;
     const place = (list, n, rMin, rMax, sMin, sMax, tint, var_) => {
       n = Math.round(n * D); if (settled) rMin = Math.max(rMin, 0.97); // the town fills its hex
+      else if (t.resource && list !== out.tuft) rMin = Math.max(rMin, 0.45); // keep the middle clear for the resource picture
       for (let k = 0; k < n; k++, seq++) {
         const ang = 2 * Math.PI * (k / n + rnd(seq) * 0.4), d = rMin + (rMax - rMin) * Math.sqrt(rnd(seq + 50));
         const x = c[0] + Math.cos(ang) * d, z = c[1] + Math.sin(ang) * d * 0.92, y = F.heightAt(x, z, t.i);

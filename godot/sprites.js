@@ -4,7 +4,7 @@
 // and follow the web game's rules: unique-unit art, then the culture's version, then the shared picture.
 // Every list of paths is a preference chain, relative to the art folder; main.js shows the first one that exists.
 
-const { unitOffset } = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
+const { unitOffset, showsResource } = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 const SQRT3 = Math.sqrt(3);
 function center(col, row) { return [SQRT3 * (col + 0.5 * (row & 1)), 1.5 * row]; }
 function hash1(i) { let h = (i * 2654435761) >>> 0; h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; }
@@ -34,7 +34,7 @@ function unitSpots(AU, g, heightAt) {
     const t = g.tiles[ti], list = byTile[ti]; if (!t) return;
     const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
-      const o = unitOffset(k, list.length, town), x = c[0] + o[0], z = c[1] + o[1], U = AU.UNITS[u.type] || {};
+      const o = unitOffset(k, list.length, town, showsResource(AU, g, t)), x = c[0] + o[0], z = c[1] + o[1], U = AU.UNITS[u.type] || {};
       const military = U.cls !== 'civilian'; // heights of the figure itself (main.js crops the pictures' empty margins)
       out.push({ id: u.id, unit: u, chain: unitChain(AU, g, u), x, y: Math.max(0, heightAt(x, z)), z, height: military ? 0.6 : 0.5, color: (g.civs[u.civ] || {}).color || '#999999' });
     });
@@ -62,15 +62,14 @@ function cityViewSprites(AU, g, s, heightAt) {
   return out;
 }
 
-// Resources: the web game's painted resource picture at the back right of the tile, for resources the followed empire knows
-// about (strategic ones appear with the era that reveals them, as in the web game). Settlement tiles show none.
+// Resources: the web game's painted resource picture in the centre of the tile (geo.showsResource decides which show; units on
+// the tile line up in front of it)
 function resourceSpots(AU, g, heightAt) {
-  const out = [], civ = AU.G.player ? AU.G.player(g) : null;
+  const out = [];
   g.tiles.forEach(t => {
-    if (!t.resource || (t.settlement !== undefined && t.settlement !== null && g.settlements[t.settlement])) return;
-    const R = AU.RESOURCES && AU.RESOURCES[t.resource]; if (!R || (AU.G.resourceKnown && !AU.G.resourceKnown(g, civ, R))) return;
-    const c = center(t.col, t.row), x = c[0] + 0.48, z = c[1] - 0.36;
-    out.push({ key: 'res:' + t.i, tile: t.i, resource: t.resource, chain: ['resources/' + t.resource + '.png'], x, y: Math.max(0, heightAt(x, z)), z, height: 0.3 });
+    if (!showsResource(AU, g, t)) return;
+    const c = center(t.col, t.row), x = c[0], z = c[1] - 0.05;
+    out.push({ key: 'res:' + t.i, tile: t.i, resource: t.resource, chain: ['resources/' + t.resource + '.png'], x, y: Math.max(0, heightAt(x, z)), z, height: 0.34 });
   });
   return out;
 }

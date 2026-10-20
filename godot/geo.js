@@ -97,7 +97,19 @@ function prism(b, x, y, z, r, h, sides, col, capCol) {
 // gate (city.js keeps those spots free of houses). sprites.unitSpots and buildUnitMarks use the same spots.
 const SPOTS = [null, [[0, 0]], [[-0.3, 0.04], [0.3, 0.04]], [[-0.32, 0.2], [0.32, 0.2], [0, -0.24]], [[-0.32, 0.22], [0.32, 0.22], [-0.32, -0.26], [0.32, -0.26]]];
 const TOWN_SPOTS = [null, [[0, 0.64]], [[-0.36, 0.62], [0.36, 0.62]], [[-0.36, 0.62], [0.36, 0.62], [-0.74, 0.2]], [[-0.36, 0.62], [0.36, 0.62], [-0.74, 0.2], [0.74, 0.2]]];
-function unitOffset(k, n, town) { const m = Math.max(1, Math.min(4, n)); return (town ? TOWN_SPOTS : SPOTS)[m][Math.min(k, m - 1)]; }
+// res: the tile shows a resource in its centre, so the units line up in front of it instead
+function unitOffset(k, n, town, res) {
+  const m = Math.max(1, Math.min(4, n)); k = Math.min(k, m - 1);
+  if (res && !town) return [(k - (m - 1) / 2) * 0.3, 0.4];
+  return (town ? TOWN_SPOTS : SPOTS)[m][k];
+}
+// whether a tile shows its resource: one the followed empire knows about (strategic ones appear with their era, as in the web
+// game), and not under a settlement
+function showsResource(AU, g, t) {
+  if (!t || !t.resource || (t.settlement !== undefined && t.settlement !== null && g.settlements[t.settlement])) return false;
+  const R = AU.RESOURCES && AU.RESOURCES[t.resource]; if (!R) return false;
+  return !AU.G.resourceKnown || AU.G.resourceKnown(g, AU.G.player ? AU.G.player(g) : null, R);
+}
 
 // Owner marks under the painted units: a thin ring in the owner's colour, draped on the ground with soft edges (drawn with
 // the borders' transparent material). hasArt(u) false: the unit is a code-built placeholder with its own base, so no ring.
@@ -109,7 +121,7 @@ function buildUnitMarks(AU, g, F, hasArt) {
     const c = center(t.col, t.row), town = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
       if (hasArt && !hasArt(u)) return;
-      const civ = g.civs[u.civ], col = mix(rgb((civ && civ.color) || '#999999'), [1, 1, 1, 1], 0.15), o = unitOffset(k, list.length, town), x = c[0] + o[0], z = c[1] + o[1];
+      const civ = g.civs[u.civ], col = mix(rgb((civ && civ.color) || '#999999'), [1, 1, 1, 1], 0.15), o = unitOffset(k, list.length, town, showsResource(AU, g, t)), x = c[0] + o[0], z = c[1] + o[1];
       const P = (r, a) => { const px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r; return [px, Math.max(F.heightAt(px, pz), 0) + 0.025, pz]; };
       for (let s = 0; s < SEG; s++) {
         const a0 = 2 * Math.PI * s / SEG, a1 = 2 * Math.PI * (s + 1) / SEG;
@@ -135,7 +147,7 @@ function buildPieces(AU, g, F, opts) {
     const c = center(t.col, t.row), hasTown = t.settlement !== undefined && t.settlement !== null && !!g.settlements[t.settlement];
     list.slice(0, 4).forEach((u, k) => {
       const civ = g.civs[u.civ], col = rgb((civ && civ.color) || '#999999'), U = AU.UNITS[u.type] || {}, cls = U.cls || 'melee';
-      const o = unitOffset(k, list.length, hasTown), x = c[0] + o[0], z = c[1] + o[1];
+      const o = unitOffset(k, list.length, hasTown, showsResource(AU, g, t)), x = c[0] + o[0], z = c[1] + o[1];
       const y = Math.max(F.heightAt(x, z), 0) + 0.02;
       if (art && opts.hasArt(u)) return; // painted units get a ring on the ground instead (buildUnitMarks)
       prism(b, x, y - 0.06, z, 0.27, 0.12, 8, rgb('#f2efe6')); // base disc
@@ -149,4 +161,4 @@ function buildPieces(AU, g, F, opts) {
   return b;
 }
 
-module.exports = { SQRT3, center, pick, rgb, mix, shade, hash, batch, vert, tri, quad, box, prism, unitOffset, buildUnitMarks, ownerCiv, buildBorders, buildPieces };
+module.exports = { SQRT3, center, pick, rgb, mix, shade, hash, batch, vert, tri, quad, box, prism, unitOffset, showsResource, buildUnitMarks, ownerCiv, buildBorders, buildPieces };

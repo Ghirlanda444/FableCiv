@@ -336,11 +336,11 @@ class Main extends Node3D {
     });
     Object.keys(this.townNodes).forEach(k => { if (!keepT[k]) { this.townNodes[k].node.queue_free(); delete this.townNodes[k]; } });
     const keepR = {};
-    sprites.resourceSpots(AU, g, ground).forEach(s => { // resources: their painted pictures, small, at the back of the tile
+    sprites.resourceSpots(AU, g, ground).forEach(s => { // resources: their painted pictures in the middle of the tile
       const tex = this.texture(s.chain); if (!tex) return;
       if (!this.resNodes[s.key] || this.resNodes[s.key].tex !== tex) {
         if (this.resNodes[s.key]) this.resNodes[s.key].node.queue_free();
-        this.resNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y + 0.01, s.z, s.height, false, 0.38) };
+        this.resNodes[s.key] = { tex, node: this.standee(tex, s.x, s.y + 0.01, s.z, s.height, false, 0.42) };
       }
       keepR[s.key] = true;
     });
