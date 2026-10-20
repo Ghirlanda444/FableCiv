@@ -104,9 +104,8 @@ void fragment() {
     float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
     vec3 tg = ground(grass_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
     float lum = dot(tg, vec3(0.3, 0.59, 0.11));
-    vec3 td = mix(tg, vec3(lum) * vec3(1.35, 1.22, 0.7), 0.45);                                // plains and tundra: the same grass, sun-dried golden
-    tg = vec3(lum) * vec3(0.78, 1.25, 0.6) * mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.6); // grass: the texture's detail in the tile's own green (forests darker)
-    tg = mix(tg, ground(grass_d, p, k), 0.25);
+    vec3 td = mix(tg, vec3(lum) * vec3(1.3, 1.18, 0.75), 0.4);                                 // plains and tundra: the same grass, sun-dried
+    tg *= mix(vec3(1.0), clamp(base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), vec3(0.5), vec3(1.4)), 0.2); // the texture's own colours, a touch of the tile's (forests darker)
     vec3 an = abs(wn); an /= (an.x + an.y + an.z);                                           // rock: projected from three sides
     vec3 tr = texture(rock_d, wpos.zy * tex_scale).rgb * an.x + texture(rock_d, wpos.xz * tex_scale).rgb * an.y + texture(rock_d, wpos.xy * tex_scale).rgb * an.z;
     float w_dry = smoothstep(0.25, 0.6, mats2.x + brk);
@@ -117,7 +116,6 @@ void fragment() {
     vec3 dc = mix(col, tg, has_tex.x);
     dc = mix(dc, td, w_dry); dc = mix(dc, ts, w_sand); dc = mix(dc, tr, w_rock); dc = mix(dc, tw, w_snow);
     dc = mix(dc, mix(ts, tr, 0.35) * vec3(0.62, 0.58, 0.5), w_bank * has_tex.z);              // wet sand and pebbles along rivers
-    dc *= mix(1.0, 0.82, smoothstep(0.08, 0.38, slope) * step(0.0, wpos.y) * (1.0 - w_rock));    // slopes a shade darker, as in the painted look
     vec3 bn = nmap(grass_n, p) * has_tex.x;
     bn = mix(bn, nmap(sand_n, p * 1.3), max(w_sand, w_bank)); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
     vec3 wn2 = normalize(wn + bn * 0.6 * detailed);
@@ -131,7 +129,15 @@ void fragment() {
   ROUGHNESS = 1.0;
   SPECULAR = 0.0;
 }
-${TOON_LIGHT}
+// painted look: soft cel light; detailed look: plain natural light (cel bands and wrap wash real textures out)
+void light() {
+  float ndl = dot(NORMAL, LIGHT);
+  float d = smoothstep(-0.1, 0.45, ndl);
+  d = mix(d, floor(d * 3.0 + 0.5) / 3.0, 0.15);
+  float toon = d * mix(0.5, 1.0, ATTENUATION) + pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 4.0) * 0.12 * d;
+  float real = max(ndl, 0.0) * ATTENUATION;
+  DIFFUSE_LIGHT += mix(toon, real, detailed) * LIGHT_COLOR / PI;
+}
 `;
 
 // trees, bushes, grass and rocks: vertex colours times the instance tint, a gentle wind sway that grows with height, toon light

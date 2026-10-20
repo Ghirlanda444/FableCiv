@@ -20,7 +20,7 @@ const dressing = require('res://dressing.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
-const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
+const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, TONEMAP_AGX = 4, SHADOWS_OFF = 0, DEVICE_EMULATION = -1, TRANSFORM_3D = 1;
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
 const PITCH = 55 * Math.PI / 180;
@@ -178,6 +178,14 @@ class Main extends Node3D {
     if (!this.hasGroundTex) return;
     this.detailed = !this.detailed; this.lookBtn.text = this.detailed ? 'Look: Detailed' : 'Look: Painted';
     this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
+    this.applyLookLight();
+  }
+  // the camera and sky settings of each look: the painted look wants a bright, saturated filmic curve and a strong sky fill;
+  // real textures want a neutral curve (AgX), less fill (so relief and shadows read) and lighter haze
+  applyLookLight() {
+    const env = this.env; if (!env) return;
+    if (this.detailed) { env.tonemap_mode = TONEMAP_AGX; env.tonemap_exposure = 1.0; env.ambient_light_energy = 0.42; env.adjustment_saturation = 1.08; env.adjustment_contrast = 1.06; env.fog_aerial_perspective = 0.15; this.sun.light_energy = 1.35; }
+    else { env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 0.9; env.ambient_light_energy = 0.6; env.adjustment_saturation = 1.04; env.adjustment_contrast = 1.03; env.fog_aerial_perspective = 0.35; this.sun.light_energy = 1.15; }
   }
 
   buildWorld() {
@@ -200,6 +208,7 @@ class Main extends Node3D {
     sun.light_energy = 1.15; sun.light_color = new Color(1, 0.95, 0.84, 1);
     sun.shadow_enabled = true; sun.shadow_blur = 1.5; sun.directional_shadow_max_distance = 60;
     this.sun = sun; this.add_child(sun);
+    this.applyLookLight();
     // the same angles as a direction toward the sun (Godot rotates Y then X), for the water's sun glint
     const ax = -46 * Math.PI / 180, ay = -40 * Math.PI / 180, fx = Math.sin(ay) * -Math.cos(ax), fy = Math.sin(ax), fz = Math.cos(ay) * -Math.cos(ax);
     this.matWater.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz)); this.matRivers.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz));
