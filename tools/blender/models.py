@@ -491,10 +491,11 @@ def chibi(name, headgear='hair', tunic=TEAM, z=0.0, sitting=False):
         m.ball((0, 0.06, hz + 0.2), 0.5, HAIR, scale=(1.06, 1.02, 0.78), kind='ELLIPSOID')
         for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05), 0.15, HAIR)  # fringe
     elif headgear == 'helmet':  # separate shells (not melted into the head), so the game's ink outline draws the helmet's rim
-        m.solid(prim_sphere(Vector((0, 0.05, hz + 0.22)), 0.5, (1.06, 1.06, 0.74), 24), METAL)
-        m.solid(prim_cylinder((0, 0.05, hz + 0.13), (0, 0.05, hz + 0.21), 0.535, 0.535, 28), rgb('#8c929e'))  # brim band
+        STEEL = rgb('#7d8796')  # darker than METAL: the game's sunlight bleaches pale steel to white
+        m.solid(prim_sphere(Vector((0, 0.05, hz + 0.22)), 0.5, (1.06, 1.06, 0.74), 24), STEEL)
+        m.solid(prim_cylinder((0, 0.05, hz + 0.13), (0, 0.05, hz + 0.21), 0.535, 0.535, 28), rgb('#565d6a'))  # brim band
         m.solid(prim_sphere(Vector((0, 0.08, hz + 0.62)), 0.13, (0.55, 2.6, 1.0), 16), TEAM)  # crest in the owner's colour
-        m.solid(prim_cylinder((0, -0.5, hz + 0.17), (0, -0.54, hz - 0.03), 0.045, 0.035, 8), METAL)  # nose guard
+        m.solid(prim_cylinder((0, -0.5, hz + 0.17), (0, -0.54, hz - 0.03), 0.045, 0.035, 8), rgb('#565d6a'))  # nose guard
     elif headgear == 'hood': m.ball((0, 0.12, hz + 0.08), 0.53, rgb('#3e6a3a'), scale=(1.05, 1.0, 0.95), kind='ELLIPSOID')
     for s in (-1, 1):  # big chibi eyes: white, a large dark iris low in it, a highlight
         m.solid(prim_sphere(Vector((s * 0.185, -0.44, hz - 0.02)), 0.11, (0.85, 0.45, 1.2), 12), WHITE)
