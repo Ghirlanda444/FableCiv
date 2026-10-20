@@ -106,7 +106,7 @@ void fragment() {
     float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
     vec3 tg = ground(grass_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
     float lum = dot(tg, vec3(0.3, 0.59, 0.11));
-    vec3 td = mix(mix(tg, vec3(lum) * vec3(1.3, 1.18, 0.75), 0.4), ground(dry_d, p, k), has_tex.y); // plains and tundra: dry grass (or the grass, sun-dried)
+    vec3 td = mix(mix(tg, vec3(lum) * vec3(1.3, 1.18, 0.75), 0.4), mix(tg, ground(dry_d, p, k), 0.55), has_tex.y); // plains and tundra: green and dry grass mixed (or the grass, sun-dried)
     tg *= mix(vec3(1.0), clamp(base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), vec3(0.5), vec3(1.4)), 0.2); // the texture's own colours, a touch of the tile's (forests darker)
     vec3 an = abs(wn); an /= (an.x + an.y + an.z);                                           // rock: projected from three sides
     vec3 tr = texture(rock_d, wpos.zy * tex_scale).rgb * an.x + texture(rock_d, wpos.xz * tex_scale).rgb * an.y + texture(rock_d, wpos.xy * tex_scale).rgb * an.z;

@@ -184,7 +184,7 @@ class Main extends Node3D {
   // real textures want a neutral curve (AgX), less fill (so relief and shadows read) and lighter haze
   applyLookLight() {
     const env = this.env; if (!env) return;
-    if (this.detailed) { env.tonemap_mode = TONEMAP_AGX; env.tonemap_exposure = 1.0; env.ambient_light_energy = 0.42; env.adjustment_saturation = 1.08; env.adjustment_contrast = 1.06; env.fog_aerial_perspective = 0.15; this.sun.light_energy = 1.35; }
+    if (this.detailed) { env.tonemap_mode = TONEMAP_AGX; env.tonemap_exposure = 0.95; env.ambient_light_energy = 0.42; env.adjustment_saturation = 1.18; env.adjustment_contrast = 1.06; env.fog_aerial_perspective = 0.15; this.sun.light_energy = 1.2; }
     else { env.tonemap_mode = TONEMAP_FILMIC; env.tonemap_exposure = 0.9; env.ambient_light_energy = 0.6; env.adjustment_saturation = 1.04; env.adjustment_contrast = 1.03; env.fog_aerial_perspective = 0.35; this.sun.light_energy = 1.15; }
   }
 
