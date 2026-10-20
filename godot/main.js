@@ -170,7 +170,7 @@ class Main extends Node3D {
     this.matTerrain.set_shader_parameter('has_tex', new godot.Vector4(has.grass ? 1 : 0, has.dry ? 1 : 0, has.sand ? 1 : 0, has.rock ? 1 : 0));
     this.matTerrain.set_shader_parameter('has_snow', has.snow ? 1.0 : 0.0);
     this.hasGroundTex = !!has.grass;
-    this.detailed = this.hasGroundTex && this.args.indexOf('--painted') < 0;
+    this.detailed = this.hasGroundTex && this.args.indexOf('--detailed') >= 0; // the painted look is the game's look; Detailed is optional (Look button)
     this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
     console.log('[tiny-empires] ground textures: ' + (Object.keys(has).join(', ') || 'none') + '; look ' + (this.detailed ? 'detailed' : 'painted'));
   }
@@ -611,7 +611,7 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_painted.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map (detailed, then painted)
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_detailed.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map (painted, then detailed)
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
