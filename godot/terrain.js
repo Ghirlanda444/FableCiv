@@ -140,9 +140,12 @@ function makeField(AU, g) {
     const n = N.fbm(x * 0.55, z * 0.55, 4) * 2 - 1, fine = N.fbm(x * 2.3 + 40, z * 2.3 - 11, 2) * 2 - 1;
     return a[0] + a[1] * (n + 0.35 * fine) + a[7] * (N.ridge(x * 0.7 + 5, z * 0.7 + 3) * 0.35); // foothill ridges spill a little into neighbours
   }
-  // full height inside tile ti: blended ground plus that tile's own landform
-  function heightIn(ti, x, z, a) { return heightFrom(attrs(ti, x, z, a || tmp), x, z) + local(ti, x, z); }
+  // full height inside tile ti: blended ground plus that tile's own landform, then the river channels cut into it
+  function rawIn(ti, x, z, a) { return heightFrom(attrs(ti, x, z, a || tmp), x, z) + local(ti, x, z); }
+  function heightIn(ti, x, z, a) { const h = rawIn(ti, x, z, a); return rivers ? rivers.carve(x, z, h) : h; }
   function tileAt(x, z, hint) { const i = pick(x, z, W, H); return i >= 0 ? i : hint; }
+  let rivers = null;
+  rivers = buildRiverNet(g, (x, z) => rawIn(tileAt(x, z, clampTile(x, z)), x, z, new Float32Array(NA)));
   function heightAt(x, z, hint) {
     const ti = tileAt(x, z, hint === undefined ? clampTile(x, z) : hint);
     return heightIn(ti, x, z, tmp);
@@ -151,31 +154,136 @@ function makeField(AU, g) {
     const row = Math.max(0, Math.min(H - 1, Math.round(z / 1.5))), col = Math.max(0, Math.min(W - 1, Math.round(x / SQRT3 - 0.5 * (row & 1))));
     return row * W + col;
   }
-  return { W, H, noise: N, attrs, heightFrom, heightIn, heightAt, tileAt, nb, tiles: g.tiles };
+  return { W, H, noise: N, attrs, heightFrom, heightIn, heightAt, tileAt, nb, tiles: g.tiles, rivers, river: (x, z) => rivers.near(x, z) };
+}
+
+// Rivers as real watercourses: each engine river (a path of tiles from a spring in the hills to the sea or another river)
+// becomes a smooth, meandering centreline that runs beside the tile centres (units, towns and resources stay on the bank),
+// with a water level that only ever falls downstream. carve(x, z, h) cuts a channel with sloping banks around it, so the
+// water sits in the land and the terrain itself draws the shoreline; it depends on (x, z) alone, so tiles still meet without
+// cracks. near(x, z) gives the distance to the nearest river, its half-width and water level there.
+function buildRiverNet(g, rawAt) {
+  const paths = (g.rivers || []).filter(p => p && p.length >= 2), OFF = 0.3, STEP = 0.05, BANK = 0.17;
+  const isWater = t => t && (t.terrain === 'ocean' || t.terrain === 'coast' || t.terrain === 'lake');
+  // control point of a river at the k-th tile of its path: the tile centre pushed sideways (to the right of the flow)
+  const ctrlOf = (path, k) => {
+    const t = g.tiles[path[k]], c = center(t.col, t.row), a = g.tiles[path[Math.max(0, k - 1)]], b = g.tiles[path[Math.min(path.length - 1, k + 1)]];
+    const ca = center(a.col, a.row), cb = center(b.col, b.row); let dx = cb[0] - ca[0], dz = cb[1] - ca[1]; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
+    const j = (hash1(t.i * 53 + 1) - 0.5) * 0.08;
+    return [c[0] - dz * (OFF + j), c[1] + dx * (OFF + j)];
+  };
+  const onRiver = {}; paths.forEach((p, ri) => p.forEach((ti, k) => { if (k < p.length - 1 || !isWater(g.tiles[ti])) onRiver[ti] = onRiver[ti] || [ri, k]; }));
+  const rivers = [];
+  paths.forEach((path, ri) => {
+    const n = path.length, last = g.tiles[path[n - 1]], ctrl = [];
+    for (let k = 0; k < n - 1; k++) ctrl.push(ctrlOf(path, k));
+    if (isWater(last)) { const a = center(g.tiles[path[n - 2]].col, g.tiles[path[n - 2]].row), b = center(last.col, last.row); ctrl.push([a[0] + (b[0] - a[0]) * 0.8, a[1] + (b[1] - a[1]) * 0.8]); }
+    else { const o = onRiver[last.i]; ctrl.push(o && o[0] !== ri ? ctrlOf(paths[o[0]], o[1]) : ctrlOf(path, n - 1)); } // joins the other river's bed
+    if (g.tiles[path[0]].terrain === 'mountain' && ctrl.length > 2) { const a = ctrl[0], b = ctrl[1]; ctrl[0] = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; } // springs below the peak
+    const m = ctrl.length, at = u => { // Catmull-Rom through the control points
+      const i0 = Math.min(m - 2, Math.floor(u)), f = u - i0, P = i => ctrl[Math.max(0, Math.min(m - 1, i))];
+      const p0 = P(i0 - 1), p1 = P(i0), p2 = P(i0 + 1), p3 = P(i0 + 2), cr = (a, b, c, d) => 0.5 * (2 * b + (-a + c) * f + (2 * a - 5 * b + 4 * c - d) * f * f + (-a + 3 * b - 3 * c + d) * f * f * f);
+      return [cr(p0[0], p1[0], p2[0], p3[0]), cr(p0[1], p1[1], p2[1], p3[1])];
+    };
+    const pts = []; let dist = 0;
+    for (let k = 0; k < m - 1; k++) {
+      const steps = Math.max(4, Math.ceil(Math.hypot(ctrl[k + 1][0] - ctrl[k][0], ctrl[k + 1][1] - ctrl[k][1]) / STEP));
+      for (let s = 0; s < steps; s++) pts.push(at(k + s / steps));
+    }
+    pts.push(at(m - 1));
+    const out = [], seed = path[0] * 0.37;
+    for (let i = 0; i < pts.length; i++) { // small meanders on top of the curve, faded in at the spring
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)]; let dx = b[0] - a[0], dz = b[1] - a[1]; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
+      if (i > 0) dist += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+      const f = i / (pts.length - 1), mea = (Math.sin(dist * 4.1 + seed) * 0.6 + Math.sin(dist * 9.7 + seed * 2) * 0.4) * 0.05 * Math.min(1, dist / 0.4);
+      const ti = path[Math.min(n - 1, Math.round(f * (n - 1)))], nav = g.tiles[ti] && g.tiles[ti].navigable ? 1 : 0;
+      out.push({ x: pts[i][0] - dz * mea, z: pts[i][1] + dx * mea, d: dist, hw: (0.06 + 0.07 * f + 0.1 * nav) * Math.min(1, 0.35 + dist / 0.5) });
+    }
+    for (let i = 1; i < out.length - 1; i++) out[i].hw = (out[i - 1].hw + out[i].hw * 2 + out[i + 1].hw) / 4;
+    // water level: just under the ground along the centreline, never rising downstream, never below the sea
+    let lv = Infinity;
+    out.forEach(p => { lv = Math.min(lv, rawAt(p.x, p.z) - 0.035); p.L = Math.max(0.004, lv); });
+    for (let pass = 0; pass < 2; pass++) for (let i = 1; i < out.length - 1; i++) out[i].L = Math.min(out[i - 1].L, (out[i - 1].L + out[i].L + out[i + 1].L) / 3);
+    rivers.push({ path, pts: out, len: dist });
+  });
+  // spatial hash of the segments, for fast nearest-river lookups
+  const CELL = 0.5, grid = new Map(), key = (i, j) => i * 73856093 ^ j * 19349663;
+  rivers.forEach((r, ri) => r.pts.forEach((p, i) => {
+    if (i === 0) return; const q = r.pts[i - 1], reach = Math.max(p.hw, q.hw) + BANK + 0.5;
+    const x0 = Math.floor((Math.min(p.x, q.x) - reach) / CELL), x1 = Math.floor((Math.max(p.x, q.x) + reach) / CELL), z0 = Math.floor((Math.min(p.z, q.z) - reach) / CELL), z1 = Math.floor((Math.max(p.z, q.z) + reach) / CELL);
+    for (let a = x0; a <= x1; a++) for (let b = z0; b <= z1; b++) { const k = key(a, b); let l = grid.get(k); if (!l) grid.set(k, l = []); l.push(ri, i); }
+  }));
+  const res = { d: 0, hw: 0, L: 0, v: 0 };
+  function near(x, z) {
+    const l = grid.get(key(Math.floor(x / CELL), Math.floor(z / CELL))); if (!l) return null;
+    let best = Infinity;
+    for (let k = 0; k < l.length; k += 2) {
+      const r = rivers[l[k]], p = r.pts[l[k + 1]], q = r.pts[l[k + 1] - 1], ex = p.x - q.x, ez = p.z - q.z, ee = ex * ex + ez * ez || 1e-9;
+      const t = Math.max(0, Math.min(1, ((x - q.x) * ex + (z - q.z) * ez) / ee)), dx = x - (q.x + ex * t), dz = z - (q.z + ez * t), d = Math.sqrt(dx * dx + dz * dz);
+      const hw = q.hw + (p.hw - q.hw) * t, e = d - hw; // compare by distance past the water's edge, so a wide river wins near a stream
+      if (e < best) { best = e; res.d = d; res.hw = hw; res.L = q.L + (p.L - q.L) * t; res.v = q.d + (p.d - q.d) * t; }
+    }
+    return best < Infinity ? res : null;
+  }
+  // the channel: a flat bed below the water, banks rising to just above it, then a steady slope up to the original ground
+  function carve(x, z, h) {
+    const r = near(x, z); if (!r) return h;
+    const depth = 0.05 + r.hw * 0.35, bed = r.L - depth, edge = r.hw + BANK;
+    let t;
+    if (r.d < r.hw * 0.6) t = bed;
+    else if (r.d < edge) { const u = (r.d - r.hw * 0.6) / (edge - r.hw * 0.6); t = bed + (r.L + 0.05 - bed) * u * u * (3 - 2 * u); }
+    else t = r.L + 0.05 + (r.d - edge) * 1.1;
+    return Math.min(h, t);
+  }
+  return { rivers, near, carve, BANK };
 }
 
 // The terrain mesh: per tile a ring-subdivided hex (shared edge vertices are recomputed identically, so tiles meet without cracks).
-// Returns flat arrays: pos (xyz), nrm (xyz), col (rgb + meadow in alpha), uv (rock, sand), uv2 (dry, snow), idx (triangles).
+// Tiles a river runs through or past get twice the rings (RIVER_RINGS), so the channel and its banks are smooth; where such a
+// tile meets a coarser one, its extra edge vertices sit on the coarse tile's straight edge, so there are no cracks there either.
+// Returns flat arrays: pos (xyz), nrm (xyz), col (rgb + meadow in alpha), uv (rock, sand), uv2 (dry, snow; minus the river bank
+// where there is one), idx (triangles).
+const RIVER_RINGS = 8;
+function tileRings(F) {
+  return F.tiles.map(t => {
+    const c = center(t.col, t.row), r = F.rivers && F.rivers.near(c[0], c[1]);
+    if (r && r.d < 1.45) return RIVER_RINGS;
+    for (let k = 0; k < 6; k++) { const p = corner(c[0], c[1], k, 0.9), q = F.rivers && F.rivers.near(p[0], p[1]); if (q && q.d < 0.9) return RIVER_RINGS; }
+    return RINGS;
+  });
+}
 function buildTerrainMesh(F) {
-  const R = RINGS, perTile = 1 + 3 * R * (R + 1), nT = F.tiles.length;
-  const pos = new Float32Array(nT * perTile * 3), nrm = new Float32Array(nT * perTile * 3), col = new Float32Array(nT * perTile * 4), uv = new Float32Array(nT * perTile * 2), uv2 = new Float32Array(nT * perTile * 2);
-  const idx = new Int32Array(nT * 6 * R * R * 3), a = new Float32Array(NA), e = 0.04;
+  const rings = tileRings(F), nT = F.tiles.length;
+  let nv = 0, ni = 0; rings.forEach(R => { nv += 1 + 3 * R * (R + 1); ni += 6 * R * R * 3; });
+  const pos = new Float32Array(nv * 3), nrm = new Float32Array(nv * 3), col = new Float32Array(nv * 4), uv = new Float32Array(nv * 2), uv2 = new Float32Array(nv * 2);
+  const idx = new Int32Array(ni), a = new Float32Array(NA), e = 0.04, BANK = F.rivers ? F.rivers.BANK : 0.17;
   let v = 0, ii = 0;
   const ringStart = r => r === 0 ? 0 : 1 + 3 * r * (r - 1);
   F.tiles.forEach(t => {
-    const c = center(t.col, t.row), base = v;
-    const put = (x, z) => {
-      const y = F.heightIn(t.i, x, z, a); // also fills a with the blended attributes
+    const R = rings[t.i], c = center(t.col, t.row), base = v;
+    const put = (x, z, yForce) => {
+      let y = F.heightIn(t.i, x, z, a); // also fills a with the blended attributes
+      if (yForce !== undefined) y = yForce;
       const hx = F.heightAt(x + e, z, t.i) - F.heightAt(x - e, z, t.i), hz = F.heightAt(x, z + e, t.i) - F.heightAt(x, z - e, t.i);
       let nx = -hx / (2 * e), ny = 1, nz = -hz / (2 * e); const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
+      const q = F.river ? F.river(x, z) : null, bank = q ? 1 - smooth((q.d - q.hw * 0.5) / (q.hw * 0.5 + BANK + 0.04)) : 0;
       pos[v * 3] = x; pos[v * 3 + 1] = y; pos[v * 3 + 2] = z; nrm[v * 3] = nx; nrm[v * 3 + 1] = ny; nrm[v * 3 + 2] = nz;
-      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = a[8]; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6]; uv2[v * 2] = a[9]; uv2[v * 2 + 1] = a[10];
+      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = a[8]; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6];
+      uv2[v * 2] = a[9]; uv2[v * 2 + 1] = bank > 0.02 && bank >= a[10] ? -bank : a[10];
       v++;
     };
     put(c[0], c[1]);
     for (let r = 1; r <= R; r++) for (let k = 0; k < 6; k++) {
-      const p = corner(c[0], c[1], k, r / R), q = corner(c[0], c[1], k + 1, r / R);
-      for (let j = 0; j < r; j++) put(p[0] + (q[0] - p[0]) * j / r, p[1] + (q[1] - p[1]) * j / r);
+      const p = corner(c[0], c[1], k, r / R), q = corner(c[0], c[1], k + 1, r / R), nb = F.nb[t.i][k];
+      const coarse = r === R && nb >= 0 && rings[nb] < R ? R / rings[nb] : 1; // the neighbour across this edge has fewer rings
+      for (let j = 0; j < r; j++) {
+        const x = p[0] + (q[0] - p[0]) * j / r, z = p[1] + (q[1] - p[1]) * j / r;
+        if (coarse > 1 && j % coarse) { // on the coarse neighbour's straight edge between its two nearest vertices
+          const j0 = j - (j % coarse), j1 = j0 + coarse, f = (j - j0) / coarse;
+          const y0 = F.heightIn(t.i, p[0] + (q[0] - p[0]) * j0 / r, p[1] + (q[1] - p[1]) * j0 / r, a), y1 = F.heightIn(t.i, p[0] + (q[0] - p[0]) * j1 / r, p[1] + (q[1] - p[1]) * j1 / r, a);
+          put(x, z, y0 + (y1 - y0) * f);
+        } else put(x, z);
+      }
     }
     for (let r = 1; r <= R; r++) for (let k = 0; k < 6; k++) {
       const outer = j => base + ringStart(r) + ((k * r + j) % (6 * r));
@@ -203,6 +311,7 @@ function buildScatter(F, g, density) {
         const ang = 2 * Math.PI * (k / n + rnd(seq) * 0.4), d = rMin + (rMax - rMin) * Math.sqrt(rnd(seq + 50));
         const x = c[0] + Math.cos(ang) * d, z = c[1] + Math.sin(ang) * d * 0.92, y = F.heightAt(x, z, t.i);
         if (y < 0.03) continue; // nothing grows in the sea
+        const rv = F.river && F.river(x, z); if (rv && rv.d < rv.hw + 0.12) continue; // nor in a riverbed
         const sc = sMin + (sMax - sMin) * rnd(seq + 90), j = 1 - var_ + 2 * var_ * rnd(seq + 70);
         list.push([x, y, z, rnd(seq + 30) * Math.PI * 2, sc, tint[0] * j, tint[1] * j, tint[2] * (1 - var_ + 2 * var_ * rnd(seq + 80))]);
       }
@@ -228,29 +337,22 @@ function buildScatter(F, g, density) {
 // a key that changes when settlements change, so the scatter can clear new town sites
 function scatterKey(g) { return Object.keys(g.settlements).map(id => g.settlements[id].tile).sort((a, b) => a - b).join(','); }
 
-// River ribbons draped over the terrain, following the engine's river paths (tile centre to tile centre).
-function buildRivers(F, g) {
-  const pos = [], nrm = [], col = [], STEPS = 8, w = 0.09;
-  (g.rivers || []).forEach(path => {
-    const pts = [];
-    for (let k = 0; k + 1 < path.length; k++) {
-      const A = g.tiles[path[k]], B = g.tiles[path[k + 1]]; if (!A || !B) continue;
-      const a = center(A.col, A.row), b = center(B.col, B.row);
-      for (let s = 0; s < STEPS; s++) { const f = s / STEPS, wob = Math.sin(f * Math.PI) * (hash1(path[k] * 13 + s) - 0.5) * 0.25; pts.push([a[0] + (b[0] - a[0]) * f - (b[1] - a[1]) * wob * 0.3, a[1] + (b[1] - a[1]) * f + (b[0] - a[0]) * wob * 0.3]); }
-      if (k + 2 === path.length) pts.push(b);
-    }
-    for (let i = 0; i + 1 < pts.length; i++) {
-      const p = pts[i], q = pts[i + 1], dx = q[0] - p[0], dz = q[1] - p[1], l = Math.hypot(dx, dz) || 1, ox = -dz / l * w, oz = dx / l * w;
-      const yp = Math.max(F.heightAt(p[0], p[1]), -0.02) + 0.035, yq = Math.max(F.heightAt(q[0], q[1]), -0.02) + 0.035;
-      const strip = (a, b, c) => { // a band across the river from offset a to b (in units of the half-width), coloured c
-        const P = (k, y, q) => [q[0] + ox * k, y, q[1] + oz * k];
-        [[P(a, yp, p), P(b, yp, p), P(b, yq, q)], [P(a, yp, p), P(b, yq, q), P(a, yq, q)]].forEach(tri => tri.forEach(v => { pos.push(v[0], v[1], v[2]); nrm.push(0, 1, 0); col.push(c[0], c[1], c[2], c[3]); }));
-      };
-      strip(-0.8, 0.8, [0.3, 0.74, 0.84, 0.92]);
-      strip(0.8, 1.15, [1, 1, 1, 0.95]); strip(-1.15, -0.8, [1, 1, 1, 0.95]); // white banks, like the coast
+// The river water: a flat surface at the river's water level along each centreline, a little wider than the channel so the
+// banks themselves cut the shoreline. uv: x across the river (-1..1 at the water's edge), y distance downstream (for the flow).
+function buildRivers(F) {
+  const b = { p: [], n: [], c: [], uv: [] }, ACROSS = [-1.35, -0.6, 0, 0.6, 1.35];
+  if (!F.rivers) return b;
+  F.rivers.rivers.forEach(r => {
+    const P = r.pts, rows = P.map((p, i) => {
+      const a = P[Math.max(0, i - 1)], c = P[Math.min(P.length - 1, i + 1)]; let dx = c.x - a.x, dz = c.z - a.z; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
+      return ACROSS.map(u => [p.x - dz * u * p.hw, p.L, p.z + dx * u * p.hw, u, p.d]);
+    });
+    for (let i = 0; i + 1 < rows.length; i++) for (let k = 0; k + 1 < ACROSS.length; k++) {
+      const A = rows[i][k], B = rows[i][k + 1], C = rows[i + 1][k + 1], D = rows[i + 1][k];
+      [A, B, C, A, C, D].forEach(q => { b.p.push(q[0], q[1], q[2]); b.n.push(0, 1, 0); b.c.push(1, 1, 1, 1); b.uv.push(q[3], q[4]); });
     }
   });
-  return { p: pos, n: nrm, c: col };
+  return b;
 }
 
 module.exports = { SQRT3, RINGS, center, pick, corner, across, makeField, buildTerrainMesh, buildScatter, scatterKey, buildRivers };

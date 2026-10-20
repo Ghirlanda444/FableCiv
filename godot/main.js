@@ -136,7 +136,7 @@ class Main extends Node3D {
     this.matLeaves = shaderMaterial(shaders.PAINTED_LEAF);
     this.matCity = shaderMaterial(shaders.PAINTED_PROP); this.matCity.set_shader_parameter('wind', 0.0); // settlements: toon-lit, no sway
     this.matBorders = material({ alpha: true, unshaded: true });
-    this.matRivers = material({ alpha: true, unshaded: true }); // flat cartoon colour, like the sea
+    this.matRivers = shaderMaterial(shaders.RIVER_WATER); // flowing water in a carved channel (terrain.js, shaders.RIVER_WATER)
     // each nature kind is one or more instanced parts sharing the same placements: fluffy trees and bushes are a solid trunk
     // and core plus a leaf-card crown drawn by the leaf shader
     const solid = b => [{ mesh: toMesh(b), mat: this.matProps }], fluffy = f => [{ mesh: toMesh(f.solid), mat: this.matProps }, { mesh: toMesh(f.leaves), mat: this.matLeaves }];
@@ -171,13 +171,13 @@ class Main extends Node3D {
     this.matTerrain.set_shader_parameter('has_snow', has.snow ? 1.0 : 0.0);
     this.hasGroundTex = !!has.grass;
     this.detailed = this.hasGroundTex && this.args.indexOf('--painted') < 0;
-    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
+    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
     console.log('[tiny-empires] ground textures: ' + (Object.keys(has).join(', ') || 'none') + '; look ' + (this.detailed ? 'detailed' : 'painted'));
   }
   onLook() {
     if (!this.hasGroundTex) return;
     this.detailed = !this.detailed; this.lookBtn.text = this.detailed ? 'Look: Detailed' : 'Look: Painted';
-    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
+    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
   }
 
   buildWorld() {
@@ -202,7 +202,7 @@ class Main extends Node3D {
     this.sun = sun; this.add_child(sun);
     // the same angles as a direction toward the sun (Godot rotates Y then X), for the water's sun glint
     const ax = -46 * Math.PI / 180, ay = -40 * Math.PI / 180, fx = Math.sin(ay) * -Math.cos(ax), fy = Math.sin(ax), fz = Math.cos(ay) * -Math.cos(ax);
-    this.matWater.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz));
+    this.matWater.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz)); this.matRivers.set_shader_parameter('sun_dir', new Vector3(-fx, -fy, -fz));
 
     this.cam = new Camera3D(); this.cam.fov = 45; this.cam.far = 500; this.add_child(this.cam); this.cam.make_current();
     this.camAttr = new CameraAttributesPractical(); this.cam.attributes = this.camAttr;
@@ -279,7 +279,7 @@ class Main extends Node3D {
     const M = terrain.buildTerrainMesh(this.field), t1 = Time.get_ticks_msec();
     const up = arrayMesh(M); this.terrain.mesh = up.mesh;
     const t2 = Time.get_ticks_msec();
-    this.rivers.mesh = toMesh(terrain.buildRivers(this.field, this.g));
+    this.rivers.mesh = toMesh(terrain.buildRivers(this.field));
     const S = this.buildNature(); this.dressKey = null;
     this.waterY = 0;
     console.log('[tiny-empires] map ' + this.g.W + 'x' + this.g.H + ' seed ' + this.seed + ': terrain ' + M.vertices + ' verts / ' + M.triangles + ' tris, built in ' + (t1 - t0) +
@@ -391,7 +391,7 @@ class Main extends Node3D {
       const s = g.settlements[id], view = String(this.viewCity) === String(id), key = city.cityKey(AU, g, s, view);
       let n = this.cityNodes[id];
       if (!n || n.key !== key) {
-        const built = city.buildCity(AU, g, s, ground, { view });
+        const built = city.buildCity(AU, g, s, ground, { view, river: this.field.river });
         if (!n) { n = this.cityNodes[id] = { node: new MeshInstance3D() }; n.node.material_override = this.matCity; this.cityRoot.add_child(n.node); }
         n.node.mesh = toMesh(built.batch); n.key = key; n.top = built.top;
       }

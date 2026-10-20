@@ -186,6 +186,7 @@ function buildDressing(F, g, shows) {
       for (let k = 0; k < n; k++, seq++) {
         const a = 2 * Math.PI * (seq / 7 + rnd(seq) * 0.12) + t.i, d = 0.34 + 0.44 * rnd(seq + 40);
         const x = c[0] + Math.cos(a) * d, z = c[1] + Math.sin(a) * d * 0.92;
+        const rv = !WATER[t.resource] && F.river && F.river(x, z); if (rv && rv.d < rv.hw + 0.1) continue; // keep out of the riverbed
         const y = WATER[t.resource] ? 0.0 : Math.max(0, F.heightAt(x, z, t.i));
         (out[m] = out[m] || []).push([x, y, z, rnd(seq + 70) * Math.PI * 2, sc * (0.85 + 0.3 * rnd(seq + 90)), 1, 1, 1]);
       }

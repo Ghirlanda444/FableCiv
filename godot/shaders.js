@@ -96,7 +96,9 @@ void fragment() {
   float near = 1.0 - smoothstep(0.08, 0.16, fwidth(wpos.x) * 7.0);                         // flowers only when they are several pixels wide
   float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m) * near;
   vec3 fc = hh > 0.95 ? vec3(0.95, 0.9, 0.82) : (hh > 0.92 ? vec3(0.98, 0.82, 0.3) : vec3(0.92, 0.5, 0.62));
-  col = mix(col, srgb(fc), flower * (1.0 - detailed));
+  float rbank = max(-mats2.y, 0.0), snowf = max(mats2.y, 0.0);                             // river banks (negative) or snowfield
+  col = mix(col, srgb(vec3(0.58, 0.5, 0.36)) * (0.85 + 0.2 * fine), smoothstep(0.15, 0.7, rbank + (stroke - 0.5) * 0.3)); // damp earth on the banks and bed
+  col = mix(col, srgb(fc), flower * (1.0 - detailed) * (1.0 - rbank));
   if (detailed > 0.0) {
     vec2 p = wpos.xz * tex_scale; float k = smoothstep(0.3, 0.7, fbm(wpos.xz * 0.12 + 5.0));
     float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
@@ -109,12 +111,14 @@ void fragment() {
     float w_dry = smoothstep(0.25, 0.6, mats2.x + brk);
     float w_sand = clamp(max(beach * (1.0 - mats.x), smoothstep(0.3, 0.7, mats.y + brk)) + smoothstep(-0.01, -0.2, wpos.y), 0.0, 1.0) * has_tex.z;
     float w_rock = clamp(max(rock_m, smoothstep(0.45, 0.85, mats.x + brk * 0.5)), 0.0, 1.0) * has_tex.w; // mountain tiles are rock all over
-    float w_snow = clamp(max(snow, smoothstep(0.4, 0.75, mats2.y + brk)), 0.0, 1.0) * has_snow;
+    float w_snow = clamp(max(snow, smoothstep(0.4, 0.75, snowf + brk)), 0.0, 1.0) * has_snow;
+    float w_bank = smoothstep(0.15, 0.7, rbank + brk * 0.6);
     vec3 dc = mix(col, tg, has_tex.x);
     dc = mix(dc, td, w_dry); dc = mix(dc, ts, w_sand); dc = mix(dc, tr, w_rock); dc = mix(dc, tw, w_snow);
+    dc = mix(dc, mix(ts, tr, 0.35) * vec3(0.62, 0.58, 0.5), w_bank * has_tex.z);              // wet sand and pebbles along rivers
     dc *= mix(1.0, 0.82, smoothstep(0.08, 0.38, slope) * step(0.0, wpos.y) * (1.0 - w_rock));    // slopes a shade darker, as in the painted look
     vec3 bn = nmap(grass_n, p) * has_tex.x;
-bn = mix(bn, nmap(sand_n, p * 1.3), w_sand); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
+    bn = mix(bn, nmap(sand_n, p * 1.3), max(w_sand, w_bank)); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
     vec3 wn2 = normalize(wn + bn * 0.6 * detailed);
     NORMAL = normalize((VIEW_MATRIX * vec4(wn2, 0.0)).xyz);
     col = mix(col, dc, detailed);
@@ -300,4 +304,44 @@ void light() {
 }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, STANDEE };
+// River water: flows downstream (uv.y is the distance along the river), shallow and clear at the banks where the bed shows
+// through, deeper in the middle, with slow drifting streaks, small ripples that catch the sun and a thin foam line where the
+// water meets the bank (from the depth buffer, like the sea). The detailed look uses deeper, more natural colours.
+const RIVER_WATER = `
+shader_type spatial;
+render_mode blend_mix, cull_disabled, depth_draw_opaque, unshaded;
+uniform sampler2D depth_tex : hint_depth_texture, filter_linear_mipmap;
+uniform vec3 sun_dir = vec3(-0.447, 0.719, 0.532);
+uniform float detailed = 0.0;
+varying vec3 wpos;
+varying vec2 fuv;
+${NOISE}
+vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
+void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; fuv = UV; }
+void fragment() {
+  float d = texture(depth_tex, SCREEN_UV).r;
+  vec4 g = INV_PROJECTION_MATRIX * vec4(SCREEN_UV * 2.0 - 1.0, d, 1.0); g.xyz /= g.w;
+  float depth = max(0.0, VERTEX.z - g.z), t = 1.0 - exp(-depth * 14.0);
+  vec3 shallow = mix(srgb(vec3(0.5, 0.86, 0.82)), srgb(vec3(0.4, 0.55, 0.45)), detailed);
+  vec3 mid = mix(srgb(vec3(0.18, 0.66, 0.78)), srgb(vec3(0.16, 0.38, 0.4)), detailed);
+  vec3 deep = mix(srgb(vec3(0.08, 0.42, 0.62)), srgb(vec3(0.06, 0.2, 0.25)), detailed);
+  vec3 col = t < 0.5 ? mix(shallow, mid, t / 0.5) : mix(mid, deep, (t - 0.5) / 0.5);
+  float px = length(fwidth(wpos.xz)), near = 1.0 - smoothstep(0.03, 0.08, px);
+  vec2 f = vec2(fuv.x * 1.2, fuv.y * 1.6 - TIME * 0.35);                                  // flowing downstream
+  float streak = fbm(vec2(f.x * 2.5, f.y * 0.9) + fbm(f * 0.7) * 1.5);
+  col *= 1.0 + smoothstep(0.55, 0.68, streak) * 0.12 * (1.0 - min(1.0, abs(fuv.x))) * near;
+  float waves = fbm(vec2(fuv.x * 3.0, fuv.y * 4.0 - TIME * 0.9)) * 0.6 + fbm(vec2(fuv.x * 6.0 + 3.0, fuv.y * 7.0 - TIME * 1.4)) * 0.4;
+  vec3 n = bump(NORMAL, VERTEX, waves, 0.035 * near);
+  vec3 sunv = normalize((VIEW_MATRIX * vec4(sun_dir, 0.0)).xyz);
+  float glint = pow(max(dot(reflect(-VIEW, n), sunv), 0.0), 30.0) * 0.22 * near;
+  float fres = pow(1.0 - clamp(dot(n, VIEW), 0.0, 1.0), 3.0);
+  col = mix(col, srgb(vec3(0.75, 0.88, 0.95)), fres * 0.3) + glint;
+  float dd = fwidth(depth), steady = 1.0 - smoothstep(0.015, 0.04, dd), aa = min(dd, 0.01) * 1.5 + 0.002;
+  float brk = fbm(vec2(fuv.x * 4.0, fuv.y * 5.0 - TIME * 0.6));
+  float foam = (1.0 - smoothstep(0.004 + brk * 0.012, 0.01 + brk * 0.02 + aa, depth)) * steady * (0.55 + 0.45 * brk);
+  ALBEDO = mix(col, vec3(0.94, 0.97, 0.98), foam * mix(0.85, 0.6, detailed));
+  ALPHA = clamp(mix(0.45, 0.9, t) + foam * 0.6, 0.0, 1.0);
+}
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE };

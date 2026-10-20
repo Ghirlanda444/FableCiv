@@ -229,6 +229,7 @@ function buildCity(AU, g, s, heightAt, opts) {
     const w = 0.15 + 0.05 * p.j + (inner ? 0.03 : 0), d = 0.13 + 0.04 * p.k + (inner ? 0.02 : 0);
     const h = 0.11 + 0.025 * tier + 0.04 * p.k + (inner ? 0.07 : 0) + (tier === 4 && p.ring === 1 ? 0.05 : 0);
     const wc = i % 3 === 0 ? mix(wall, [1, 1, 1, 1], 0.12) : i % 3 === 1 ? shade(wall, 0.9) : wall, rc = shade(hroof, 0.86 + 0.24 * p.j);
+    const rv = opts && opts.river && opts.river(x, z); if (rv && rv.d < rv.hw + 0.12) return; // the river runs through town: no house in it
     const from = b.p.length / 3, hy = gy(x, z);
     house(b, x, hy, z, w, d, h, kind, wc, rc, trim, p.along); stretch(b, from, hy, TALL);
   });
