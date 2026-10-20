@@ -411,8 +411,8 @@ class Main extends Node3D {
       if (!n.bar) { n.bar = new MeshInstance3D(); n.bar.mesh = this.barQuad; n.bar.material_override = this.matBar; n.bar.cast_shadow = SHADOWS_OFF; this.spriteRoot.add_child(n.bar); }
       const c = geo.rgb(s.color), top = model ? UNIT_3D_HEIGHT : s.height;
       n.bar.position = new Vector3(s.x, s.y + top + 0.12, s.z);
-      n.bar.set_instance_shader_parameter('hp', Math.max(0, Math.min(1, (s.unit.hp === undefined ? 100 : s.unit.hp) / 100)));
-      n.bar.set_instance_shader_parameter('team', new Color(c[0], c[1], c[2], 1));
+      // health rides in the colour's alpha: a plain number of 1 reaches Godot as an integer, which a float uniform ignores
+      n.bar.set_instance_shader_parameter('team', new Color(c[0], c[1], c[2], Math.max(0, Math.min(1, (s.unit.hp === undefined ? 100 : s.unit.hp) / 100))));
       keepU[s.id] = true;
     });
     Object.keys(this.unitNodes).forEach(id => { if (!keepU[id]) { this.unitNodes[id].node.queue_free(); if (this.unitNodes[id].bar) this.unitNodes[id].bar.queue_free(); delete this.unitNodes[id]; } });

@@ -386,19 +386,18 @@ ${TOON_LIGHT}
 const HEALTH_BAR = `
 shader_type spatial;
 render_mode unshaded, skip_vertex_transform, cull_disabled, depth_test_disabled, shadows_disabled;
-instance uniform float hp = 1.0;
-instance uniform vec3 team : source_color = vec3(1.0);
+instance uniform vec4 team : source_color = vec4(1.0); // rgb: the owner's colour, a: health 0..1
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   vec3 right = normalize(INV_VIEW_MATRIX[0].xyz), up = normalize(INV_VIEW_MATRIX[1].xyz);
   VERTEX = (VIEW_MATRIX * vec4(o + right * VERTEX.x + up * VERTEX.y, 1.0)).xyz;
 }
 void fragment() {
-  vec2 uv = UV;
+  vec2 uv = UV; float hp = team.a;
   float frame = max(max(step(uv.x, 0.035), step(0.965, uv.x)), max(step(uv.y, 0.2), step(0.8, uv.y)));
   vec3 fill = hp > 0.5 ? vec3(0.32, 0.8, 0.3) : (hp > 0.25 ? vec3(0.95, 0.72, 0.15) : vec3(0.9, 0.28, 0.25));
   vec3 col = mix(vec3(0.06, 0.07, 0.09), fill, step(uv.x, 0.035 + 0.93 * hp));
-  ALBEDO = mix(col, team, frame);
+  ALBEDO = mix(col, team.rgb, frame);
 }
 `;
 
