@@ -67,11 +67,11 @@ function arrayMesh(M) {
   try {
     const PF = godot.PackedFloat32Array, PI = godot.PackedInt32Array, GA = godot.GArray;
     const bytes = a => new PF(Array.from(a)).to_byte_array();
-    const v = bytes(M.pos).to_vector3_array(), n = bytes(M.nrm).to_vector3_array(), c = bytes(M.col).to_color_array(), uv = bytes(M.uv).to_vector2_array();
+    const v = bytes(M.pos).to_vector3_array(), n = bytes(M.nrm).to_vector3_array(), c = bytes(M.col).to_color_array(), uv = bytes(M.uv).to_vector2_array(), uv2 = bytes(M.uv2).to_vector2_array();
     if (v.size() !== M.vertices) throw new Error('vertex count ' + v.size());
     const arrs = GA ? new GA() : [];
-    if (GA) { arrs.resize(13); arrs.set_indexed(0, v); arrs.set_indexed(1, n); arrs.set_indexed(3, c); arrs.set_indexed(4, uv); arrs.set_indexed(12, new PI(Array.from(M.idx))); }
-    else { for (let i = 0; i < 13; i++) arrs.push(null); arrs[0] = v; arrs[1] = n; arrs[3] = c; arrs[4] = uv; arrs[12] = new PI(Array.from(M.idx)); }
+    if (GA) { arrs.resize(13); arrs.set_indexed(0, v); arrs.set_indexed(1, n); arrs.set_indexed(3, c); arrs.set_indexed(4, uv); arrs.set_indexed(5, uv2); arrs.set_indexed(12, new PI(Array.from(M.idx))); }
+    else { for (let i = 0; i < 13; i++) arrs.push(null); arrs[0] = v; arrs[1] = n; arrs[3] = c; arrs[4] = uv; arrs[5] = uv2; arrs[12] = new PI(Array.from(M.idx)); }
     const mesh = new ArrayMesh(); mesh.add_surface_from_arrays(PRIMITIVE_TRIANGLES, arrs);
     if (mesh.get_surface_count() !== 1) throw new Error('no surface');
     return { mesh, path: 'packed arrays' };
@@ -83,6 +83,7 @@ function arrayMesh(M) {
     st.set_normal(new Vector3(M.nrm[i * 3], M.nrm[i * 3 + 1], M.nrm[i * 3 + 2]));
     st.set_color(new Color(M.col[i * 4], M.col[i * 4 + 1], M.col[i * 4 + 2], 1));
     st.set_uv(new Vector2(M.uv[i * 2], M.uv[i * 2 + 1]));
+    st.set_uv2(new Vector2(M.uv2[i * 2], M.uv2[i * 2 + 1]));
     st.add_vertex(new Vector3(M.pos[i * 3], M.pos[i * 3 + 1], M.pos[i * 3 + 2]));
   }
   for (let i = 0; i < M.idx.length; i++) st.add_index(M.idx[i]);
@@ -143,6 +144,7 @@ class Main extends Node3D {
       tuft: solid(props.tuft()), rock: solid(props.rock()), reed: solid(props.reed()) };
     this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
     Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k]; this.dressMeshes[k] = { mesh: toMesh(m[0]()), still: m[1] === 'still' }; });
+    this.loadGroundTextures();
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
     // code-built placeholder pieces stand in (the game never waits on art)
@@ -156,6 +158,26 @@ class Main extends Node3D {
     this.newGame(this.smoke || this.shot ? 7 : (Time.get_ticks_usec() % 100000) + 1);
     if (this.smoke) this.runSmoke();
     if (this.shot) { for (let k = 0; k < 70 && !this.g.victory; k++) G.endTurn(this.g); this.refresh(); this.focusPlayer(); this.camDist = 10; this.updateCamera(); }
+  }
+
+  // detailed look: the CC0 ground textures fetched at build time (tools/godot/fetch-textures.js); without them only the
+  // painted look exists
+  loadGroundTextures() {
+    const has = {}, slots = ['grass', 'dry', 'sand', 'rock', 'snow'];
+    slots.forEach(s => {
+      ['diff', 'nor'].forEach(m => { const p = 'res://textures/' + s + '_' + m + '.jpg'; if (ResourceLoader.exists(p)) { this.matTerrain.set_shader_parameter(s + (m === 'diff' ? '_d' : '_n'), ResourceLoader.load(p)); if (m === 'diff') has[s] = 1; } });
+    });
+    this.matTerrain.set_shader_parameter('has_tex', new godot.Vector4(has.grass ? 1 : 0, has.dry ? 1 : 0, has.sand ? 1 : 0, has.rock ? 1 : 0));
+    this.matTerrain.set_shader_parameter('has_snow', has.snow ? 1.0 : 0.0);
+    this.hasGroundTex = !!has.grass;
+    this.detailed = this.hasGroundTex && this.args.indexOf('--painted') < 0;
+    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
+    console.log('[tiny-empires] ground textures: ' + (Object.keys(has).join(', ') || 'none') + '; look ' + (this.detailed ? 'detailed' : 'painted'));
+  }
+  onLook() {
+    if (!this.hasGroundTex) return;
+    this.detailed = !this.detailed; this.lookBtn.text = this.detailed ? 'Look: Detailed' : 'Look: Painted';
+    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
   }
 
   buildWorld() {
@@ -214,6 +236,7 @@ class Main extends Node3D {
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
     this.gridBtn = mk('Grid: On', this.onGrid);
+    if (this.hasGroundTex) this.lookBtn = mk(this.detailed ? 'Look: Detailed' : 'Look: Painted', this.onLook);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
     this.scores.custom_minimum_size = new Vector2(380, 0); this.scores.add_theme_font_size_override('normal_font_size', 16); box.add_child(this.scores);
     this.info = new Label(); this.info.add_theme_font_size_override('font_size', 15); this.info.custom_minimum_size = new Vector2(380, 0);
@@ -579,7 +602,7 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_painted.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map (detailed, then painted)
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
@@ -589,6 +612,7 @@ class Main extends Node3D {
       else if (this.frames === 120) { this.camDist = 16; this.onFx(); }
       else if (this.frames === 160) { this.onFx(); this.showBiggestCity(); }
       else if (this.frames === 200) { this.closeCity(); this.newGame(6); this.frameMountains(); }
+      else if (this.frames === 240 && this.hasGroundTex) this.onLook();
       else this.get_tree().quit(0);
       return;
     }

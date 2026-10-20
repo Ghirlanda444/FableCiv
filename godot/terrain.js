@@ -46,11 +46,12 @@ function makeNoise(seed) {
   return { value, fbm, ridge };
 }
 
-// per-tile targets: [height, noise amplitude, r, g, b, rock, sand, mountain, meadow] in a hand-painted cartoon palette
-const NA = 9;
+// per-tile targets: [height, noise amplitude, r, g, b, rock, sand, mountain, meadow, dry, snow] in a hand-painted cartoon palette
+// (dry and snow pick the dry-grass and snow textures of the detailed look)
+const NA = 11;
 function tileAttrs(AU, t) {
   const e = t.elev || 0, v = hash1(t.i * 31 + 7);
-  let h, amp, col, rock = 0, sand = 0, mtn = 0, meadow = 0;
+  let h, amp, col, rock = 0, sand = 0, mtn = 0, meadow = 0, dry = 0, snow = 0;
   if (t.terrain === 'ocean') { h = -0.85; amp = 0.1; col = rgb('#4f9fb0'); }
   else if (t.terrain === 'coast') { h = -0.24; amp = 0.06; col = rgb('#e6d6a2'); sand = 0.6; }
   else if (t.terrain === 'lake') { h = -0.26; amp = 0.05; col = rgb('#b8c48a'); }
@@ -59,7 +60,10 @@ function tileAttrs(AU, t) {
     col = rgb({ grassland: '#5ea845', plains: '#9fb852', desert: '#ecd08c', tundra: '#a3b48e', snow: '#f2f6fb', mountain: '#8d93a3' }[t.terrain] || '#6fae4c');
     if (t.terrain === 'grassland') meadow = 1;
     if (t.terrain === 'plains') meadow = 0.6;
-    if (t.terrain === 'desert') sand = 1;
+    if (t.terrain === 'desert') { sand = 1; dry = 0.3; }
+    if (t.terrain === 'plains') dry = 0.6;
+    if (t.terrain === 'tundra') { dry = 0.7; snow = 0.25; }
+    if (t.terrain === 'snow') snow = 1;
     if (t.hills) { h += 0.1; amp = 0.08; rock = 0.12; col = mix3(col, [col[0] * 0.9, col[1] * 0.92, col[2] * 0.85], 1); }
     if (t.terrain === 'mountain') { h = 0.5 + e * 0.1; amp = 0.12; rock = 1; mtn = 1; meadow = 0; }
     if (t.feature === 'forest') { col = mix3(col, rgb('#4f9a3a'), 0.5); meadow = 0.3; }
@@ -68,7 +72,7 @@ function tileAttrs(AU, t) {
     if (t.feature === 'oasis') { col = mix3(col, rgb('#6cbf45'), 0.5); meadow = 0.8; }
     col = mix3(col, [col[0] * 1.06, col[1] * 1.05, col[2] * 0.92], v - 0.5); // a touch of per-tile variety
   }
-  return [h, amp, col[0], col[1], col[2], rock, sand, mtn, meadow];
+  return [h, amp, col[0], col[1], col[2], rock, sand, mtn, meadow, dry, snow];
 }
 
 function smooth(t) { t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
@@ -151,10 +155,10 @@ function makeField(AU, g) {
 }
 
 // The terrain mesh: per tile a ring-subdivided hex (shared edge vertices are recomputed identically, so tiles meet without cracks).
-// Returns flat arrays: pos (xyz), nrm (xyz), col (rgb + meadow in alpha), uv (rock, sand), idx (triangles).
+// Returns flat arrays: pos (xyz), nrm (xyz), col (rgb + meadow in alpha), uv (rock, sand), uv2 (dry, snow), idx (triangles).
 function buildTerrainMesh(F) {
   const R = RINGS, perTile = 1 + 3 * R * (R + 1), nT = F.tiles.length;
-  const pos = new Float32Array(nT * perTile * 3), nrm = new Float32Array(nT * perTile * 3), col = new Float32Array(nT * perTile * 4), uv = new Float32Array(nT * perTile * 2);
+  const pos = new Float32Array(nT * perTile * 3), nrm = new Float32Array(nT * perTile * 3), col = new Float32Array(nT * perTile * 4), uv = new Float32Array(nT * perTile * 2), uv2 = new Float32Array(nT * perTile * 2);
   const idx = new Int32Array(nT * 6 * R * R * 3), a = new Float32Array(NA), e = 0.04;
   let v = 0, ii = 0;
   const ringStart = r => r === 0 ? 0 : 1 + 3 * r * (r - 1);
@@ -165,7 +169,7 @@ function buildTerrainMesh(F) {
       const hx = F.heightAt(x + e, z, t.i) - F.heightAt(x - e, z, t.i), hz = F.heightAt(x, z + e, t.i) - F.heightAt(x, z - e, t.i);
       let nx = -hx / (2 * e), ny = 1, nz = -hz / (2 * e); const l = Math.hypot(nx, ny, nz); nx /= l; ny /= l; nz /= l;
       pos[v * 3] = x; pos[v * 3 + 1] = y; pos[v * 3 + 2] = z; nrm[v * 3] = nx; nrm[v * 3 + 1] = ny; nrm[v * 3 + 2] = nz;
-      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = a[8]; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6];
+      col[v * 4] = a[2]; col[v * 4 + 1] = a[3]; col[v * 4 + 2] = a[4]; col[v * 4 + 3] = a[8]; uv[v * 2] = a[5]; uv[v * 2 + 1] = a[6]; uv2[v * 2] = a[9]; uv2[v * 2 + 1] = a[10];
       v++;
     };
     put(c[0], c[1]);
@@ -180,7 +184,7 @@ function buildTerrainMesh(F) {
       for (let j = 0; j < r - 1; j++) { idx[ii++] = inner(j); idx[ii++] = outer(j + 1); idx[ii++] = inner(j + 1); }
     }
   });
-  return { pos, nrm, col, uv, idx, vertices: v, triangles: ii / 3 };
+  return { pos, nrm, col, uv, uv2, idx, vertices: v, triangles: ii / 3 };
 }
 
 // Scattered nature (instanced in Godot): dense forests of pines and round trees, jungle palms, grass tufts on open land,

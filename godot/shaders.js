@@ -42,12 +42,32 @@ const PAINTED_TERRAIN = `
 shader_type spatial;
 render_mode cull_disabled;
 uniform float grid_strength = 0.6; // 0 hides the grid (HUD toggle)
+// detailed look: real ground textures (Poly Haven, CC0, fetched at build time) for grass, dry grass, sand, rock and snow,
+// with their normal maps; has_* is 1 for each texture that was found (a missing one keeps the painted colour there)
+uniform float detailed = 0.0;
+uniform sampler2D grass_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D dry_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D sand_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D rock_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D snow_d : source_color, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D grass_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D dry_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D sand_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D rock_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform sampler2D snow_n : hint_normal, filter_linear_mipmap_anisotropic, repeat_enable;
+uniform vec4 has_tex = vec4(0.0);   // grass, dry, sand, rock
+uniform float has_snow = 0.0;
+uniform float tex_scale = 0.55;     // texture repeats per world unit (a tile is about 1.7 units across)
 varying vec3 wpos;
 varying vec2 mats;   // x: rockiness, y: sand
+varying vec2 mats2;  // x: dry grass, y: snow
 varying float meadow;
 ${NOISE}
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
-void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; mats = UV; meadow = COLOR.a; }
+// a ground texture at two scales, blended by a slow noise, so the repeat does not show from above
+vec3 ground(sampler2D s, vec2 p, float k) { return mix(texture(s, p).rgb, texture(s, p * 0.37 + vec2(0.37, 0.71)).rgb, k); }
+vec3 nmap(sampler2D s, vec2 p) { vec3 n = texture(s, p).rgb * 2.0 - 1.0; return vec3(n.x, 0.0, -n.y); } // tangent-space bump as a world xz tilt
+void vertex() { wpos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz; mats = UV; mats2 = UV2; meadow = COLOR.a; }
 void fragment() {
   vec3 base = srgb(COLOR.rgb);
   float macro = fbm(wpos.xz * 0.22), ang = fbm(wpos.xz * 0.15 + 7.0) * 6.2832;
@@ -78,7 +98,26 @@ void fragment() {
   float near = 1.0 - smoothstep(0.08, 0.16, fwidth(wpos.x) * 7.0);                         // flowers only when they are several pixels wide
   float flower = (1.0 - smoothstep(0.07, 0.11, length(f - off * 0.6))) * step(0.88, hh) * meadow * step(0.06, wpos.y) * (1.0 - rock_m) * near;
   vec3 fc = hh > 0.95 ? vec3(0.95, 0.9, 0.82) : (hh > 0.92 ? vec3(0.98, 0.82, 0.3) : vec3(0.92, 0.5, 0.62));
-  col = mix(col, srgb(fc), flower);
+  col = mix(col, srgb(fc), flower * (1.0 - detailed));
+  if (detailed > 0.0) {
+    vec2 p = wpos.xz * tex_scale; float k = smoothstep(0.3, 0.7, fbm(wpos.xz * 0.12 + 5.0));
+    float brk = (fbm(wpos.xz * 1.7 + 21.0) - 0.5) * 0.5;                                    // ragged borders between grounds
+    vec3 tg = ground(grass_d, p, k), td = ground(dry_d, p, k), ts = ground(sand_d, p * 1.3, k), tw = ground(snow_d, p, k);
+    vec3 an = abs(wn); an /= (an.x + an.y + an.z);                                           // rock: projected from three sides
+    vec3 tr = texture(rock_d, wpos.zy * tex_scale).rgb * an.x + texture(rock_d, wpos.xz * tex_scale).rgb * an.y + texture(rock_d, wpos.xy * tex_scale).rgb * an.z;
+    float w_dry = smoothstep(0.25, 0.6, mats2.x + brk) * has_tex.y;
+    float w_sand = clamp(max(beach * (1.0 - mats.x), smoothstep(0.3, 0.7, mats.y + brk)) + smoothstep(-0.01, -0.2, wpos.y), 0.0, 1.0) * has_tex.z;
+    float w_rock = clamp(rock_m, 0.0, 1.0) * has_tex.w;
+    float w_snow = clamp(max(snow, smoothstep(0.4, 0.75, mats2.y + brk)), 0.0, 1.0) * has_snow;
+    vec3 dc = mix(col, tg * mix(vec3(1.0), base / max(srgb(vec3(0.37, 0.66, 0.27)), vec3(0.01)), 0.25), has_tex.x); // grass keeps a hint of the tile's own green (forests darker)
+    dc = mix(dc, td, w_dry); dc = mix(dc, ts, w_sand); dc = mix(dc, tr, w_rock); dc = mix(dc, tw, w_snow);
+    dc *= mix(1.0, 0.82, smoothstep(0.08, 0.38, slope) * step(0.0, wpos.y) * (1.0 - w_rock));    // slopes a shade darker, as in the painted look
+    vec3 bn = nmap(grass_n, p) * has_tex.x;
+    bn = mix(bn, nmap(dry_n, p), w_dry); bn = mix(bn, nmap(sand_n, p * 1.3), w_sand); bn = mix(bn, nmap(rock_n, wpos.xz * tex_scale), w_rock); bn = mix(bn, nmap(snow_n, p), w_snow);
+    vec3 wn2 = normalize(wn + bn * 0.6 * detailed);
+    NORMAL = normalize((VIEW_MATRIX * vec4(wn2, 0.0)).xyz);
+    col = mix(col, dc, detailed);
+  }
   // hex grid: a dark line about two pixels wide at any zoom (never thinner than 0.012 world units up close)
   float e = hex_edge(wpos.xz), px = length(fwidth(wpos.xz)) * 0.71, lw = max(px * 1.1, 0.012);
   col = mix(col, col * 0.42, (1.0 - smoothstep(lw, lw + px * 1.2, e)) * grid_strength * step(0.0, wpos.y));
