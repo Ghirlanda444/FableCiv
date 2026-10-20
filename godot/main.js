@@ -170,14 +170,20 @@ class Main extends Node3D {
     this.matTerrain.set_shader_parameter('has_tex', new godot.Vector4(has.grass ? 1 : 0, has.dry ? 1 : 0, has.sand ? 1 : 0, has.rock ? 1 : 0));
     this.matTerrain.set_shader_parameter('has_snow', has.snow ? 1.0 : 0.0);
     this.hasGroundTex = !!has.grass;
-    this.detailed = this.hasGroundTex && this.args.indexOf('--detailed') >= 0; // the painted look is the game's look; Detailed is optional (Look button)
-    this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
-    console.log('[tiny-empires] ground textures: ' + (Object.keys(has).join(', ') || 'none') + '; look ' + (this.detailed ? 'detailed' : 'painted'));
+    // looks: 0 painted+ (painted colours with the textures' relief, the default), 1 detailed (real textures), 2 painted
+    this.look = !this.hasGroundTex ? 2 : this.args.indexOf('--detailed') >= 0 ? 1 : this.args.indexOf('--painted') >= 0 ? 2 : 0;
+    this.setLook();
+    console.log('[tiny-empires] ground textures: ' + (Object.keys(has).join(', ') || 'none') + '; look ' + ['painted+', 'detailed', 'painted'][this.look]);
   }
   onLook() {
     if (!this.hasGroundTex) return;
-    this.detailed = !this.detailed; this.lookBtn.text = this.detailed ? 'Look: Detailed' : 'Look: Painted';
+    this.look = (this.look + 1) % 3; this.setLook();
+  }
+  setLook() {
+    this.detailed = this.look === 1;
     this.matTerrain.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0); this.matRivers.set_shader_parameter('detailed', this.detailed ? 1.0 : 0.0);
+    this.matTerrain.set_shader_parameter('relief', this.look === 0 ? 1.0 : 0.0);
+    if (this.lookBtn) this.lookBtn.text = ['Look: Painted+', 'Look: Detailed', 'Look: Painted'][this.look];
     this.applyLookLight();
   }
   // the camera and sky settings of each look: the painted look wants a bright, saturated filmic curve and a strong sky fill;
@@ -245,7 +251,7 @@ class Main extends Node3D {
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
     this.gridBtn = mk('Grid: On', this.onGrid);
-    if (this.hasGroundTex) this.lookBtn = mk(this.detailed ? 'Look: Detailed' : 'Look: Painted', this.onLook);
+    if (this.hasGroundTex) this.lookBtn = mk(['Look: Painted+', 'Look: Detailed', 'Look: Painted'][this.look], this.onLook);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
     this.scores.custom_minimum_size = new Vector2(380, 0); this.scores.add_theme_font_size_override('normal_font_size', 16); box.add_child(this.scores);
     this.info = new Label(); this.info.add_theme_font_size_override('font_size', 15); this.info.custom_minimum_size = new Vector2(380, 0);
@@ -611,7 +617,7 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_detailed.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map (painted, then detailed)
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_detailed.png', 320: 'shot_relief_painted.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map in each look (painted+, detailed, painted)
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
@@ -621,7 +627,7 @@ class Main extends Node3D {
       else if (this.frames === 120) { this.camDist = 16; this.onFx(); }
       else if (this.frames === 160) { this.onFx(); this.showBiggestCity(); }
       else if (this.frames === 200) { this.closeCity(); this.newGame(6); this.frameMountains(); }
-      else if (this.frames === 240 && this.hasGroundTex) this.onLook();
+      else if ((this.frames === 240 || this.frames === 280) && this.hasGroundTex) this.onLook();
       else this.get_tree().quit(0);
       return;
     }
