@@ -94,16 +94,18 @@ def build(m, res=0.025, target_tris=2500, smooth=True, cap=100000):
         elif b['kind'] == 'ELLIPSOID': e.size_x, e.size_y, e.size_z = b['scale']; e.rotation = b['rot'] or Quaternion()
         elif b['rot'] is not None: e.rotation = b['rot']
     mo = new_obj(mb, m.name + '_mb')
-    dg = bpy.context.evaluated_depsgraph_get()
-    body = bpy.data.meshes.new_from_object(mo.evaluated_get(dg)); bpy.data.objects.remove(mo)
     parts = []
-    bo = new_obj(body, m.name)
-    # decimate the dense metaball surface
-    if len(body.polygons) > target_tris:
-        mod = bo.modifiers.new('dec', 'DECIMATE'); mod.ratio = target_tris / len(body.polygons)
-        dg = bpy.context.evaluated_depsgraph_get(); dm = bpy.data.meshes.new_from_object(bo.evaluated_get(dg)); bo.modifiers.clear(); bo.data = dm
-    colour_mesh(bo, lambda p: field_owner(m, p))
-    parts.append(bo)
+    if m.balls:  # (vehicles and ships are solids only)
+        dg = bpy.context.evaluated_depsgraph_get()
+        body = bpy.data.meshes.new_from_object(mo.evaluated_get(dg))
+        bo = new_obj(body, m.name)
+        # decimate the dense metaball surface
+        if len(body.polygons) > target_tris:
+            mod = bo.modifiers.new('dec', 'DECIMATE'); mod.ratio = target_tris / len(body.polygons)
+            dg = bpy.context.evaluated_depsgraph_get(); dm = bpy.data.meshes.new_from_object(bo.evaluated_get(dg)); bo.modifiers.clear(); bo.data = dm
+        colour_mesh(bo, lambda p: field_owner(m, p))
+        parts.append(bo)
+    bpy.data.objects.remove(mo)
     for o, col in m.solids:
         o.data.transform(o.matrix_world); o.matrix_world = Matrix()
         colour_mesh(o, (lambda c: (lambda p: c))(col)); parts.append(o)

@@ -24,7 +24,7 @@ const BG_SKY = 2, AMBIENT_SKY = 3, TONEMAP_FILMIC = 2, TONEMAP_AGX = 4, SHADOWS_
 const MOUSE_LEFT = 1, MOUSE_RIGHT = 2, MOUSE_MIDDLE = 3, WHEEL_UP = 4, WHEEL_DOWN = 5, KEY_SPACE = 32;
 const PAN_KEYS = [[87, 0, -1], [83, 0, 1], [65, -1, 0], [68, 1, 0], [4194320, 0, -1], [4194322, 0, 1], [4194319, -1, 0], [4194321, 1, 0]];
 const PITCH = 55 * Math.PI / 180;
-const UNIT_3D_SCALE = 1.3, UNIT_3D_HEIGHT = 0.62 * UNIT_3D_SCALE; // 3D units (models are 0.62 tall), about as tall as the painted ones
+const UNIT_3D_SCALE = 1.3; // 3D units (people are modelled 0.62 tall), about as tall as the painted ones
 
 function userArgs() {
   const a = OS.get_cmdline_user_args(), out = [];
@@ -194,11 +194,12 @@ class Main extends Node3D {
     this.dressMeshes = {}; // resource scenery models (dressing.js): animals, rocks and water things stand still, plants sway
     let made = 0; // the Blender-made model when there is one, else the code-built one
     Object.keys(dressing.MODELS).forEach(k => { const m = dressing.MODELS[k], b = loadModel(k); if (b) made++; this.dressMeshes[k] = { mesh: b || toMesh(m[0](), true), still: m[1] === 'still' }; });
-    this.unitModels = {}; ['warrior', 'spearman', 'archer', 'horseman'].forEach(t => { const b = loadModel('unit_' + t); if (b) this.unitModels[t] = b; });
+    this.unitModels = {}; this.unitTops = {}; // 3D units (tools/blender/models.py and units.py), loaded when first seen
+    this.has3dUnits = FileAccess.file_exists('res://models/unit_warrior.json');
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
     this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
-    this.unitMats = {}; this.units3d = Object.keys(this.unitModels).length > 0 && this.args.indexOf('--painted-units') < 0;
-    console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + Object.keys(this.unitModels).join(', '));
+    this.unitMats = {}; this.units3d = this.has3dUnits && this.args.indexOf('--painted-units') < 0;
+    console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + (this.has3dUnits ? 'yes' : 'no'));
     this.loadGroundTextures();
     this.buildWorld();
     // the web game's painted pictures (copied to res://art by tools/godot/bundle.js) for units and buildings; without them the
@@ -306,7 +307,7 @@ class Main extends Node3D {
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
     this.gridBtn = mk('Grid: On', this.onGrid);
-    if (Object.keys(this.unitModels).length) this.unitsBtn = mk(this.units3d ? 'Units: 3D' : 'Units: Painted', this.onUnits);
+    if (this.has3dUnits) this.unitsBtn = mk(this.units3d ? 'Units: 3D' : 'Units: Painted', this.onUnits);
     if (this.hasGroundTex) this.lookBtn = mk(['Look: Painted+', 'Look: Detailed', 'Look: Painted'][this.look], this.onLook);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
     this.scores.custom_minimum_size = new Vector2(380, 0); this.scores.add_theme_font_size_override('normal_font_size', 16); box.add_child(this.scores);
@@ -425,14 +426,15 @@ class Main extends Node3D {
   syncSprites(ground) {
     const g = this.g, keepU = {}, keepT = {};
     sprites.unitSpots(AU, g, ground).forEach(s => {
-      const model = this.units3d && this.unitModels[s.unit.type], tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
+      const model = this.units3d && this.unitMesh(s.unit.type), tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
+      const cls = (AU.UNITS[s.unit.type] || {}).cls, lift = !model ? 0 : cls === 'air' ? 0.32 : /naval/i.test(cls || '') ? -0.04 : 0; // aircraft fly, ships sit in the water
       const look = model ? 'm:' + s.unit.type + ':' + s.color : tex;
       let n = this.unitNodes[s.id];
       if (n && n.tex !== look) { n.node.queue_free(); if (n.bar) n.bar.queue_free(); n = null; }
       if (!n) n = this.unitNodes[s.id] = { tex: look, node: model ? this.unitModel(s.unit.type, s.color) : this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
-      n.node.position = new Vector3(s.x, s.y + 0.01, s.z); // feet on the ground, in the owner's ring
+      n.node.position = new Vector3(s.x, s.y + 0.01 + lift, s.z); // feet on the ground, in the owner's ring
       if (!n.bar) { n.bar = new MeshInstance3D(); n.bar.mesh = this.barQuad; n.bar.material_override = this.matBar; n.bar.cast_shadow = SHADOWS_OFF; this.spriteRoot.add_child(n.bar); }
-      const c = geo.rgb(s.color), top = model ? UNIT_3D_HEIGHT : s.height;
+      const c = geo.rgb(s.color), top = model ? this.unitTops[s.unit.type] + lift : s.height;
       n.bar.position = new Vector3(s.x, s.y + top + 0.12, s.z);
       // health rides in the colour's alpha: a plain number of 1 reaches Godot as an integer, which a float uniform ignores
       n.bar.set_instance_shader_parameter('team', new Color(c[0], c[1], c[2], Math.max(0, Math.min(1, (s.unit.hp === undefined ? 100 : s.unit.hp) / 100))));
@@ -483,13 +485,22 @@ class Main extends Node3D {
     if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1));
       if (!this.matOutline) this.matOutline = shaderMaterial(shaders.UNIT_OUTLINE);
       mat.next_pass = this.matOutline; } // black ink outline
-    const mi = new MeshInstance3D(); mi.mesh = this.unitModels[type]; mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
+    const mi = new MeshInstance3D(); mi.mesh = this.unitMesh(type); mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
     if (type === 'horseman') mi.rotation = new Vector3(0, -0.6, 0);
     this.spriteRoot.add_child(mi);
     return mi;
   }
+  // a unit type's 3D mesh (null when it has none: the painted picture stands in), loaded once
+  unitMesh(type) {
+    if (!(type in this.unitModels)) {
+      const b = loadModel('unit_' + type), M = b && modelData('unit_' + type); let top = 0;
+      if (M) for (let k = 1; k < M.v.length; k += 10) top = Math.max(top, M.v[k]);
+      this.unitModels[type] = b; this.unitTops[type] = (top || 0.62) * UNIT_3D_SCALE;
+    }
+    return this.unitModels[type];
+  }
   onUnits() {
-    if (!Object.keys(this.unitModels).length) return;
+    if (!this.has3dUnits) return;
     this.units3d = !this.units3d; this.unitsBtn.text = this.units3d ? 'Units: 3D' : 'Units: Painted';
     Object.keys(this.unitNodes).forEach(id => { this.unitNodes[id].node.queue_free(); if (this.unitNodes[id].bar) this.unitNodes[id].bar.queue_free(); }); this.unitNodes = {};
     this.refresh();

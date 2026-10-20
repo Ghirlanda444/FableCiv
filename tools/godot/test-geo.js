@@ -68,6 +68,9 @@ Object.keys(AU.PALACE_STYLES).forEach(cu => {
     modelTris = Math.max(modelTris, v / 3);
   });
 });
+const noModel = Object.keys(AU.UNITS).filter(t => !models('unit_' + t));
+assert(!noModel.length, 'units without a 3D model: ' + noModel.join(', '));
+console.log('units   ', Object.keys(AU.UNITS).length + ' unit types, every one with a 3D model');
 console.log('cities  ', 'Blender buildings for every culture; the biggest walled metropolis ' + modelTris + ' triangles');
 Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
 console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');
