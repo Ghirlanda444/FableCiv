@@ -505,17 +505,17 @@ void fragment() {
   float aa = fwidth(p.x) * 1.2, r = length(p);
   float badge = 1.0 - smoothstep(0.8 - aa, 0.8, r), ink = 1.0 - smoothstep(0.95 - aa, 0.95, r);
   vec3 col = mix(vec3(0.02), cols[clamp(k, 0, 4)], badge);
-  col = mix(col, vec3(1.0), (1.0 - smoothstep(-aa, 0.0, glyph(p / 0.72, k) * 0.72)) * badge);
+  col = mix(col, vec3(1.0), (1.0 - smoothstep(-aa, 0.0, glyph(p / 0.72, k) * 0.72 - 0.05)) * badge); // (thickened to read at icon size)
   float a = ink;
   if (n >= 2) { // the count bubble at the lower right
-    vec2 q = p - vec2(0.62, -0.62); float rb = length(q);
-    float bub = 1.0 - smoothstep(0.38 - aa, 0.38, rb), bubInk = 1.0 - smoothstep(0.47 - aa, 0.47, rb);
+    vec2 q = p - vec2(0.6, -0.6); float rb = length(q);
+    float bub = 1.0 - smoothstep(0.42 - aa, 0.42, rb), bubInk = 1.0 - smoothstep(0.52 - aa, 0.52, rb);
     col = mix(col, vec3(0.02), bubInk); col = mix(col, vec3(0.98), bub);
-    col = mix(col, vec3(0.05), (1.0 - smoothstep(-aa, 0.0, digit(q / 0.3, n) * 0.3)) * bub);
+    col = mix(col, vec3(0.05), (1.0 - smoothstep(-aa, 0.0, digit(q / 0.36, n) * 0.36 - 0.025)) * bub);
     a = max(a, bubInk);
   }
   if (a < 0.5) discard;
-  ALBEDO = col;
+  ALBEDO = pow(col, vec3(2.2)); // the colours above are sRGB, like the vertex colours elsewhere
 }
 `;
 
