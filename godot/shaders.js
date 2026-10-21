@@ -461,7 +461,8 @@ varying vec2 kc;
 void vertex() {
   vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
   vec3 right = normalize(INV_VIEW_MATRIX[0].xyz), up = normalize(INV_VIEW_MATRIX[1].xyz);
-  VERTEX = (VIEW_MATRIX * vec4(o + right * VERTEX.x + up * VERTEX.y, 1.0)).xyz;
+  float grow = clamp(length(o - CAMERA_POSITION_WORLD) / 10.0, 1.0, 1.3); // a little bigger zoomed out, so they stay readable
+  VERTEX = (VIEW_MATRIX * vec4(o + (right * VERTEX.x + up * VERTEX.y) * grow, 1.0)).xyz;
   kc = INSTANCE_CUSTOM.xy;
 }
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }

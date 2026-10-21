@@ -6,7 +6,7 @@
 const geo = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 
 const KINDS = ['food', 'production', 'gold', 'science', 'culture']; // the icon index the shader draws
-const SPACING = 0.19, FRONT = 0.36;
+const SPACING = 0.3, FRONT = 0.4;
 
 // what a tile yields: worked by its owner's settlement when it has one, else as raw land for the player's civilization
 function tileYield(AU, g, i) {

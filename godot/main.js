@@ -149,6 +149,9 @@ function scatterNode(mesh, list, mat) {
   return node;
 }
 
+// a civilization's or city-state's name
+function civName(civ) { const d = civ && ((AU.CIV_BY_ID || {})[civ.civId] || (AU.CITY_STATE_BY_ID || {})[civ.civId]); return (d && d.name) || '?'; }
+
 function pickLeaderSeats(rng) {
   const all = [];
   AU.CIVS.forEach(c => (c.leaders || []).forEach(l => all.push([c.id, l.id])));
@@ -199,7 +202,7 @@ class Main extends Node3D {
     this.has3dUnits = FileAccess.file_exists('res://models/unit_warrior.json');
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
     this.matYield = shaderMaterial(shaders.YIELD_ICON); this.matYield.render_priority = 9; // the yields lens (yields.js)
-    this.yieldQuad = new QuadMesh(); this.yieldQuad.size = new Vector2(0.2, 0.2); this.yieldsOn = false; this.yieldKey = '';
+    this.yieldQuad = new QuadMesh(); this.yieldQuad.size = new Vector2(0.3, 0.3); this.yieldsOn = false; this.yieldKey = '';
     this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
     this.unitMats = {}; this.units3d = this.has3dUnits && this.args.indexOf('--painted-units') < 0;
     console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + (this.has3dUnits ? 'yes' : 'no'));
@@ -609,10 +612,10 @@ class Main extends Node3D {
     const parts = [(t.hills ? 'Hills, ' : '') + T.name + (t.feature && AU.FEATURES && AU.FEATURES[t.feature] ? ', ' + AU.FEATURES[t.feature].name : '') + (t.river ? ', river' : '')];
     const R = t.resource && AU.RESOURCES[t.resource];
     if (R && (!G.resourceKnown || G.resourceKnown(g, G.player(g), R))) parts.push('resource: ' + (R.name || t.resource));
-    const oc = geo.ownerCiv(g, t); if (oc >= 0) parts.push('owned by ' + ((AU.CIV_BY_ID[g.civs[oc].civId] || {}).name || '?') + ' (' + g.settlements[t.owner].name + ')');
+    const oc = geo.ownerCiv(g, t); if (oc >= 0) parts.push('owned by ' + civName(g.civs[oc]) + ' (' + g.settlements[t.owner].name + ')');
     const us = Object.keys(g.units).map(id => g.units[id]).filter(u => u.tile === i);
     const yt = yields.yieldText(AU, g, i); if (yt) parts.push(yt);
-    if (us.length) parts.push('units: ' + us.map(u => (u.name || (AU.UNITS[u.type] || {}).name || u.type) + ' (' + ((AU.CIV_BY_ID[g.civs[u.civ].civId] || {}).name || '?') + ')').join(', '));
+    if (us.length) parts.push('units: ' + us.map(u => (u.name || (AU.UNITS[u.type] || {}).name || u.type) + ' (' + civName(g.civs[u.civ]) + ')').join(', '));
     return parts.join(' · ');
   }
 
