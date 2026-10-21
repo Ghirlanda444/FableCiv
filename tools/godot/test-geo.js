@@ -71,6 +71,19 @@ Object.keys(AU.PALACE_STYLES).forEach(cu => {
 const noModel = Object.keys(AU.UNITS).filter(t => !models('unit_' + t));
 assert(!noModel.length, 'units without a 3D model: ' + noModel.join(', '));
 console.log('units   ', Object.keys(AU.UNITS).length + ' unit types, every one with a 3D model');
+// every civilization's unique unit and every culture version the painted art has resolves to its own model, in the order
+// main.js unitModelName walks the art chain
+const modelOf = chain => { for (const p of chain) { const m = /^units\/(?:([a-z_]+)\/)?([a-z_]+)\.png$/.exec(p); if (m && models('unit_' + m[2] + (m[1] ? '_' + m[1] : ''))) return 'unit_' + m[2] + (m[1] ? '_' + m[1] : ''); } return null; };
+let uniques = 0, cultural = 0;
+AU.CIVS.forEach(c => {
+  const civ = { civId: c.id }, d = AU.G.civData(civ), gg = { civs: { x: civ } }, culture = AU.cultureOf(civ);
+  if (d && d.uu) { assert.strictEqual(modelOf(SP.unitChain(AU, gg, { civ: 'x', type: d.uu.replaces })), 'unit_' + d.uu.id, c.id + ': no model for its unique unit'); uniques++; }
+  Object.keys(AU.UNITS).forEach(t => {
+    if (d && d.uu && d.uu.replaces === t) return;
+    if (fs.existsSync(path.join(__dirname, '../../godot/art/units', culture || '-', t + '.png'))) { assert.strictEqual(modelOf(SP.unitChain(AU, gg, { civ: 'x', type: t })), 'unit_' + t + '_' + culture, c.id + ' ' + t + ': no culture model'); cultural++; }
+  });
+});
+console.log('units   ', uniques + ' unique units and ' + cultural + ' culture versions (civ x type) resolve to their own 3D models');
 console.log('cities  ', 'Blender buildings for every culture; the biggest walled metropolis ' + modelTris + ' triangles');
 Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
 console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');

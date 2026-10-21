@@ -426,15 +426,15 @@ class Main extends Node3D {
   syncSprites(ground) {
     const g = this.g, keepU = {}, keepT = {};
     sprites.unitSpots(AU, g, ground).forEach(s => {
-      const model = this.units3d && this.unitMesh(s.unit.type), tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
+      const model = this.units3d && this.unitModelName(s.chain), tex = model ? null : this.texture(s.chain); if (!model && !tex) return;
       const cls = (AU.UNITS[s.unit.type] || {}).cls, lift = !model ? 0 : cls === 'air' ? 0.32 : /naval/i.test(cls || '') ? -0.04 : 0; // aircraft fly, ships sit in the water
-      const look = model ? 'm:' + s.unit.type + ':' + s.color : tex;
+      const look = model ? 'm:' + model + ':' + s.color : tex;
       let n = this.unitNodes[s.id];
       if (n && n.tex !== look) { n.node.queue_free(); if (n.bar) n.bar.queue_free(); n = null; }
-      if (!n) n = this.unitNodes[s.id] = { tex: look, node: model ? this.unitModel(s.unit.type, s.color) : this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
+      if (!n) n = this.unitNodes[s.id] = { tex: look, node: model ? this.unitModel(model, s.color) : this.standee(tex, s.x, s.y, s.z, s.height, true, 0.72) };
       n.node.position = new Vector3(s.x, s.y + 0.01 + lift, s.z); // feet on the ground, in the owner's ring
       if (!n.bar) { n.bar = new MeshInstance3D(); n.bar.mesh = this.barQuad; n.bar.material_override = this.matBar; n.bar.cast_shadow = SHADOWS_OFF; this.spriteRoot.add_child(n.bar); }
-      const c = geo.rgb(s.color), top = model ? this.unitTops[s.unit.type] + lift : s.height;
+      const c = geo.rgb(s.color), top = model ? this.unitTops[model] + lift : s.height;
       n.bar.position = new Vector3(s.x, s.y + top + 0.12, s.z);
       // health rides in the colour's alpha: a plain number of 1 reaches Godot as an integer, which a float uniform ignores
       n.bar.set_instance_shader_parameter('team', new Color(c[0], c[1], c[2], Math.max(0, Math.min(1, (s.unit.hp === undefined ? 100 : s.unit.hp) / 100))));
@@ -480,24 +480,34 @@ class Main extends Node3D {
   }
   clearCities() { Object.keys(this.cityNodes || {}).forEach(id => this.cityNodes[id].node.queue_free()); this.cityNodes = {}; }
   // a 3D unit (Blender model) in its owner's colour; horsemen turn three-quarters toward the camera
-  unitModel(type, color) {
+  unitModel(name, color) {
     let mat = this.unitMats[color];
     if (!mat) { const c = geo.rgb(color); mat = this.unitMats[color] = shaderMaterial(shaders.UNIT_3D); mat.set_shader_parameter('team', new Color(c[0], c[1], c[2], 1));
       if (!this.matOutline) this.matOutline = shaderMaterial(shaders.UNIT_OUTLINE);
       mat.next_pass = this.matOutline; } // black ink outline
-    const mi = new MeshInstance3D(); mi.mesh = this.unitMesh(type); mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
-    if (type === 'horseman') mi.rotation = new Vector3(0, -0.6, 0);
+    const mi = new MeshInstance3D(); mi.mesh = this.unitMesh(name); mi.material_override = mat; mi.scale = new Vector3(UNIT_3D_SCALE, UNIT_3D_SCALE, UNIT_3D_SCALE);
     this.spriteRoot.add_child(mi);
     return mi;
   }
-  // a unit type's 3D mesh (null when it has none: the painted picture stands in), loaded once
-  unitMesh(type) {
-    if (!(type in this.unitModels)) {
-      const b = loadModel('unit_' + type), M = b && modelData('unit_' + type); let top = 0;
-      if (M) for (let k = 1; k < M.v.length; k += 10) top = Math.max(top, M.v[k]);
-      this.unitModels[type] = b; this.unitTops[type] = (top || 0.62) * UNIT_3D_SCALE;
+  // the 3D model for a unit, in the painted art's order (sprites.unitChain): its civilization's unique unit, else its culture's
+  // version (units/<culture>/<type>.png → unit_<type>_<culture>), else the plain one; null when none exists
+  unitModelName(chain) {
+    for (const p of chain) {
+      const m = /^units\/(?:([a-z_]+)\/)?([a-z_]+)\.png$/.exec(p); if (!m) continue;
+      const name = 'unit_' + m[2] + (m[1] ? '_' + m[1] : '');
+      if (this.unitMesh(name)) return name;
     }
-    return this.unitModels[type];
+    return null;
+  }
+  // a unit model's mesh (null when the file is missing), loaded once, with the height of its top
+  unitMesh(name) {
+    if (!(name in this.unitModels)) {
+      const b = loadModel(name), M = b && modelData(name); let top = 0;
+      if (M) for (let k = 1; k < M.v.length; k += 10) top = Math.max(top, M.v[k]);
+      this.unitModels[name] = b; this.unitTops[name] = (top || 0.62) * UNIT_3D_SCALE;
+      if (M) delete modelCache[name]; // the mesh is built: drop the parsed numbers
+    }
+    return this.unitModels[name];
   }
   onUnits() {
     if (!this.has3dUnits) return;

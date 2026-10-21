@@ -1,11 +1,11 @@
-# Tiny Empires 3D models, built in Blender from code (no hand modelling, no paid assets).
+# Tiny Empires 3D models (resources and trees; units: units.py; settlements: buildings.py), built in Blender from code (no hand modelling, no paid assets).
 # Organic forms (bodies, heads, animals) are metaballs, so limbs melt smoothly into bodies like sculpted clay; hard
 # props (spears, shields, bows) are simple solids. Each part carries a colour; ambient occlusion is baked into the
 # vertex colours by ray casting, so the models read well under the game's soft toon light.
 # Team colour: vertex alpha 0 marks the parts the game paints in the owner's colour (tunics, shields, banners).
 #
 # Usage (Blender 4.2+ as a Python module, `pip install bpy`, or `blender -b -P`):
-#   python tools/blender/models.py [--out godot/models] [--preview previews.png] [--only horse,warrior]
+#   python tools/blender/models.py [--out godot/models] [--preview previews.png] [--only horse,sheep]
 # Writes one JSON per model: { p: [x,y,z...], n: [...], c: [r,g,b,a...] } in game units (y up), the batch format
 # godot/main.js turns into meshes.
 import bpy, bmesh, math, json, os, sys, random
@@ -167,7 +167,7 @@ def export(obj, path, size):
     for poly in tmp.polygons:
         for li in poly.loop_indices:
             v = tmp.vertices[tmp.loops[li].vertex_index]; n = v.normal if poly.use_smooth else poly.normal; c = attr.data[li].color
-            key = (round((v.co.x - cx) * k, 4), round((v.co.z - lo.z) * k, 4), round(-(v.co.y - cy) * k, 4),
+            key = (round((v.co.x - cx) * k, 3), round((v.co.z - lo.z) * k, 3), round(-(v.co.y - cy) * k, 3),  # a millimetre in game units is plenty
                    round(n.x, 2), round(n.z, 2), round(-n.y, 2), round(c[0], 2), round(c[1], 2), round(c[2], 2), round(c[3], 1))
             if key not in seen: seen[key] = len(seen); V.extend(key)
             I.append(seen[key])
@@ -483,76 +483,13 @@ def boulder(name='tree_rock'):
         m.ball((x, y, z), r, c if k else rgb('#9a9288'), scale=(1.1, 0.9, 0.8), rot=qz(k * 40), kind='ELLIPSOID')
     return m
 
-# ---------------------------------------------------------------- chibi units (face -y, toward the game camera)
-def chibi(name, headgear='hair', tunic=TEAM, z=0.0, sitting=False):
-    m = Model(name)
-    hz = z + 1.42
-    nb, ns = len(m.balls), len(m.solids)
-    m.ball((0, 0, hz), 0.5, SKIN)
-    if headgear == 'hair':
-        m.ball((0, 0.06, hz + 0.2), 0.5, HAIR, scale=(1.06, 1.02, 0.78), kind='ELLIPSOID')
-        for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05), 0.15, HAIR)  # fringe
-    elif headgear == 'helmet':  # separate shells (not melted into the head), so the game's ink outline draws the helmet's rim
-        STEEL = rgb('#7d8796')  # darker than METAL: the game's sunlight bleaches pale steel to white
-        m.solid(prim_sphere(Vector((0, 0.05, hz + 0.22)), 0.5, (1.06, 1.06, 0.74), 24), STEEL)
-        m.solid(prim_cylinder((0, 0.05, hz + 0.13), (0, 0.05, hz + 0.21), 0.535, 0.535, 28), rgb('#565d6a'))  # brim band
-        m.solid(prim_sphere(Vector((0, 0.08, hz + 0.62)), 0.13, (0.55, 2.6, 1.0), 16), TEAM)  # crest in the owner's colour
-        m.solid(prim_cylinder((0, -0.5, hz + 0.17), (0, -0.54, hz - 0.03), 0.045, 0.035, 8), rgb('#565d6a'))  # nose guard
-    elif headgear == 'hood': m.ball((0, 0.12, hz + 0.08), 0.53, rgb('#3e6a3a'), scale=(1.05, 1.0, 0.95), kind='ELLIPSOID')
-    for s in (-1, 1):  # big chibi eyes: white, a large dark iris low in it, a highlight
-        m.solid(prim_sphere(Vector((s * 0.185, -0.44, hz - 0.02)), 0.11, (0.85, 0.45, 1.2), 12), WHITE)
-        m.solid(prim_sphere(Vector((s * 0.18, -0.475, hz - 0.04)), 0.075, (0.85, 0.4, 1.15), 12), EYE)
-        m.solid(prim_sphere(Vector((s * 0.155, -0.51, hz + 0.0)), 0.026, (1, 0.6, 1), 6), WHITE)
-    m.ball((0, -0.5, hz - 0.12), 0.06, rgb('#e8a888'))  # nose
-    look_up(m, nb, ns, Vector((0, 0, hz)), 24)  # the game camera looks down at 55°: tip the face up to meet it
-    m.ball((0, 0, z + 0.78), 0.36, tunic, scale=(1.0, 0.85, 1.05), kind='ELLIPSOID')
-    m.ball((0, 0, z + 0.6), 0.34, LEATHER, scale=(1.02, 0.9, 0.22), kind='ELLIPSOID')  # belt
-    if sitting:
-        for s in (-1, 1):
-            m.capsule((s * 0.15, 0, z + 0.55), (s * 0.42, -0.1, z + 0.3), 0.12, PANTS)
-            m.ball((s * 0.45, -0.18, z + 0.18), 0.14, BOOTS, scale=(1, 1.3, 0.8), kind='ELLIPSOID')
-    else:
-        for s in (-1, 1):
-            m.capsule((s * 0.15, 0, z + 0.5), (s * 0.16, 0, z + 0.18), 0.12, PANTS)
-            m.ball((s * 0.16, -0.05, z + 0.1), 0.14, BOOTS, scale=(1, 1.3, 0.8), kind='ELLIPSOID')
-    return m, hz
-
+# ---------------------------------------------------------------- helpers for the units (tools/blender/units.py)
 def look_up(m, nb, ns, centre, deg):
     """tip the parts added since (nb, ns) back about the head centre, so the face turns up toward the camera"""
     q = qx(-deg); M = Matrix.Translation(centre) @ q.to_matrix().to_4x4() @ Matrix.Translation(-centre)
     for b in m.balls[nb:]:
         b['co'] = M @ b['co']; b['rot'] = q @ b['rot'] if b['rot'] is not None else (q if b['kind'] != 'BALL' else None)
     for o, c in m.solids[ns:]: o.matrix_world = M @ o.matrix_world
-
-def arm(m, side, hand, z=0.0, sleeve=TEAM):
-    sh = Vector((side * 0.33, 0, z + 0.95)); hand = Vector(hand)
-    m.capsule(sh, sh.lerp(hand, 0.85), 0.1, sleeve); m.ball(hand, 0.11, SKIN)
-
-def warrior():
-    m, hz = chibi('warrior', 'hair')
-    arm(m, 1, (0.5, -0.12, 0.55)); arm(m, -1, (-0.5, -0.05, 0.6))
-    m.solid(prim_cylinder((0.5, -0.14, 0.45), (0.62, -0.3, 1.15), 0.045, 0.12, 10), WOOD)
-    m.ball((0, 0.25, 0.85), 0.3, rgb('#8a6a4a'), scale=(1.2, 0.5, 1.1), kind='ELLIPSOID')  # fur cape
-    return m
-
-def spearman():
-    m, hz = chibi('spearman', 'helmet')
-    arm(m, 1, (0.5, -0.12, 0.6)); arm(m, -1, (-0.45, -0.25, 0.75))
-    m.solid(prim_cylinder((0.52, -0.14, 0.05), (0.56, -0.16, 2.1), 0.035, 0.035, 8), WOOD)
-    m.solid(prim_cylinder((0.56, -0.16, 2.1), (0.57, -0.165, 2.38), 0.07, 0.0, 8), METAL)
-    m.solid(prim_cylinder((-0.5, -0.3, 0.75), (-0.5, -0.42, 0.75), 0.4, 0.4, 20), METAL)   # shield rim
-    m.solid(prim_cylinder((-0.5, -0.33, 0.75), (-0.5, -0.45, 0.75), 0.35, 0.35, 20), TEAM)  # shield face, owner's colour
-    m.solid(prim_sphere(Vector((-0.5, -0.47, 0.75)), 0.08, (1, 0.6, 1), 10), METAL)
-    return m
-
-def archer():
-    m, hz = chibi('archer', 'hood')
-    arm(m, -1, (-0.55, -0.3, 0.85)); arm(m, 1, (0.35, -0.2, 0.85))
-    m.solid(prim_arc(Vector((-0.6, -0.32, 0.85)), 0.55, 0.035, math.radians(-70), math.radians(70), qz(90) @ qy(0)), WOOD)
-    m.solid(prim_cylinder((-0.6 + 0.19, -0.32, 0.85 - 0.52), (-0.6 + 0.19, -0.32, 0.85 + 0.52), 0.008, 0.008, 4), rgb('#e8e0d0'))
-    m.solid(prim_cylinder((0.15, 0.3, 0.55), (0.3, 0.38, 1.25), 0.11, 0.12, 10), LEATHER)  # quiver
-    for i in range(3): m.solid(prim_cylinder((0.2 + i * 0.04, 0.34, 1.2), (0.22 + i * 0.05, 0.36, 1.45), 0.012, 0.012, 4), rgb('#e8dcc0'))
-    return m
 
 def turn(m, q, offset=(0, 0, 0), scale=1.0):
     """rotate (and scale) a model's parts about the origin, then move them"""
@@ -565,20 +502,9 @@ def turn(m, q, offset=(0, 0, 0), scale=1.0):
     for o, c in m.solids: o.matrix_world = M @ o.matrix_world
     return m
 
-def horseman():
-    m = horse(name='horseman')
-    r, hz = chibi('rider', 'helmet', z=0.0, sitting=True)
-    arm(r, 1, (0.45, -0.3, 0.75)); arm(r, -1, (-0.4, -0.3, 0.85))
-    r.solid(prim_cylinder((0.47, -0.32, 0.15), (0.5, -0.36, 2.0), 0.035, 0.035, 8), WOOD)
-    r.solid(prim_cylinder((0.5, -0.36, 2.0), (0.5, -0.36, 2.25), 0.07, 0.0, 8), METAL)
-    turn(r, qz(90), (0.0, 0, 1.38), 0.72)  # face along the horse, seated on its back, legs down its flanks, rider to horse scale
-    m.balls += r.balls; m.solids += r.solids
-    m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')  # saddle cloth in the owner's colour
-    return m
-
 # triangle caps for the whole model (body, eyes and props): many instances of these stand on the map
 CAPS = {'tree_pine': 220, 'tree_round': 300, 'tree_palm': 300, 'tree_bush': 150, 'tree_rock': 80, 'whale': 900, 'fish': 400, 'crab': 600, 'pearl': 500, 'wheat': 2000, 'vines': 1800, 'cotton': 900, 'spices': 900, 'dyes': 900,
-        'silk': 900, 'incense': 900, 'rubber': 900, 'banana': 900, 'rice': 1400, 'unit_warrior': 3500, 'unit_spearman': 3500, 'unit_archer': 3500, 'unit_horseman': 4200}
+        'silk': 900, 'incense': 900, 'rubber': 900, 'banana': 900, 'rice': 1400}
 FACETED = {'tree_rock', 'iron', 'gems', 'gems2', 'copper', 'coal', 'niter', 'aluminum', 'uranium'}  # rocks: few large flat faces, like cut stone
 G, G2 = rgb('#3e7a32'), rgb('#5e9e44')
 # name: (builder, size in game units (largest dimension), metaball resolution, triangle budget)
@@ -599,8 +525,6 @@ MODELS = {
     'gems': (lambda: ore(rgb('#d83a9a'), 'gems', True), 0.22, 0.03, 300), 'gems2': (lambda: ore(rgb('#3a8ae8'), 'gems2', True), 0.22, 0.03, 300),
     'stone': (quarry, 0.22, 0.03, 400), 'salt': (salt, 0.2, 0.03, 500), 'oil': (oil, 0.26, 0.03, 500),
     'fish': (fish, 0.18, 0.025, 600), 'crab': (crab, 0.1, 0.02, 700), 'whale': (whale, 0.36, 0.03, 900), 'pearl': (pearl, 0.1, 0.02, 600),
-    'unit_warrior': (warrior, 0.62, 0.02, 2500), 'unit_spearman': (spearman, 0.62, 0.02, 2500), 'unit_archer': (archer, 0.62, 0.02, 2500),
-    'unit_horseman': (horseman, 0.7, 0.025, 2800),
     'tree_pine': (pine, 0.62, 0.03, 200), 'tree_round': (round_tree, 0.7, 0.04, 220), 'tree_palm': (palm, 0.6, 0.035, 220),
     'tree_bush': (shrub, 0.42, 0.035, 120), 'tree_rock': (boulder, 0.25, 0.04, 60),
 }

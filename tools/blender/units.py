@@ -1,5 +1,7 @@
-# Tiny Empires 3D units, built in Blender from code in the chibi style of tools/blender/models.py (warrior, spearman,
-# archer and horseman live there): big heads, big eyes, the owner's colour on tunics, banners, sails and paintwork.
+# Tiny Empires 3D units, built in Blender from code in a chibi style: big heads, big eyes, the owner's colour on tunics,
+# banners, sails and paintwork. Every unit type has a base model (unit_<type>); the types the painted art varies by culture
+# also get one per culture (unit_<type>_<culture>, from a culture kit: skin, hair, helmets, hats, shields, swords, cloth),
+# and every civilization's unique unit has its own (unit_<unique id>). The game picks them in the painted art's order.
 # Hats, helmets, weapons, shields, wheels and hulls are separate shells (not melted into the body), so the game's ink
 # outline (shaders.UNIT_OUTLINE) draws a line round each of them and they read at strategy-game zoom.
 # Sideways models (mounts, vehicles, ships, aircraft) are built along +x and turned three-quarters toward the camera.
@@ -16,7 +18,47 @@ import buildings as B
 GOLD, DARK, STEEL, IRON = rgb('#e8b84a'), rgb('#2a2a30'), rgb('#7d8796'), rgb('#4a4e58')
 KHAKI, OLIVE, OLIVE2, NAVY, CREAM = rgb('#a8955e'), rgb('#5f6e3a'), rgb('#4b5a2e'), rgb('#2c3c6c'), rgb('#efe6cf')
 STRAW, RED, BLACK, GREY, BRONZE = rgb('#d8b45a'), rgb('#c0392b'), rgb('#22202a'), rgb('#9aa0a8'), rgb('#b07a3a')
-TURN = -34  # degrees: sideways models turn three-quarters toward the camera (the game used to do this for the horseman)
+TURN = -34  # degrees: sideways models turn three-quarters toward the camera
+
+# culture kits (the cultures AU.cultureOf gives the civilizations). K is the kit of the model being built: person() and the
+# culture-varied builders read it.
+BASE = dict(skin='#eaa77c', hair='#4e2e18', style='hair', beard=None, ancient='helmet', medieval='kettle', knight='great_helm',
+            gunhat='tricorn', riflehat='shako', cavhat='shako', modern='brodie', modern_col='#a8955e', scout='slouch', wanderer='wide_hat',
+            archer='hood', warrior='hair', shield='round', sword='straight', club='club', cloth='#8a6a4a', legs='#5a4a3a',
+            horse=('#9a5a2e', '#3b2414'), robe='#6a4a3a', canvas='#efe6cf')
+KITS = {
+    'european': dict(skin='#f2c09c', hair='#a8702a', ancient='nasal', medieval='kettle', knight='great_helm', gunhat='tricorn',
+                     riflehat='shako', cavhat='shako', modern='brodie', scout='slouch', archer='hood', shield='kite', legs='#4a5a7a', hair2='#d8b060'),
+    'mediterranean': dict(skin='#e0a476', hair='#2e1c10', style='curly', ancient='roman', medieval='morion', knight='plumed',
+                          gunhat='morion', riflehat='kepi', cavhat='kepi', modern='adrian', modern_col='#6a7aa0', scout='petasos',
+                          archer='petasos', shield='hoplon', legs='#8a3a2a', horse=('#e8e2d8', '#bfb4a0')),
+    'east_asian': dict(skin='#f0c494', hair='#2a2020', style='topknot', ancient='kabuto', medieval='kabuto', knight='kabuto',
+                       gunhat='jingasa', riflehat='kepi', cavhat='kepi', modern='army', scout='jingasa', wanderer='jingasa',
+                       archer='jingasa', shield='rect', sword='dao', cloth='#b23a2c', legs='#2a2a3a', horse=('#6a4a2a', '#1a120a'),
+                       robe='#c9a05a', canvas='#e8d8b0'),
+    'south_asian': dict(skin='#c6875a', hair='#2c201a', style='short', ancient='turban', medieval='spiked', knight='spiked',
+                        gunhat='turban', riflehat='turban', cavhat='turban', modern='turban_k', scout='turban', wanderer='turban',
+                        archer='turban', shield='dhal', sword='talwar', cloth='#e8a33a', legs='#f0e8d8', horse=('#e8e2d8', '#8a7a6a'),
+                        robe='#e8a33a', canvas='#e8a33a'),
+    'middle_eastern': dict(skin='#d49a6a', hair='#241810', beard='#241810', ancient='spangen', medieval='spangen', knight='spangen',
+                           gunhat='turban', riflehat='fez', cavhat='fez', modern='army_k', modern_col='#c8a870', scout='keffiyeh',
+                           wanderer='keffiyeh', archer='keffiyeh', shield='round', sword='scimitar', cloth='#2f8fb3', legs='#e8dcc0',
+                           horse=('#f0ece4', '#a09888'), robe='#e8dcc0', canvas='#e8dcc0'),
+    'african': dict(skin='#8c5a3c', hair='#2e221a', style='short', ancient='feather_band', medieval='feather_band', knight='spangen',
+                    gunhat='fez', riflehat='kepi', cavhat='fez', modern='army_k', modern_col='#b8a070', scout='headband',
+                    wanderer='headband', archer='feather_band', warrior='feather_band', shield='oval_hide', club='knobkerrie',
+                    cloth='#c98a4a', legs='#e8d0a0', horse=('#5a3a22', '#22160e'), robe='#c98a4a', canvas='#c98a4a'),
+    'mesoamerican': dict(skin='#bf7f55', hair='#2e221a', style='bowl', ancient='feather_crown', medieval='feather_crown',
+                         knight='feather_crown', gunhat='wide_hat', riflehat='kepi', cavhat='wide_hat', modern='army', scout='feather_band',
+                         archer='feather_band', warrior='feather_band', shield='feather', sword='macuahuitl', club='macuahuitl',
+                         cloth='#2f9c8a', legs='#efe6cf', horse=('#8a6a4a', '#3a2a1a'), robe='#f0e8d8', canvas='#2f9c8a'),
+}
+CULTURES = list(KITS)
+K = dict(BASE)
+def kit(culture=None):
+    global K
+    K = dict(BASE, **(KITS.get(culture) or {}))
+def kc(key): return rgb(K[key]) if isinstance(K[key], str) else K[key]
 
 # ---------------------------------------------------------------- solids
 def rbox(c, s, r=0.06, seg=2, rot=None):
@@ -39,10 +81,11 @@ def disc_y(c, r, t, seg=20):  # a disc facing -y (toward the camera)
     c = Vector(c); return cyl(c + Vector((0, t / 2, 0)), c - Vector((0, t / 2, 0)), r, r, seg)
 
 # ---------------------------------------------------------------- people
-def person(name, hat='hair', top=TEAM, legs=PANTS, boots=BOOTS, belt=LEATHER, skin=SKIN, hair=HAIR, z=0.0, sitting=False,
-           face=None, kneel=False, scale_head=1.0):
-    """a chibi figure facing -y. hat: a headwear kind (see headwear); face(m, hz): extra parts on the head (glasses, beards)
-    that tip up with it"""
+def person(name, hat='hair', top=TEAM, legs=PANTS, boots=BOOTS, belt=LEATHER, skin=None, hair=None, z=0.0, sitting=False,
+           face=None, kneel=False, scale_head=1.0, beard=True):
+    """a chibi figure facing -y, in the current kit's skin and hair. hat: a headwear kind (see headwear); face(m, hz): extra
+    parts on the head (glasses, beards) that tip up with it; beard: the kit's beard, if it has one"""
+    skin = skin or kc('skin'); hair = hair or kc('hair')
     m = Model(name); hz = z + 1.42
     nb, ns = len(m.balls), len(m.solids)
     m.ball((0, 0, hz), 0.5 * scale_head, skin)
@@ -51,7 +94,8 @@ def person(name, hat='hair', top=TEAM, legs=PANTS, boots=BOOTS, belt=LEATHER, sk
         m.solid(sph(Vector((s * 0.185, -0.44, hz - 0.02)), 0.11, (0.85, 0.45, 1.2), 12), WHITE)
         m.solid(sph(Vector((s * 0.18, -0.475, hz - 0.04)), 0.075, (0.85, 0.4, 1.15), 12), EYE)
         m.solid(sph(Vector((s * 0.155, -0.51, hz + 0.0)), 0.026, (1, 0.6, 1), 6), WHITE)
-    m.ball((0, -0.5, hz - 0.12), 0.06, rgb('#e8a888'))
+    m.ball((0, -0.5, hz - 0.12), 0.06, (min(1, skin[0] * 1.06), skin[1] * 0.9, skin[2] * 0.88, 1))  # nose
+    if beard and K['beard']: short_beard(m, hz, rgb(K['beard']))
     if face: face(m, hz)
     look_up(m, nb, ns, Vector((0, 0, hz)), 24)
     m.ball((0, 0, z + 0.78), 0.36, top, scale=(1.0, 0.85, 1.05), kind='ELLIPSOID')
@@ -75,8 +119,12 @@ def headwear(m, kind, hz, hair=HAIR):
     def cap_dome(col, zc=0.22, sz=0.74, r=0.5, seg=24): m.solid(sph(Vector((0, 0.05, hz + zc)), r, (1.06, 1.06, sz), seg), col)
     def hair_cap(): m.ball((0, 0.06, hz + 0.2), 0.5, hair, scale=(1.06, 1.02, 0.78), kind='ELLIPSOID')
     if kind == 'hair':
-        hair_cap()
-        for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05), 0.15, hair)
+        hair_cap(); st = K['style']
+        if st in ('hair', 'curly', 'bowl', 'topknot'):
+            for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05 - (0.05 if st == 'bowl' else 0)), 0.15, hair)  # fringe
+        if st == 'topknot': m.solid(sph(Vector((0, 0.12, hz + 0.6)), 0.15, (1, 1, 1), 12), hair)
+        if st == 'curly':
+            for a in range(0, 360, 45): m.ball((math.cos(math.radians(a)) * 0.42, 0.08 + math.sin(math.radians(a)) * 0.42, hz + 0.28), 0.13, hair)
     elif kind == 'bald': pass
     elif kind == 'headband':
         hair_cap(); m.solid(tube((0, 0.05, hz + 0.16), (0, 0.05, hz + 0.24), 0.53), TEAM)
@@ -153,10 +201,123 @@ def headwear(m, kind, hz, hair=HAIR):
         m.solid(sph(Vector((0, -0.14, hz + 0.58)), 0.1, (1, 0.5, 1), 10), WHITE)
     elif kind == 'general':  # plumed general's helmet
         cap_dome(GOLD, 0.22, 0.74); m.solid(sph(Vector((0, 0.1, hz + 0.68)), 0.16, (0.6, 2.4, 1.1), 14), RED)
+    # culture helmets and hats
+    elif kind == 'nasal':  # conical steel helmet with a nose guard (northern Europe)
+        m.solid(cyl((0, 0.04, hz + 0.08), (0, 0.04, hz + 0.78), 0.54, 0.04, 24), STEEL)
+        m.solid(tube((0, 0.04, hz + 0.08), (0, 0.04, hz + 0.16), 0.55, 24), rgb('#565d6a'))
+        m.solid(cyl((0, -0.5, hz + 0.14), (0, -0.54, hz - 0.08), 0.05, 0.04, 8), rgb('#565d6a'))
+    elif kind == 'plumed':
+        cap_dome(STEEL, 0.2, 0.8); m.solid(tube((0, 0.05, hz + 0.1), (0, 0.05, hz + 0.18), 0.54, 26), GOLD)
+        m.solid(sph(Vector((0.05, 0.15, hz + 0.68)), 0.15, (0.8, 0.8, 1.8), 12), WHITE); m.solid(sph(Vector((-0.1, 0.18, hz + 0.62)), 0.12, (0.8, 0.8, 1.6), 10), TEAM)
+    elif kind in ('kabuto', 'kuwagata'):  # lacquered helmet with a flared neck guard
+        lac = rgb('#2a2a3a'); cap_dome(lac, 0.22, 0.74)
+        m.solid(cyl((0, 0.12, hz + 0.18), (0, 0.16, hz - 0.12), 0.56, 0.74, 24), lac)  # shikoro
+        m.solid(tube((0, 0.05, hz + 0.12), (0, 0.05, hz + 0.2), 0.55, 24), TEAM)
+        if kind == 'kuwagata':
+            for s in (-1, 1): m.solid(cyl((s * 0.08, -0.45, hz + 0.35), (s * 0.42, -0.52, hz + 0.95), 0.05, 0.02, 8), GOLD)
+        else: m.solid(sph(Vector((0, -0.48, hz + 0.38)), 0.09, (1.2, 0.4, 1), 10), GOLD)
+    elif kind == 'spiked':  # steel dome with a spike, a turban band and a mail curtain
+        m.ball((0, 0.18, hz - 0.1), 0.5, rgb('#8a909a'), scale=(1.05, 0.9, 1.0), kind='ELLIPSOID')
+        cap_dome(STEEL, 0.24, 0.72); m.solid(cyl((0, 0.05, hz + 0.55), (0, 0.05, hz + 0.85), 0.06, 0.0, 8), GOLD)
+        m.solid(tube((0, 0.05, hz + 0.1), (0, 0.05, hz + 0.24), 0.55, 24), TEAM)
+    elif kind == 'spangen':  # pointed steel helmet wrapped by a turban, with a mail curtain
+        m.ball((0, 0.18, hz - 0.1), 0.5, rgb('#8a909a'), scale=(1.05, 0.9, 1.0), kind='ELLIPSOID')
+        m.solid(B.lathe((0, 0.05, hz + 0.1), [(0.52, 0), (0.5, 0.2), (0.36, 0.42), (0.12, 0.62), (0, 0.78)], 20), STEEL)
+        m.solid(sph(Vector((0, 0.05, hz + 0.18)), 0.56, (1.0, 1.0, 0.22), 22), TEAM)
+    elif kind == 'feather_band':  # headband with upright feathers
+        hair_cap(); m.solid(tube((0, 0.05, hz + 0.14), (0, 0.05, hz + 0.24), 0.53, 24), TEAM)
+        for x, c in ((-0.12, WHITE), (0.05, rgb('#c0392b')), (0.2, WHITE)):
+            m.solid(sph(Vector((x, 0.3, hz + 0.62)), 0.08, (0.6, 0.4, 2.6), 10), c)
+    elif kind == 'feather_crown':  # a gold band and a fan of tall feathers
+        hair_cap(); m.solid(tube((0, 0.05, hz + 0.14), (0, 0.05, hz + 0.28), 0.54, 24), GOLD)
+        for i, c in enumerate((rgb('#2aa04a'), TEAM, rgb('#2aa04a'), TEAM, rgb('#2aa04a'))):
+            a = math.radians(-50 + i * 25); m.solid(sph(Vector((math.sin(a) * 0.4, 0.25, hz + 0.6 + math.cos(a) * 0.3)), 0.1, (0.6, 0.35, 2.4), 10, ), c)
+    elif kind == 'jingasa':  # flat conical hat
+        hair_cap(); m.solid(cyl((0, 0.05, hz + 0.25), (0, 0.05, hz + 0.6), 0.7, 0.06, 26), rgb('#8a3a28'))  # red-brown lacquer: black reads as a hole from above
+        m.solid(tube((0, 0.05, hz + 0.36), (0, 0.05, hz + 0.42), 0.52, 22), TEAM)
+    elif kind == 'fez':
+        hair_cap(); m.solid(cyl((0, 0.05, hz + 0.25), (0, 0.05, hz + 0.72), 0.4, 0.32, 20), rgb('#b02a2a'))
+        m.solid(tube((0, 0.05, hz + 0.3), (0, 0.05, hz + 0.38), 0.405, 20), TEAM)
+        m.solid(tube((0.0, 0.05, hz + 0.72), (0.25, 0.2, hz + 0.5), 0.03, 6), BLACK)
+    elif kind == 'kepi':
+        hair_cap(); m.solid(cyl((0, 0.08, hz + 0.25), (0, 0.04, hz + 0.68), 0.42, 0.36, 20), NAVY)
+        m.solid(tube((0, 0.08, hz + 0.27), (0, 0.08, hz + 0.37), 0.43, 20), TEAM)
+        m.solid(sph(Vector((0, -0.38, hz + 0.28)), 0.25, (1.2, 0.8, 0.15), 14), BLACK)
+    elif kind == 'adrian':  # crested steel helmet with brims front and back
+        col = rgb(K['modern_col']); cap_dome(col, 0.24, 0.66)
+        m.solid(sph(Vector((0, 0.05, hz + 0.2)), 0.6, (0.9, 1.1, 0.08), 22), col)
+        m.solid(sph(Vector((0, 0.05, hz + 0.58)), 0.1, (0.4, 2.6, 0.6), 10), col)
+    elif kind == 'petasos':  # wide-brimmed traveller's hat
+        hair_cap(); m.solid(sph(Vector((0, 0.05, hz + 0.4)), 0.36, (1.0, 1.0, 0.6), 18), rgb('#b8864a'))
+        m.solid(sph(Vector((0, 0.05, hz + 0.3)), 0.82, (1.0, 1.0, 0.08), 24), rgb('#b8864a'))
+    elif kind == 'keffiyeh':  # cloth headdress held by a cord
+        m.ball((0, 0.12, hz + 0.0), 0.56, rgb('#efe9dc'), scale=(1.05, 1.0, 1.08), kind='ELLIPSOID')
+        m.solid(sph(Vector((0, 0.05, hz + 0.32)), 0.55, (1.0, 1.0, 0.18), 22), BLACK)
+        m.solid(tube((0, 0.05, hz + 0.27), (0, 0.05, hz + 0.33), 0.555, 22), TEAM)
+    elif kind == 'turban_k':  # a khaki soldier's turban
+        m.solid(sph(Vector((0, 0.05, hz + 0.3)), 0.52, (1.1, 1.1, 0.75), 20), rgb('#b8a070'))
+        m.solid(tube((0, 0.05, hz + 0.1), (0, 0.05, hz + 0.26), 0.56, 24), rgb('#9a8458'))
+        m.solid(sph(Vector((0, -0.5, hz + 0.32)), 0.08, (1, 0.6, 1.2), 10), TEAM)
+    elif kind == 'army_k':  # the modern helmet in the culture's uniform colour
+        col = rgb(K['modern_col']); cap_dome(col, 0.2, 0.78, 0.53); m.solid(tube((0, 0.05, hz + 0.1), (0, 0.05, hz + 0.16), 0.56, 28), col)
+    # unique units' headgear
+    elif kind == 'corinthian':  # bronze helmet with cheek guards and a tall horsehair crest
+        cap_dome(BRONZE, 0.22, 0.78)
+        for s in (-1, 1): m.solid(rbox(Vector((s * 0.44, -0.18, hz - 0.08)), (0.1, 0.3, 0.42), 0.04), BRONZE)
+        m.solid(sph(Vector((0, 0.1, hz + 0.68)), 0.16, (0.5, 2.8, 1.3), 16), TEAM)
+    elif kind == 'eagle':  # an eagle's head: feathered dome, a yellow beak over the brow
+        m.solid(sph(Vector((0, 0.08, hz + 0.18)), 0.56, (1.06, 1.1, 0.85), 22), rgb('#7a5030'))
+        m.solid(cyl((0, -0.45, hz + 0.5), (0, -0.78, hz + 0.32), 0.14, 0.02, 12), rgb('#f0b830'))
+        for s in (-1, 1): m.solid(sph(Vector((s * 0.22, -0.42, hz + 0.58)), 0.07, (1, 0.6, 1), 8), BLACK)
+        for i in range(5): m.solid(sph(Vector((-0.3 + i * 0.15, 0.4, hz + 0.6 + 0.1 * (2 - abs(i - 2)))), 0.08, (0.6, 0.4, 2.2), 8), TEAM)
+    elif kind == 'bear_hood':  # a bear pelt over the head, ears and snout on top
+        m.solid(sph(Vector((0, 0.12, hz + 0.12)), 0.58, (1.08, 1.1, 0.95), 22), rgb('#6a4a30'))
+        m.solid(sph(Vector((0, -0.3, hz + 0.52)), 0.17, (1.0, 1.3, 0.7), 12), rgb('#6a4a30')); m.solid(sph(Vector((0, -0.48, hz + 0.54)), 0.06, (1, 1, 1), 8), BLACK)
+        for s in (-1, 1): m.solid(sph(Vector((s * 0.3, 0.0, hz + 0.62)), 0.1, (1, 0.6, 1), 8), rgb('#6a4a30'))
+    elif kind == 'papakha':  # tall fur hat
+        hair_cap(); m.solid(cyl((0, 0.05, hz + 0.25), (0, 0.05, hz + 0.75), 0.45, 0.48, 20), BLACK)
+        m.solid(sph(Vector((0, 0.05, hz + 0.75)), 0.42, (1, 1, 0.25), 16), TEAM)
+    elif kind == 'bork':  # the janissary's tall white felt hat, folded down the back
+        m.solid(cyl((0, 0.08, hz + 0.2), (0, 0.18, hz + 1.0), 0.45, 0.32, 20), rgb('#f0ece0'))
+        m.solid(rbox(Vector((0, 0.42, hz + 0.6)), (0.4, 0.08, 0.8), 0.04, 1, qx(15)), rgb('#f0ece0'))
+        m.solid(tube((0, 0.08, hz + 0.2), (0, 0.08, hz + 0.32), 0.47, 20), GOLD); m.solid(sph(Vector((0, -0.38, hz + 0.45)), 0.08, (1, 0.6, 1.5), 8), TEAM)
+    elif kind == 'pickelhaube':
+        cap_dome(BLACK, 0.22, 0.8); m.solid(cyl((0, 0.05, hz + 0.58), (0, 0.05, hz + 0.95), 0.07, 0.0, 10), GOLD)
+        m.solid(sph(Vector((0, -0.4, hz + 0.18)), 0.25, (1.2, 0.8, 0.15), 14), BLACK); m.solid(sph(Vector((0, -0.47, hz + 0.4)), 0.09, (1, 0.5, 1), 8), GOLD)
+    elif kind == 'beret_feather':  # landsknecht: a wide floppy beret and big feathers
+        hair_cap(); m.solid(sph(Vector((0.1, 0.0, hz + 0.42)), 0.6, (1.15, 1.05, 0.3), 20), TEAM)
+        for i, c in enumerate((WHITE, rgb('#e8c84a'), WHITE)): m.solid(sph(Vector((0.35 + i * 0.1, 0.05, hz + 0.75)), 0.1, (0.6, 0.6, 2.6), 10, ), c)
+    elif kind == 'tiara':  # Persian fluted felt hat
+        hair_cap(); m.solid(cyl((0, 0.05, hz + 0.2), (0, 0.05, hz + 0.75), 0.45, 0.4, 16), rgb('#e8dcc0'))
+        m.solid(tube((0, 0.05, hz + 0.25), (0, 0.05, hz + 0.35), 0.46, 16), TEAM)
+    elif kind == 'assyrian':  # tall pointed helmet
+        hair_cap(); m.solid(cyl((0, 0.05, hz + 0.15), (0, 0.05, hz + 1.0), 0.52, 0.03, 20), STEEL)
+        m.solid(tube((0, 0.05, hz + 0.15), (0, 0.05, hz + 0.24), 0.53, 20), GOLD)
+    elif kind == 'mongol':  # pointed steel helmet with a fur brim and a plume
+        cap_dome(STEEL, 0.25, 0.9); m.solid(cyl((0, 0.05, hz + 0.6), (0, 0.05, hz + 0.95), 0.08, 0.0, 8), STEEL)
+        m.solid(tube((0, 0.05, hz + 0.08), (0, 0.05, hz + 0.24), 0.58, 24), rgb('#7a5a3a')); m.solid(sph(Vector((0, 0.05, hz + 1.0)), 0.08, (0.8, 0.8, 1.6), 8), TEAM)
+    elif kind == 'roach':  # Shawnee roach headdress and feathers
+        hair_cap(); m.solid(sph(Vector((0, 0.05, hz + 0.55)), 0.14, (0.6, 3.0, 1.2), 12), rgb('#c0392b'))
+        for x in (-0.08, 0.08): m.solid(sph(Vector((x, 0.35, hz + 0.75)), 0.07, (0.5, 0.4, 2.5), 8), WHITE)
+        m.solid(tube((0, 0.05, hz + 0.14), (0, 0.05, hz + 0.22), 0.53, 22), TEAM)
+    elif kind == 'maori':  # topknot with a white feather, carved comb
+        hair_cap(); m.solid(sph(Vector((0, 0.12, hz + 0.6)), 0.17, (1, 1, 1), 12), kc('hair'))
+        m.solid(sph(Vector((0.05, 0.15, hz + 0.85)), 0.06, (0.5, 0.5, 2.0), 8), WHITE); m.solid(rbox(Vector((0, 0.0, hz + 0.65)), (0.2, 0.05, 0.1), 0.02), TEAM)
+    elif kind == 'lime_spikes':  # Gaesatae: lime-washed spiky hair
+        hair_cap()
+        for i in range(7):
+            a = math.radians(-70 + i * 23); m.solid(cyl((math.sin(a) * 0.3, 0.05, hz + 0.35 + math.cos(a) * 0.15), (math.sin(a) * 0.55, 0.1, hz + 0.55 + math.cos(a) * 0.3), 0.09, 0.0, 6), rgb('#e8dcb0'))
+    elif kind == 'szyszak':  # Polish lobster-tail pot helmet
+        cap_dome(STEEL, 0.24, 0.8); m.solid(cyl((0, 0.2, hz + 0.1), (0, 0.32, hz - 0.2), 0.5, 0.6, 20), STEEL)
+        m.solid(cyl((0, -0.5, hz + 0.2), (0, -0.54, hz - 0.06), 0.04, 0.03, 6), GOLD); m.solid(sph(Vector((0, 0.15, hz + 0.68)), 0.08, (0.7, 0.7, 1.8), 8), TEAM)
 
-def arm(m, side, hand, z=0.0, sleeve=TEAM, skin=SKIN):
+def arm(m, side, hand, z=0.0, sleeve=TEAM, skin=None):
     sh = Vector((side * 0.33, 0, z + 0.95)); hand = Vector(hand)
-    m.capsule(sh, sh.lerp(hand, 0.85), 0.1, sleeve); m.ball(hand, 0.11, skin)
+    m.capsule(sh, sh.lerp(hand, 0.85), 0.1, sleeve); m.ball(hand, 0.11, skin or kc('skin'))
+
+def short_beard(m, hz, col):
+    m.solid(sph(Vector((0, -0.34, hz - 0.3)), 0.24, (1.15, 0.7, 0.8), 14), col)
+    m.solid(sph(Vector((0, -0.49, hz - 0.17)), 0.09, (1.7, 0.6, 0.5), 10), col)
 
 def scaled(m, k, off=(0, 0, 0)): return turn(m, Quaternion(), off, k)
 
@@ -168,6 +329,64 @@ def sword(m, p, d=(0.15, -0.1, 1.0), L=0.75):
     m.solid(rbox(p + d * (0.12 + L / 2), (0.1, 0.03, L), 0.02, 1, Vector((0, 0, 1)).rotation_difference(d)), rgb('#d8dde6'))
     m.solid(rbox(p + d * 0.1, (0.3, 0.07, 0.06), 0.02, 1, Vector((0, 0, 1)).rotation_difference(d)), GOLD)
     m.solid(tube(p - d * 0.1, p + d * 0.08, 0.04, 6), LEATHER)
+
+def blade(m, p, d, L, curve=0.0, w=0.1, col=rgb('#d8dde6')):
+    """a flat blade from p along d, bending sideways by curve (a sabre, a dao, a talwar) and tapering to the tip"""
+    p, d = Vector(p), Vector(d).normalized(); side = d.cross(Vector((0, 1, 0)))
+    side = side.normalized() if side.length > 1e-3 else Vector((1, 0, 0)); flat = side.cross(d).normalized()
+    rings = []
+    for i in range(7):
+        t = i / 6; c = p + d * (L * t) + side * (curve * L * t * t); ww = w * (1 - 0.75 * t ** 3) / 2; th = 0.016
+        rings.append([c + side * ww + flat * th, c - side * ww * 0.3 + flat * th, c - side * ww * 0.3 - flat * th, c + side * ww - flat * th])
+    m.solid(B.loft(rings), col)
+
+def sword_k(m, p, d=(0.15, -0.1, 1.0), L=0.75):
+    """the kit's sword in the hand at p"""
+    st = K['sword']; p, dd = Vector(p), Vector(d).normalized()
+    if st == 'straight': return sword(m, p, d, L)
+    if st == 'macuahuitl':  # a wooden paddle edged with obsidian
+        q = Vector((0, 0, 1)).rotation_difference(dd)
+        m.solid(rbox(p + dd * (0.1 + L / 2), (0.16, 0.05, L), 0.03, 1, q), WOOD)
+        for i in range(5):
+            for sgn in (-1, 1): m.solid(rbox(p + dd * (0.25 + i * L / 5.5) + (q @ Vector((sgn * 0.1, 0, 0))), (0.05, 0.03, 0.08), 0.01, 1, q), BLACK)
+        m.solid(tube(p - dd * 0.1, p + dd * 0.1, 0.04, 6), LEATHER); return
+    curve = {'dao': 0.18, 'scimitar': 0.3, 'talwar': 0.25, 'katana': 0.08}.get(st, 0.2)
+    blade(m, p + dd * 0.1, dd, L, curve, 0.12 if st == 'dao' else 0.1)
+    m.solid(rbox(p + dd * 0.08, (0.24, 0.07, 0.05), 0.02, 1, Vector((0, 0, 1)).rotation_difference(dd)), GOLD)
+    m.solid(tube(p - dd * 0.12, p + dd * 0.06, 0.04, 6), BLACK if st == 'katana' else LEATHER)
+
+def shield_k(m, c, k=1.0):
+    """the kit's shield, held at c facing the camera"""
+    st = K['shield']; c = Vector(c)
+    if st == 'round': return shield_round(m, c, 0.4 * k)
+    if st == 'hoplon': return shield_round(m, c, 0.46 * k, TEAM, BRONZE)
+    if st == 'rect': return shield_rect(m, c, 0.5 * k, 0.72 * k)
+    if st == 'kite':  # pointed at the bottom
+        pts = [(0, 0.42), (0.3, 0.36), (0.3, 0.05), (0, -0.5), (-0.3, 0.05), (-0.3, 0.36)]
+        m.solid(B.loft([[c + Vector((x * k, yy, z * k)) for x, z in pts] for yy in (0.0, -0.1)]), TEAM)
+        m.solid(rbox(c + Vector((0, -0.08, 0.1 * k)), (0.08 * k, 0.04, 0.6 * k), 0.02), GOLD); m.solid(rbox(c + Vector((0, -0.08, 0.2 * k)), (0.45 * k, 0.04, 0.08 * k), 0.02), GOLD)
+        return
+    if st == 'dhal':  # round leather shield with four bosses
+        m.solid(cyl(c, c + Vector((0, -0.1, 0)), 0.38 * k, 0.38 * k, 22), TEAM); m.solid(cyl(c + Vector((0, -0.03, 0)), c + Vector((0, -0.12, 0)), 0.3 * k, 0.3 * k, 22), rgb('#4a3020'))
+        for a in (45, 135, 225, 315): m.solid(sph(c + Vector((math.cos(math.radians(a)) * 0.13 * k, -0.13, math.sin(math.radians(a)) * 0.13 * k)), 0.05 * k, (1, 0.6, 1), 8), GOLD)
+        return
+    if st == 'oval_hide':  # tall cowhide shield
+        m.solid(sph(c, 0.5 * k, (0.62, 0.12, 1.0), 20), WHITE)
+        for x, z, r in ((-0.12, 0.2, 0.12), (0.1, -0.15, 0.14), (0.05, 0.3, 0.07)): m.solid(sph(c + Vector((x * k, -0.05, z * k)), r * k, (1, 0.3, 1.1), 10), BLACK)
+        m.solid(tube(c + Vector((0, -0.07, -0.55 * k)), c + Vector((0, -0.07, 0.6 * k)), 0.03, 6), TEAM)
+        return
+    if st == 'feather':  # round feather-work shield with a fringe
+        m.solid(cyl(c, c + Vector((0, -0.1, 0)), 0.38 * k, 0.38 * k, 22), TEAM); m.solid(cyl(c + Vector((0, -0.03, 0)), c + Vector((0, -0.12, 0)), 0.16 * k, 0.16 * k, 16), GOLD)
+        for i in range(7): a = math.radians(200 + i * 23); m.solid(sph(c + Vector((math.cos(a) * 0.4 * k, -0.02, math.sin(a) * 0.4 * k)), 0.06 * k, (0.6, 0.4, 1.6), 8), WHITE)
+        return
+    shield_round(m, c, 0.4 * k)
+
+def club_k(m, p, d=(0.12, -0.16, 0.7)):
+    st = K['club']; p, dd = Vector(p), Vector(d).normalized()
+    if st == 'macuahuitl': return sword_k(m, p, d, 0.6) if K['sword'] == 'macuahuitl' else None
+    if st == 'knobkerrie':
+        m.solid(tube(p - dd * 0.1, p + dd * 0.6, 0.035, 6), WOOD); m.solid(sph(p + dd * 0.68, 0.11, (1, 1, 1), 10), WOOD); return
+    m.solid(cyl(p - dd * 0.1, p + dd * 0.7, 0.045, 0.12, 10), WOOD)
 
 def long_gun(m, a, b, stock=WOOD, barrel=IRON, r=0.035):
     a, b = Vector(a), Vector(b); d = (b - a).normalized()
@@ -191,16 +410,18 @@ def backpack(m, col=rgb('#7a5a32'), z=0.0, big=1.0):
     m.solid(rbox(Vector((0, 0.36, z + 1.2 * big)), (0.5 * big, 0.25 * big, 0.14), 0.06), rgb('#5e7a3a'))
 
 # ---------------------------------------------------------------- foot units
-def u_settler_person(name='p', hat='wide_hat'):
-    m, hz = person(name, hat, rgb('#8a6a4a'), legs=rgb('#5a4a3a')); return m
+def u_settler_person(name='p', hat=None):
+    m, hz = person(name, hat or K['wanderer'], kc('cloth'), legs=kc('legs')); return m
+
 
 def scout():
-    m, hz = person('scout', 'slouch', rgb('#6e7a3e'), legs=rgb('#6a5a3a'))
+    m, hz = person('scout', K['scout'], rgb('#6e7a3e'), legs=rgb('#6a5a3a'))
     arm(m, 1, (0.4, -0.25, 0.75), sleeve=rgb('#6e7a3e')); arm(m, -1, (-0.2, -0.38, 0.9), sleeve=rgb('#6e7a3e'))
     m.solid(tube((0.42, -0.27, 0.02), (0.46, -0.3, 1.5), 0.035), WOOD)  # staff
     for x in (-0.22, -0.06): m.solid(cyl((x, -0.4, 0.9), (x, -0.56, 0.93), 0.065, 0.075, 10), BLACK)  # binoculars at the chest
     backpack(m); m.solid(rbox(Vector((0, -0.3, 0.75)), (0.5, 0.06, 0.08), 0.02), TEAM)  # sash
     return m
+
 
 def migrant():
     m, hz = person('migrant', 'hair', rgb('#9a7a5a'), legs=rgb('#6a5a4a'))
@@ -228,23 +449,58 @@ def scarecrow():  # Scarecrow Crew: a straw-stuffed figure on a pole with a pitc
     m.solid(rbox(Vector((0.12, -0.31, 0.85)), (0.16, 0.04, 0.16), 0.02), rgb('#c87a3a'))  # patch
     return m
 
+def warrior():
+    m, hz = person('warrior', K['warrior'], kc('cloth') if K['warrior'] != 'hair' else TEAM, legs=kc('legs'))
+    arm(m, 1, (0.5, -0.12, 0.55)); arm(m, -1, (-0.5, -0.05, 0.6))
+    if K['club'] == 'macuahuitl': sword_k(m, (0.5, -0.14, 0.5), (0.12, -0.16, 0.7), 0.6)
+    else: club_k(m, (0.5, -0.14, 0.5))
+    m.ball((0, 0.25, 0.85), 0.3, rgb('#8a6a4a'), scale=(1.2, 0.5, 1.1), kind='ELLIPSOID')  # fur cape
+    m.solid(rbox(Vector((0, -0.3, 0.78)), (0.5, 0.05, 0.08), 0.02), TEAM)
+    return m
+
+def spearman():
+    m, hz = person('spearman', K['ancient'], TEAM, legs=kc('legs'))
+    arm(m, 1, (0.5, -0.12, 0.6)); arm(m, -1, (-0.45, -0.25, 0.75))
+    m.solid(tube((0.52, -0.14, 0.05), (0.56, -0.16, 2.1), 0.035, 8), WOOD)
+    m.solid(cyl((0.56, -0.16, 2.1), (0.57, -0.165, 2.38), 0.07, 0.0, 8), METAL)
+    shield_k(m, (-0.5, -0.3, 0.75))
+    return m
+
+def archer():
+    m, hz = person('archer', K['archer'], TEAM, legs=kc('legs'))
+    arm(m, -1, (-0.55, -0.3, 0.85)); arm(m, 1, (0.35, -0.2, 0.85))
+    m.solid(prim_arc(Vector((-0.6, -0.32, 0.85)), 0.55, 0.035, math.radians(-70), math.radians(70), qz(90), 16), WOOD)
+    m.solid(tube((-0.6 + 0.19, -0.32, 0.85 - 0.52), (-0.6 + 0.19, -0.32, 0.85 + 0.52), 0.008, 4), CREAM)
+    m.solid(cyl((0.15, 0.3, 0.55), (0.3, 0.38, 1.25), 0.11, 0.12, 10), LEATHER)  # quiver
+    for i in range(3): m.solid(tube((0.2 + i * 0.04, 0.34, 1.2), (0.22 + i * 0.05, 0.36, 1.45), 0.012, 4), CREAM)
+    return m
+
+def horseman():
+    m = horse(*[rgb(c) for c in K['horse']], name='horseman')
+    r = rider('hr', K['ancient'], TEAM, lambda r: (r.solid(tube((0.47, -0.32, 0.15), (0.5, -0.36, 2.0), 0.035, 8), WOOD),
+                                                  r.solid(cyl((0.5, -0.36, 2.0), (0.5, -0.36, 2.25), 0.07, 0.0, 8), METAL)))
+    merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')  # saddle cloth in the owner's colour
+    return m
+
 def slinger():
-    m, hz = person('slinger', 'headband', TEAM, legs=rgb('#7a5a3a'))
+    m, hz = person('slinger', 'headband' if K['ancient'] in ('helmet', 'nasal', 'roman') else K['archer'], TEAM, legs=kc('legs'))
     arm(m, 1, (0.45, -0.1, 1.55)); arm(m, -1, (-0.45, -0.2, 0.75))
     m.solid(prim_arc(Vector((0.45, -0.1, 1.85)), 0.28, 0.018, math.radians(-80), math.radians(260), qx(90), 20), rgb('#c9a46a'))  # whirling sling
     m.solid(sph(Vector((0.72, -0.1, 1.85)), 0.07, (1, 1, 1), 8), rgb('#8a8478'))
     m.solid(sph(Vector((-0.3, -0.25, 0.62)), 0.13, (1, 0.8, 1), 10), LEATHER)  # stone pouch
     return m
 
+
 def swordsman():
-    m, hz = person('swordsman', 'roman', TEAM, legs=rgb('#7a5a3a'), belt=GOLD)
+    m, hz = person('swordsman', K['ancient'], TEAM, legs=kc('legs'), belt=GOLD)
     arm(m, 1, (0.5, -0.2, 0.75)); arm(m, -1, (-0.45, -0.3, 0.8))
-    sword(m, (0.5, -0.25, 0.75), (0.25, -0.15, 1.0))
-    shield_rect(m, (-0.52, -0.42, 0.8))
+    sword_k(m, (0.5, -0.25, 0.75), (0.25, -0.15, 1.0))
+    shield_k(m, (-0.52, -0.42, 0.8))
     return m
 
+
 def crossbowman():
-    m, hz = person('crossbowman', 'kettle', TEAM, legs=NAVY)
+    m, hz = person('crossbowman', K['medieval'], TEAM, legs=kc('legs'))
     arm(m, 1, (0.2, -0.45, 0.85)); arm(m, -1, (-0.2, -0.5, 1.0))
     m.solid(rbox(Vector((0.0, -0.5, 0.95)), (0.12, 0.75, 0.12), 0.03, 1, qx(-12)), WOOD)  # stock, pointing at the camera
     m.solid(prim_arc(Vector((0, -0.98, 1.03)), 0.42, 0.035, math.radians(20), math.radians(160), qx(-12), 16), IRON)
@@ -252,35 +508,41 @@ def crossbowman():
     m.solid(rbox(Vector((0.3, 0.25, 0.7)), (0.16, 0.16, 0.5), 0.05), LEATHER)  # bolt case
     return m
 
+
 def pikeman():
-    m, hz = person('pikeman', 'morion', TEAM, legs=rgb('#8a2a2a'))
+    m, hz = person('pikeman', K['medieval'] if K['medieval'] != 'kettle' else 'morion', TEAM, legs=kc('legs'))
     arm(m, 1, (0.45, -0.15, 0.75)); arm(m, -1, (0.1, -0.3, 1.15))
     m.solid(tube((0.48, -0.17, 0.02), (0.1, -0.35, 3.1), 0.035), WOOD)
     m.solid(cyl((0.1, -0.35, 3.1), (0.085, -0.36, 3.4), 0.07, 0.0, 8), METAL)
     m.ball((0, -0.05, 0.85), 0.35, STEEL, scale=(1.05, 0.9, 0.7), kind='ELLIPSOID')  # breastplate
     return m
 
+
 def musketman():
-    m, hz = person('musketman', 'tricorn', TEAM, legs=CREAM, boots=BLACK, belt=WHITE)
+    m, hz = person('musketman', K['gunhat'], TEAM, legs=CREAM if K['gunhat'] == 'tricorn' else kc('legs'), boots=BLACK, belt=WHITE)
     arm(m, 1, (0.4, -0.2, 0.7)); arm(m, -1, (0.25, -0.25, 1.25))
     long_gun(m, (0.45, -0.22, 0.45), (0.15, -0.3, 2.1))
     for s in (-1, 1): m.solid(rbox(Vector((s * 0.18, -0.29, 0.75)), (0.06, 0.03, 0.55), 0.015, 1, qy(s * 25)), WHITE)  # crossbelts
     return m
 
+
 def rifleman():
-    m, hz = person('rifleman', 'shako', TEAM, legs=WHITE, boots=BLACK, belt=WHITE)
+    m, hz = person('rifleman', K['riflehat'], TEAM, legs=WHITE if K['riflehat'] == 'shako' else kc('legs'), boots=BLACK, belt=WHITE)
     arm(m, 1, (0.42, -0.15, 0.7)); arm(m, -1, (-0.3, -0.25, 0.95))
     long_gun(m, (0.45, -0.17, 0.4), (0.5, -0.2, 2.2))
     m.solid(cyl((0.5, -0.2, 2.2), (0.5, -0.2, 2.45), 0.025, 0.0, 6), METAL)  # bayonet
     return m
 
+
 def infantry():
-    m, hz = person('infantry', 'brodie', KHAKI, legs=KHAKI, boots=rgb('#5a4028'))
-    arm(m, 1, (0.4, -0.2, 0.75), sleeve=KHAKI); arm(m, -1, (0.1, -0.35, 1.1), sleeve=KHAKI)
+    col = rgb(K['modern_col']) if K['modern'] in ('army_k', 'adrian') else KHAKI
+    m, hz = person('infantry', K['modern'], col, legs=col, boots=rgb('#5a4028'))
+    arm(m, 1, (0.4, -0.2, 0.75), sleeve=col); arm(m, -1, (0.1, -0.35, 1.1), sleeve=col)
     long_gun(m, (0.42, -0.22, 0.45), (0.0, -0.38, 2.0))
     m.solid(rbox(Vector((0, -0.29, 0.62)), (0.6, 0.06, 0.12), 0.03), rgb('#6a5a32'))
     m.solid(rbox(Vector((0.0, -0.31, 0.95)), (0.18, 0.04, 0.12), 0.02), TEAM)  # armband badge
     return m
+
 
 def machine_gun():
     m, hz = person('machine_gun', 'army', TEAM, legs=OLIVE, boots=BLACK, kneel=True)
@@ -382,15 +644,17 @@ def great_admiral():
     return great('great_admiral', 'admiral', NAVY, None, ex, legs=WHITE, belt=GOLD)
 
 def missionary():
+    robe = kc('robe')
     def ex(m):
-        arm(m, 1, (0.4, -0.35, 0.95), sleeve=rgb('#6a4a3a')); arm(m, -1, (-0.4, -0.3, 0.9), sleeve=rgb('#6a4a3a'))
+        arm(m, 1, (0.4, -0.35, 0.95), sleeve=robe); arm(m, -1, (-0.4, -0.3, 0.9), sleeve=robe)
         m.solid(rbox(Vector((0, -0.48, 0.95)), (0.5, 0.12, 0.38), 0.03), rgb('#7a2a2a')); m.solid(rbox(Vector((0, -0.55, 0.95)), (0.06, 0.02, 0.24), 0.0), GOLD)
         m.solid(rbox(Vector((0, -0.55, 1.0)), (0.16, 0.02, 0.06), 0.0), GOLD)
-        m.ball((0, 0, 0.45), 0.42, rgb('#6a4a3a'), scale=(1.0, 0.9, 0.9), kind='ELLIPSOID')
+        m.ball((0, 0, 0.45), 0.42, robe, scale=(1.0, 0.9, 0.9), kind='ELLIPSOID')
         m.solid(rbox(Vector((0, -0.33, 0.62)), (0.62, 0.05, 0.1), 0.02), TEAM)
-    return great('missionary', 'wide_hat', rgb('#6a4a3a'), None, ex, legs=rgb('#6a4a3a'), belt=None)
+    return great('missionary', K['wanderer'], robe, None, ex, legs=robe, belt=None)
 
 # ---------------------------------------------------------------- riders and mounts (along +x)
+
 def rider(name, hat, top=TEAM, weapon=None, legs=PANTS):
     r, hz = person(name, hat, top, legs=legs, sitting=True)
     arm(r, 1, (0.45, -0.3, 0.75)); arm(r, -1, (-0.4, -0.3, 0.85))
@@ -399,18 +663,20 @@ def rider(name, hat, top=TEAM, weapon=None, legs=PANTS):
     return r
 
 def knight():
-    m = horse(rgb('#e8e2d8'), rgb('#bfb4a0'), 'knight')
+    m = horse(*[rgb(c) for c in K['horse']], name='knight') if K['horse'] != BASE['horse'] else horse(rgb('#e8e2d8'), rgb('#bfb4a0'), 'knight')
     m.ball((-0.05, 0, 1.15), 0.62, TEAM, scale=(1.5, 0.9, 0.55), kind='ELLIPSOID')  # caparison
-    r = rider('kr', 'great_helm', STEEL, lambda r: r.solid(cyl((0.47, -0.32, 0.6), (0.6, -0.9, 2.3), 0.07, 0.025, 10), WOOD))
-    shield_round(r, (-0.5, -0.32, 0.85), 0.36)
+    r = rider('kr', K['knight'], STEEL, lambda r: r.solid(cyl((0.47, -0.32, 0.6), (0.6, -0.9, 2.3), 0.07, 0.025, 10), WOOD))
+    shield_k(r, (-0.5, -0.32, 0.85), 0.9)
     merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, GOLD, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
     return m
 
+
 def cavalry():
     m = horse(rgb('#5a3a22'), rgb('#22160e'), 'cavalry')
-    r = rider('cr', 'shako', TEAM, lambda r: sword(r, (0.45, -0.32, 0.75), (0.2, -0.3, 1.0), 0.75), legs=WHITE)
+    r = rider('cr', K['cavhat'], TEAM, lambda r: sword_k(r, (0.45, -0.32, 0.75), (0.2, -0.3, 1.0), 0.75) if K['sword'] != 'macuahuitl' else sword(r, (0.45, -0.32, 0.75), (0.2, -0.3, 1.0), 0.75), legs=WHITE)
     merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
     return m
+
 
 def camel(name='camel'):
     m = Model(name); col, dark = rgb('#d0a464'), rgb('#9a7442')
@@ -438,10 +704,10 @@ def settler():  # covered wagon pulled by an ox, a settler walking beside it
     wheel(m, (-0.55, -0.55, 0.38), 0.38, 0.1); wheel(m, (-0.55, 0.55, 0.38), 0.38, 0.1)
     wheel(m, (-1.55, -0.55, 0.38), 0.38, 0.1); wheel(m, (-1.55, 0.55, 0.38), 0.38, 0.1)
     m.solid(rbox(Vector((-1.05, 0, 0.62)), (1.35, 1.0, 0.3), 0.06), WOOD)
-    m.solid(cyl((-1.75, 0, 0.95), (-0.35, 0, 0.95), 0.55, 0.55, 20), CREAM)  # canvas
+    m.solid(cyl((-1.75, 0, 0.95), (-0.35, 0, 0.95), 0.55, 0.55, 20), kc('canvas'))  # canvas
     for x in (-1.6, -1.05, -0.5): m.solid(tube((x - 0.04, 0, 0.95), (x + 0.04, 0, 0.95), 0.57, 20), TEAM)  # hoops
     m.solid(tube((-0.35, 0, 0.6), (0.4, 0, 0.75), 0.04), WOOD)
-    p = u_settler_person('sp'); arm(p, 1, (0.45, -0.2, 0.75), sleeve=rgb('#8a6a4a')); arm(p, -1, (-0.45, -0.1, 0.85), sleeve=rgb('#8a6a4a'))
+    p = u_settler_person('sp'); arm(p, 1, (0.45, -0.2, 0.75), sleeve=kc('cloth')); arm(p, -1, (-0.45, -0.1, 0.85), sleeve=kc('cloth'))
     turn(p, qz(-60), (-0.6, -1.25, 0), 0.62); merge(m, p)
     return m
 
@@ -534,7 +800,7 @@ def mech_infantry():  # an armoured personnel carrier with a soldier up in the h
     m.solid(rbox(Vector((0, 0, 0.62)), (1.8, 1.0, 0.5), 0.12, 3), body)
     m.solid(rbox(Vector((0.85, 0, 0.6)), (0.3, 0.95, 0.4), 0.1, 2, qy(-30)), body)
     m.solid(rbox(Vector((0.0, -0.51, 0.7)), (1.2, 0.04, 0.12), 0.02), TEAM)
-    p, hz = person('mp', 'army', OLIVE, legs=OLIVE); arm(p, 1, (0.45, -0.2, 0.9), sleeve=OLIVE); arm(p, -1, (-0.45, -0.2, 0.9), sleeve=OLIVE)
+    p, hz = person('mp', 'army_k' if K['modern'] == 'army_k' else 'army', OLIVE, legs=OLIVE); arm(p, 1, (0.45, -0.2, 0.9), sleeve=OLIVE); arm(p, -1, (-0.45, -0.2, 0.9), sleeve=OLIVE)
     p.solid(rbox(Vector((0.3, -0.45, 1.0)), (0.1, 0.6, 0.14), 0.03, 1, qx(-20)), BLACK)
     turn(p, qz(-90), (-0.2, 0, 0.35), 0.55); merge(m, p)
     m.solid(cyl((-0.2, 0, 0.85), (-0.2, 0, 0.9), 0.3, 0.3, 18), OLIVE2)  # hatch ring
@@ -699,11 +965,341 @@ def jet_fighter():
     m.solid(rbox(Vector((0.0, -0.22, 0.75)), (0.6, 0.02, 0.08), 0.0), TEAM)
     return m
 
+# ---------------------------------------------------------------- unique units (each civilization's own; built in its culture's kit)
+def elephant_rider(m, hat, weapon=None, howdah=None, z=1.72):
+    if howdah: m.solid(rbox(Vector((-0.05, 0, 1.95)), (0.9, 0.85, 0.3), 0.06), howdah); m.solid(rbox(Vector((-0.05, 0, 2.12)), (0.95, 0.9, 0.06), 0.03), GOLD)
+    m.ball((-0.05, 0, 1.75), 0.6, TEAM, scale=(1.3, 1.25, 0.25), kind='ELLIPSOID')  # caparison
+    r = rider('er', hat, TEAM, weapon); turn(r, Quaternion(), (0, 0, z - 1.38 + (0.3 if howdah else 0)))
+    return merge(m, r)
+
+def u_legion():
+    m, hz = person('legion', 'roman', TEAM, legs=rgb('#8a3a2a'), belt=GOLD)
+    m.ball((0, -0.04, 0.84), 0.36, STEEL, scale=(1.05, 0.9, 0.72), kind='ELLIPSOID')  # segmented armour
+    for z in (0.72, 0.84, 0.96): m.solid(tube((0, -0.02, z), (0, -0.02, z + 0.025), 0.365, 20), rgb('#565d6a'))
+    arm(m, 1, (0.5, -0.2, 0.75)); arm(m, -1, (-0.45, -0.3, 0.8))
+    sword(m, (0.5, -0.25, 0.75), (0.25, -0.15, 1.0), 0.55)
+    c = Vector((-0.5, -0.45, 0.85)); m.solid(rbox(c, (0.6, 0.12, 0.95), 0.08), TEAM)  # scutum
+    m.solid(sph(c + Vector((0, -0.07, 0)), 0.1, (1, 0.6, 1), 10), GOLD)
+    for zz in (-0.3, 0.3): m.solid(rbox(c + Vector((0, -0.065, zz)), (0.5, 0.02, 0.05), 0.01), GOLD)
+    return m
+
+def u_samurai():
+    m, hz = person('samurai', 'kuwagata', TEAM, legs=rgb('#2a2a3a'), belt=rgb('#e8b84a'))
+    m.ball((0, -0.04, 0.84), 0.37, rgb('#2a2a3a'), scale=(1.05, 0.9, 0.72), kind='ELLIPSOID')  # lacquered do
+    for z in (0.74, 0.86): m.solid(tube((0, -0.02, z), (0, -0.02, z + 0.03), 0.375, 20), TEAM)
+    for s in (-1, 1): m.solid(rbox(Vector((s * 0.4, -0.02, 0.98)), (0.18, 0.3, 0.24), 0.04, 1, qy(s * 20)), rgb('#2a2a3a'))  # sode
+    arm(m, 1, (0.2, -0.38, 1.0)); arm(m, -1, (0.0, -0.4, 0.9))
+    sword_k(m, (0.12, -0.42, 0.95), (0.35, -0.2, 1.0), 1.0)
+    m.solid(tube((-0.1, 0.32, 0.6), (-0.1, 0.32, 2.3), 0.025, 6), WOOD); m.solid(rbox(Vector((-0.1 + 0.18, 0.32, 2.05)), (0.32, 0.03, 0.45), 0.02), TEAM)  # sashimono
+    return m
+
+def u_crouching_tiger():  # a squat cannon on a two-legged mount, its muzzle painted as a tiger's face
+    m = Model('crouching_tiger'); orange = rgb('#e88a2a')
+    cannon_barrel(m, (-0.5, 0, 0.55), (0.6, 0, 0.62), 0.26, 0.22, orange)
+    for x in (-0.25, 0.1, 0.4): m.solid(tube((x, 0, 0.56), (x + 0.06, 0, 0.58), 0.27, 16), BLACK)  # stripes
+    for s in (-1, 1):
+        m.solid(tube((0.2, s * 0.15, 0.5), (0.45, s * 0.45, 0.0), 0.04, 6), WOOD); m.solid(tube((-0.4, s * 0.15, 0.45), (-0.6, s * 0.45, 0.0), 0.04, 6), WOOD)
+        m.solid(sph(Vector((0.72, s * 0.11, 0.72)), 0.06, (0.5, 1, 1), 8), WHITE); m.solid(sph(Vector((0.74, s * 0.11, 0.71)), 0.035, (0.5, 1, 1), 6), EYE)
+    m.solid(rbox(Vector((-0.1, 0, 0.84)), (0.4, 0.3, 0.06), 0.02), TEAM)
+    crew(m, 'jingasa', (-0.9, -0.65, 0), 0.5)
+    return m
+
+def u_minuteman():
+    m, hz = person('minuteman', 'tricorn', rgb('#7a5a3a'), legs=rgb('#c9b48a'), boots=BLACK)
+    m.ball((0, -0.08, 0.8), 0.3, TEAM, scale=(0.7, 0.8, 0.95), kind='ELLIPSOID')  # waistcoat
+    arm(m, 1, (0.4, -0.2, 0.7), sleeve=rgb('#7a5a3a')); arm(m, -1, (0.25, -0.25, 1.25), sleeve=rgb('#7a5a3a'))
+    long_gun(m, (0.45, -0.22, 0.45), (0.15, -0.3, 2.1))
+    m.solid(cyl((-0.35, -0.1, 0.62), (-0.2, -0.25, 0.8), 0.07, 0.03, 10), CREAM)  # powder horn
+    return m
+
+def spear_up(r):
+    r.solid(tube((0.47, -0.32, 0.15), (0.5, -0.36, 2.0), 0.035, 8), WOOD); r.solid(cyl((0.5, -0.36, 2.0), (0.5, -0.36, 2.25), 0.07, 0.0, 8), METAL)
+
+def u_varu():  # war elephant with a howdah
+    return elephant_rider(elephant('varu'), 'turban', spear_up, TEAM)
+
+def u_voi_chien():  # Vietnamese war elephant: red and gold trappings, a banner
+    m = elephant('voi_chien')
+    m.ball((0.95, 0, 1.6), 0.3, RED, scale=(0.5, 1.2, 1.0), kind='ELLIPSOID')  # head cloth
+    return elephant_rider(m, 'jingasa', lambda r: banner(r, (0.47, -0.32, 0.15), 2.1), None)
+
+def u_domrey():  # Khmer elephant carrying a ballista
+    m = elephant('domrey')
+    m.ball((-0.05, 0, 1.75), 0.6, TEAM, scale=(1.3, 1.25, 0.25), kind='ELLIPSOID')
+    m.solid(rbox(Vector((-0.1, 0, 1.95)), (0.8, 0.6, 0.15), 0.04), WOOD)
+    m.solid(rbox(Vector((0.0, 0, 2.15)), (1.0, 0.1, 0.1), 0.03), WOOD)  # stock
+    m.solid(prim_arc(Vector((0.35, 0, 2.15)), 0.45, 0.04, math.radians(110), math.radians(250), qz(90) @ qx(90), 14), WOOD)
+    m.solid(tube((0.1, 0, 2.2), (0.75, 0, 2.2), 0.02, 6), CREAM); m.solid(cyl((0.75, 0, 2.2), (0.9, 0, 2.2), 0.04, 0.0, 6), METAL)
+    return m
+
+def u_jong():  # Javanese ship: tall hull, slanted tanja sails, stern castle
+    m = Model('jong'); hull(m, 2.8, 1.0, 0.7, rgb('#7a4a28'), TEAM, sheer=0.3)
+    m.solid(rbox(Vector((-1.0, 0, 0.95)), (0.6, 0.85, 0.4), 0.05), rgb('#6a3a20'))
+    for x, h in ((-0.3, 1.8), (0.5, 1.6)):
+        mast(m, x, h, 0.6)
+        q = qz(40) @ qy(-15)  # trimmed across the wind, so its face shows
+        m.solid(rbox(Vector((x + 0.05, 0, 1.25)), (0.9, 0.04, 1.0), 0.03, 1, q), rgb('#c9a46a'))  # tanja sail
+        for z in (0.95, 1.25, 1.55): m.solid(rbox(Vector((x + 0.05, 0, 1.25)) + q @ Vector(((z - 1.25) * 0.27, -0.03, z - 1.25)), (0.92, 0.02, 0.04), 0.0, 1, q), TEAM)
+    return m
+
+def u_keshig():  # Mongol horse archer
+    m = horse(rgb('#7a5a3a'), rgb('#2a1a0e'), 'keshig'); scaled(m, 0.92)
+    r = rider('kr', 'mongol', TEAM, lambda r: r.solid(prim_arc(Vector((-0.5, -0.4, 0.95)), 0.5, 0.035, math.radians(-70), math.radians(70), qz(90), 14), WOOD))
+    merge(m, r); m.ball((-0.05, 0, 1.55), 0.42, rgb('#7a5a3a'), scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
+    return m
+
+def u_impi():
+    m, hz = person('impi', 'feather_band', rgb('#6a4a30'), legs=kc('skin'), belt=rgb('#6a4a30'))
+    m.ball((0, 0, 0.55), 0.38, rgb('#5a3a22'), scale=(1.0, 0.9, 0.45), kind='ELLIPSOID')  # fur kilt
+    arm(m, 1, (0.5, -0.2, 0.8), sleeve=kc('skin')); arm(m, -1, (-0.45, -0.3, 0.85), sleeve=kc('skin'))
+    m.solid(tube((0.5, -0.22, 0.6), (0.55, -0.3, 1.5), 0.03, 6), WOOD); blade(m, (0.55, -0.3, 1.5), (0.04, -0.06, 1.0), 0.35, 0.0, 0.12)  # iklwa
+    shield_k(m, (-0.5, -0.4, 0.85), 1.1)
+    return m
+
+def u_ngao_mbebe():  # Kongo shield-bearer: a big woven shield and a spear
+    m, hz = person('ngao_mbebe', 'feather_band', kc('cloth'), legs=kc('legs'))
+    arm(m, 1, (0.5, -0.12, 0.6)); arm(m, -1, (-0.4, -0.35, 0.85))
+    m.solid(tube((0.52, -0.14, 0.05), (0.56, -0.16, 2.1), 0.035, 8), WOOD); m.solid(cyl((0.56, -0.16, 2.1), (0.57, -0.165, 2.4), 0.08, 0.0, 8), METAL)
+    c = Vector((-0.35, -0.48, 0.8)); m.solid(rbox(c, (0.75, 0.1, 1.15), 0.08), rgb('#c9a46a'))
+    for i in range(4): m.solid(rbox(c + Vector((0, -0.055, -0.4 + i * 0.27)), (0.65, 0.02, 0.06), 0.01), TEAM)
+    return m
+
+def u_immortal():
+    m, hz = person('immortal', 'tiara', TEAM, legs=TEAM, belt=GOLD)
+    m.ball((0, 0, 0.45), 0.42, TEAM, scale=(1.0, 0.9, 0.9), kind='ELLIPSOID')  # long robe
+    for z in (0.35, 0.6): m.solid(tube((0, 0, z), (0, 0, z + 0.03), 0.43, 20), GOLD)
+    arm(m, 1, (0.5, -0.12, 0.7)); arm(m, -1, (-0.45, -0.3, 0.85))
+    m.solid(tube((0.52, -0.14, 0.15), (0.56, -0.16, 2.1), 0.035, 8), WOOD); m.solid(cyl((0.56, -0.16, 2.1), (0.57, -0.165, 2.35), 0.07, 0.0, 8), METAL)
+    m.solid(sph(Vector((0.52, -0.14, 0.12)), 0.08, (1, 1, 1), 10), GOLD)  # golden apple counterweight
+    c = Vector((-0.5, -0.4, 0.85)); m.solid(rbox(c, (0.5, 0.08, 0.8), 0.06), rgb('#c9a46a'))  # wicker shield
+    for zz in (-0.25, 0.0, 0.25): m.solid(rbox(c + Vector((0, -0.045, zz)), (0.45, 0.02, 0.04), 0.0), rgb('#8a6a3a'))
+    return m
+
+def u_maryannu():  # Egyptian chariot with an archer
+    m = horse(rgb('#e8e2d8'), rgb('#3a2a1a'), 'maryannu'); scaled(m, 0.85, (0.55, 0, 0))
+    for y in (-0.5, 0.5): wheel(m, (-0.85, y, 0.42), 0.42, 0.08, WOOD, GOLD)
+    m.solid(rbox(Vector((-0.85, 0, 0.75)), (0.6, 0.85, 0.35), 0.05), TEAM); m.solid(tube((-0.55, 0, 0.62), (0.4, 0, 0.9), 0.03, 6), WOOD)
+    p, hz = person('ma', 'keffiyeh', WHITE, legs=WHITE, beard=False)
+    arm(p, -1, (-0.55, -0.3, 0.95), sleeve=WHITE); arm(p, 1, (0.35, -0.2, 0.95), sleeve=WHITE)
+    p.solid(prim_arc(Vector((-0.6, -0.32, 0.95)), 0.55, 0.035, math.radians(-70), math.radians(70), qz(90), 14), WOOD)
+    turn(p, qz(60), (-0.85, 0.0, 0.55), 0.62); merge(m, p)
+    return m
+
+def u_gaesatae():
+    woad = rgb('#5a7ac8')
+    m, hz = person('gaesatae', 'lime_spikes', kc('skin'), legs=rgb('#3a7a3a'), belt=GOLD)
+    for x, z in ((-0.15, 0.85), (0.12, 0.72), (0.0, 1.0)): m.solid(sph(Vector((x, -0.3, z)), 0.07, (1, 0.3, 1.6), 8), woad)  # woad marks
+    m.solid(prim_arc(Vector((0, -0.05, 1.08)), 0.2, 0.035, math.radians(200), math.radians(340), Quaternion(), 10), GOLD)  # torc
+    arm(m, 1, (0.5, -0.12, 0.6), sleeve=kc('skin')); arm(m, -1, (-0.45, -0.25, 0.75), sleeve=kc('skin'))
+    m.solid(tube((0.52, -0.14, 0.05), (0.56, -0.16, 2.1), 0.035, 8), WOOD); m.solid(cyl((0.56, -0.16, 2.1), (0.57, -0.165, 2.4), 0.08, 0.0, 8), METAL)
+    c = Vector((-0.5, -0.38, 0.8)); m.solid(sph(c, 0.55, (0.55, 0.12, 1.0), 18), TEAM); m.solid(rbox(c + Vector((0, -0.07, 0)), (0.05, 0.03, 0.8), 0.01), GOLD)
+    return m
+
+def u_mamluk():
+    m = horse(rgb('#f0ece4'), rgb('#a09888'), 'mamluk')
+    m.ball((-0.05, 0, 1.15), 0.62, TEAM, scale=(1.5, 0.9, 0.55), kind='ELLIPSOID')
+    r = rider('mr', 'spangen', TEAM, lambda r: sword_k(r, (0.45, -0.32, 0.75), (0.2, -0.3, 1.0), 0.75))
+    shield_round(r, (-0.5, -0.32, 0.85), 0.34)
+    merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, GOLD, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
+    return m
+
+def u_redcoat():
+    red = rgb('#c0302a')
+    m, hz = person('redcoat', 'shako', red, legs=WHITE, boots=BLACK, belt=WHITE)
+    for s in (-1, 1): m.solid(rbox(Vector((s * 0.18, -0.29, 0.75)), (0.06, 0.03, 0.55), 0.015, 1, qy(s * 25)), WHITE)
+    m.solid(rbox(Vector((0, -0.3, 1.0)), (0.3, 0.04, 0.08), 0.02), TEAM)  # facings in the owner's colour
+    arm(m, 1, (0.42, -0.15, 0.7), sleeve=red); arm(m, -1, (-0.3, -0.25, 0.95), sleeve=red)
+    long_gun(m, (0.45, -0.17, 0.4), (0.5, -0.2, 2.2)); m.solid(cyl((0.5, -0.2, 2.2), (0.5, -0.2, 2.45), 0.025, 0.0, 6), METAL)
+    return m
+
+def u_eagle_warrior():
+    m, hz = person('eagle_warrior', 'eagle', rgb('#7a5030'), legs=rgb('#7a5030'))
+    for z in (0.65, 0.8, 0.95): m.solid(tube((0, 0, z), (0, 0, z + 0.04), 0.37, 18), rgb('#f0e0b0'))  # feather rows
+    arm(m, 1, (0.5, -0.2, 0.7), sleeve=rgb('#7a5030')); arm(m, -1, (-0.45, -0.3, 0.85), sleeve=rgb('#7a5030'))
+    sword_k(m, (0.5, -0.25, 0.65), (0.2, -0.15, 1.0), 0.7)
+    shield_k(m, (-0.5, -0.4, 0.85))
+    return m
+
+def u_kispoko():  # Shawnee warrior on a painted horse
+    m = horse(rgb('#f0ece4'), rgb('#2a1a0e'), 'kispoko')
+    for p, r in (((0.3, -0.42, 1.25), 0.2), ((-0.5, -0.42, 1.1), 0.24), ((-0.1, 0.42, 1.2), 0.22)): m.solid(sph(Vector(p), r, (1, 0.25, 1), 12), rgb('#7a4a2a'))  # pinto patches
+    def tomahawk(r):
+        r.solid(tube((0.45, -0.32, 0.6), (0.55, -0.45, 1.4), 0.03, 6), WOOD); r.solid(rbox(Vector((0.62, -0.47, 1.35)), (0.2, 0.05, 0.12), 0.02), METAL)
+    r = rider('kr', 'roach', rgb('#c9a46a'), tomahawk, legs=rgb('#8a6a4a'))
+    merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
+    return m
+
+def u_hoplite():
+    m, hz = person('hoplite', 'corinthian', TEAM, legs=rgb('#8a3a2a'), belt=None)
+    m.ball((0, -0.04, 0.84), 0.37, BRONZE, scale=(1.05, 0.9, 0.72), kind='ELLIPSOID')  # bronze cuirass
+    arm(m, 1, (0.45, -0.15, 1.35)); arm(m, -1, (-0.45, -0.3, 0.85))
+    m.solid(tube((0.1, -0.1, 1.45), (0.95, -0.55, 1.15), 0.035, 8), WOOD); m.solid(cyl((0.95, -0.55, 1.15), (1.15, -0.65, 1.08), 0.07, 0.0, 8), METAL)  # spear overhand
+    c = Vector((-0.45, -0.45, 0.85)); m.solid(cyl(c, c + Vector((0, -0.14, 0)), 0.55, 0.55, 26), BRONZE); m.solid(cyl(c + Vector((0, -0.04, 0)), c + Vector((0, -0.16, 0)), 0.47, 0.47, 26), TEAM)
+    m.solid(rbox(c + Vector((0, -0.17, 0)), (0.06, 0.03, 0.5), 0.01, 1, qy(30)), BRONZE); m.solid(rbox(c + Vector((0.08, -0.17, -0.05)), (0.06, 0.03, 0.4), 0.01, 1, qy(-30)), BRONZE)  # lambda
+    return m
+
+def u_landsknecht():
+    m, hz = person('landsknecht', 'beret_feather', TEAM, legs=rgb('#e8c84a'))
+    for s in (-1, 1): m.solid(sph(Vector((s * 0.36, 0, 0.92)), 0.2, (1, 1, 1.15), 12), rgb('#e8c84a') if s > 0 else TEAM)  # puffed, slashed sleeves
+    for s in (-1, 1): m.solid(sph(Vector((s * 0.17, 0, 0.42)), 0.17, (1, 1, 1.1), 12), TEAM if s > 0 else rgb('#e8c84a'))
+    arm(m, 1, (0.3, -0.3, 0.95)); arm(m, -1, (0.1, -0.35, 0.95))
+    sword(m, (0.2, -0.35, 0.95), (0.25, 0.2, 1.0), 1.25)  # two-handed sword on the shoulder
+    return m
+
+def u_cossack():
+    m = horse(rgb('#5a3a22'), rgb('#22160e'), 'cossack')
+    r = rider('cr', 'papakha', TEAM, lambda r: (blade(r, (0.45, -0.32, 0.8), (0.2, -0.3, 1.0), 0.8, 0.12, 0.09), r.solid(tube((0.4, -0.27, 0.72), (0.48, -0.35, 0.86), 0.04, 6), BLACK)), legs=NAVY)
+    merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
+    return m
+
+def u_tercio():
+    m, hz = person('tercio', 'morion', rgb('#3a3a3a'), legs=rgb('#8a2a2a'), boots=BLACK, belt=GOLD)
+    m.ball((0, -0.04, 0.84), 0.36, STEEL, scale=(1.05, 0.9, 0.72), kind='ELLIPSOID')
+    m.solid(rbox(Vector((0, -0.3, 0.8)), (0.12, 0.04, 0.55), 0.02, 1, qy(30)), TEAM)  # sash
+    arm(m, 1, (0.4, -0.2, 0.7)); arm(m, -1, (0.25, -0.25, 1.25))
+    long_gun(m, (0.45, -0.22, 0.45), (0.15, -0.3, 2.1))
+    m.solid(tube((-0.45, -0.1, 0.0), (-0.45, -0.1, 1.15), 0.025, 6), WOOD); m.solid(prim_arc(Vector((-0.45, -0.1, 1.22)), 0.08, 0.02, math.radians(180), math.radians(360), qx(90), 8), METAL)  # musket rest
+    return m
+
+def u_janissary():
+    m, hz = person('janissary', 'bork', TEAM, legs=rgb('#2a4a8a'), belt=GOLD)
+    m.ball((0, 0, 0.5), 0.4, TEAM, scale=(1.0, 0.9, 0.8), kind='ELLIPSOID')  # long kaftan
+    arm(m, 1, (0.4, -0.2, 0.7)); arm(m, -1, (0.25, -0.25, 1.25))
+    long_gun(m, (0.45, -0.22, 0.45), (0.15, -0.3, 2.1))
+    blade(m, (-0.3, -0.3, 0.62), (-0.3, -0.1, -1.0), 0.45, 0.15, 0.08)  # yatagan at the belt
+    return m
+
+def u_hwacha():  # Korean cart firing a rack of rocket arrows
+    m = Model('hwacha')
+    for y in (-0.45, 0.45): wheel(m, (0.0, y, 0.38), 0.38, 0.08)
+    m.solid(rbox(Vector((-0.2, 0, 0.5)), (1.4, 0.7, 0.12), 0.04), WOOD); m.solid(tube((-0.85, 0, 0.5), (-1.3, 0, 0.3), 0.03, 6), WOOD)
+    c = Vector((0.1, 0, 0.95)); m.solid(rbox(c, (0.35, 0.8, 0.6), 0.04, 1, qy(-30)), rgb('#8a5a32'))
+    for i in range(4):
+        for j in range(3):
+            q = c + (qy(-30) @ Vector((0.18, -0.3 + i * 0.2, -0.18 + j * 0.18))); m.solid(cyl(q, q + (qy(-30) @ Vector((0.12, 0, 0))), 0.035, 0.0, 6), RED)
+    m.solid(rbox(Vector((-0.2, -0.36, 0.55)), (0.6, 0.02, 0.08), 0.0), TEAM)
+    crew(m, 'jingasa', (-0.9, -0.65, 0), 0.5)
+    return m
+
+def u_berserker():
+    m, hz = person('berserker', 'bear_hood', rgb('#6a4a30'), legs=rgb('#5a4a3a'))
+    arm(m, 1, (0.5, -0.2, 1.3), sleeve=kc('skin')); arm(m, -1, (-0.45, -0.3, 0.8), sleeve=kc('skin'))
+    m.solid(tube((0.5, -0.22, 1.1), (0.55, -0.3, 2.0), 0.035, 6), WOOD)
+    m.solid(sph(Vector((0.66, -0.32, 1.9)), 0.2, (1.2, 0.25, 1.0), 14), METAL)  # axe head
+    shield_round(m, (-0.5, -0.36, 0.8), 0.42, TEAM, WOOD)
+    return m
+
+def u_maori_warrior():  # Toa: a taiaha staff, flax skirt and a cloak
+    m, hz = person('maori_warrior', 'maori', rgb('#3a2a1a'), legs=kc('skin'), belt=None)
+    m.ball((0, 0, 0.55), 0.38, rgb('#d8b45a'), scale=(1.0, 0.9, 0.55), kind='ELLIPSOID')  # flax skirt
+    m.ball((0, 0.18, 0.95), 0.34, TEAM, scale=(1.3, 0.5, 1.0), kind='ELLIPSOID')  # cloak
+    arm(m, 1, (0.4, -0.3, 0.9), sleeve=kc('skin')); arm(m, -1, (-0.4, -0.3, 1.1), sleeve=kc('skin'))
+    m.solid(tube((-0.7, -0.35, 1.35), (0.8, -0.3, 0.6), 0.035, 6), WOOD); m.solid(rbox(Vector((0.85, -0.3, 0.55)), (0.14, 0.06, 0.22), 0.03, 1, qy(-60)), WOOD)
+    m.solid(sph(Vector((-0.72, -0.35, 1.37)), 0.06, (1, 1, 1), 8), WHITE)  # feather tuft
+    return m
+
+def u_kuk_field_gun():  # Austro-Hungarian field gun with a shield
+    m = Model('kuk_field_gun'); g = rgb('#7a8a9a')
+    for y in (-0.55, 0.55): wheel(m, (0.0, y, 0.45), 0.45, 0.12, rgb('#4a3a2a'), g)
+    m.solid(rbox(Vector((0.05, 0, 0.75)), (0.15, 1.05, 0.5), 0.04), g)  # shield
+    m.solid(rbox(Vector((-0.75, 0, 0.3)), (1.3, 0.2, 0.14), 0.04, 1, qy(18)), g)
+    m.solid(cyl((-0.1, 0, 0.8), (1.25, 0, 0.88), 0.08, 0.06, 14), rgb('#5a6a7a'))
+    m.solid(rbox(Vector((0.13, 0, 0.88)), (0.02, 0.4, 0.12), 0.0), TEAM)
+    crew(m, 'kepi', (-1.1, -0.7, 0), 0.5, rgb('#7a8a9a'), rgb('#5a6a7a'))
+    return m
+
+def u_quinquereme():  # Carthaginian galley: two banks of oars, a tower, a sail
+    m = Model('quinquereme'); hull(m, 3.0, 0.9, 0.62, rgb('#8a5a32'), GOLD, sheer=0.3)
+    for row, zz in enumerate((0.5, 0.36)):
+        for k in range(7):
+            x = -1.0 + k * 0.32 + row * 0.14
+            for s in (-1, 1): m.solid(tube((x, s * 0.42, zz), (x - 0.08, s * 0.8, zz - 0.28), 0.022, 5), WOOD)
+    m.solid(rbox(Vector((0.7, 0, 0.85)), (0.4, 0.45, 0.45), 0.04), rgb('#7a4a28'))  # fighting tower
+    m.solid(rbox(Vector((0.7, -0.23, 0.95)), (0.36, 0.02, 0.1), 0.0), TEAM)
+    mast(m, -0.2, 1.7); sail(m, -0.15, 0.95, 1.15, 1.0, TEAM)
+    m.solid(cyl((1.45, 0, 0.18), (1.75, 0, 0.18), 0.09, 0.02, 8), BRONZE)
+    return m
+
+def u_dromon():  # Byzantine galley: lateen sails and a Greek-fire siphon at the bow
+    m = Model('dromon'); hull(m, 2.8, 0.85, 0.55, rgb('#6a3a28'), GOLD, sheer=0.25)
+    for k in range(6):
+        x = -0.85 + k * 0.32
+        for s in (-1, 1): m.solid(tube((x, s * 0.4, 0.48), (x - 0.08, s * 0.76, 0.22), 0.022, 5), WOOD)
+    for x, h in ((-0.4, 1.4), (0.45, 1.6)):
+        mast(m, x, h, 0.5)
+        m.solid(B.loft([[Vector((x - 0.5, -0.01, 0.75)), Vector((x + 0.45, -0.01, 0.8)), Vector((x + 0.1, -0.01, 0.5 + h))],
+                        [Vector((x - 0.5, 0.01, 0.75)), Vector((x + 0.45, 0.01, 0.8)), Vector((x + 0.1, 0.01, 0.5 + h))]]), TEAM)  # lateen sail
+    m.solid(cyl((1.15, 0, 0.62), (1.6, 0, 0.7), 0.05, 0.08, 10), BRONZE)  # siphon
+    m.solid(sph(Vector((1.7, 0, 0.72)), 0.1, (1.6, 1, 1), 10), rgb('#f08a2a'))
+    return m
+
+def u_winged_hussar():
+    m = horse(rgb('#5a3a22'), rgb('#22160e'), 'winged_hussar')
+    m.ball((-0.2, 0, 1.3), 0.4, rgb('#d8a050'), scale=(1.2, 1.15, 0.4), kind='ELLIPSOID')  # leopard pelt
+    for x, y in ((-0.35, 0.3), (0.0, -0.4), (-0.5, -0.35)): m.solid(sph(Vector((x, y, 1.42)), 0.06, (1, 1, 0.4), 6), BLACK)
+    def arms_(r):
+        r.solid(cyl((0.47, -0.32, 0.6), (0.6, -0.9, 2.5), 0.06, 0.02, 10), WOOD); r.solid(rbox(Vector((0.62, -1.0, 2.3)), (0.04, 0.3, 0.2), 0.02, 1, qx(-15)), TEAM)
+        for s in (-1, 1):  # the wings: a curved frame with feathers, rising from the back
+            r.solid(prim_arc(Vector((s * 0.1, 0.5, 1.4)), 0.65, 0.035, math.radians(-20), math.radians(110), qz(90), 14), WOOD)
+            for i in range(6):
+                a = math.radians(-10 + i * 20); r.solid(sph(Vector((s * 0.1, 0.5 - math.cos(a) * 0.62 + 0.07, 1.4 + math.sin(a) * 0.62)), 0.08, (0.5, 0.6, 1.6), 8), WHITE)
+    r = rider('wr', 'szyszak', TEAM, arms_)
+    merge(m, r); m.ball((-0.05, 0, 1.6), 0.45, TEAM, scale=(1.25, 1.2, 0.2), kind='ELLIPSOID')
+    return m
+
+def assyrian_beard(m, hz):
+    m.solid(sph(Vector((0, -0.33, hz - 0.42)), 0.3, (1.0, 0.7, 1.4), 14), kc('hair'))
+    for x in (-0.15, 0.0, 0.15): m.solid(sph(Vector((x, -0.42, hz - 0.5 - abs(x))), 0.07, (1, 1, 1), 8), kc('hair'))  # curls
+
+def u_assyrian_slinger():
+    m, hz = person('assyrian_slinger', 'assyrian', TEAM, legs=kc('legs'), face=assyrian_beard, beard=False)
+    arm(m, 1, (0.45, -0.1, 1.55)); arm(m, -1, (-0.45, -0.2, 0.75))
+    m.solid(prim_arc(Vector((0.45, -0.1, 1.85)), 0.28, 0.018, math.radians(-80), math.radians(260), qx(90), 20), rgb('#c9a46a'))
+    m.solid(sph(Vector((0.72, -0.1, 1.85)), 0.07, (1, 1, 1), 8), rgb('#8a8478'))
+    return m
+
+def u_nau():  # Portuguese carrack: high castles, square sails with crosses, crow's nests
+    m = Model('nau'); hull(m, 2.8, 1.1, 0.8, rgb('#7a4a28'), GOLD, sheer=0.35)
+    m.solid(rbox(Vector((-1.05, 0, 1.1)), (0.7, 0.95, 0.4), 0.05), rgb('#6a3a20')); m.solid(rbox(Vector((1.0, 0, 1.05)), (0.5, 0.8, 0.3), 0.05), rgb('#6a3a20'))
+    for x, h, w in ((-0.5, 1.9, 0.85), (0.2, 2.4, 1.05), (0.85, 1.7, 0.75)):
+        mast(m, x, h, 0.7); sail(m, x + 0.04, 1.2, w, h * 0.45, WHITE)
+        m.solid(rbox(Vector((x + 0.1, 0, 1.2 + h * 0.22)), (0.03, 0.22, 0.22), 0.0), TEAM); m.solid(rbox(Vector((x + 0.1, 0, 1.2 + h * 0.22)), (0.03, 0.07, 0.5), 0.0), TEAM)
+        m.solid(cyl((x, 0, 0.7 + h - 0.15), (x, 0, 0.7 + h - 0.05), 0.1, 0.12, 10), WOOD)  # crow's nest
+    return m
+
+def u_sea_beggar():  # Dutch privateer: a sleek fluyt with gun ports and pennants
+    m = Model('sea_beggar'); hull(m, 2.6, 0.85, 0.6, rgb('#2a2a2a'), rgb('#e8862a'), sheer=0.25)
+    for x in (-0.6, -0.2, 0.2, 0.6):
+        for s in (-1, 1): m.solid(rbox(Vector((x, s * 0.42, 0.45)), (0.12, 0.04, 0.1), 0.02), rgb('#e8862a'))
+    for x, h in ((-0.4, 1.7), (0.4, 2.0)):
+        mast(m, x, h, 0.55); sail(m, x + 0.04, 1.0, 0.8, h * 0.45, CREAM)
+        m.solid(rbox(Vector((x + 0.2, 0, 0.55 + h - 0.05)), (0.4, 0.03, 0.1), 0.02), TEAM)  # pennant
+    return m
+
+# each civilization's unique unit: (culture kit, builder, sideways, size)
+UNIQUE = {
+    'legion': ('mediterranean', u_legion, False, 0.62), 'samurai': ('east_asian', u_samurai, False, 0.7), 'crouching_tiger': ('east_asian', u_crouching_tiger, True, 0.62),
+    'minuteman': ('european', u_minuteman, False, 0.62), 'varu': ('south_asian', u_varu, True, 0.82), 'jong': ('south_asian', u_jong, True, 0.85),
+    'keshig': ('east_asian', u_keshig, True, 0.7), 'impi': ('african', u_impi, False, 0.62), 'immortal': ('middle_eastern', u_immortal, False, 0.64),
+    'maryannu': ('middle_eastern', u_maryannu, True, 0.78), 'gaesatae': ('european', u_gaesatae, False, 0.66), 'mamluk': ('middle_eastern', u_mamluk, True, 0.72),
+    'redcoat': ('european', u_redcoat, False, 0.64), 'eagle_warrior': ('mesoamerican', u_eagle_warrior, False, 0.62), 'kispoko': ('mesoamerican', u_kispoko, True, 0.72),
+    'hoplite': ('mediterranean', u_hoplite, False, 0.66), 'landsknecht': ('european', u_landsknecht, False, 0.62), 'cossack': ('european', u_cossack, True, 0.72),
+    'tercio': ('mediterranean', u_tercio, False, 0.62), 'janissary': ('middle_eastern', u_janissary, False, 0.66), 'hwacha': ('east_asian', u_hwacha, True, 0.66),
+    'voi_chien': ('south_asian', u_voi_chien, True, 0.82), 'berserker': ('european', u_berserker, False, 0.62), 'maori_warrior': ('south_asian', u_maori_warrior, False, 0.62),
+    'kuk_field_gun': ('european', u_kuk_field_gun, True, 0.7), 'quinquereme': ('mediterranean', u_quinquereme, True, 0.88), 'dromon': ('mediterranean', u_dromon, True, 0.85),
+    'winged_hussar': ('european', u_winged_hussar, True, 0.76), 'assyrian_slinger': ('middle_eastern', u_assyrian_slinger, False, 0.62), 'nau': ('mediterranean', u_nau, True, 0.9),
+    'sea_beggar': ('european', u_sea_beggar, True, 0.82), 'domrey': ('south_asian', u_domrey, True, 0.82), 'ngao_mbebe': ('african', u_ngao_mbebe, False, 0.64),
+}
+# unit types the painted art varies by culture (godot/art/units/<culture>/): one model per culture each
+VARIED = ['warrior', 'slinger', 'archer', 'spearman', 'swordsman', 'horseman', 'crossbowman', 'pikeman', 'knight', 'musketman', 'cavalry',
+          'rifleman', 'infantry', 'mech_infantry', 'special_forces', 'scout', 'settler', 'missionary']
+
 # ---------------------------------------------------------------- the list
-SIDEWAYS = {'knight', 'cavalry', 'caravan', 'settler', 'catapult', 'bombard', 'field_cannon', 'artillery', 'tank', 'modern_armor',
+SIDEWAYS = {'horseman', 'knight', 'cavalry', 'caravan', 'settler', 'catapult', 'bombard', 'field_cannon', 'artillery', 'tank', 'modern_armor',
             'mech_infantry', 'rocket_artillery', 'galley', 'caravel', 'ironclad', 'battleship', 'destroyer', 'submarine', 'fighter',
             'bomber', 'jet_fighter'}
-B_ = {'scout': scout, 'migrant': migrant, 'commander': commander, 'scarecrow': scarecrow, 'slinger': slinger, 'swordsman': swordsman,
+B_ = {'warrior': warrior, 'spearman': spearman, 'archer': archer, 'horseman': horseman,
+      'scout': scout, 'migrant': migrant, 'commander': commander, 'scarecrow': scarecrow, 'slinger': slinger, 'swordsman': swordsman,
       'crossbowman': crossbowman, 'pikeman': pikeman, 'musketman': musketman, 'rifleman': rifleman, 'infantry': infantry,
       'machine_gun': machine_gun, 'special_forces': special_forces, 'great_prophet': great_prophet, 'great_scientist': great_scientist,
       'great_engineer': great_engineer, 'great_merchant': great_merchant, 'great_artist': great_artist, 'great_general': great_general,
@@ -711,16 +1307,24 @@ B_ = {'scout': scout, 'migrant': migrant, 'commander': commander, 'scarecrow': s
       'catapult': catapult, 'bombard': bombard, 'field_cannon': field_cannon, 'artillery': artillery, 'tank': tank, 'modern_armor': modern_armor,
       'mech_infantry': mech_infantry, 'rocket_artillery': rocket_artillery, 'galley': galley, 'caravel': caravel, 'ironclad': ironclad,
       'battleship': battleship, 'destroyer': destroyer, 'submarine': submarine, 'fighter': fighter, 'bomber': bomber, 'jet_fighter': jet_fighter}
-SIZE = {'knight': 0.72, 'cavalry': 0.7, 'caravan': 0.72, 'settler': 0.8, 'catapult': 0.7, 'bombard': 0.7, 'field_cannon': 0.66, 'artillery': 0.72,
+SIZE = {'horseman': 0.7, 'knight': 0.72, 'cavalry': 0.7, 'caravan': 0.72, 'settler': 0.8, 'catapult': 0.7, 'bombard': 0.7, 'field_cannon': 0.66, 'artillery': 0.72,
         'tank': 0.72, 'modern_armor': 0.76, 'mech_infantry': 0.72, 'rocket_artillery': 0.74, 'galley': 0.8, 'caravel': 0.85, 'ironclad': 0.8,
         'battleship': 0.9, 'destroyer': 0.85, 'submarine': 0.78, 'fighter': 0.72, 'bomber': 0.85, 'jet_fighter': 0.75, 'pikeman': 0.86}  # (the pike is the tallest part)
 
-def make(kind):
-    m = B_[kind]()
-    if kind in SIDEWAYS: turn(m, qz(TURN))
+def make(fn, culture, sideways):
+    kit(culture); m = fn()
+    if sideways: turn(m, qz(TURN))
     return m
 
-MODELS = {'unit_' + k: (lambda k=k: make(k), SIZE.get(k, 0.62), 0.02 if k not in SIDEWAYS else 0.025, 2500) for k in B_}
+# name: (builder, size (largest dimension), metaball resolution, triangle budget)
+MODELS = {}
+for k, fn in B_.items():
+    MODELS['unit_' + k] = (lambda fn=fn, sw=k in SIDEWAYS: make(fn, None, sw), SIZE.get(k, 0.62), 0.025 if k in SIDEWAYS else 0.02, 2500)
+for k in VARIED:
+    for c in CULTURES:
+        MODELS['unit_%s_%s' % (k, c)] = (lambda fn=B_[k], c=c, sw=k in SIDEWAYS: make(fn, c, sw), SIZE.get(k, 0.62), 0.025 if k in SIDEWAYS else 0.02, 2500)
+for k, (c, fn, sw, size) in UNIQUE.items():
+    MODELS['unit_' + k] = (lambda fn=fn, c=c, sw=sw: make(fn, c, sw), size, 0.025 if sw else 0.02, 2500)
 CAP = 2000  # polygons (about twice as many triangles): dozens of units can stand in view
 
 if __name__ == '__main__':
