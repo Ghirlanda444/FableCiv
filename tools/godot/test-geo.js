@@ -84,6 +84,17 @@ AU.CIVS.forEach(c => {
   });
 });
 console.log('units   ', uniques + ' unique units and ' + cultural + ' culture versions (civ x type) resolve to their own 3D models');
+// through the eras: every culture builds its medieval, industrial and modern city from the models, walls gone by the industrial age
+let eraTris = 0;
+Object.keys(AU.PALACE_STYLES).filter(cu => models('tower_' + cu)).forEach(cu => [2, 4, 7].forEach(era => {
+  const AX = Object.assign({}, AU, { cultureOf: () => cu, G: Object.assign({}, AU.G, { era: () => era }) });
+  const s = Object.assign({}, sample, { isCity: true, pop: 40, isCapital: true, buildings: ['walls'] });
+  const r = CT.buildCity(AX, g, s, (x, z) => F.heightAt(x, z), { models }), v = r.batch.p.length / 3;
+  assert(v > 0 && v % 3 === 0 && r.batch.p.every(Number.isFinite) && r.batch.c.every(Number.isFinite), cu + ' era ' + era + ' malformed');
+  eraTris = Math.max(eraTris, v / 3);
+}));
+assert.notStrictEqual(CT.cityKey(Object.assign({}, AU, { G: Object.assign({}, AU.G, { era: () => 2 }) }), g, sample), CT.cityKey(Object.assign({}, AU, { G: Object.assign({}, AU.G, { era: () => 5 }) }), g, sample), 'the era does not rebuild the city');
+console.log('cities  ', 'medieval, industrial and modern looks for every culture; the biggest ' + eraTris + ' triangles');
 console.log('cities  ', 'Blender buildings for every culture; the biggest walled metropolis ' + modelTris + ' triangles');
 Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
 console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');

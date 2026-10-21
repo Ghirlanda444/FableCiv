@@ -1,6 +1,8 @@
 "use strict";
 // Settlements on the map, Civilization III style: every settlement is one small 3D town that looks the same for every settlement
-// of its size and culture, and grows in steps as its population grows (town, small city, city, large city, metropolis).
+// of its size, culture and era, and grows in steps as its population grows (town, small city, city, large city, metropolis).
+// Through the eras the houses become stone town houses, then brick terraces and factories, then flats, offices and towers
+// crowned in the culture's style, around the same historic landmark.
 // Houses and the central landmark follow the culture's architecture (AU.PALACE_STYLES: wall, roof and trim colours, roof shape),
 // a flag flies the owner's colour (a bigger one with a gold finial on capitals), and walls or a castle add a ring of ramparts.
 // Individual buildings are not drawn here: they appear in the "Show city" view (sprites.cityViewSprites).
@@ -11,6 +13,11 @@ const geo = typeof process !== 'undefined' && process.versions && process.versio
 const { rgb, mix, shade, hash, vert, tri, quad, box, prism, center } = geo;
 
 const TIER_NAMES = ['Town', 'Small city', 'City', 'Large city', 'Metropolis'];
+// the look of the owner's era (AU.ERAS: Ancient, Classical, Medieval, Renaissance, Industrial, Modern, Atomic, Information):
+// 0 ancient houses, 1 medieval town houses on stone ground floors, 2 industrial brick, 3 modern blocks and towers
+const ERA_NAMES = ['Ancient', 'Medieval', 'Industrial', 'Modern'];
+function eraBand(AU, civ) { const e = civ && AU.G && AU.G.era ? AU.G.era(civ) || 0 : 0; return e <= 1 ? 0 : e <= 3 ? 1 : e === 4 ? 2 : 3; }
+function eraOf(AU, civ) { return civ && AU.G && AU.G.era ? AU.G.era(civ) || 0 : 0; }
 function tierOf(s) { if (!s.isCity) return 0; const p = s.pop || 1; return p < 8 ? 1 : p < 16 ? 2 : p < 30 ? 3 : 4; }
 const RADIUS = [0.36, 0.46, 0.56, 0.66, 0.74];    // footprint of each tier
 const HOUSES = [3, 6, 10, 15, 22];              // houses around the landmark
@@ -233,6 +240,24 @@ function place(b, M, pal, x, y, z, yaw, sx, sy) {
 }
 function modelTop(M) { if (M.top === undefined) { let t = 0; for (let k = 1; k < M.v.length; k += 10) t = Math.max(t, M.v[k]); M.top = t; } return M.top; }
 
+// an industrial or modern building for a house spot: towers rise behind the landmark (spots further from the camera) in
+// bigger modern cities, offices and flats around them, low blocks at the edge; industrial towns get terraces, tenements and
+// a few factories on the outer ring. Returns { M, sx, sy } or null when the models are missing.
+function eraBuilding(p, tier, band, era, culture, mdl) {
+  const back = p.z < -0.05, k = p.k;
+  if (band === 2) {
+    const name = p.ring === 2 && p.v === 2 ? 'ind_factory' : (p.ring === 0 || p.v === 1) && tier >= 2 ? 'ind_tenement' : 'ind_terrace';
+    const M = mdl(name); return M && { M, sx: 0.85 + 0.2 * p.j, sy: 0.85 + 0.06 * tier + 0.2 * k };
+  }
+  const late = Math.max(0, era - 5) * 0.15; // Atomic and Information skylines climb higher
+  if (back && p.v !== 1 && ((p.ring === 0 && tier >= 2) || (p.ring === 1 && tier >= 4 && p.v === 0))) { // a handful of towers, of mixed heights
+    const M = mdl('tower_' + culture) || mdl('tower_european');
+    if (M) return { M, sx: 0.8 + 0.15 * p.j, sy: 0.45 + 0.1 * tier + 0.4 * k + late - (p.ring === 1 ? 0.1 : 0) };
+  }
+  const office = tier >= 2 && p.ring <= 1 && p.v !== 0, M = mdl(office ? 'mod_office' : 'mod_apartment');
+  return M && { M, sx: 0.8 + 0.2 * p.j, sy: (office ? 0.5 + 0.1 * tier : 0.55 + 0.1 * tier) + 0.2 * k + (p.ring === 2 ? -0.15 : 0) };
+}
+
 // ramparts from the Blender models: a wall stretched between round corner towers (following the ground), a gatehouse facing
 // the camera; a castle's are taller and thicker
 function modelRamparts(b, cx, cz, R, heightAt, castle, pal, mdl) {
@@ -263,7 +288,8 @@ function buildCity(AU, g, s, heightAt, opts) {
   plaza(b, c[0], c[1], R * 0.95, gy, rgb(s.isCity ? '#a8987c' : '#9c8460'));
   const blds = s.buildings || [], castle = blds.indexOf('castle') >= 0;
   const mdl = name => (opts && opts.models && opts.models(name)) || null;
-  if (castle || blds.indexOf('walls') >= 0) {
+  const band = mdl('mod_apartment') ? eraBand(AU, civ) : 0, era = eraOf(AU, civ); // (the era looks need the Blender models)
+  if ((castle || blds.indexOf('walls') >= 0) && band < 2) { // industrial and modern cities have outgrown their walls
     if (mdl('wall_seg') && mdl('wall_tower') && mdl('wall_gate')) modelRamparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, { wall: mix(wall, rgb('#b9b2a6'), 0.6), roof, trim, own }, mdl);
     else ramparts(b, c[0], c[1], Math.min(0.9, R + 0.1), heightAt, castle, wall, roof);
   }
@@ -274,7 +300,9 @@ function buildCity(AU, g, s, heightAt, opts) {
     const h = 0.11 + 0.025 * tier + 0.04 * p.k + (inner ? 0.07 : 0) + (tier === 4 && p.ring === 1 ? 0.05 : 0);
     const wc = i % 3 === 0 ? mix(wall, [1, 1, 1, 1], 0.12) : i % 3 === 1 ? shade(wall, 0.9) : wall, rc = shade(hroof, 0.86 + 0.24 * p.j);
     const rv = opts && opts.river && opts.river(x, z); if (rv && rv.d < rv.hw + 0.12) return; // the river runs through town: no house in it
-    const from = b.p.length / 3, hy = gy(x, z), M = mdl('house_' + (culture || 'mediterranean') + '_' + p.v);
+    const from = b.p.length / 3, hy = gy(x, z), cu = culture || 'mediterranean';
+    if (band >= 2) { const E = eraBuilding(p, tier, band, era, cu, mdl); if (E) { place(b, E.M, { wall: wc, roof: rc, trim, own }, x, hy, z, (p.k - 0.5) * 0.4, E.sx, E.sy); return; } }
+    const M = (band === 1 && mdl('house_' + cu + '_' + p.v + '_med')) || mdl('house_' + cu + '_' + p.v);
     if (M) { // a little bigger and taller as the city grows; turned a little, doors still toward the camera
       const sx = 0.9 + 0.25 * p.j + (inner ? 0.1 : 0), sy = 0.85 + 0.05 * tier + 0.2 * p.k + (p.ring === 0 ? -0.1 : p.ring === 1 && tier === 4 ? 0.15 : 0); // the landmark stays the tallest
       place(b, M, { wall: wc, roof: rc, trim, own }, x, hy, z, (p.k - 0.5) * 0.7, sx, sy);
@@ -306,8 +334,8 @@ function plaza(b, cx, cz, R, gy, col) {
 
 // what decides how an icon looks: it is rebuilt only when this changes
 function cityKey(AU, g, s, view) {
-  const blds = s.buildings || [];
-  return [s.tile, s.civ, tierOf(s), !!s.isCapital, blds.indexOf('walls') >= 0, blds.indexOf('castle') >= 0, !!view].join(':');
+  const blds = s.buildings || [], civ = g.civs[s.civ];
+  return [s.tile, s.civ, tierOf(s), !!s.isCapital, blds.indexOf('walls') >= 0, blds.indexOf('castle') >= 0, !!view, eraOf(AU, civ)].join(':');
 }
 
-module.exports = { TIER_NAMES, tierOf, buildCity, cityKey, SLOTS, merge, place };
+module.exports = { TIER_NAMES, ERA_NAMES, tierOf, eraBand, buildCity, cityKey, SLOTS, merge, place };

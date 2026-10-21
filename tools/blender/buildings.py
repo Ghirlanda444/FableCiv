@@ -575,12 +575,129 @@ def wall_gate():
     m.solid(block((0, -d / 2 - 0.003, h - 0.07), (0.035, 0.004, 0.05), 0.0), OWNER)  # banner over the gate
     return m
 
+# ---------------------------------------------------------------- the city through the eras (city.js picks by the owner's era)
+# Medieval–Renaissance: each culture's house on a stone ground floor. Industrial: brick terraces, tenements and a factory.
+# Modern on: apartment blocks, glass offices and, in big cities, towers crowned in the culture's style. The landmark stays.
+BRICK, CONCRETE, GLASS, SMOKE = rgb('#a85a40'), rgb('#c8c2b6'), rgb('#78acd6'), rgb('#d8d6d2')
+
+def bounds(m):
+    xs, ys = [], []
+    for o, c in m.solids:
+        for v in o.data.vertices: p = o.matrix_world @ v.co; xs.append(p.x); ys.append(p.y)
+    return min(xs), max(xs), min(ys), max(ys)
+
+def house_medieval(culture, v):
+    """the culture's house raised on a stone ground floor with a door and windows: a two-storey town house"""
+    m = HOUSES[culture](v); x0, x1, y0, y1 = bounds(m); H = 0.1
+    for i, (o, c) in enumerate(m.solids): o.matrix_world = Matrix.Translation((0, 0, H)) @ o.matrix_world
+    w, d = min(0.2, x1 - x0 - 0.02), min(0.18, y1 - y0 - 0.02); cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    m.solid(block((cx, cy, -SINK), (w, d, SINK + H + 0.01), 0.008), rgb('#b0a690'))
+    m.solid(block((cx, cy, H - 0.012), (w + 0.012, d + 0.012, 0.016), 0.003), TRIM)  # string course
+    door(m, cx, cy - d / 2, 0, 0.032, 0.065, arch=True)
+    for sx in (-1, 1): window(m, cx + sx * w * 0.3, cy - d / 2, 0.04, 0.022, 0.03, frame=TRIM)
+    return m
+
+def windows_grid(m, cx, y, z0, w, floors, fh, cols, col=WIN, frame=None):
+    for f in range(floors):
+        for i in range(cols):
+            window(m, cx - w / 2 + w * (i + 0.5) / cols, y, z0 + f * fh + fh * 0.3, w / cols * 0.55, fh * 0.45, frame=frame)
+
+def ind_terrace():  # a brick row of houses with chimneys
+    m = Model('it'); w, d, h = 0.22, 0.13, 0.2
+    m.solid(block((0, 0, -SINK), (w, d, SINK + h), 0.006), BRICK)
+    gable_roof(m, (0, 0, h), w, d, 0.06, ROOF, BRICK)
+    for x in (-0.07, 0.0, 0.07): door(m, x - 0.015, -d / 2, 0, 0.022, 0.05)
+    windows_grid(m, 0, -d / 2, 0.07, w * 0.95, 2, 0.065, 4, frame=TRIM)
+    for x in (-0.08, 0.02, 0.09): m.solid(block((x, 0.02, h + 0.02), (0.018, 0.018, 0.06), 0.002), BRICK)
+    return m
+
+def ind_tenement():  # a tall brick tenement with a flat roof
+    m = Model('in'); w, d, h = 0.16, 0.15, 0.3
+    m.solid(block((0, 0, -SINK), (w, d, SINK + h), 0.006), BRICK)
+    m.solid(block((0, 0, h - 0.01), (w + 0.012, d + 0.012, 0.022), 0.003), TRIM)
+    door(m, 0, -d / 2, 0, 0.03, 0.06)
+    windows_grid(m, 0, -d / 2, 0.075, w * 0.9, 3, 0.07, 3, frame=TRIM)
+    m.solid(block((0.04, 0.03, h + 0.01), (0.04, 0.04, 0.04), 0.003), ROOF)
+    return m
+
+def ind_factory():  # sawtooth roofs, a tall chimney with smoke
+    m = Model('if'); w, d, h = 0.26, 0.18, 0.12
+    m.solid(block((0, 0, -SINK), (w, d, SINK + h), 0.006), BRICK)
+    for i in range(3):
+        x = -w / 2 + w * (i + 0.5) / 3
+        m.solid(loft([[Vector((x - w / 6, -d / 2 - 0.01, h)), Vector((x + w / 6, -d / 2 - 0.01, h)), Vector((x - w / 6, -d / 2 - 0.01, h + 0.07))],
+                      [Vector((x - w / 6, d / 2 + 0.01, h)), Vector((x + w / 6, d / 2 + 0.01, h)), Vector((x - w / 6, d / 2 + 0.01, h + 0.07))]]), ROOF)
+    door(m, -0.05, -d / 2, 0, 0.06, 0.08, col=DARKWOOD); windows_grid(m, 0.06, -d / 2, 0.02, 0.1, 1, 0.1, 2)
+    m.solid(cyl((0.1, 0.05, h), (0.1, 0.05, h + 0.36), 0.03, 0.024, 12), BRICK)
+    m.solid(cyl((0.1, 0.05, h + 0.3), (0.1, 0.05, h + 0.32), 0.032, 0.032, 12), TRIM)
+    for k, (dx, dz, r) in enumerate(((0.0, 0.42, 0.035), (0.03, 0.47, 0.045), (0.07, 0.52, 0.055))):
+        m.solid(M.prim_sphere(Vector((0.1 + dx, 0.05, h + dz)), r, (1, 1, 0.85), 10), SMOKE)
+    return m
+
+def mod_apartment():  # a concrete block of flats with balconies
+    m = Model('ma'); w, d, h = 0.17, 0.15, 0.34; fl = 5
+    m.solid(block((0, 0, -SINK), (w, d, SINK + h), 0.006), WALL)
+    for f in range(fl):
+        z = 0.02 + f * h / fl
+        m.solid(block((0, -d / 2 - 0.003, z + 0.025), (w * 0.86, 0.008, 0.03), 0.0), WIN)  # window band
+        if f: m.solid(block((0, -d / 2 - 0.015, z), (w * 0.9, 0.03, 0.008), 0.002), TRIM)  # balcony slab
+    door(m, 0, -d / 2, 0, 0.03, 0.04)
+    m.solid(block((-0.04, 0.02, h), (0.05, 0.05, 0.035), 0.003), CONCRETE); m.solid(block((0.04, 0.0, h), (0.04, 0.03, 0.02), 0.003), ROOF)
+    return m
+
+def mod_office():  # a glass office block with mullions
+    m = Model('mo'); w, d, h = 0.16, 0.16, 0.5
+    m.solid(block((0, 0, -SINK), (w, d, SINK + h), 0.004), GLASS)
+    for x in (-0.06, -0.02, 0.02, 0.06): m.solid(block((x, -d / 2 - 0.003, 0.0), (0.008, 0.006, h), 0.0), TRIM)
+    for sx in (-1, 1): m.solid(block((sx * (w / 2 + 0.002), 0, 0.0), (0.006, d, h), 0.0), WALL)
+    m.solid(block((0, 0, h - 0.01), (w + 0.01, d + 0.01, 0.03), 0.003), WALL)
+    m.solid(block((0, 0, 0), (w + 0.012, d + 0.012, 0.04), 0.003), WALL)  # lobby
+    return m
+
+def mod_tower(culture):
+    """a skyscraper: glass shaft with setbacks, crowned in the culture's style"""
+    m = Model('mt'); w = 0.17; z = 0.0
+    for k, (ww, hh) in enumerate(((w, 0.42), (w * 0.82, 0.26), (w * 0.64, 0.14))):
+        m.solid(block((0, 0, z - (SINK if k == 0 else 0)), (ww, ww, hh + (SINK if k == 0 else 0)), 0.004), GLASS)
+        for x in (-0.35, 0.0, 0.35): m.solid(block((x * ww, -ww / 2 - 0.003, z), (0.007, 0.006, hh), 0.0), TRIM)
+        m.solid(block((0, 0, z + hh - 0.012), (ww + 0.012, ww + 0.012, 0.018), 0.003), WALL)
+        z += hh
+    top = z; c = (0, 0, top)
+    if culture in ('east_asian', 'southeast_asian'):  # stacked pagoda roofs
+        ww = w * 0.64
+        for i in range(3): curved_roof(m, (0, 0, top + i * 0.06), ww * (1 - 0.18 * i) + 0.02, ww * (1 - 0.18 * i) + 0.02, 0.04, ROOF, 0.02, 0.025); 
+        m.solid(cyl((0, 0, top + 0.2), (0, 0, top + 0.32), 0.008, 0.002, 6), GOLD)
+    elif culture in ('south_asian', 'middle_eastern'):  # an onion dome and a needle
+        dome(m, c, w * 0.26, 0.13, ROOF, 14, onion=culture == 'south_asian', pointed=culture == 'middle_eastern')
+        m.solid(cyl((0, 0, top + 0.13), (0, 0, top + 0.26), 0.006, 0.0, 6), GOLD)
+    elif culture == 'mediterranean':  # a colonnaded drum and a dome
+        for k in range(8):
+            a = 2 * math.pi * k / 8; m.solid(cyl((math.cos(a) * 0.045, math.sin(a) * 0.045, top), (math.cos(a) * 0.045, math.sin(a) * 0.045, top + 0.06), 0.006, 0.006, 5), PALE)
+        m.solid(lathe((0, 0, top + 0.06), [(0.055, 0), (0.055, 0.012)], 12, True), TRIM); dome(m, (0, 0, top + 0.072), 0.05, 0.06, ROOF, 12)
+    elif culture == 'african':  # a crown of pinnacles
+        for sx in (-1, 1):
+            for sy in (-1, 1): m.solid(lathe((sx * 0.035, sy * 0.035, top), [(0.016, 0), (0.01, 0.08), (0, 0.11)], 6, True), WALL)
+        m.solid(lathe((0, 0, top), [(0.025, 0), (0.015, 0.14), (0, 0.18)], 8, True), WALL)
+    elif culture == 'mesoamerican':  # a stepped crown
+        ww = w * 0.6
+        for i in range(3): m.solid(block((0, 0, top + i * 0.035), (ww * (1 - 0.25 * i), ww * (1 - 0.25 * i), 0.035), 0.003), WALL if i % 2 == 0 else TRIM)
+        m.solid(block((0, 0, top + 0.105), (0.03, 0.03, 0.04), 0.003), ROOF)
+    else:  # Europe and the rest: a pointed spire
+        m.solid(lathe(c, [(w * 0.3, 0), (w * 0.2, 0.08), (w * 0.08, 0.18), (0, 0.3)], 8, False, math.pi / 8), ROOF)
+    return m
+
+ERA_CULTURES = ['mediterranean', 'european', 'east_asian', 'south_asian', 'middle_eastern', 'african', 'mesoamerican']
+
 MODELS = {}
 for c in HOUSES:
     for v in range(3): MODELS['house_%s_%d' % (c, v)] = (lambda c=c, v=v: HOUSES[c](v))
     MODELS['landmark_%s_0' % c] = (lambda c=c: hall(c))
     for t in range(1, 5): MODELS['landmark_%s_%d' % (c, t)] = (lambda c=c, t=t: LANDMARKS[c](t))
 MODELS.update({'wall_seg': wall_seg, 'wall_tower': wall_tower, 'wall_gate': wall_gate})
+for c in ERA_CULTURES:
+    for v in range(3): MODELS['house_%s_%d_med' % (c, v)] = (lambda c=c, v=v: house_medieval(c, v))
+    MODELS['tower_%s' % c] = (lambda c=c: mod_tower(c))
+MODELS.update({'ind_terrace': ind_terrace, 'ind_tenement': ind_tenement, 'ind_factory': ind_factory, 'mod_apartment': mod_apartment, 'mod_office': mod_office})
 CAP = 1600  # triangles per model at most (a metropolis draws 22 houses and a landmark)
 
 def assemble(m, name, cap=CAP):
@@ -620,7 +737,7 @@ if __name__ == '__main__':
         o = assemble(MODELS[name](), name); n = M.export(o, os.path.join(out, name + '.json'), None)
         print('model %-30s %5d triangles' % (name, n)); objs.append(o)
         if prev:
-            cul = next((c for c in PALETTES if name.startswith(('house_' + c + '_', 'landmark_' + c + '_'))), 'mediterranean'); w, r, t = (rgb(h) for h in PALETTES[cul])
+            cul = next((c for c in PALETTES if name.startswith(('house_' + c + '_', 'landmark_' + c + '_', 'tower_' + c))), 'mediterranean'); w, r, t = (rgb(h) for h in PALETTES[cul])
             palettize(o, {0.2: w if not name.startswith('wall') else (0.72, 0.7, 0.66), 0.4: r, 0.6: t, 0.0: (0.85, 0.2, 0.2)})
             S = Matrix.Scale(5, 4); o.data.transform(S)  # preview at a readable size
     if prev: M.preview(objs, os.path.abspath(prev))
