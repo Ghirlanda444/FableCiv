@@ -151,8 +151,9 @@ def bake_ao(obj, rays=24, dist=0.6):
     for li, l in enumerate(me.loops):
         c = attr.data[li].color; k = occ[l.vertex_index]
         # team-colour corners keep only the shading (grey), which the game multiplies by the owner's colour
-        # (buildings: alpha 0.2/0.4/0.6 likewise mark the culture's wall, roof and trim colours, see buildings.py)
-        attr.data[li].color = (k, k, k, c[3]) if c[3] < 0.95 else (c[0] * k, c[1] * k, c[2] * k, c[3])
+        # (buildings: alpha 0.2/0.4/0.6 likewise mark the culture's wall, roof and trim colours, see buildings.py; 0.7 and 0.8
+        # mark skin and metal on units, which keep their colours)
+        attr.data[li].color = (k, k, k, c[3]) if c[3] < 0.65 else (c[0] * k, c[1] * k, c[2] * k, c[3])
 
 def export(obj, path, size):
     """indexed triangles in game units (y up, scaled so the largest dimension is `size`, or as modelled if None): { v: [x,y,z, nx,ny,nz, r,g,b,a ...],
@@ -177,7 +178,8 @@ def export(obj, path, size):
 
 # ---------------------------------------------------------------- palette
 SKIN, HAIR, PANTS, BOOTS = rgb('#eaa77c'), rgb('#4e2e18'), rgb('#5a4a3a'), rgb('#4a3020')
-METAL, WOOD, LEATHER, EYE, WHITE = rgb('#b9bec8'), rgb('#8a5a32'), rgb('#7a4a26'), rgb('#1e1a1c'), rgb('#ffffff')
+METAL, WOOD, LEATHER, EYE, WHITE = rgb('#b9bec8', 0.8), rgb('#8a5a32'), rgb('#7a4a26'), rgb('#1e1a1c'), rgb('#ffffff')
+# vertex alpha marks the material for the unit shader: 0.8 metal (a shiny highlight), 0.7 skin (soft warm light), 1 the rest
 def qy(deg): return Quaternion((0, 1, 0), math.radians(deg))
 def qx(deg): return Quaternion((1, 0, 0), math.radians(deg))
 def qz(deg): return Quaternion((0, 0, 1), math.radians(deg))

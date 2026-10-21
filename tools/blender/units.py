@@ -15,9 +15,9 @@ from models import (rgb, Model, TEAM, SKIN, HAIR, PANTS, BOOTS, METAL, WOOD, LEA
                     prim_sphere as sph, prim_arc, look_up, turn, qx, qy, qz, horse, cow, elephant)
 import buildings as B
 
-GOLD, DARK, STEEL, IRON = rgb('#e8b84a'), rgb('#2a2a30'), rgb('#7d8796'), rgb('#4a4e58')
+GOLD, DARK, STEEL, IRON = rgb('#e8b84a', 0.8), rgb('#2a2a30'), rgb('#7d8796', 0.8), rgb('#4a4e58', 0.8)  # (alpha 0.8: metal)
 KHAKI, OLIVE, OLIVE2, NAVY, CREAM = rgb('#a8955e'), rgb('#5f6e3a'), rgb('#4b5a2e'), rgb('#2c3c6c'), rgb('#efe6cf')
-STRAW, RED, BLACK, GREY, BRONZE = rgb('#d8b45a'), rgb('#c0392b'), rgb('#22202a'), rgb('#9aa0a8'), rgb('#b07a3a')
+STRAW, RED, BLACK, GREY, BRONZE = rgb('#d8b45a'), rgb('#c0392b'), rgb('#22202a'), rgb('#9aa0a8'), rgb('#b07a3a', 0.8)
 TURN = -34  # degrees: sideways models turn three-quarters toward the camera
 
 # culture kits (the cultures AU.cultureOf gives the civilizations). K is the kit of the model being built: person() and the
@@ -58,7 +58,7 @@ K = dict(BASE)
 def kit(culture=None):
     global K
     K = dict(BASE, **(KITS.get(culture) or {}))
-def kc(key): return rgb(K[key]) if isinstance(K[key], str) else K[key]
+def kc(key): return rgb(K[key], 0.7 if key == 'skin' else 1.0) if isinstance(K[key], str) else K[key]  # (alpha 0.7: skin)
 
 # ---------------------------------------------------------------- solids
 def rbox(c, s, r=0.06, seg=2, rot=None):
@@ -89,17 +89,28 @@ def person(name, hat='hair', top=TEAM, legs=PANTS, boots=BOOTS, belt=LEATHER, sk
     m = Model(name); hz = z + 1.42
     nb, ns = len(m.balls), len(m.solids)
     m.ball((0, 0, hz), 0.5 * scale_head, skin)
+    for s in (-1, 1): m.ball((s * 0.21, -0.15, hz - 0.25), 0.22, skin)  # chubby cheeks (below and behind the eyes)
+    m.ball((0, -0.16, hz - 0.33), 0.18, skin)                            # a soft chin
     headwear(m, hat, hz, hair)
-    for s in (-1, 1):  # big chibi eyes: white, a large dark iris low in it, a highlight
-        m.solid(sph(Vector((s * 0.185, -0.44, hz - 0.02)), 0.11, (0.85, 0.45, 1.2), 12), WHITE)
-        m.solid(sph(Vector((s * 0.18, -0.475, hz - 0.04)), 0.075, (0.85, 0.4, 1.15), 12), EYE)
-        m.solid(sph(Vector((s * 0.155, -0.51, hz + 0.0)), 0.026, (1, 0.6, 1), 6), WHITE)
-    m.ball((0, -0.5, hz - 0.12), 0.06, (min(1, skin[0] * 1.06), skin[1] * 0.9, skin[2] * 0.88, 1))  # nose
+    lid, brow = rgb('#2a1a14'), hair  # brows in the hair colour
+    for s in (-1, 1):  # big chibi eyes: white, a large iris low in it, two highlights and a lash flick
+        m.solid(sph(Vector((s * 0.185, -0.44, hz - 0.02)), 0.115, (0.85, 0.45, 1.2), 14), WHITE)
+        m.solid(sph(Vector((s * 0.18, -0.475, hz - 0.04)), 0.078, (0.85, 0.4, 1.15), 14), EYE)  # a large dark iris: contrast reads at map size
+        m.solid(sph(Vector((s * 0.155, -0.51, hz + 0.005)), 0.03, (1, 0.6, 1), 8), WHITE)
+        m.solid(sph(Vector((s * 0.2, -0.515, hz - 0.1)), 0.014, (1, 0.6, 1), 6), WHITE)
+        m.solid(cyl((s * 0.29, -0.47, hz + 0.04), (s * 0.34, -0.45, hz + 0.09), 0.018, 0.006, 5), lid)
+        m.solid(cyl((s * 0.12, -0.49, hz + 0.2), (s * 0.25, -0.465, hz + 0.215), 0.017, 0.012, 6), brow)  # a thin eyebrow
+        m.solid(sph(Vector((s * 0.31, -0.4, hz - 0.25)), 0.065, (1.25, 0.4, 0.6), 10), rgb('#f39a9a'))  # blush, below the eyes
+    m.ball((0, -0.5, hz - 0.12), 0.06, (min(1, skin[0] * 1.06), skin[1] * 0.9, skin[2] * 0.88, 0.7))  # nose
+    m.solid(prim_arc(Vector((0, -0.49, hz - 0.21)), 0.06, 0.016, math.radians(205), math.radians(335), None, 10), rgb('#7a3a2a'))  # a little smile
     if beard and K['beard']: short_beard(m, hz, rgb(K['beard']))
     if face: face(m, hz)
     look_up(m, nb, ns, Vector((0, 0, hz)), 24)
     m.ball((0, 0, z + 0.78), 0.36, top, scale=(1.0, 0.85, 1.05), kind='ELLIPSOID')
-    if belt: m.ball((0, 0, z + 0.6), 0.34, belt, scale=(1.02, 0.9, 0.22), kind='ELLIPSOID')
+    m.solid(prim_arc(Vector((0, 0.0, z + 1.05)), 0.19, 0.045, 0, 2 * math.pi, qx(90), 20), CREAM)  # collar
+    if belt:
+        m.ball((0, 0, z + 0.6), 0.34, belt, scale=(1.02, 0.9, 0.22), kind='ELLIPSOID')
+        m.solid(rbox(Vector((0, -0.31, z + 0.6)), (0.13, 0.05, 0.1), 0.02, 1), GOLD)  # buckle
     if sitting:
         for s in (-1, 1):
             m.capsule((s * 0.15, 0, z + 0.55), (s * 0.42, -0.1, z + 0.3), 0.12, legs)
@@ -112,6 +123,7 @@ def person(name, hat='hair', top=TEAM, legs=PANTS, boots=BOOTS, belt=LEATHER, sk
         for s in (-1, 1):
             m.capsule((s * 0.15, 0, z + 0.5), (s * 0.16, 0, z + 0.18), 0.12, legs)
             m.ball((s * 0.16, -0.05, z + 0.1), 0.14, boots, scale=(1, 1.3, 0.8), kind='ELLIPSOID')
+            m.solid(prim_arc(Vector((s * 0.16, 0.0, z + 0.22)), 0.12, 0.035, 0, 2 * math.pi, qx(90), 16), boots)  # boot cuff
     return m, hz
 
 def headwear(m, kind, hz, hair=HAIR):
@@ -120,8 +132,12 @@ def headwear(m, kind, hz, hair=HAIR):
     def hair_cap(): m.ball((0, 0.06, hz + 0.2), 0.5, hair, scale=(1.06, 1.02, 0.78), kind='ELLIPSOID')
     if kind == 'hair':
         hair_cap(); st = K['style']
-        if st in ('hair', 'curly', 'bowl', 'topknot'):
-            for s in (-1, 0, 1): m.ball((s * 0.2, -0.33, hz + 0.3 - abs(s) * 0.05 - (0.05 if st == 'bowl' else 0)), 0.15, hair)  # fringe
+        m.ball((0, 0.28, hz + 0.02), 0.42, hair, scale=(1.05, 0.8, 1.0), kind='ELLIPSOID')  # fuller at the back
+        if st in ('hair', 'curly', 'bowl', 'topknot'):  # a fringe of chunky locks, side locks, and a cowlick on top
+            for i in range(-2, 3):
+                m.ball((i * 0.13, -0.35, hz + 0.27 - abs(i) * 0.05 - (0.04 if st == 'bowl' else 0)), 0.12, hair, scale=(0.7, 0.75, 1.35), rot=qy(-i * 12), kind='ELLIPSOID')
+            for s in (-1, 1): m.ball((s * 0.43, -0.12, hz - 0.02), 0.12, hair, scale=(0.6, 0.75, 1.5), kind='ELLIPSOID')
+            if st == 'hair': m.solid(prim_arc(Vector((0.06, 0.02, hz + 0.66)), 0.12, 0.035, math.radians(-20), math.radians(200), None, 10), hair)
         if st == 'topknot': m.solid(sph(Vector((0, 0.12, hz + 0.6)), 0.15, (1, 1, 1), 12), hair)
         if st == 'curly':
             for a in range(0, 360, 45): m.ball((math.cos(math.radians(a)) * 0.42, 0.08 + math.sin(math.radians(a)) * 0.42, hz + 0.28), 0.13, hair)
@@ -314,6 +330,8 @@ def headwear(m, kind, hz, hair=HAIR):
 def arm(m, side, hand, z=0.0, sleeve=TEAM, skin=None):
     sh = Vector((side * 0.33, 0, z + 0.95)); hand = Vector(hand)
     m.capsule(sh, sh.lerp(hand, 0.85), 0.1, sleeve); m.ball(hand, 0.11, skin or kc('skin'))
+    if abs(sleeve[3] - 0.7) > 0.01:  # a cuff at the wrist (not on bare arms)
+        d = (hand - sh).normalized(); m.solid(prim_arc(sh.lerp(hand, 0.8), 0.105, 0.03, 0, 2 * math.pi, Vector((0, 1, 0)).rotation_difference(d), 14), CREAM)
 
 def short_beard(m, hz, col):
     m.solid(sph(Vector((0, -0.34, hz - 0.3)), 0.24, (1.15, 0.7, 0.8), 14), col)
@@ -1325,7 +1343,7 @@ for k in VARIED:
         MODELS['unit_%s_%s' % (k, c)] = (lambda fn=B_[k], c=c, sw=k in SIDEWAYS: make(fn, c, sw), SIZE.get(k, 0.62), 0.025 if k in SIDEWAYS else 0.02, 2500)
 for k, (c, fn, sw, size) in UNIQUE.items():
     MODELS['unit_' + k] = (lambda fn=fn, c=c, sw=sw: make(fn, c, sw), size, 0.025 if sw else 0.02, 2500)
-CAP = 2000  # polygons (about twice as many triangles): dozens of units can stand in view
+CAP = 2800  # polygons (about twice as many triangles): dozens of units can stand in view
 
 if __name__ == '__main__':
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else sys.argv[1:]

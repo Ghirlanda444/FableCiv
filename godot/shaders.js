@@ -366,20 +366,36 @@ void fragment() {
 
 // 3D units (models from tools/blender/models.py): vertex colours with baked shading; parts with vertex alpha 0 take the
 // owner's colour (their rgb holds only the shading), soft toon light like the props
+// the 3D units: the owner's colour where the vertex alpha is 0; metal (alpha 0.8) gets a crisp cartoon highlight, skin (0.7)
+// a soft warm light that wraps into the shade, and everything a cool rim light, so the chibi models read like painted toys
 const UNIT_3D = `
 shader_type spatial;
 render_mode cull_disabled;
 uniform vec3 team : source_color = vec3(0.8, 0.2, 0.2);
 varying vec3 vnorm;
+varying float metal;
+varying float skin;
 void vertex() { vnorm = (MODELVIEW_MATRIX * vec4(NORMAL, 0.0)).xyz; }
 void fragment() {
   NORMAL = normalize(vnorm);
   vec3 c = pow(COLOR.rgb, vec3(2.2));
   ALBEDO = mix(team * COLOR.rgb, c, step(0.5, COLOR.a));
+  metal = step(0.75, COLOR.a) * step(COLOR.a, 0.85);
+  skin = step(0.65, COLOR.a) * step(COLOR.a, 0.75);
   ROUGHNESS = 1.0;
   SPECULAR = 0.0;
 }
-${TOON_LIGHT}
+void light() {
+  float ndl = dot(NORMAL, LIGHT);
+  float d = mix(smoothstep(-0.1, 0.45, ndl), smoothstep(-0.4, 0.55, ndl), skin); // skin wraps further into the shade
+  d = mix(d, floor(d * 3.0 + 0.5) / 3.0, 0.15);
+  float lit = d * mix(0.5, 1.0, ATTENUATION);
+  float rim = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0) * 0.28;
+  vec3 warm = vec3(0.35, 0.1, 0.06) * skin * (1.0 - d) * 0.5;                       // a rosy glow in the shade of skin
+  DIFFUSE_LIGHT += (lit + rim * (0.4 + 0.6 * d)) * LIGHT_COLOR / PI + warm * LIGHT_COLOR / PI;
+  float spec = pow(max(dot(NORMAL, normalize(LIGHT + VIEW)), 0.0), 60.0);
+  SPECULAR_LIGHT += smoothstep(0.35, 0.55, spec) * metal * 0.9 * LIGHT_COLOR * ATTENUATION; // a crisp toon highlight on metal
+}
 `;
 
 // unit health bars, Civ style: a small bar over each unit facing the camera, framed in the owner's colour, filling green,
