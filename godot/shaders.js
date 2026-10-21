@@ -451,4 +451,71 @@ void vertex() {
 void fragment() { ALBEDO = ink; }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, INK, HEALTH_BAR };
+// yields lens icons (yields.js; one MultiMesh, instance custom data = (kind, count)): a round badge with an ink rim and a white
+// glyph — wheat (food), hammer (production), coin (gold), flask (knowledge), star (heritage) — and a count bubble from 2 up.
+// Billboarded and drawn over the scene like the health bars.
+const YIELD_ICON = `
+shader_type spatial;
+render_mode unshaded, skip_vertex_transform, cull_disabled, depth_test_disabled, shadows_disabled;
+varying vec2 kc;
+void vertex() {
+  vec3 o = (MODEL_MATRIX * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vec3 right = normalize(INV_VIEW_MATRIX[0].xyz), up = normalize(INV_VIEW_MATRIX[1].xyz);
+  VERTEX = (VIEW_MATRIX * vec4(o + right * VERTEX.x + up * VERTEX.y, 1.0)).xyz;
+  kc = INSTANCE_CUSTOM.xy;
+}
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
+float box(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
+float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+float ell(vec2 p, vec2 c, vec2 r, float a) { return (length(rot(a) * (p - c) / r) - 1.0) * min(r.x, r.y); }
+float star5(vec2 p, float r, float rf) {
+  const vec2 k1 = vec2(0.809016994375, -0.587785252292); const vec2 k2 = vec2(-k1.x, k1.y);
+  p.x = abs(p.x); p -= 2.0 * max(dot(k1, p), 0.0) * k1; p -= 2.0 * max(dot(k2, p), 0.0) * k2; p.x = abs(p.x); p.y -= r;
+  vec2 ba = rf * vec2(-k1.y, k1.x) - vec2(0.0, 1.0); float h = clamp(dot(p, ba) / dot(ba, ba), 0.0, r);
+  return length(p - ba * h) * sign(p.y * ba.x - p.x * ba.y);
+}
+float glyph(vec2 p, int k) {
+  if (k == 0) { // a wheat ear
+    float d = seg(p, vec2(0.0, -0.6), vec2(0.0, 0.45)) - 0.055;
+    for (int i = 0; i < 3; i++) { float y = -0.22 + float(i) * 0.24; d = min(d, ell(p, vec2(-0.14, y), vec2(0.09, 0.17), 0.6)); d = min(d, ell(p, vec2(0.14, y), vec2(0.09, 0.17), -0.6)); }
+    return min(d, ell(p, vec2(0.0, 0.55), vec2(0.08, 0.16), 0.0));
+  }
+  if (k == 1) { vec2 q = rot(0.65) * p; return min(box(q - vec2(0.0, -0.16), vec2(0.075, 0.48)), box(q - vec2(0.0, 0.38), vec2(0.34, 0.13)) - 0.02); } // a hammer
+  if (k == 2) return min(abs(length(p) - 0.45) - 0.075, box(p, vec2(0.075, 0.24))); // a coin
+  if (k == 3) return min(min(length(p - vec2(0.0, -0.22)) - 0.36, box(p - vec2(0.0, 0.25), vec2(0.11, 0.28))), box(p - vec2(0.0, 0.55), vec2(0.21, 0.05))); // a flask
+  return star5(p - vec2(0.0, -0.04), 0.62, 0.45); // a star
+}
+float digit(vec2 p, int n) { // seven segments
+  const int SEG[10] = int[](63, 6, 91, 79, 102, 109, 125, 7, 127, 111);
+  int m = SEG[clamp(n, 0, 9)]; float d = 9.0;
+  if ((m & 1) != 0) d = min(d, box(p - vec2(0.0, 0.5), vec2(0.22, 0.07)));
+  if ((m & 2) != 0) d = min(d, box(p - vec2(0.27, 0.25), vec2(0.07, 0.22)));
+  if ((m & 4) != 0) d = min(d, box(p - vec2(0.27, -0.25), vec2(0.07, 0.22)));
+  if ((m & 8) != 0) d = min(d, box(p - vec2(0.0, -0.5), vec2(0.22, 0.07)));
+  if ((m & 16) != 0) d = min(d, box(p - vec2(-0.27, -0.25), vec2(0.07, 0.22)));
+  if ((m & 32) != 0) d = min(d, box(p - vec2(-0.27, 0.25), vec2(0.07, 0.22)));
+  if ((m & 64) != 0) d = min(d, box(p, vec2(0.22, 0.07)));
+  return d;
+}
+void fragment() {
+  vec2 p = (UV - 0.5) * vec2(2.0, -2.0) * 1.25; // y up; the badge fills most of the quad, the count bubble pokes out
+  int k = int(kc.x + 0.5), n = int(kc.y + 0.5);
+  vec3 cols[5] = vec3[](vec3(0.3, 0.72, 0.28), vec3(0.88, 0.5, 0.14), vec3(0.95, 0.75, 0.15), vec3(0.2, 0.52, 0.9), vec3(0.62, 0.3, 0.8));
+  float aa = fwidth(p.x) * 1.2, r = length(p);
+  float badge = 1.0 - smoothstep(0.8 - aa, 0.8, r), ink = 1.0 - smoothstep(0.95 - aa, 0.95, r);
+  vec3 col = mix(vec3(0.02), cols[clamp(k, 0, 4)], badge);
+  col = mix(col, vec3(1.0), (1.0 - smoothstep(-aa, 0.0, glyph(p / 0.72, k) * 0.72)) * badge);
+  float a = ink;
+  if (n >= 2) { // the count bubble at the lower right
+    vec2 q = p - vec2(0.62, -0.62); float rb = length(q);
+    float bub = 1.0 - smoothstep(0.38 - aa, 0.38, rb), bubInk = 1.0 - smoothstep(0.47 - aa, 0.47, rb);
+    col = mix(col, vec3(0.02), bubInk); col = mix(col, vec3(0.98), bub);
+    col = mix(col, vec3(0.05), (1.0 - smoothstep(-aa, 0.0, digit(q / 0.3, n) * 0.3)) * bub);
+    a = max(a, bubInk);
+  }
+  if (a < 0.5) discard;
+  ALBEDO = col;
+}
+`;
+
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, INK, HEALTH_BAR, YIELD_ICON };

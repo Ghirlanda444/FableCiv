@@ -17,6 +17,7 @@ const shaders = require('res://shaders.js');
 const sprites = require('res://sprites.js');
 const city = require('res://city.js');
 const dressing = require('res://dressing.js');
+const yields = require('res://yields.js');
 const G = AU.G;
 
 const PRIMITIVE_TRIANGLES = 3, CULL_DISABLED = 2, TRANSPARENCY_ALPHA = 1, SHADING_UNSHADED = 0, BILLBOARD_ENABLED = 1;
@@ -197,6 +198,8 @@ class Main extends Node3D {
     this.unitModels = {}; this.unitTops = {}; // 3D units (tools/blender/models.py and units.py), loaded when first seen
     this.has3dUnits = FileAccess.file_exists('res://models/unit_warrior.json');
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
+    this.matYield = shaderMaterial(shaders.YIELD_ICON); this.matYield.render_priority = 9; // the yields lens (yields.js)
+    this.yieldQuad = new QuadMesh(); this.yieldQuad.size = new Vector2(0.2, 0.2); this.yieldsOn = false; this.yieldKey = '';
     this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
     this.unitMats = {}; this.units3d = this.has3dUnits && this.args.indexOf('--painted-units') < 0;
     console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + (this.has3dUnits ? 'yes' : 'no'));
@@ -307,6 +310,7 @@ class Main extends Node3D {
     mk('New Map', this.onNewMap);
     this.fxBtn = mk(this.hiFx ? 'FX: High' : 'FX: Low', this.onFx);
     this.gridBtn = mk('Grid: On', this.onGrid);
+    this.yieldsBtn = mk('Yields: Off', this.onYields);
     if (this.has3dUnits) this.unitsBtn = mk(this.units3d ? 'Units: 3D' : 'Units: Painted', this.onUnits);
     if (this.hasGroundTex) this.lookBtn = mk(['Look: Painted+', 'Look: Detailed', 'Look: Painted'][this.look], this.onLook);
     this.scores = new RichTextLabel(); this.scores.bbcode_enabled = true; this.scores.fit_content = true; this.scores.scroll_active = false;
@@ -583,6 +587,7 @@ class Main extends Node3D {
     this.scores.text = lines.join('\n');
     this.info.text = this.selected >= 0 ? this.describe(this.selected) : 'Drag to pan, wheel or pinch to zoom, tap a tile for details. Space = End Turn.';
     this.updateCityMenu();
+    this.syncYields();
   }
 
   // the city menu for the selected settlement (or the one being shown)
@@ -606,6 +611,7 @@ class Main extends Node3D {
     if (R && (!G.resourceKnown || G.resourceKnown(g, G.player(g), R))) parts.push('resource: ' + (R.name || t.resource));
     const oc = geo.ownerCiv(g, t); if (oc >= 0) parts.push('owned by ' + ((AU.CIV_BY_ID[g.civs[oc].civId] || {}).name || '?') + ' (' + g.settlements[t.owner].name + ')');
     const us = Object.keys(g.units).map(id => g.units[id]).filter(u => u.tile === i);
+    const yt = yields.yieldText(AU, g, i); if (yt) parts.push(yt);
     if (us.length) parts.push('units: ' + us.map(u => (u.name || (AU.UNITS[u.type] || {}).name || u.type) + ' (' + ((AU.CIV_BY_ID[g.civs[u.civ].civId] || {}).name || '?') + ')').join(', '));
     return parts.join(' · ');
   }
@@ -621,6 +627,25 @@ class Main extends Node3D {
   // ink outlines on scenery (cities, trees, resources) cost a second pass over thousands of models: FX Low drops them for
   // phones (units keep theirs)
   setInk(on) { this.matInked.next_pass = on ? this.inkSway : null; this.matCity.next_pass = on ? this.inkStill : null; }
+  onYields() { this.yieldsOn = !this.yieldsOn; this.yieldsBtn.text = this.yieldsOn ? 'Yields: On' : 'Yields: Off'; this.syncYields(); }
+  // the yields lens: icons on every tile (Yields button), else on the selected settlement's tiles or around a selected settler;
+  // one MultiMesh, rebuilt only when what it shows changes
+  syncYields() {
+    const g = this.g; if (!g || !this.field) return;
+    const off = this.viewCity !== null, key = [this.yieldsOn, this.selected, g.turn, off, this.seed].join(':');
+    if (key === this.yieldKey) return; this.yieldKey = key;
+    if (this.yieldNode) { this.yieldNode.queue_free(); this.yieldNode = null; }
+    if (off) return;
+    const spots = yields.yieldSpots(AU, g, (x, z) => this.field.heightAt(x, z), { all: this.yieldsOn, selected: this.selected });
+    if (!spots.length) return;
+    const mm = new MultiMesh(); mm.transform_format = TRANSFORM_3D; mm.use_custom_data = true; mm.mesh = this.yieldQuad; mm.instance_count = spots.length;
+    spots.forEach((e, i) => {
+      mm.set_instance_transform(i, new Transform3D(new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1), new Vector3(e.x, e.y, e.z)));
+      mm.set_instance_custom_data(i, new Color(e.kind, e.count, 0, 0));
+    });
+    const node = new MultiMeshInstance3D(); node.multimesh = mm; node.material_override = this.matYield; node.cast_shadow = SHADOWS_OFF;
+    this.add_child(node); this.yieldNode = node;
+  }
   onGrid() {
     this.grid = !this.grid; this.gridBtn.text = this.grid ? 'Grid: On' : 'Grid: Off';
     this.matTerrain.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0); this.matWater.set_shader_parameter('grid_strength', this.grid ? 0.6 : 0.0);
@@ -641,6 +666,10 @@ class Main extends Node3D {
     const all = Object.keys(this.g.settlements).map(id => this.g.settlements[id]), mine = all.filter(s => s.civ === this.g.playerIdx);
     const best = (mine.length ? mine : all).sort((a, b) => (b.buildings || []).length - (a.buildings || []).length)[0];
     if (best) { this.selected = best.tile; this.openCity(best.id); }
+  }
+  focusBiggestCity() { // for the yields screenshot: centre on the largest settlement, selected, at a close zoom
+    const all = Object.keys(this.g.settlements).map(id => this.g.settlements[id]).sort((a, b) => (b.pop || 0) - (a.pop || 0)), s = all[0]; if (!s) return;
+    const t = this.g.tiles[s.tile], c = geo.center(t.col, t.row); this.camTarget = [c[0], c[1]]; this.camDist = 9; this.selected = s.tile; this.clampCamera(); this.updateHud();
   }
   closeCity() { if (this.viewCity === null) return; this.viewCity = null; if (this.savedDist) { this.camDist = this.savedDist; this.updateCamera(); } }
   onNewMap() { this.auto = false; this.autoBtn.text = 'Auto'; this.newGame((Time.get_ticks_usec() % 100000) + 1); }
@@ -720,7 +749,7 @@ class Main extends Node3D {
 
   _process(dt) {
     this.frames++;
-    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_detailed.png', 320: 'shot_relief_painted.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map in each look (painted+, detailed, painted)
+    const SHOTS = { 40: 'shot.png', 80: 'shot_close.png', 120: 'shot_wide.png', 160: 'shot_low.png', 200: 'shot_city.png', 240: 'shot_relief.png', 280: 'shot_relief_detailed.png', 320: 'shot_relief_painted.png', 360: 'shot_yields.png' }; // default zoom, close-up, wide, low settings, Show city, then hills and mountains on another map in each look (painted+, detailed, painted), then the yields lens
     if (this.shot && SHOTS[this.frames]) {
       const path = ProjectSettings.globalize_path('user://' + SHOTS[this.frames]);
       this.get_viewport().get_texture().get_image().save_png(path);
@@ -731,6 +760,7 @@ class Main extends Node3D {
       else if (this.frames === 160) { this.onFx(); this.showBiggestCity(); }
       else if (this.frames === 200) { this.closeCity(); this.newGame(6); this.frameMountains(); }
       else if ((this.frames === 240 || this.frames === 280) && this.hasGroundTex) this.onLook();
+      else if (this.frames === 320) { if (this.hasGroundTex) this.onLook(); this.onYields(); this.focusBiggestCity(); }
       else this.get_tree().quit(0);
       return;
     }

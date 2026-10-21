@@ -87,4 +87,10 @@ console.log('units   ', uniques + ' unique units and ' + cultural + ' culture ve
 console.log('cities  ', 'Blender buildings for every culture; the biggest walled metropolis ' + modelTris + ' triangles');
 Object.keys(g.settlements).forEach(id => check('city ' + id, CT.buildCity(AU, g, g.settlements[id], (x, z) => F.heightAt(x, z), { view: id === Object.keys(g.settlements)[0] }).batch));
 console.log('cities  ', Object.keys(AU.PALACE_STYLES).length + ' styles x 5 tiers x walls: ' + cityTris + ' triangles');
+// the yields lens: every icon on a real tile with a known kind and a count, the selected settlement's lens on its own tiles
+const YL = require('../../godot/yields.js'), allY = YL.yieldSpots(AU, g, (x, z) => F.heightAt(x, z), { all: true });
+assert(allY.length > g.tiles.length / 2 && allY.every(e => Number.isFinite(e.x + e.y + e.z) && e.kind >= 0 && e.kind < YL.KINDS.length && e.count >= 1 && e.count <= 9), 'yield icons malformed');
+const ys = g.settlements[Object.keys(g.settlements)[0]], ylens = YL.lensTiles(AU, g, { selected: ys.tile });
+assert(ylens[0] === ys.tile && ylens.every(i => i === ys.tile || ys.tiles.indexOf(i) >= 0), 'city yields lens covers other tiles');
+console.log('yields  ', allY.length + ' icons over ' + g.tiles.length + ' tiles; ' + g.tiles[ys.tile].terrain + ' city centre: ' + YL.yieldText(AU, g, ys.tile));
 console.log('geo ok, turn ' + g.turn + ', ' + Object.keys(g.settlements).length + ' settlements, ' + Object.keys(g.units).length + ' units');
