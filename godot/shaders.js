@@ -133,9 +133,10 @@ void fragment() {
     dl = mix(dl, detail(tr, rock_d), w_rock); dl = mix(dl, detail(tw, snow_d), w_snow);
     col *= mix(1.0, clamp(dl, 0.6, 1.4), 0.45 * relief * (1.0 - detailed) * (1.0 - flower));
   }
-  // hex grid: a dark line about two pixels wide at any zoom (never thinner than 0.012 world units up close)
-  float e = hex_edge(wpos.xz), px = length(fwidth(wpos.xz)) * 0.71, lw = max(px * 1.1, 0.012);
-  col = mix(col, col * 0.42, (1.0 - smoothstep(lw, lw + px * 1.2, e)) * grid_strength * step(0.0, wpos.y));
+  // hex grid: an ink line like the outlines on units and scenery, but lighter: about 1.5 pixels at any zoom (never thinner
+  // than 0.008 world units up close) and a little see-through
+  float e = hex_edge(wpos.xz), px = length(fwidth(wpos.xz)) * 0.71, lw = max(px * 0.75, 0.008);
+  col = mix(col, vec3(0.012, 0.01, 0.014), (1.0 - smoothstep(lw, lw + px * 1.0, e)) * clamp(grid_strength * 1.3, 0.0, 0.8) * step(0.0, wpos.y));
   ALBEDO = col;
   ROUGHNESS = 1.0;
   SPECULAR = 0.0;
@@ -213,8 +214,8 @@ void fragment() {
   float l1 = depth - (0.055 + 0.012 * sin(TIME * 0.7)) + (brk - 0.5) * 0.02;
   float ring = (1.0 - smoothstep(0.0, 0.007 + aa, abs(l1))) * 0.55 * detail;
   float foam = clamp(max(band * (0.65 + 0.35 * brk), edge) + ring, 0.0, 1.0) * steady;
-  float e = hex_edge(p), pg = length(fwidth(p)) * 0.71, lw = max(pg * 1.1, 0.012), inside = step(map_rect.x, p.x) * step(map_rect.y, p.y) * step(p.x, map_rect.z) * step(p.y, map_rect.w);
-  col = mix(col, srgb(vec3(0.85, 0.95, 1.0)), (1.0 - smoothstep(lw, lw + pg * 1.2, e)) * grid_strength * 0.25 * inside * (1.0 - 0.5 * smoothstep(0.02, 0.06, pg))); // light grid lines on sea tiles, fainter zoomed out
+  float e = hex_edge(p), pg = length(fwidth(p)) * 0.71, lw = max(pg * 0.75, 0.008), inside = step(map_rect.x, p.x) * step(map_rect.y, p.y) * step(p.x, map_rect.z) * step(p.y, map_rect.w);
+  col = mix(col, srgb(vec3(0.03, 0.08, 0.14)), (1.0 - smoothstep(lw, lw + pg * 1.0, e)) * grid_strength * 0.6 * inside); // the ink grid on sea tiles, softer than on land
   ALBEDO = mix(col, vec3(0.97, 0.99, 1.0), foam);
   ALPHA = clamp(mix(0.38, 0.93, t) + foam * 0.8, 0.0, 1.0);
 }
