@@ -8,3 +8,4 @@ android/local.properties
 *.iml
 web/i18n/parts/
 tools/.art-forced-done
+__pycache__/
