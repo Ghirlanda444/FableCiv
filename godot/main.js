@@ -202,7 +202,7 @@ class Main extends Node3D {
     this.has3dUnits = FileAccess.file_exists('res://models/unit_warrior.json');
     this.matBar = shaderMaterial(shaders.HEALTH_BAR); this.matBar.render_priority = 10;
     this.matYield = shaderMaterial(shaders.YIELD_ICON); this.matYield.render_priority = 9; // the yields lens (yields.js)
-    this.yieldQuad = new QuadMesh(); this.yieldQuad.size = new Vector2(0.3, 0.3); this.yieldsOn = false; this.yieldKey = '';
+    this.yieldQuad = new QuadMesh(); this.yieldQuad.size = new Vector2(0.36, 0.36); this.yieldsOn = false; this.yieldKey = '';
     this.barQuad = new QuadMesh(); this.barQuad.size = new Vector2(0.4, 0.1); // 4:1, as HEALTH_BAR expects
     this.unitMats = {}; this.units3d = this.has3dUnits && this.args.indexOf('--painted-units') < 0;
     console.log('[tiny-empires] models: ' + made + ' resource models, 3D units: ' + (this.has3dUnits ? 'yes' : 'no'));

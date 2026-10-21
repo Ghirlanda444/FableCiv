@@ -1,12 +1,12 @@
 "use strict";
-// The yields lens, Civilization 6 style: a row of round icons near the front of each tile (food, production, gold, knowledge,
-// heritage) with a count bubble when a yield is 2 or more. Shown on every tile with the HUD's Yields button, or on the tiles
+// The yields lens, Civilization 6 style: a row of round icons near the front of each tile — bread (food), a gear (production),
+// banknotes (gold), an open book (knowledge), a temple (heritage) — with a count bubble when a yield is 2 or more. Shown on every tile with the HUD's Yields button, or on the tiles
 // of the selected settlement, or around a selected settler (where a new town would work).
 // Plain JS (no Godot), so Node can test it (tools/godot/test-geo.js); main.js draws the icons (shaders.YIELD_ICON).
 const geo = typeof process !== 'undefined' && process.versions && process.versions.node ? require('./geo.js') : require('res://geo.js');
 
 const KINDS = ['food', 'production', 'gold', 'science', 'culture']; // the icon index the shader draws
-const SPACING = 0.3, FRONT = 0.4;
+const SPACING = 0.35, FRONT = 0.42;
 
 // what a tile yields: worked by its owner's settlement when it has one, else as raw land for the player's civilization
 function tileYield(AU, g, i) {

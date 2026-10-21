@@ -451,9 +451,87 @@ void vertex() {
 void fragment() { ALBEDO = ink; }
 `;
 
-// yields lens icons (yields.js; one MultiMesh, instance custom data = (kind, count)): a round badge with an ink rim and a white
-// glyph — wheat (food), hammer (production), coin (gold), flask (knowledge), star (heritage) — and a count bubble from 2 up.
-// Billboarded and drawn over the scene like the health bars.
+// yields lens icons (yields.js; one MultiMesh, instance custom data = (kind, count)): a cream badge with an ink rim holding a
+// full-colour symbol outlined in ink — bread (food), a gear (production), banknotes (gold), an open book (knowledge), a
+// temple (heritage) — and a count bubble from 2 up. Billboarded and drawn over the scene like the health bars.
+// YIELD_GLYPHS is plain GLSL (also used by the local preview page): yieldIcon(p, k, n, aa, alpha) gives the colour in sRGB.
+const YIELD_GLYPHS = `
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
+float box(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
+float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
+float ell(vec2 p, vec2 c, vec2 r) { return (length((p - c) / r) - 1.0) * min(r.x, r.y); }
+float tri(vec2 p, vec2 p0, vec2 p1, vec2 p2) {
+  vec2 e0 = p1 - p0, e1 = p2 - p1, e2 = p0 - p2, v0 = p - p0, v1 = p - p1, v2 = p - p2;
+  vec2 q0 = v0 - e0 * clamp(dot(v0, e0) / dot(e0, e0), 0.0, 1.0), q1 = v1 - e1 * clamp(dot(v1, e1) / dot(e1, e1), 0.0, 1.0), q2 = v2 - e2 * clamp(dot(v2, e2) / dot(e2, e2), 0.0, 1.0);
+  float sg = sign(e0.x * e2.y - e0.y * e2.x);
+  vec2 d = min(min(vec2(dot(q0, q0), sg * (v0.x * e0.y - v0.y * e0.x)), vec2(dot(q1, q1), sg * (v1.x * e1.y - v1.y * e1.x))), vec2(dot(q2, q2), sg * (v2.x * e2.y - v2.y * e2.x)));
+  return -sqrt(d.x) * sign(d.y);
+}
+float digit(vec2 p, int n) { // seven segments
+  int m = n == 0 ? 63 : n == 1 ? 6 : n == 2 ? 91 : n == 3 ? 79 : n == 4 ? 102 : n == 5 ? 109 : n == 6 ? 125 : n == 7 ? 7 : n == 8 ? 127 : 111;
+  float d = 9.0;
+  if ((m & 1) != 0) d = min(d, box(p - vec2(0.0, 0.5), vec2(0.22, 0.07)));
+  if ((m & 2) != 0) d = min(d, box(p - vec2(0.27, 0.25), vec2(0.07, 0.22)));
+  if ((m & 4) != 0) d = min(d, box(p - vec2(0.27, -0.25), vec2(0.07, 0.22)));
+  if ((m & 8) != 0) d = min(d, box(p - vec2(0.0, -0.5), vec2(0.22, 0.07)));
+  if ((m & 16) != 0) d = min(d, box(p - vec2(-0.27, -0.25), vec2(0.07, 0.22)));
+  if ((m & 32) != 0) d = min(d, box(p - vec2(-0.27, 0.25), vec2(0.07, 0.22)));
+  if ((m & 64) != 0) d = min(d, box(p, vec2(0.22, 0.07)));
+  return d;
+}
+float cover(float d, float aa) { return 1.0 - smoothstep(-aa, 0.0, d); }
+vec3 yieldIcon(vec2 p, int k, int n, float aa, out float alpha) {
+  const vec3 INK = vec3(0.03, 0.025, 0.035);
+  float r = length(p);
+  vec3 col = mix(INK, vec3(0.98, 0.95, 0.87), cover(r - 0.86, aa));   // cream badge in an ink ring
+  alpha = cover(r - 0.98, aa);
+  vec2 s = p / 0.8; float a = aa / 0.8, w = 0.085;                    // symbol space; w: outline width
+  if (k == 0) {        // a loaf of bread with three cuts
+    float loaf = max(ell(s, vec2(0.0, -0.02), vec2(0.74, 0.5)), -(s.y + 0.3));
+    col = mix(col, INK, cover(loaf - w, a));
+    col = mix(col, mix(vec3(0.72, 0.4, 0.13), vec3(0.95, 0.68, 0.32), smoothstep(-0.3, 0.45, s.y)), cover(loaf, a));
+    float cuts = min(min(seg(s, vec2(-0.4, -0.02), vec2(-0.22, 0.28)), seg(s, vec2(-0.09, 0.0), vec2(0.09, 0.32))), seg(s, vec2(0.22, -0.02), vec2(0.4, 0.26))) - 0.05;
+    col = mix(col, vec3(1.0, 0.88, 0.58), cover(max(cuts, loaf + 0.04), a));
+  } else if (k == 1) { // a gear
+    float ang = atan(s.y, s.x), rr = length(s), teeth = smoothstep(-0.3, 0.3, cos(ang * 8.0));
+    float gear = max(rr - (0.5 + 0.17 * teeth), -(rr - 0.17));
+    col = mix(col, INK, cover(gear - w, a));
+    col = mix(col, vec3(0.95, 0.56, 0.14), cover(gear, a));
+    col = mix(col, vec3(0.78, 0.4, 0.08), cover(max(abs(rr - 0.32) - 0.04, gear), a));
+  } else if (k == 2) { // two banknotes
+    vec2 bq = rot(0.32) * (s - vec2(0.1, 0.14)), fq = rot(-0.16) * (s - vec2(-0.06, -0.1));
+    float back = box(bq, vec2(0.6, 0.31)) - 0.05, front = box(fq, vec2(0.6, 0.31)) - 0.05;
+    col = mix(col, INK, cover(back - w, a)); col = mix(col, vec3(0.3, 0.6, 0.3), cover(back, a));
+    col = mix(col, INK, cover(front - w, a)); col = mix(col, vec3(0.45, 0.78, 0.4), cover(front, a));
+    col = mix(col, vec3(0.8, 0.95, 0.7), cover(abs(box(fq, vec2(0.48, 0.2))) - 0.025, a));
+    col = mix(col, vec3(0.22, 0.5, 0.22), cover(length(fq) - 0.17, a));
+    col = mix(col, vec3(0.8, 0.95, 0.7), cover(seg(fq, vec2(0.0, -0.12), vec2(0.0, 0.12)) - 0.03, a));
+  } else if (k == 3) { // an open book
+    float cv = box(s - vec2(0.0, -0.06), vec2(0.74, 0.46)) - 0.04;
+    float lp = box(rot(-0.08) * (s - vec2(-0.34, 0.03)), vec2(0.31, 0.4)) - 0.02, rp = box(rot(0.08) * (s - vec2(0.34, 0.03)), vec2(0.31, 0.4)) - 0.02;
+    col = mix(col, INK, cover(cv - w, a)); col = mix(col, vec3(0.2, 0.45, 0.86), cover(cv, a));
+    col = mix(col, INK, cover(min(lp, rp) - 0.035, a)); col = mix(col, vec3(1.0), cover(min(lp, rp), a));
+    float lines = 9.0;
+    for (int i = 0; i < 4; i++) { float y = 0.24 - float(i) * 0.15; lines = min(lines, min(seg(s, vec2(-0.56, y + 0.03), vec2(-0.14, y)), seg(s, vec2(0.14, y), vec2(0.56, y + 0.03)))); }
+    col = mix(col, vec3(0.55, 0.6, 0.72), cover(max(lines - 0.022, min(lp, rp)), a));
+  } else {             // a classical temple
+    float base = box(s - vec2(0.0, -0.46), vec2(0.72, 0.08)), arch = box(s - vec2(0.0, 0.2), vec2(0.66, 0.06));
+    float cols = min(min(box(s - vec2(-0.45, -0.13), vec2(0.075, 0.27)), box(s - vec2(-0.15, -0.13), vec2(0.075, 0.27))), min(box(s - vec2(0.15, -0.13), vec2(0.075, 0.27)), box(s - vec2(0.45, -0.13), vec2(0.075, 0.27))));
+    float ped = tri(s, vec2(-0.74, 0.27), vec2(0.74, 0.27), vec2(0.0, 0.62));
+    float all_ = min(min(base, arch), min(cols, ped));
+    col = mix(col, INK, cover(all_ - w, a));
+    col = mix(col, vec3(0.6, 0.34, 0.82), cover(min(min(base, arch), ped), a));
+    col = mix(col, vec3(0.86, 0.74, 0.96), cover(cols, a));
+  }
+  if (n >= 2) {        // the count bubble at the lower right
+    vec2 q = p - vec2(0.6, -0.6); float rb = length(q);
+    col = mix(col, INK, cover(rb - 0.52, aa)); col = mix(col, vec3(0.99), cover(rb - 0.42, aa));
+    col = mix(col, INK, cover(digit(q / 0.36, n) * 0.36 - 0.03, aa));
+    alpha = max(alpha, cover(rb - 0.52, aa));
+  }
+  return col;
+}
+`;
 const YIELD_ICON = `
 shader_type spatial;
 render_mode unshaded, skip_vertex_transform, cull_disabled, depth_test_disabled, shadows_disabled;
@@ -465,58 +543,13 @@ void vertex() {
   VERTEX = (VIEW_MATRIX * vec4(o + (right * VERTEX.x + up * VERTEX.y) * grow, 1.0)).xyz;
   kc = INSTANCE_CUSTOM.xy;
 }
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
-float box(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
-float seg(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0); return length(pa - ba * h); }
-float ell(vec2 p, vec2 c, vec2 r, float a) { return (length(rot(a) * (p - c) / r) - 1.0) * min(r.x, r.y); }
-float star5(vec2 p, float r, float rf) {
-  const vec2 k1 = vec2(0.809016994375, -0.587785252292); const vec2 k2 = vec2(-k1.x, k1.y);
-  p.x = abs(p.x); p -= 2.0 * max(dot(k1, p), 0.0) * k1; p -= 2.0 * max(dot(k2, p), 0.0) * k2; p.x = abs(p.x); p.y -= r;
-  vec2 ba = rf * vec2(-k1.y, k1.x) - vec2(0.0, 1.0); float h = clamp(dot(p, ba) / dot(ba, ba), 0.0, r);
-  return length(p - ba * h) * sign(p.y * ba.x - p.x * ba.y);
-}
-float glyph(vec2 p, int k) {
-  if (k == 0) { // a wheat ear
-    float d = seg(p, vec2(0.0, -0.6), vec2(0.0, 0.45)) - 0.055;
-    for (int i = 0; i < 3; i++) { float y = -0.22 + float(i) * 0.24; d = min(d, ell(p, vec2(-0.14, y), vec2(0.09, 0.17), 0.6)); d = min(d, ell(p, vec2(0.14, y), vec2(0.09, 0.17), -0.6)); }
-    return min(d, ell(p, vec2(0.0, 0.55), vec2(0.08, 0.16), 0.0));
-  }
-  if (k == 1) { vec2 q = rot(0.65) * p; return min(box(q - vec2(0.0, -0.16), vec2(0.075, 0.48)), box(q - vec2(0.0, 0.38), vec2(0.34, 0.13)) - 0.02); } // a hammer
-  if (k == 2) return min(abs(length(p) - 0.45) - 0.075, box(p, vec2(0.075, 0.24))); // a coin
-  if (k == 3) return min(min(length(p - vec2(0.0, -0.22)) - 0.36, box(p - vec2(0.0, 0.25), vec2(0.11, 0.28))), box(p - vec2(0.0, 0.55), vec2(0.21, 0.05))); // a flask
-  return star5(p - vec2(0.0, -0.04), 0.62, 0.45); // a star
-}
-float digit(vec2 p, int n) { // seven segments
-  const int SEG[10] = int[](63, 6, 91, 79, 102, 109, 125, 7, 127, 111);
-  int m = SEG[clamp(n, 0, 9)]; float d = 9.0;
-  if ((m & 1) != 0) d = min(d, box(p - vec2(0.0, 0.5), vec2(0.22, 0.07)));
-  if ((m & 2) != 0) d = min(d, box(p - vec2(0.27, 0.25), vec2(0.07, 0.22)));
-  if ((m & 4) != 0) d = min(d, box(p - vec2(0.27, -0.25), vec2(0.07, 0.22)));
-  if ((m & 8) != 0) d = min(d, box(p - vec2(0.0, -0.5), vec2(0.22, 0.07)));
-  if ((m & 16) != 0) d = min(d, box(p - vec2(-0.27, -0.25), vec2(0.07, 0.22)));
-  if ((m & 32) != 0) d = min(d, box(p - vec2(-0.27, 0.25), vec2(0.07, 0.22)));
-  if ((m & 64) != 0) d = min(d, box(p, vec2(0.22, 0.07)));
-  return d;
-}
+${YIELD_GLYPHS}
 void fragment() {
   vec2 p = (UV - 0.5) * vec2(2.0, -2.0) * 1.25; // y up; the badge fills most of the quad, the count bubble pokes out
-  int k = int(kc.x + 0.5), n = int(kc.y + 0.5);
-  vec3 cols[5] = vec3[](vec3(0.3, 0.72, 0.28), vec3(0.88, 0.5, 0.14), vec3(0.95, 0.75, 0.15), vec3(0.2, 0.52, 0.9), vec3(0.62, 0.3, 0.8));
-  float aa = fwidth(p.x) * 1.2, r = length(p);
-  float badge = 1.0 - smoothstep(0.8 - aa, 0.8, r), ink = 1.0 - smoothstep(0.95 - aa, 0.95, r);
-  vec3 col = mix(vec3(0.02), cols[clamp(k, 0, 4)], badge);
-  col = mix(col, vec3(1.0), (1.0 - smoothstep(-aa, 0.0, glyph(p / 0.72, k) * 0.72 - 0.05)) * badge); // (thickened to read at icon size)
-  float a = ink;
-  if (n >= 2) { // the count bubble at the lower right
-    vec2 q = p - vec2(0.6, -0.6); float rb = length(q);
-    float bub = 1.0 - smoothstep(0.42 - aa, 0.42, rb), bubInk = 1.0 - smoothstep(0.52 - aa, 0.52, rb);
-    col = mix(col, vec3(0.02), bubInk); col = mix(col, vec3(0.98), bub);
-    col = mix(col, vec3(0.05), (1.0 - smoothstep(-aa, 0.0, digit(q / 0.36, n) * 0.36 - 0.025)) * bub);
-    a = max(a, bubInk);
-  }
-  if (a < 0.5) discard;
-  ALBEDO = pow(col, vec3(2.2)); // the colours above are sRGB, like the vertex colours elsewhere
+  float alpha; vec3 col = yieldIcon(p, int(kc.x + 0.5), int(kc.y + 0.5), fwidth(p.x) * 1.2, alpha);
+  if (alpha < 0.5) discard;
+  ALBEDO = pow(col, vec3(2.2)); // sRGB colours, like the vertex colours elsewhere
 }
 `;
 
-module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, INK, HEALTH_BAR, YIELD_ICON };
+module.exports = { PAINTED_TERRAIN, PAINTED_PROP, PAINTED_LEAF, TOON_WATER, RIVER_WATER, STANDEE, UNIT_3D, UNIT_OUTLINE, INK, HEALTH_BAR, YIELD_ICON, YIELD_GLYPHS };
