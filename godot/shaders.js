@@ -451,9 +451,9 @@ void vertex() {
 void fragment() { ALBEDO = ink; }
 `;
 
-// yields lens icons (yields.js; one MultiMesh, instance custom data = (kind, count)): a cream badge with an ink rim holding a
-// full-colour symbol outlined in ink — bread (food), a gear (production), banknotes (gold), an open book (knowledge), a
-// temple (heritage) — and a count bubble from 2 up. Billboarded and drawn over the scene like the health bars.
+// yields lens icons (yields.js; one MultiMesh, instance custom data = (kind, count)), in the game's chibi style: a pastel
+// bubble with a thick ink ring and a gloss, holding a puffy full-colour symbol with a kawaii face — bread (food), a gear
+// (production), banknotes (gold), an open book (knowledge), a temple (heritage) — and a count bubble from 2 up. Billboarded and drawn over the scene like the health bars.
 // YIELD_GLYPHS is plain GLSL (also used by the local preview page): yieldIcon(p, k, n, aa, alpha) gives the colour in sRGB.
 const YIELD_GLYPHS = `
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(vec2(c, s), vec2(-s, c)); }
@@ -480,54 +480,78 @@ float digit(vec2 p, int n) { // seven segments
   return d;
 }
 float cover(float d, float aa) { return 1.0 - smoothstep(-aa, 0.0, d); }
+// a kawaii face centred at c (size k): shiny dot eyes, a little smile, pink blush
+vec3 face(vec3 col, vec2 s, vec2 c, float k, float a) {
+  const vec3 INK = vec3(0.03, 0.025, 0.035);
+  vec2 q = (s - c) / k; float b = a / k;
+  for (int i = 0; i < 2; i++) {
+    float x = i == 0 ? -0.2 : 0.2;
+    col = mix(col, vec3(1.0, 0.55, 0.6), 0.8 * cover(ell(q, vec2(x * 1.6, -0.1), vec2(0.1, 0.06)), b));  // blush
+    col = mix(col, INK, cover(ell(q, vec2(x, 0.03), vec2(0.085, 0.105)), b));                            // eye
+    col = mix(col, vec3(1.0), cover(length(q - vec2(x - 0.025, 0.07)) - 0.032, b));                     // sparkle
+  }
+  float smile = max(abs(length(q - vec2(0.0, -0.02)) - 0.085) - 0.024, q.y + 0.04);
+  return mix(col, INK, cover(smile, b));
+}
+// fill a shape with a soft top-lit gradient
+vec3 fill(vec3 col, float d, vec3 base, vec2 s, float y0, float y1, float a) {
+  return mix(col, mix(base * 0.82, min(base * 1.15, vec3(1.0)), smoothstep(y0, y1, s.y)), cover(d, a));
+}
 vec3 yieldIcon(vec2 p, int k, int n, float aa, out float alpha) {
   const vec3 INK = vec3(0.03, 0.025, 0.035);
+  vec3 pastel = k == 0 ? vec3(1.0, 0.93, 0.7) : k == 1 ? vec3(1.0, 0.85, 0.72) : k == 2 ? vec3(0.8, 0.96, 0.8) : k == 3 ? vec3(0.78, 0.89, 1.0) : vec3(0.9, 0.82, 1.0);
   float r = length(p);
-  vec3 col = mix(INK, vec3(0.98, 0.95, 0.87), cover(r - 0.86, aa));   // cream badge in an ink ring
-  alpha = cover(r - 0.98, aa);
-  vec2 s = p / 0.8; float a = aa / 0.8, w = 0.085;                    // symbol space; w: outline width
-  if (k == 0) {        // a loaf of bread with three cuts
-    float loaf = max(ell(s, vec2(0.0, -0.02), vec2(0.74, 0.5)), -(s.y + 0.3));
+  vec3 col = mix(INK, mix(pastel * 0.92, min(pastel * 1.06, vec3(1.0)), smoothstep(-0.8, 0.8, p.y)), cover(r - 0.84, aa)); // pastel bubble, thick ink ring
+  col = mix(col, vec3(1.0), 0.55 * cover(ell(p, vec2(-0.36, 0.5), vec2(0.2, 0.09)), aa));                                     // a gloss on the bubble
+  alpha = cover(r - 0.99, aa);
+  vec2 s = p / 0.8; float a = aa / 0.8, w = 0.1;                    // symbol space; w: outline width
+  if (k == 0) {        // a smiling loaf of bread
+    float loaf = max(ell(s, vec2(0.0, -0.02), vec2(0.76, 0.52)), -(s.y + 0.32)) - 0.03;
     col = mix(col, INK, cover(loaf - w, a));
-    col = mix(col, mix(vec3(0.72, 0.4, 0.13), vec3(0.95, 0.68, 0.32), smoothstep(-0.3, 0.45, s.y)), cover(loaf, a));
-    float cuts = min(min(seg(s, vec2(-0.4, -0.02), vec2(-0.22, 0.28)), seg(s, vec2(-0.09, 0.0), vec2(0.09, 0.32))), seg(s, vec2(0.22, -0.02), vec2(0.4, 0.26))) - 0.05;
-    col = mix(col, vec3(1.0, 0.88, 0.58), cover(max(cuts, loaf + 0.04), a));
-  } else if (k == 1) { // a gear
-    float ang = atan(s.y, s.x), rr = length(s), teeth = smoothstep(-0.3, 0.3, cos(ang * 8.0));
-    float gear = max(rr - (0.5 + 0.17 * teeth), -(rr - 0.17));
+    col = fill(col, loaf, vec3(0.93, 0.6, 0.26), s, -0.3, 0.5, a);
+    float cuts = min(min(seg(s, vec2(-0.36, 0.22), vec2(-0.24, 0.38)), seg(s, vec2(-0.06, 0.26), vec2(0.06, 0.42))), seg(s, vec2(0.24, 0.22), vec2(0.36, 0.38))) - 0.045;
+    col = mix(col, vec3(1.0, 0.9, 0.62), cover(max(cuts, loaf + 0.04), a));
+    col = mix(col, vec3(1.0), 0.5 * cover(ell(s, vec2(-0.42, 0.12), vec2(0.1, 0.05)), a));
+    col = face(col, s, vec2(0.0, -0.08), 1.05, a);
+  } else if (k == 1) { // a round, chubby gear with a face
+    float ang = atan(s.y, s.x), rr = length(s), teeth = smoothstep(-0.45, 0.45, cos(ang * 7.0));
+    float gear = rr - (0.5 + 0.16 * teeth) - 0.02;
     col = mix(col, INK, cover(gear - w, a));
-    col = mix(col, vec3(0.95, 0.56, 0.14), cover(gear, a));
-    col = mix(col, vec3(0.78, 0.4, 0.08), cover(max(abs(rr - 0.32) - 0.04, gear), a));
-  } else if (k == 2) { // two banknotes
-    vec2 bq = rot(0.32) * (s - vec2(0.1, 0.14)), fq = rot(-0.16) * (s - vec2(-0.06, -0.1));
-    float back = box(bq, vec2(0.6, 0.31)) - 0.05, front = box(fq, vec2(0.6, 0.31)) - 0.05;
-    col = mix(col, INK, cover(back - w, a)); col = mix(col, vec3(0.3, 0.6, 0.3), cover(back, a));
-    col = mix(col, INK, cover(front - w, a)); col = mix(col, vec3(0.45, 0.78, 0.4), cover(front, a));
-    col = mix(col, vec3(0.8, 0.95, 0.7), cover(abs(box(fq, vec2(0.48, 0.2))) - 0.025, a));
-    col = mix(col, vec3(0.22, 0.5, 0.22), cover(length(fq) - 0.17, a));
-    col = mix(col, vec3(0.8, 0.95, 0.7), cover(seg(fq, vec2(0.0, -0.12), vec2(0.0, 0.12)) - 0.03, a));
-  } else if (k == 3) { // an open book
-    float cv = box(s - vec2(0.0, -0.06), vec2(0.74, 0.46)) - 0.04;
-    float lp = box(rot(-0.08) * (s - vec2(-0.34, 0.03)), vec2(0.31, 0.4)) - 0.02, rp = box(rot(0.08) * (s - vec2(0.34, 0.03)), vec2(0.31, 0.4)) - 0.02;
-    col = mix(col, INK, cover(cv - w, a)); col = mix(col, vec3(0.2, 0.45, 0.86), cover(cv, a));
-    col = mix(col, INK, cover(min(lp, rp) - 0.035, a)); col = mix(col, vec3(1.0), cover(min(lp, rp), a));
+    col = fill(col, gear, vec3(1.0, 0.62, 0.2), s, -0.6, 0.6, a);
+    col = mix(col, vec3(1.0, 0.8, 0.5), cover(max(length(s) - 0.4, -(length(s) - 0.34)), a));  // an inner rim
+    col = mix(col, vec3(1.0), 0.5 * cover(ell(s, vec2(-0.25, 0.3), vec2(0.1, 0.05)), a));
+    col = face(col, s, vec2(0.0, -0.02), 1.15, a);
+  } else if (k == 2) { // banknotes, the front one smiling
+    vec2 bq = rot(0.3) * (s - vec2(0.12, 0.14)), fq = rot(-0.12) * (s - vec2(-0.05, -0.1));
+    float back = box(bq, vec2(0.56, 0.3)) - 0.1, front = box(fq, vec2(0.56, 0.3)) - 0.1;
+    col = mix(col, INK, cover(back - w, a)); col = fill(col, back, vec3(0.38, 0.68, 0.36), s, -0.4, 0.6, a);
+    col = mix(col, INK, cover(front - w, a)); col = fill(col, front, vec3(0.5, 0.84, 0.44), s, -0.5, 0.4, a);
+    col = mix(col, vec3(0.82, 0.97, 0.72), cover(abs(box(fq, vec2(0.44, 0.17)) - 0.06) - 0.022, a));
+    col = mix(col, vec3(1.0), 0.45 * cover(ell(s, vec2(-0.38, 0.06), vec2(0.1, 0.04)), a));
+    col = face(col, rot(0.12) * fq, vec2(0.0, 0.0), 0.95, a);
+  } else if (k == 3) { // an open book with a sleepy-happy face across its pages
+    float cv = box(s - vec2(0.0, -0.06), vec2(0.72, 0.44)) - 0.08;
+    float lp = box(rot(-0.08) * (s - vec2(-0.33, 0.03)), vec2(0.29, 0.38)) - 0.06, rp = box(rot(0.08) * (s - vec2(0.33, 0.03)), vec2(0.29, 0.38)) - 0.06;
+    col = mix(col, INK, cover(cv - w, a)); col = fill(col, cv, vec3(0.3, 0.55, 0.95), s, -0.5, 0.4, a);
+    col = mix(col, INK, cover(min(lp, rp) - 0.04, a)); col = mix(col, vec3(1.0, 0.99, 0.95), cover(min(lp, rp), a));
     float lines = 9.0;
-    for (int i = 0; i < 4; i++) { float y = 0.24 - float(i) * 0.15; lines = min(lines, min(seg(s, vec2(-0.56, y + 0.03), vec2(-0.14, y)), seg(s, vec2(0.14, y), vec2(0.56, y + 0.03)))); }
-    col = mix(col, vec3(0.55, 0.6, 0.72), cover(max(lines - 0.022, min(lp, rp)), a));
-  } else {             // a classical temple
-    float base = box(s - vec2(0.0, -0.46), vec2(0.72, 0.08)), arch = box(s - vec2(0.0, 0.2), vec2(0.66, 0.06));
-    float cols = min(min(box(s - vec2(-0.45, -0.13), vec2(0.075, 0.27)), box(s - vec2(-0.15, -0.13), vec2(0.075, 0.27))), min(box(s - vec2(0.15, -0.13), vec2(0.075, 0.27)), box(s - vec2(0.45, -0.13), vec2(0.075, 0.27))));
-    float ped = tri(s, vec2(-0.74, 0.27), vec2(0.74, 0.27), vec2(0.0, 0.62));
-    float all_ = min(min(base, arch), min(cols, ped));
-    col = mix(col, INK, cover(all_ - w, a));
-    col = mix(col, vec3(0.6, 0.34, 0.82), cover(min(min(base, arch), ped), a));
-    col = mix(col, vec3(0.86, 0.74, 0.96), cover(cols, a));
+    for (int i = 0; i < 2; i++) { float y = 0.3 - float(i) * 0.13; lines = min(lines, min(seg(s, vec2(-0.52, y + 0.03), vec2(-0.16, y)), seg(s, vec2(0.16, y), vec2(0.52, y + 0.03)))); }
+    col = mix(col, vec3(0.62, 0.7, 0.86), cover(max(lines - 0.022, min(lp, rp)), a));
+    col = face(col, s, vec2(0.0, -0.16), 1.1, a);
+  } else {             // a little temple with a face on its pediment
+    float base = box(s - vec2(0.0, -0.46), vec2(0.7, 0.06)) - 0.04, arch = box(s - vec2(0.0, 0.18), vec2(0.64, 0.04)) - 0.03;
+    float cols = min(min(box(s - vec2(-0.44, -0.14), vec2(0.06, 0.25)), box(s - vec2(-0.15, -0.14), vec2(0.06, 0.25))), min(box(s - vec2(0.15, -0.14), vec2(0.06, 0.25)), box(s - vec2(0.44, -0.14), vec2(0.06, 0.25)))) - 0.03;
+    float ped = tri(s, vec2(-0.74, 0.26), vec2(0.74, 0.26), vec2(0.0, 0.68)) - 0.04;
+    col = mix(col, INK, cover(min(min(base, arch), min(cols, ped)) - w, a));
+    col = fill(col, min(min(base, arch), ped), vec3(0.7, 0.45, 0.92), s, -0.5, 0.7, a);
+    col = fill(col, cols, vec3(0.92, 0.84, 1.0), s, -0.4, 0.1, a);
+    col = face(col, s, vec2(0.0, 0.38), 0.75, a);
   }
   if (n >= 2) {        // the count bubble at the lower right
-    vec2 q = p - vec2(0.6, -0.6); float rb = length(q);
-    col = mix(col, INK, cover(rb - 0.52, aa)); col = mix(col, vec3(0.99), cover(rb - 0.42, aa));
-    col = mix(col, INK, cover(digit(q / 0.36, n) * 0.36 - 0.03, aa));
-    alpha = max(alpha, cover(rb - 0.52, aa));
+    vec2 q = p - vec2(0.62, -0.6); float rb = length(q);
+    col = mix(col, INK, cover(rb - 0.54, aa)); col = mix(col, mix(vec3(0.9), vec3(1.0), smoothstep(-0.4, 0.4, q.y)), cover(rb - 0.43, aa));
+    col = mix(col, INK, cover(digit(q / 0.36, n) * 0.36 - 0.035, aa));
+    alpha = max(alpha, cover(rb - 0.54, aa));
   }
   return col;
 }
