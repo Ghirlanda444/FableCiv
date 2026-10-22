@@ -55,7 +55,8 @@ if __name__ == '__main__':
     os.makedirs(out, exist_ok=True); token = os.environ.get('HF_TOKEN') or None
     for key in which:
         try:
-            c = Client(SPACES[key], hf_token=token, verbose=False)
+            try: c = Client(SPACES[key], token=token, verbose=False)        # gradio_client 1.x
+            except TypeError: c = Client(SPACES[key], hf_token=token, verbose=False)
             api = c.view_api(return_format='dict', print_info=False)
             json.dump(api, open(os.path.join(out, key + '_api.json'), 'w'), indent=1, default=str)
             names = list(api.get('named_endpoints', {}))
