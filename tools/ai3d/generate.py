@@ -1,4 +1,4 @@
-# Image-to-3D pilot: sends painted unit pictures (godot/art/units/<unit>.png) to public Hugging Face demos of image-to-3D
+# Image-to-3D pilot: sends painted unit pictures (web/assets/units/<unit>.png) to public Hugging Face demos of image-to-3D
 # models and saves the textured models they return, for comparison with the code-built units. Runs in CI
 # (.github/workflows/ai3d.yml), which can reach Hugging Face. Each demo's API is saved too (<space>_api.json), since these
 # demos change their endpoints from time to time.
@@ -7,7 +7,7 @@
 import json, os, shutil, sys, time, traceback
 from gradio_client import Client, handle_file
 
-SPACES = {'hunyuan': 'tencent/Hunyuan3D-2', 'trellis': 'JeffreyXiang/TRELLIS'}
+SPACES = {'hunyuan': ['tencent/Hunyuan3D-2'], 'trellis': ['JeffreyXiang/TRELLIS', 'trellis-community/TRELLIS']}  # first one that answers
 
 def files_in(result):
     """every file path in a gradio result (nested tuples, lists, dicts)"""
@@ -54,9 +54,15 @@ if __name__ == '__main__':
     which = sys.argv[3].split(',') if len(sys.argv) > 3 else list(SPACES)
     os.makedirs(out, exist_ok=True); token = os.environ.get('HF_TOKEN') or None
     for key in which:
+        c = None
+        for space in SPACES[key]:
+            try:
+                try: c = Client(space, token=token, verbose=False)        # gradio_client 1.x
+                except TypeError: c = Client(space, hf_token=token, verbose=False)
+                print(key, 'using', space); break
+            except Exception as e: print(key, space, 'unavailable:', e)
+        if c is None: continue
         try:
-            try: c = Client(SPACES[key], token=token, verbose=False)        # gradio_client 1.x
-            except TypeError: c = Client(SPACES[key], hf_token=token, verbose=False)
             api = c.view_api(return_format='dict', print_info=False)
             json.dump(api, open(os.path.join(out, key + '_api.json'), 'w'), indent=1, default=str)
             names = list(api.get('named_endpoints', {}))
@@ -64,6 +70,6 @@ if __name__ == '__main__':
         except Exception:
             print(key, 'unavailable:'); traceback.print_exc(); continue
         for u in units:
-            img = os.path.join('godot/art/units', u + '.png')
+            img = os.path.join('web/assets/units', u + '.png')  # the painted art (godot/art is a build-time copy)
             (hunyuan if key == 'hunyuan' else trellis)(c, names, img, out, u)
     print('files:', sorted(os.listdir(out)))
