@@ -9,3 +9,4 @@ android/local.properties
 web/i18n/parts/
 tools/.art-forced-done
 __pycache__/
+ai3d_out/
