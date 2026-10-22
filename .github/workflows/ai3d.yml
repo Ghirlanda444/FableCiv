@@ -1,0 +1,31 @@
+# Image-to-3D pilot (tools/ai3d): turns a few painted unit pictures into textured 3D models with the public Hugging Face
+# demos of Hunyuan3D-2 and TRELLIS, and publishes them on the ai3d-pilot pre-release for comparison. Runs when
+# tools/ai3d changes, or by hand. An HF_TOKEN repository secret (optional) raises the demos' free GPU quota.
+name: AI 3D pilot
+on:
+  push:
+    paths: ['tools/ai3d/**', '.github/workflows/ai3d.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: { group: ai3d, cancel-in-progress: true }
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Generate
+        env: { HF_TOKEN: '${{ secrets.HF_TOKEN }}' }
+        run: |
+          pip install -q gradio_client
+          python tools/ai3d/generate.py "$(cat tools/ai3d/units.txt)" ai3d_out 2>&1 | tee ai3d_out.log
+          cp ai3d_out.log ai3d_out/ 2>/dev/null || { mkdir -p ai3d_out; cp ai3d_out.log ai3d_out/; }
+      - name: Publish on the ai3d-pilot pre-release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release delete ai3d-pilot --cleanup-tag -y --repo "${{ github.repository }}" || true
+          gh release create ai3d-pilot --repo "${{ github.repository }}" --prerelease --target "${{ github.sha }}" \
+            --title "AI 3D pilot (evaluation only)" --notes "Image-to-3D models generated from the painted unit art, for comparison. Not used by the game." ai3d_out/*
